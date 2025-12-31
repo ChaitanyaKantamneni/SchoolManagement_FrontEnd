@@ -1,0 +1,247 @@
+<div>
+  <app-dashboard-top-nav></app-dashboard-top-nav>
+</div>
+
+<div class="MainContentDiv">
+  <div *ngIf="!IsAddNewClicked" class="w-100">
+    <div class="ComponentTop">
+      <div class="ComponentTopHeader">
+        <h5>Roles Management</h5>
+        <p>Total {{ RoleCount }} Roles Added</p>
+      </div>
+      <div class="ComponentTopBottom">
+        <button (click)="AddNewClicked()">
+          <mat-icon>add_circle</mat-icon>Add Role
+        </button>
+      </div>
+    </div>
+
+    <!-- Module Buttons Section -->
+    <div class="ComponentRecords">
+      <div>
+        <div class="searchreview input-container">
+          <input
+            type="text"
+            id="searchQuery"
+            class="form-control floating-input"
+            [(ngModel)]="searchQuery"
+            (ngModelChange)="onSearchChange()"
+            placeholder="Search... "
+          />
+          <mat-icon
+            style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"
+            >search</mat-icon
+          >
+        </div>
+
+        <div class="reviewstable">
+          <table *ngIf="ListedRoleList.length != 0" class="table table-bordered">
+            <thead>
+              <tr>
+                <th class="visually-hidden">Role ID</th>
+                <th>SI.No</th>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let Role of getPaginatedRoleLists(),let i = index">
+                <td data-label="ID" class="visually-hidden">{{ Role.ID }}</td>
+                <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td data-label="Name">{{ Role.Name }}</td>
+                <td data-label="Status">{{ Role.IsActive }}</td>
+                <td data-label="Actions">
+                  <div class="d-flex justify-content-center align-items-center h-100">
+                    <!-- (click)="editreview(aminitie.propertyTypeID)" -->
+                    <button class="btn checkbtn" data-tooltip="Edit" (click)="editreview(Role.ID)">
+                      <mat-icon class="mat-edit-icon">edit</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div *ngIf="ListedRoleList.length === 0" class="NoDataFound">
+            <div class="NoDataFoundImg">
+              <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
+            </div>
+            <p>No data found.</p>
+          </div>
+          <div *ngIf="ListedRoleList.length > 5" class="pagination-controls">
+            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
+            <button *ngFor="let page of getVisiblePageNumbers()"
+                    class="page-btn"
+                    [ngClass]="{'active': page === currentPage}"
+                    (click)="goToPage(page)">
+              {{ page }}
+            </button>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Role Section -->
+  <div *ngIf="IsAddNewClicked" class="w-100">
+    <div class="AddForm">
+      <div class="AddFormTop">
+        <button (click)="AddNewClicked()" title="Back">
+          <mat-icon>arrow_circle_left</mat-icon>
+        </button>
+        <p>Add Role</p>
+      </div>
+      <div class="AddFormConatiner">
+        <form [formGroup]="RoleForm">
+          <div class="FormInputRowsContainer">
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Name</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="RoleForm.get('Name')?.touched && RoleForm.get('Name')?.invalid" class="text-danger">
+                    <div *ngIf="RoleForm.get('Name')?.errors?.['required']">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Active Status Toggle -->
+              <div class="InputFieldsContainer">
+                <div class="toggle-container" (click)="$event.stopPropagation()">
+                  <label class="switch">
+                    <input type="checkbox" [checked]="IsActiveStatus" (click)="toggleChange()" />
+                    <span class="slider">
+                      <span class="toggle-text" [ngStyle]="{
+                          left: IsActiveStatus ? '42%' : '60%',
+                          fontSize: IsActiveStatus ? '9px' : '9px'
+                        }">
+                        {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Description Field -->
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Description</label>
+                <div class="input-with-error">
+                  <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="1"></textarea>
+                  <div *ngIf="RoleForm.get('Description')?.touched && RoleForm.get('Description')?.invalid" class="text-danger">
+                    <div *ngIf="RoleForm.get('Description')?.errors?.['required']">
+                      <small>Please Enter Description.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer" style="visibility: hidden;height: 10px;">
+                <span >hello adding new academic year</span>
+              </div>
+            </div>
+          </div>
+          <div class="ModulesAndPermissionsSection">
+            <div class="ModulesButtonsContainer">
+              <div *ngFor="let module of modules" class="InputFieldsContainer module-btn">
+                <button type="button" (click)="ModuleClick(module.ID)" [ngClass]="{'active-module': module.ID === expandedModuleId}">
+                  {{ module.Name }}
+                </button>
+              </div>
+            </div>
+            <div *ngIf="expandedModuleId" class="PermissionListCard show">
+              <div class="selectedModuleNameSection">
+                <p>Pages for {{ selectedModuleName }}</p>
+              </div>
+
+              <div class="reviewstable Pagestable">
+                <table *ngIf="PagesList.length > 0" class="table table-bordered">
+                  <thead>
+                    <tr>
+                      <th>SI.No</th>
+                      <th>Page Name</th>
+                      <th>View</th>
+                      <th>Adding</th>
+                      <th>Editing</th>
+                      <th>Deleting</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let page of PagesList; let i = index">
+                      <td>{{ i + 1 }}</td>
+                      <td>{{ page.Name }}</td>
+
+                      <td>
+                        <div class="d-flex justify-content-center align-items-center h-100">
+                          <div class="InputFieldsContainer">
+                            <div class="toggle-container" (click)="$event.stopPropagation()">
+                              <label class="switch">
+                                <input type="checkbox" [checked]="page.CanView" (click)="togglePagePermission(page, 'CanView',expandedModuleId, page.ID)" />
+                                <span class="slider"></span>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                        <!-- <input type="checkbox" [(ngModel)]="page.CanView" /> -->
+                      </td>
+                      <td>
+                        <div class="d-flex justify-content-center align-items-center h-100">
+                          <div class="InputFieldsContainer">
+                            <div class="toggle-container" (click)="$event.stopPropagation()">
+                              <label class="switch">
+                                <input type="checkbox" [checked]="page.CanAdd" (click)="togglePagePermission(page, 'CanAdd',expandedModuleId, page.ID)" />
+                                <span class="slider"></span>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="d-flex justify-content-center align-items-center h-100">
+                          <div class="InputFieldsContainer">
+                            <div class="toggle-container" (click)="$event.stopPropagation()">
+                              <label class="switch">
+                                <input type="checkbox" [checked]="page.CanEdit" (click)="togglePagePermission(page, 'CanEdit',expandedModuleId, page.ID)" />
+                                <span class="slider"></span>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="d-flex justify-content-center align-items-center h-100">
+                          <div class="InputFieldsContainer">
+                            <div class="toggle-container" (click)="$event.stopPropagation()">
+                              <label class="switch">
+                                <!-- <input type="checkbox" [checked]="page.CanDelete" (click)="togglePagePermission(page, 'canDelete',expandedModuleId, page.ID)" /> -->
+                                <input type="checkbox" [checked]="page.CanDelete" (click)="togglePagePermission(page, 'CanDelete', expandedModuleId, page.ID)" />
+                                <span class="slider"></span>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div *ngIf="PagesList.length === 0" class="NoDataFound">
+                  <p>No Pages Available</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Action Buttons -->
+          <div class="ActionButtons">
+            <button class="btn" *ngIf="ViewRoleClicked" (click)="UpdateRole()">Update</button>
+            <button class="btn" *ngIf="!ViewRoleClicked" (click)="SubmitRole()">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,113 @@
+<div class="Maincontainer">
+  <div class="contentwrapper">
+    <div class="loginIconDiv">
+      <div class="loginIconImg">
+        <img  src="Images/Logo1.jpg" alt="loginIcon">
+      </div>
+    </div>
+    <div class="loginFormDiv">
+      <div class="loginFormInputsDiv">
+        <h3>Welcome Back!</h3>
+        <p>Enter your login credentials to access your account</p>
+        <form [formGroup]="LoginForms">
+          <div class="InputFieldsContainer">
+            <label class="inputLabel" for="email">Email</label>
+            <div class="input-with-error">
+              <input class="inputField" type="email" id="email" formControlName="email" placeholder="Enter E-Mail" />
+              <div *ngIf="(LoginForms.get('UserID' ) ?. touched && LoginForms.get('UserID' ) ?. invalid)" class="text-danger">
+                <div *ngIf="(LoginForms.get('UserID' ) ?. errors ?. ['required' ]) ">
+                  <small>Please Enter E-mail .</small>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="InputFieldsContainer">
+            <label class="inputLabel" for="password">Password</label>
+            <div class="input-with-error">
+              <div class="passwordInputContainer">
+                <input [type]="IsPasswordVisible ? 'text' : 'password'" class="inputField" type="password" id="password" formControlName="password" placeholder="Enter Password" />
+                <mat-icon class="passwordIcon" (click)="togglePasswordVisibility()">{{IsPasswordVisible ? 'visibility' : 'visibility_off'}}</mat-icon>
+              </div>
+              <div *ngIf="(LoginForms.get('Password' ) ?. touched && LoginForms.get('Password' ) ?. invalid) " class="text-danger">
+                <div *ngIf="LoginForms.get('Password' ) ?. errors ?. ['required' ]">
+                  <small>Please Enter Password. </small>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="Captcha">
+            <canvas id="captchaCanvas" class="captcha-canvas"></canvas>
+            <button mat-icon-button (click)="generateCaptcha()" type="button">
+              <mat-icon>refresh</mat-icon>
+            </button>
+            <div class="loginFieldsInputsCaptcha">
+              <input class="CaptchainputField" formControlName="Captcha" placeholder="Enter Captcha"/>
+            </div>
+          </div>
+          <div class="loginFormButtons">
+            <!-- (click)="OnForgotpasswordClick()" -->
+            <button class="forgotPasswordBtn">Forgot Password</button>
+            <!-- (click)="onSubmit()" -->
+            <button class="loginBtn" (click)="OnSubmitSignIn()">Log In</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+<!-- <div class="loginFieldsInputsEmail">
+<label class="inputLabel">E-mail</label>
+<div class="input-with-error">
+<input class="inputField" formControlName="UserID" placeholder="Enter e-mail"/>
+<div *ngIf="(LoginForm.get('UserID' ) ?. touched && LoginForm.get('UserID' ) ?. invalid) | | formEmailInvalid" class="text-danger">
+<div *ngIf="(LoginForm.get('UserID' ) ?. errors ?. ['required' ]) | | formEmailInvalid">
+<small>Please Enter E-mail .< /small>
+</div>
+</div>
+</div>
+</div>
+<div class="loginFieldsInputsPassword">
+<label class="inputLabel">Password</label>
+<div class="input-with-error">
+<div class="passwordInputContainer">
+<input [type]="IsPasswordVisible ? 'text' : 'password'" class="inputField" formControlName="Password" placeholder="Enter password"/>
+<i class="fas" [ngClass]="IsPasswordVisible ? 'fa-eye' : 'fa-eye-slash'" (click)="togglePasswordVisibility()"></i> -- >
+<mat-icon class="passwordIcon" (click)="togglePasswordVisibility()">{{IsPasswordVisible ? 'visibility' : 'visibility_off'}}</mat-icon>
+</div>
+<div *ngIf="(LoginForm.get('Password' ) ?. touched && LoginForm.get('Password' ) ?. invalid) | | formPasswordInvalid" class="text-danger">
+<div *ngIf="LoginForm.get('Password' ) ?. errors ?. ['required' ]">
+<small>Please Enter Password. </small>
+</div>
+</div>
+</div>
+</div>
+<div class="Captcha">
+<canvas id="captchaCanvas" class="captcha-canvas"></canvas>
+<button mat-icon-button (click)="generateCaptcha()" type="button">
+<mat-icon>refresh</mat-icon>
+</button>
+<div class="loginFieldsInputsCaptcha">
+<input class="inputField" formControlName="Captcha" placeholder="Enter Captcha"/>
+</div>
+</div>
+<div class="loginFormButtons">
+<button class="forgotPasswordBtn" (click)="OnForgotpasswordClick()">Forgot Password</button>
+<button class="loginBtn" (click)="onSubmit()">Log In</button>
+</div>
+
+IsPasswordVisible:boolean=false;
+IsConfirmPasswordVisible:boolean=false;
+IsConfirmNewPasswordVisible:boolean=false;
+togglePasswordVisibility(){
+this. IsPasswordVisible =! this. IsPasswordVisible;
+
+toggleConfirmNewPasswordVisibility(){
+this. IsConfirmNewPasswordVisible =! this. IsConfirmNewPasswordVisible;
+
+toggleConfirmPasswordVisibility(){
+this. IsConfirmPasswordVisible =! this. IsConfirmPasswordVisible;
+-->

@@ -1,0 +1,151 @@
+<div class="row justify-content-center align-items-center m-0 w-100 totalcard">
+  <nav class="navbar navbar-expand-md navbar-light bg-light d-md-none col-12">
+    <a class="navbar-brand" href="/home"><img class="h-100" src="Images/Logo1.jpg"></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link DashboardMenuLi" routerLink="/dashboard/AdminDashboard"><mat-icon>dashboard</mat-icon> Dashboard</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle DashboardMenuLi" href="#" id="propertyDropdown" role="button" data-bs-toggle="dropdown">
+            <i class="fa fa-building"></i> Property Details
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="propertyDropdown">
+            <li><a class="dropdown-item DashboardMenuLi" routerLink="/dashboard/AddProperty"><i class="fa fa-plus"></i> Add Property</a></li>
+            <li><a class="dropdown-item DashboardMenuLi" routerLink="/dashboard/Amenities"><i class="fa fa-plus"></i> Add Amenities</a></li>
+            <li><a class="dropdown-item DashboardMenuLi" routerLink="/dashboard/UserProperties"><i class="fa fa-plus"></i> Users Properties</a></li>
+          </ul>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link DashboardMenuLi" routerLink="/dashboard/AddPropertyType"><i class="fas fa-user"></i> Property Type</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link DashboardMenuLi" routerLink="/dashboard/UserReviews"><i class="fas fa-user"></i>User Reviews</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link DashboardMenuLi" routerLink="/dashboard/Blog"><i class="fas fa-user"></i> Blog</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link DashboardMenuLi" routerLink="/dashboard/MyProfile"><i class="fas fa-user"></i> My Profile</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link DashboardMenuLi" routerLink="/dashboard/Wishlist"><i class="fas fa-user"></i>Whichilist</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link DashboardMenuLi" (click)="logout()"><i class="fa fa-sign-out-alt"></i> Logout</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+
+  <div class="sidenavbar col-12 col-md-3" [ngClass]="{'collapsed': !isExpanded}">
+    <div class="logo">
+      <a href="/home">
+        <img *ngIf="!isExpanded" src="Images/Logo1.jpg" alt="BUSERELE" />
+        <img *ngIf="isExpanded" src="Images/Logo1.jpg" alt="BUSERELE" />
+      </a>
+    </div>
+    <div class="sidebar d-none d-md-block h-100">
+      <!-- <button class="toggle-btn" (click)="toggleSidebar()">
+        <mat-icon>{{ isExpanded ? 'chevron_left' : 'chevron_right' }}</mat-icon>
+        <!-- <i class="fa" [ngClass]="isExpanded ? 'fa-chevron-left' : 'fa-chevron-right'"></i> --
+      </button> -->
+      <div class="d-flex flex-column">
+        <ul class="menu">
+          <li routerLink="/Admin/Dashboad">
+            <mat-icon>dashboard</mat-icon>
+            <span *ngIf="isExpanded" class="DashboardMenuLi">Dashboard</span>
+          </li>
+          <li class="menu-item has-submenu" (click)="toggleSubmenu('Masters')">
+            <div class="parent-row">
+              <mat-icon>widgets</mat-icon>
+              <span *ngIf="isExpanded" class="DashboardMenuLi">Masters</span>
+            </div>
+            <ul *ngIf="isExpanded && openedSubmenu === 'Masters'" class="submenu">
+              <li routerLink="/Admin/SchoolDetails">
+                <mat-icon>domain</mat-icon>
+                <span>School Details</span>
+              </li>
+              <li routerLink="/Admin/AcademicYear">
+                <mat-icon>calendar_month</mat-icon>
+                <span>Academic Year</span>
+              </li>
+              <li routerLink="/Admin/Syllabus">
+                <mat-icon>library_books</mat-icon>
+                <span>Syllabus</span>
+              </li>
+              <li routerLink="/Admin/Class">
+                <mat-icon>class</mat-icon>
+                <span>Class</span>
+              </li>
+              <li routerLink="/Admin/Division">
+                <mat-icon>account_tree</mat-icon>
+                <span>Division</span>
+              </li>
+              <li routerLink="/Admin/Subject">
+                <mat-icon>menu_book</mat-icon>
+                <span>Subject</span>
+              </li>
+              <li routerLink="/Admin/SubjectStaff">
+                <mat-icon>person</mat-icon>
+                <span>Subject Staff</span>
+              </li>
+              <li routerLink="/Admin/Modules">
+                <mat-icon>apps</mat-icon>
+                <span>Modules</span>
+              </li>
+              <li routerLink="/Admin/Pages">
+                <mat-icon>pageview</mat-icon>
+                <span>Pages</span>
+              </li>
+              <li routerLink="/Admin/Role">
+                <mat-icon>badge</mat-icon>
+                <span>Roles</span>
+              </li>
+              <li routerLink="/Admin/Staff">
+                <mat-icon>supervisor_account</mat-icon>
+                <span>Staff</span>
+              </li>
+            </ul>
+          </li>
+          <li class="menu-item has-submenu" (click)="toggleSubmenu('Academic')">
+            <div class="parent-row">
+              <mat-icon>school</mat-icon>
+              <span *ngIf="isExpanded" class="DashboardMenuLi">Academic</span>
+            </div>
+            <ul *ngIf="isExpanded && openedSubmenu === 'Academic'" class="submenu">
+              <li routerLink="/Admin/Admission">
+                <mat-icon>people</mat-icon>
+                <span>Admission</span>
+              </li>
+              <li routerLink="/Admin/AllotClassTeacher">
+                <mat-icon>assignment</mat-icon>
+                <span>Allot Class teacher</span>
+              </li>
+              <li routerLink="/Admin/Promotion">
+                <mat-icon>trending_up</mat-icon>
+                <span>Promotion</span>
+              </li>
+              <li routerLink="/Admin/DePromotion">
+                <mat-icon>trending_down</mat-icon>
+                <span>De-Promotion</span>
+              </li>
+              <li routerLink="/Admin/TransferStudents">
+                <mat-icon>swap_horiz</mat-icon>
+                <span>Transfer Student</span>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="maincontent col-12 col-md-9">
+    <router-outlet class="full-page-content"></router-outlet>
+  </div>
+</div>

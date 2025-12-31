@@ -1,0 +1,158 @@
+<div>
+  <app-dashboard-top-nav></app-dashboard-top-nav>
+</div>
+<div class="MainContentDiv">
+  <div *ngIf="!IsAddNewClicked" class="w-100">
+    <div class="ComponentTop">
+      <div class="ComponentTopHeader">
+        <h5>Module Management</h5>
+        <p>Total {{ ModuleCount }} Modules Added</p>
+      </div>
+      <div class="ComponentTopBottom">
+        <button (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Module</button>
+      </div>
+    </div>
+    <div class="ComponentRecords">
+      <div>
+        <div class="searchreview input-container" >
+          <input type="text" id="searchQuery" class="form-control floating-input"
+            [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search... "  />
+          <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
+          <!-- <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i> -->
+        </div>
+        <div class="reviewstable">
+          <table *ngIf="ListedModuleList.length != 0" class="table table-bordered">
+            <thead>
+              <tr>
+                <th class="visually-hidden">Academic Year ID</th>
+                <th>SI.No</th>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let Module of getPaginatedModuleLists(),let i = index">
+                <td data-label="ID" class="visually-hidden">{{ Module.ID }}</td>
+                <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td data-label="Name">{{ Module.Name }}</td>
+                <td data-label="Status">{{ Module.IsActive }}</td>
+                <td data-label="Actions">
+                  <div class="d-flex justify-content-center align-items-center h-100">
+                    <!-- (click)="editreview(aminitie.propertyTypeID)" -->
+                    <button class="btn checkbtn" data-tooltip="Edit" (click)="editreview(Module.ID)">
+                      <mat-icon class="mat-edit-icon">edit</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div *ngIf="ListedModuleList.length === 0" class="NoDataFound">
+            <div class="NoDataFoundImg">
+              <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
+            </div>
+            <p>No data found.</p>
+          </div>
+          <div *ngIf="ListedModuleList.length > 5" class="pagination-controls">
+            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
+            <button *ngFor="let page of getVisiblePageNumbers()"
+                    class="page-btn"
+                    [ngClass]="{'active': page === currentPage}"
+                    (click)="goToPage(page)">
+              {{ page }}
+            </button>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="IsAddNewClicked" class="w-100">
+    <div class="AddForm">
+      <div class="AddFormTop">
+        <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+        <p>Add Module</p>
+      </div>
+      <div class="AddFormConatiner">
+        <form [formGroup]="ModuleForm">
+          <div class="FormInputRowsContainer">
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Name</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ModuleForm.get('Name' ) ?. touched && ModuleForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <div class="toggle-container" (click)="$event.stopPropagation()">
+                  <label class="switch">
+                    <input type="checkbox" [checked]="IsActiveStatus" (click)="toggleChange()">
+                    <span class="slider">
+                      <span
+                        class="toggle-text"
+                        [ngStyle]="{
+                          left: IsActiveStatus ? '42%' : '60%',
+                          fontSize: IsActiveStatus ? '9px' : '9px'
+                        }"
+                      >
+                        {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+              <!-- <div class="InputFieldsContainer">
+                <span style="visibility: hidden;">hello adding new academic year</span>
+              </div> -->
+            </div>
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Description</label>
+                <div class="input-with-error">
+                  <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="3"></textarea>
+                  <!-- <input class="inputField" id="email" formControlName="Name" placeholder="Enter Name" /> -->
+                  <div *ngIf="(ModuleForm.get('Name' ) ?. touched && ModuleForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Description.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- <div class="InputFieldsContainer">
+                <span style="visibility: hidden;">hello adding new academic year</span>
+              </div> -->
+            </div>
+          </div>
+          <div class="ActionButtons">
+            <button class="btn" *ngIf="ViewModuleClicked" (click)="UpdateModule()">Update</button>
+            <button class="btn" *ngIf="!ViewModuleClicked" (click)="SubmitModule()">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isModalOpen}" [style.display]="isModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Application Status</h5>
+        <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>{{ AminityInsStatus }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="handleOk()">OK</button>
+      </div>
+    </div>
+  </div>
+</div>

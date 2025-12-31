@@ -1,0 +1,28 @@
+.TopNav{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0px 10px;
+  background-color: #fff;
+  color: white;
+  height: 50px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px, rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
+}
+
+.TopNav button{
+  font-size: small;
+}
+
+.toggle-btn{
+  background-color: transparent;
+  border: none;
+}
+
+.toggle-btn:hover{
+  background-color: #4f4e88;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 5px;
+}

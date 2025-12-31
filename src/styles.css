@@ -1,1 +1,134 @@
-/* You can add global styles to this file, and also import other style files */
+body,h5,h4,h3,h2,h1{
+  margin: 0px;
+}
+
+.InputFieldsContainer{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.inputField{
+  resize: none;
+  border-radius: 8px;
+  padding: 7px 10px;
+  border: 0.5px solid #ccc;
+  font-size: 11px;
+  color: #111;
+  background: transparent;
+  outline: none;
+  transition: 0.2s;
+}
+
+.inputField:focus{
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.3);
+}
+
+.inputLabel{
+  font-size: small;
+}
+
+
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+
+
+/* Common Css For all Components */
+.pagination-controls {
+  display: flex;
+  justify-content: end;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.pagination-controls button {
+  background-color: transparent;
+  border: 1px solid #ddd;
+  padding: 4px 8px;
+  cursor: pointer;
+  margin: 0 5px;
+  font-size: 12px;
+}
+
+.pagination-controls button[disabled] {
+  cursor: not-allowed;
+  background-color: #ccc;
+}
+
+.page-btn.active {
+  background-color: #536ff7 !important;
+  color: white;
+  font-weight: bold;
+  border-color: #536ff7 !important;
+}
+
+.arrow-btn {
+  font-size: 12px;
+  font-weight: bold;
+  width: 30px;
+  height: 30px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  background-color: transparent;
+  border: 1px solid #ddd;
+}
+
+.arrow-btn:hover {
+  background-color: #536ff7 !important;
+  color: white !important;
+}
+
+.arrow-btn[disabled] {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.custom-multiselect {
+  position: relative;
+  font-family: Arial, sans-serif;
+}
+
+.select-box {
+  border-radius: 8px;
+  padding: 7px 10px;
+  border: 0.5px solid #ccc;
+  font-size: 11px;
+  color: #111;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.options {
+  border: 1px solid #ccc;
+  border-top: none;
+  position: absolute;
+  width: 100%;
+  background: #fff;
+  max-height: 150px;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.options label {
+  display: block;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.options label:hover {
+  background-color: #f0f0f0;
+}
+
+.arrow {
+  font-size: 12px;
+}
