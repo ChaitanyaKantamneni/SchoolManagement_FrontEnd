@@ -1,0 +1,262 @@
+<div>
+  <app-dashboard-top-nav></app-dashboard-top-nav>
+</div>
+<div class="MainContentDiv">
+  <div *ngIf="!IsAddNewClicked" class="w-100">
+    <div class="ComponentTop">
+      <div class="ComponentTopHeader">
+        <h5>Staff Management</h5>
+        <p>Total {{ StaffCount }} Staff Added</p>
+      </div>
+      <div class="ComponentTopBottom">
+        <button class="btnHover" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Staff</button>
+      </div>
+    </div>
+    <div class="ComponentRecords">
+      <div>
+        <div class="ComponentRecordsTop" *ngIf="ListedStaffList.length != 0">
+          <div class="searchreview input-container" >
+            <input type="text" id="searchQuery" class="form-control floating-input"
+              [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search... "  />
+            <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
+            <!-- <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i> -->
+          </div>
+          <div class="DownloadButtons">
+            <button class="btnHover" (click)="copyTable()"><mat-icon>content_copy</mat-icon></button>
+            <button class="btnHover" (click)="exportToExcel()"><mat-icon>file_download</mat-icon></button>
+            <button class="btnHover" (click)="printTable()"><mat-icon>print</mat-icon></button>
+          </div>
+        </div>
+        <div class="reviewstable">
+          <table id="classTable" *ngIf="ListedStaffList.length != 0" class="table table-bordered">
+            <thead>
+              <tr>
+                <th class="visually-hidden">Academic Year ID</th>
+                <th>SI.No</th>
+                <th>Staff Type</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>MobileNumber</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let Class of getPaginatedStaffLists(),let i = index">
+                <td data-label="ID" class="visually-hidden">{{ Class.ID }}</td>
+                <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td data-label="Staff Type">{{ getSyllabusName(Class.StaffType) }}</td>
+                <td data-label="Name">{{ Class.Name }}</td>
+                <td data-label="Email">{{ Class.Email }}</td>
+                <td data-label="MobileNumber">{{ Class.MobileNumber }}</td>
+                <td data-label="Status">{{ Class.IsActive }}</td>
+                <td data-label="Actions">
+                  <div class="d-flex justify-content-center align-items-center h-100">
+                    <!-- (click)="editreview(aminitie.propertyTypeID)" -->
+                    <button class="btn checkbtn" data-tooltip="Edit" (click)="editreview(Class.ID)">
+                      <mat-icon class="mat-edit-icon">edit</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div *ngIf="ListedStaffList.length === 0" class="NoDataFound">
+            <div class="NoDataFoundImg">
+              <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
+            </div>
+            <p>No data found.</p>
+          </div>
+          <div *ngIf="ListedStaffList.length > 5" class="pagination-controls">
+            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
+            <button *ngFor="let page of getVisiblePageNumbers()"
+                    class="page-btn"
+                    [ngClass]="{'active': page === currentPage}"
+                    (click)="goToPage(page)">
+              {{ page }}
+            </button>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="IsAddNewClicked" class="w-100">
+    <div class="AddForm">
+      <div class="AddFormTop">
+        <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+        <p>Add Staff</p>
+      </div>
+      <div class="AddFormConatiner">
+        <form [formGroup]="StaffForm">
+          <div class="FormInputRowsContainer">
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Staff Type</label>
+                <div class="input-with-error">
+                  <!-- <select class="inputField" type="date" formControlName="StaffType" placeholder="Select Class">
+                    <option value="0" disabled>Select Staff Type</option>
+                    <option *ngFor="let Syllabus of SyllabusList" value="{{Syllabus.id}}">{{Syllabus.name}}</option>
+                  </select> -->
+                  <div class="custom-multiselect">
+                    <div class="select-box" (click)="dropdownOpen = !dropdownOpen">
+                      {{ selectedCategories.length ? selectedCategories.length + ' selected' : 'Select Category' }}
+                      <span class="arrow">{{ dropdownOpen ? '▲' : '▼' }}</span>
+                    </div>
+
+
+                    <div class="options" *ngIf="dropdownOpen">
+                      <label *ngFor="let cat of StaffTypeList">
+                        <input type="checkbox"
+                              [checked]="selectedCategories.includes(cat.ID)"
+                              (change)="toggleSelection(cat.ID)">
+                        {{cat.Name}}
+                      </label>
+                    </div>
+                  </div>
+                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                  <div *ngIf="(StaffForm.get('StaffType' ) ?. touched && StaffForm.get('StaffType' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(StaffForm.get('StaffType' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Select StaffType.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">First Name</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="FirstName" placeholder="Enter First Name" (focus)="closeDropdown()" />
+                  <div *ngIf="(StaffForm.get('FirstName' ) ?. touched && StaffForm.get('FirstName' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(StaffForm.get('FirstName' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter First Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Middle Name</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="MiddleName" placeholder="Enter Middle Name" (focus)="closeDropdown()" />
+                  <div *ngIf="(StaffForm.get('MiddleName' ) ?. touched && StaffForm.get('MiddleName' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(StaffForm.get('MiddleName' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Middle Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Last Name</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="LastName" placeholder="Enter Last Name" (focus)="closeDropdown()" />
+                  <div *ngIf="(StaffForm.get('LastName' ) ?. touched && StaffForm.get('LastName' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(StaffForm.get('LastName' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Last Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Mobile Number</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="MobileNumber" placeholder="Enter Mobile Number" (focus)="closeDropdown()" />
+                  <div *ngIf="(StaffForm.get('MobileNumber' ) ?. touched && StaffForm.get('MobileNumber' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(StaffForm.get('MobileNumber' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Mobile Number.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Email</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Email" placeholder="Enter Email" (focus)="closeDropdown()" />
+                  <div *ngIf="(StaffForm.get('Email' ) ?. touched && StaffForm.get('Email' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(StaffForm.get('Email' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Email.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Date of Birth</label>
+                <div class="input-with-error">
+                  <input type="date" class="inputField" formControlName="DateOfBirth" placeholder="Enter Date of Birth" (focus)="closeDropdown()" />
+                  <div *ngIf="(StaffForm.get('DateOfBirth' ) ?. touched && StaffForm.get('DateOfBirth' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(StaffForm.get('DateOfBirth' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Select Date of Birth.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Qualification</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Qualification" placeholder="Enter Qualification" (focus)="closeDropdown()" />
+                  <div *ngIf="(StaffForm.get('Qualification' ) ?. touched && StaffForm.get('Qualification' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(StaffForm.get('Qualification' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Qualification.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email" style="visibility: hidden;">Strength</label>
+                <div class="input-with-error" style="visibility: hidden;">
+                  <input class="inputField" placeholder="Enter Name" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="ToggleFormInputRowsContainer">
+            <div class="ToggleInputRow">
+              <div class="InputFieldsContainer">
+                <div class="toggle-container" (click)="$event.stopPropagation()">
+                  <label class="switch">
+                    <input type="checkbox" [checked]="IsActiveStatus" (click)="toggleChange()">
+                    <span class="slider">
+                      <span
+                        class="toggle-text"
+                        [ngStyle]="{
+                          left: IsActiveStatus ? '42%' : '60%',
+                          fontSize: IsActiveStatus ? '9px' : '9px'
+                        }"
+                      >
+                        {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="ActionButtons">
+            <button class="btn" *ngIf="ViewStaffClicked" (click)="UpdateStaff()">Update</button>
+            <button class="btn" *ngIf="!ViewStaffClicked" (click)="SubmitStaff()">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isModalOpen}" [style.display]="isModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Application Status</h5>
+        <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>{{ AminityInsStatus }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="handleOk()">OK</button>
+      </div>
+    </div>
+  </div>
+</div>

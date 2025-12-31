@@ -1,0 +1,56 @@
+<div class="row justify-content-center align-items-center m-0 w-100 totalcard">
+
+  <!-- Mobile Navbar -->
+  <nav class="navbar navbar-expand-md navbar-light bg-light d-md-none col-12">
+    <a class="navbar-brand" href="/home"><img class="h-100" src="Images/Logo1.jpg"></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link DashboardMenuLi" (click)="navigate({ id: '0', pageName: 'Dashboard', moduleID: '0', canView: '1', canAdd: '0', canEdit: '0', canDelete: '0' })">
+            <mat-icon>dashboard</mat-icon> Dashboard
+          </a>
+        </li>
+        <li class="nav-item" (click)="logout()">
+          <a class="nav-link DashboardMenuLi"><mat-icon>logout</mat-icon> Logout</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Sidebar -->
+  <div class="sidenavbar col-12 col-md-3" [ngClass]="{'collapsed': !isExpanded}">
+    <div class="logo">
+      <a href="/home">
+        <img src="Images/Logo1.jpg" alt="BUSERELE" />
+      </a>
+    </div>
+    <div class="sidebar d-none d-md-block h-100">
+      <ul class="menu">
+        <li *ngFor="let module of menu" class="menu-item has-submenu">
+          <div class="parent-row" (click)="toggleSubmenu(module.id)">
+            <mat-icon>widgets</mat-icon>
+            <span *ngIf="isExpanded" class="DashboardMenuLi">{{ module.moduleName }}</span>
+          </div>
+
+          <ul class="submenu" *ngIf="openedSubmenu === module.id.toString() && isExpanded">
+            <ng-container *ngFor="let page of module.pages">
+              <!-- *ngIf="menuService.canView(page)" -->
+              <li (click)="navigate(page, $event)">
+                <mat-icon>{{ getPageIcon(page.pageName) }}</mat-icon>
+                <span>{{ page.pageName }}</span>
+              </li>
+            </ng-container>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="maincontent col-12 col-md-9">
+    <router-outlet class="full-page-content"></router-outlet>
+  </div>
+</div>
