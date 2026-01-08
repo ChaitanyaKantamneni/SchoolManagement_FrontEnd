@@ -7,12 +7,12 @@ import { Router } from '@angular/router';
 import { ApiServiceService } from '../../../Services/api-service.service';
 
 @Component({
-  selector: 'app-admission',
+  selector: 'app-buses',
   imports: [NgIf,NgFor,NgClass,NgStyle,MatIconModule,DashboardTopNavComponent,ReactiveFormsModule,FormsModule],
-  templateUrl: './admission.component.html',
-  styleUrl: './admission.component.css'
+  templateUrl: './buses.component.html',
+  styleUrl: './buses.component.css'
 })
-export class AdmissionComponent {
+export class BusesComponent {
   IsAddNewClicked:boolean=false;
   IsActiveStatus:boolean=false;
   ViewClassClicked:boolean=false;
@@ -37,35 +37,9 @@ export class AdmissionComponent {
 
   ClassForm: any = new FormGroup({
     ID: new FormControl(),
-    AdmissionNo: new FormControl(),
-    AcadamicYear:new FormControl(),
-    Class: new FormControl(),
-    Division: new FormControl(),
-    DateOfJoin: new FormControl(),
-    FirstName:new FormControl(),
-    MiddleName: new FormControl(),
-    LastName: new FormControl(),
-    AadharNo: new FormControl(),
-    StudentMobileNo:new FormControl(),
-    StudentEmail: new FormControl(),
-    DOB: new FormControl(),
-    Gender: new FormControl(),
-    BloodGroup:new FormControl(),
-    Nationality: new FormControl(),
-    Religion: new FormControl(),
-    Caste: new FormControl(),
-    DocumentDetails:new FormControl(),
-    FatherName: new FormControl(),
-    FatherQualification: new FormControl(),
-    FatherOccupation: new FormControl(),
-    FatherMobile:new FormControl(),
-    FatherEmail: new FormControl(),
-    MotherName: new FormControl(),
-    MotherQualification: new FormControl(),
-    MotherOccupation:new FormControl(),
-    MotherMobile: new FormControl(),
-    MotherEmail: new FormControl(),
-    Address: new FormControl()
+    Name: new FormControl(),
+    Syllabus:new FormControl(),
+    Description: new FormControl()
   });
 
   getPaginatedClassLists() {
@@ -94,50 +68,26 @@ export class AdmissionComponent {
     else{
       const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
       const data = {
-        AcadamicYear: this.ClassForm.get('AcadamicYear')?.value,
-        Class: this.ClassForm.get('Class')?.value,
-        Division: this.ClassForm.get('Division')?.value,
-        DateOfJoin: this.ClassForm.get('DateOfJoin')?.value,
-        FirstName: this.ClassForm.get('FirstName')?.value,
-        MiddleName: this.ClassForm.get('MiddleName')?.value,
-        LastName: this.ClassForm.get('LastName')?.value,
-        AadharNo: this.ClassForm.get('AadharNo')?.value,
-        StudentMobileNo: this.ClassForm.get('StudentMobileNo')?.value,
-        StudentEmail: this.ClassForm.get('StudentEmail')?.value,
-        DOB: this.ClassForm.get('DOB')?.value,
-        Gender: this.ClassForm.get('Gender')?.value,
-        BloodGroup: this.ClassForm.get('BloodGroup')?.value,
-        Nationality: this.ClassForm.get('Nationality')?.value,
-        Religion: this.ClassForm.get('Religion')?.value,
-        Caste: this.ClassForm.get('Caste')?.value,
-        DocumentDetails: this.ClassForm.get('DocumentDetails')?.value,
-        FatherName: this.ClassForm.get('FatherName')?.value,
-        FatherQualification: this.ClassForm.get('FatherQualification')?.value,
-        FatherOccupation: this.ClassForm.get('FatherOccupation')?.value,
-        FatherMobile: this.ClassForm.get('FatherMobile')?.value,
-        FatherEmail: this.ClassForm.get('FatherEmail')?.value,
-        MotherName: this.ClassForm.get('MotherName')?.value,
-        MotherQualification: this.ClassForm.get('MotherQualification')?.value,
-        MotherOccupation: this.ClassForm.get('MotherOccupation')?.value,
-        MotherMobile: this.ClassForm.get('MotherMobile')?.value,
-        MotherEmail: this.ClassForm.get('MotherEmail')?.value,
+        Name: this.ClassForm.get('Name')?.value,
+        Syllabus: this.ClassForm.get('Syllabus')?.value,
+        Description: this.ClassForm.get('Description')?.value,
         IsActive:IsActiveStatusNumeric,
         Flag: '1'
       };
 
-      this.apiurl.post("Tbl_Admissions_CRUD_Operations", data).subscribe({
+      this.apiurl.post("Tbl_Class_CRUD_Operations", data).subscribe({
         next: (response: any) => {
           if (response.statusCode === 200) {
             this.IsAddNewClicked=!this.IsAddNewClicked;
             // this.AminityInsStatus = response.status;
             this.isModalOpen = true;
-            this.AminityInsStatus = "Admission Details Submitted!";
+            this.AminityInsStatus = "Class Details Submitted!";
             this.ClassForm.reset();
             this.ClassForm.markAsPristine();
           }
         },
         error: (error) => {
-          this.AminityInsStatus = "Error Updating Admission.";
+          this.AminityInsStatus = "Error Updating Class.";
           this.isModalOpen = true;
         },
         complete: () => {
@@ -464,12 +414,6 @@ export class AdmissionComponent {
 
 
   totalPages() {
-    return Math.ceil(this.ClassCount / this.pageSize);
+    return Math.ceil(this.ClassCount / this.pageSize);  // Calculate total pages based on page size
   };
-
-  activeTab: string = 'personal';
-
-  tabChange(tab: string) {
-    this.activeTab = tab;
-  }
 }
