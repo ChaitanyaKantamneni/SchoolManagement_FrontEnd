@@ -140,6 +140,26 @@
               </li>
             </ul>
           </li>
+          <li class="menu-item has-submenu" (click)="toggleSubmenu('transportation')">
+            <div class="parent-row">
+              <mat-icon>school</mat-icon>
+              <span *ngIf="isExpanded" class="DashboardMenuLi">Transportation</span>
+            </div>
+            <ul *ngIf="isExpanded && openedSubmenu === 'transportation'" class="submenu">
+              <li routerLink="/Admin/Buses">
+                <mat-icon>people</mat-icon>
+                <span>Busses</span>
+              </li>
+              <li routerLink="/Admin/AllotClassTeacher">
+                <mat-icon>assignment</mat-icon>
+                <span>Routes</span>
+              </li>
+              <li routerLink="/Admin/Promotion">
+                <mat-icon>trending_up</mat-icon>
+                <span>Stops</span>
+              </li>
+            </ul>
+          </li>
         </ul>
       </div>
     </div>

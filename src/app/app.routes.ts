@@ -56,6 +56,9 @@ import { AllotClassTeacherComponent } from './Admin/AcademicModule/allot-class-t
 import { PromotionComponent } from './Admin/AcademicModule/promotion/promotion.component';
 import { DePromotionComponent } from './Admin/AcademicModule/de-promotion/de-promotion.component';
 import { TransferStudentsComponent } from './Admin/AcademicModule/transfer-students/transfer-students.component';
+import { BusesComponent } from './Admin/Transporation/buses/buses.component';
+import { RoutesComponent } from './Admin/Transporation/routes/routes.component';
+import { StopsComponent } from './Admin/Transporation/stops/stops.component';
 
 export const routes: Routes = [
   { path: '', component: SignInComponent },
@@ -82,7 +85,10 @@ export const routes: Routes = [
       { path: 'AllotClassTeacher', component: AllotClassTeacherComponent },
       { path: 'Promotion', component: PromotionComponent },
       { path: 'DePromotion', component: DePromotionComponent },
-      { path: 'TransferStudents', component: TransferStudentsComponent }
+      { path: 'TransferStudents', component: TransferStudentsComponent },
+      { path: 'Buses', component: BusesComponent },
+      { path: 'Routes', component: RoutesComponent },
+      { path: 'Stops', component: StopsComponent }
     ]
   },
 
@@ -106,7 +112,10 @@ export const routes: Routes = [
       { path: 'AllotClassTeacher', component: AllotClassTeacherComponent },
       { path: 'Promotion', component: PromotionComponent },
       { path: 'DePromotion', component: DePromotionComponent },
-      { path: 'TransferStudents', component: TransferStudentsComponent }
+      { path: 'TransferStudents', component: TransferStudentsComponent },
+      { path: 'Buses', component: BusesComponent },
+      { path: 'Routes', component: RoutesComponent },
+      { path: 'Stops', component: StopsComponent }
     ]
   }
 ];

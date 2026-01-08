@@ -84,8 +84,16 @@
         <p>Add Student</p>
       </div>
       <div class="AddFormConatiner">
+        <div class="ActionButtons">
+          <button class="btn" (click)="tabChange('personal')">Personal Details</button>
+          <button class="btn" (click)="tabChange('parents')">Parents Details</button>
+          <button class="btn" (click)="tabChange('permanent')">Permanent Address</button>
+          <button class="btn" (click)="tabChange('temporary')">Temporary Address</button>
+          <button class="btn" (click)="tabChange('login')">Login Details</button>
+          <button class="btn" (click)="tabChange('bus')">Allot Bus</button>
+        </div>
         <form [formGroup]="ClassForm">
-          <div class="FormInputRowsContainer">
+          <div *ngIf="activeTab === 'personal'" class="FormInputRowsContainer">
             <div class="InputRow">
               <!-- <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Admission No</label>
@@ -190,6 +198,160 @@
                 </div>
               </div>
             </div>
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Student EmailID</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Aadhar No</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Mobile No (sms)</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Date Of Birth</label>
+                <div class="input-with-error">
+                  <input type="date" class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Gender</label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="Syllabus" placeholder="Select Start Date">
+                    <option value="0" disabled>Select Gender</option>
+                    <option value="1">Male</option>
+                    <option value="2">Female</option>
+                    <option value="3">Other</option>
+                  </select>
+                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Select Syllabus.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Blood Group</label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="Syllabus" placeholder="Select Start Date">
+                    <option value="0" disabled>Select Gender</option>
+                    <option value="1">Male</option>
+                    <option value="2">Female</option>
+                    <option value="3">Other</option>
+                  </select>
+                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Select Syllabus.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Nationality</label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="Syllabus" placeholder="Select Start Date">
+                    <option value="0" disabled>Select Gender</option>
+                    <option value="1">Male</option>
+                    <option value="2">Female</option>
+                    <option value="3">Other</option>
+                  </select>
+                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Select Syllabus.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Religion</label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="Syllabus" placeholder="Select Start Date">
+                    <option value="0" disabled>Select Gender</option>
+                    <option value="1">Male</option>
+                    <option value="2">Female</option>
+                    <option value="3">Other</option>
+                  </select>
+                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Select Syllabus.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Document Details</label>
+                <div class="input-with-error">
+                  <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="2"></textarea>
+                  <!-- <input class="inputField" id="email" formControlName="Name" placeholder="Enter Name" /> -->
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Description.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <div class="toggle-container" (click)="$event.stopPropagation()">
+                  <label class="switch">
+                    <input type="checkbox" [checked]="IsActiveStatus" (click)="toggleChange()">
+                    <span class="slider">
+                      <span
+                        class="toggle-text"
+                        [ngStyle]="{
+                          left: IsActiveStatus ? '42%' : '60%',
+                          fontSize: IsActiveStatus ? '9px' : '9px'
+                        }"
+                      >
+                        {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+              <div class="InputFieldsContainer"></div>
+              <div class="InputFieldsContainer"></div>
+            </div>
+          </div>
+          <div *ngIf="activeTab === 'parents'" class="FormInputRowsContainer">
             <div class="InputRow">
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Father Name</label>
@@ -307,8 +469,14 @@
                   </div>
                 </div>
               </div>
+              <div class="InputFieldsContainer"></div>
+              <div class="InputFieldsContainer"></div>
+            </div>
+          </div>
+          <div *ngIf="activeTab === 'permanent'" class="FormInputRowsContainer">
+            <div class="InputRow">
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Aadhar No</label>
+                <label class="inputLabel" for="email">Father Name</label>
                 <div class="input-with-error">
                   <input class="inputField" formControlName="Name" placeholder="Enter Name" />
                   <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
@@ -319,7 +487,18 @@
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mobile No (sms)</label>
+                <label class="inputLabel" for="email">Father Qualification</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Father Occupation</label>
                 <div class="input-with-error">
                   <input class="inputField" formControlName="Name" placeholder="Enter Name" />
                   <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
@@ -332,7 +511,7 @@
             </div>
             <div class="InputRow">
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Student EmailID</label>
+                <label class="inputLabel" for="email">Father Mobile No</label>
                 <div class="input-with-error">
                   <input class="inputField" formControlName="Name" placeholder="Enter Name" />
                   <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
@@ -343,9 +522,9 @@
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Date Of Birth</label>
+                <label class="inputLabel" for="email">Father EmailID</label>
                 <div class="input-with-error">
-                  <input type="date" class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
                   <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter Name.</small>
@@ -354,18 +533,12 @@
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Gender</label>
+                <label class="inputLabel" for="email">Mother Name</label>
                 <div class="input-with-error">
-                  <select class="inputField" formControlName="Syllabus" placeholder="Select Start Date">
-                    <option value="0" disabled>Select Gender</option>
-                    <option value="1">Male</option>
-                    <option value="2">Female</option>
-                    <option value="3">Other</option>
-                  </select>
-                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
                   <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Select Syllabus.</small>
+                      <small>Please Enter Name.</small>
                     </div>
                   </div>
                 </div>
@@ -373,52 +546,34 @@
             </div>
             <div class="InputRow">
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Blood Group</label>
+                <label class="inputLabel" for="email">Mother Qualification</label>
                 <div class="input-with-error">
-                  <select class="inputField" formControlName="Syllabus" placeholder="Select Start Date">
-                    <option value="0" disabled>Select Gender</option>
-                    <option value="1">Male</option>
-                    <option value="2">Female</option>
-                    <option value="3">Other</option>
-                  </select>
-                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
                   <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Select Syllabus.</small>
+                      <small>Please Enter Name.</small>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Nationality</label>
+                <label class="inputLabel" for="email">Mother Occupation</label>
                 <div class="input-with-error">
-                  <select class="inputField" formControlName="Syllabus" placeholder="Select Start Date">
-                    <option value="0" disabled>Select Gender</option>
-                    <option value="1">Male</option>
-                    <option value="2">Female</option>
-                    <option value="3">Other</option>
-                  </select>
-                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
                   <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Select Syllabus.</small>
+                      <small>Please Enter Name.</small>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Religion</label>
+                <label class="inputLabel" for="email">Mother Mobile No</label>
                 <div class="input-with-error">
-                  <select class="inputField" formControlName="Syllabus" placeholder="Select Start Date">
-                    <option value="0" disabled>Select Gender</option>
-                    <option value="1">Male</option>
-                    <option value="2">Female</option>
-                    <option value="3">Other</option>
-                  </select>
-                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
                   <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Select Syllabus.</small>
+                      <small>Please Enter Name.</small>
                     </div>
                   </div>
                 </div>
@@ -426,48 +581,380 @@
             </div>
             <div class="InputRow">
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Address</label>
+                <label class="inputLabel" for="email">Mother EmailID</label>
                 <div class="input-with-error">
-                  <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="2"></textarea>
-                  <!-- <input class="inputField" id="email" formControlName="Name" placeholder="Enter Name" /> -->
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
                   <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Description.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Document Details</label>
-                <div class="input-with-error">
-                  <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="2"></textarea>
-                  <!-- <input class="inputField" id="email" formControlName="Name" placeholder="Enter Name" /> -->
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Description.</small>
+                      <small>Please Enter Name.</small>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer"></div>
+              <div class="InputFieldsContainer"></div>
+            </div>
+          </div>
+          <div *ngIf="activeTab === 'temporary'" class="FormInputRowsContainer">
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Father Name</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Father Qualification</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Father Occupation</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             <div class="InputRow">
               <div class="InputFieldsContainer">
-                <div class="toggle-container" (click)="$event.stopPropagation()">
-                  <label class="switch">
-                    <input type="checkbox" [checked]="IsActiveStatus" (click)="toggleChange()">
-                    <span class="slider">
-                      <span
-                        class="toggle-text"
-                        [ngStyle]="{
-                          left: IsActiveStatus ? '42%' : '60%',
-                          fontSize: IsActiveStatus ? '9px' : '9px'
-                        }"
-                      >
-                        {{ IsActiveStatus ? 'Active' : 'Inactive' }}
-                      </span>
-                    </span>
-                  </label>
+                <label class="inputLabel" for="email">Father Mobile No</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Father EmailID</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Mother Name</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Mother Qualification</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Mother Occupation</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Mother Mobile No</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Mother EmailID</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer"></div>
+              <div class="InputFieldsContainer"></div>
+            </div>
+          </div>
+          <div *ngIf="activeTab === 'login'" class="FormInputRowsContainer">
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Father Name</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Father Qualification</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Father Occupation</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Father Mobile No</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Father EmailID</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Mother Name</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Mother Qualification</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Mother Occupation</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Mother Mobile No</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Mother EmailID</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer"></div>
+              <div class="InputFieldsContainer"></div>
+            </div>
+          </div>
+          <div *ngIf="activeTab === 'bus'" class="FormInputRowsContainer">
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Father Name</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Father Qualification</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Father Occupation</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Father Mobile No</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Father EmailID</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Mother Name</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Mother Qualification</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Mother Occupation</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Mother Mobile No</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Mother EmailID</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="InputFieldsContainer"></div>
