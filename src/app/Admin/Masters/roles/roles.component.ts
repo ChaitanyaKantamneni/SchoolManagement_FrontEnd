@@ -5,7 +5,9 @@ import { NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiServiceService } from '../../../Services/api-service.service';
-import { Observable, tap } from 'rxjs';
+import { delay, forkJoin, Observable, tap } from 'rxjs';
+import { SchoolCacheService } from '../../../Services/school-cache.service';
+import { LoaderService } from '../../../Services/loader.service';
 
 interface Permission {
   moduleId: string;
@@ -37,6 +39,7 @@ export class RolesComponent {
   visiblePageCount: number = 3;
   searchQuery: string = '';
   RoleList: any[] = [];
+  SchoolsList: any[] = [];
   PagesList: any[] = [];
   PagesListFromDB: any[] = [];
   AminityInsStatus: any = '';
@@ -48,12 +51,115 @@ export class RolesComponent {
   expandedModuleId: string | null = null;
   permissionsList: any[] = [];
 
-  constructor(private router: Router, private apiurl: ApiServiceService) {}
+  constructor(private router: Router, private apiurl: ApiServiceService,private schoolCache: SchoolCacheService,public loader: LoaderService) {}
 
   ngOnInit(): void {
-    this.FetchRoleList();
+    this.FetchInitialData();
     this.FetchPageList();
   };
+
+  roleId: string | null = localStorage.getItem('RollID');
+
+  isAdmin(): boolean {
+    return this.roleId === '1';
+  }
+
+  // FetchInitialData() {
+  //   const rolesReq = this.apiurl.post<any>(
+  //     'Tbl_Roles_CRUD_Operations',
+  //     { Flag: '2' }
+  //   );
+
+  //   if (!this.isAdmin()) {
+  //     rolesReq.subscribe(res => this.mapRoles(res));
+  //     return;
+  //   }
+
+  //   if (this.schoolCache.hasData()) {
+  //     rolesReq.subscribe(res => this.mapRoles(res));
+  //     return;
+  //   }
+
+  //   forkJoin({
+  //     schools: this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', { Flag: '2' }),
+  //     roles: rolesReq
+  //   }).subscribe(({ schools, roles }) => {
+
+  //     if (schools?.data?.length) {
+  //       this.schoolCache.setSchools(schools.data);
+  //     }
+
+  //     this.mapRoles(roles);
+  //   });
+  // };
+
+  FetchInitialData() {
+    const rolesReq = this.apiurl
+      .post<any>('Tbl_Roles_CRUD_Operations', { Flag: '2' })
+      .pipe(delay(500));
+
+    this.loader.show();
+
+    if (!this.isAdmin()) {
+      rolesReq.subscribe({
+        next: res => {
+          this.mapRoles(res);
+          this.loader.hide();
+        },
+        error: () => this.loader.hide()
+      });
+      return;
+    }
+
+    if (this.schoolCache.hasData()) {
+      rolesReq.subscribe({
+        next: res => {
+          this.mapRoles(res);
+          this.loader.hide();
+        },
+        error: () => this.loader.hide()
+      });
+      return;
+    }
+
+    forkJoin({
+      schools: this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', { Flag: '2' }),
+      roles: rolesReq
+    }).subscribe({
+      next: ({ schools, roles }) => {
+        if (schools?.data?.length) {
+          this.schoolCache.setSchools(schools.data);
+        }
+        this.mapRoles(roles);
+        this.loader.hide();
+      },
+      error: () => this.loader.hide()
+    });
+  };
+
+  mapRoles(response: any) {
+    const schoolMap = this.isAdmin()
+      ? this.schoolCache.getSchoolMap()
+      : {};
+
+    if (response && Array.isArray(response.data)) {
+      this.RoleList = response.data.map((item: any) => ({
+        ID: item.id,
+        Name: item.roleName,
+        SchoolName: this.isAdmin()
+          ? (schoolMap[item.schoolID] ?? 'Admin')
+          : null,
+        IsActive: item.isActive === '1' ? 'Active' : 'InActive'
+      }));
+
+      this.RoleCount = this.RoleList.length;
+    } else {
+      this.RoleList = [];
+      this.RoleCount = 0;
+    }
+  };
+
+
 
   RoleForm: any = new FormGroup({
     ID: new FormControl(),
@@ -107,7 +213,7 @@ export class RolesComponent {
             this.RoleForm.reset();
             this.RoleForm.markAsPristine();
             this.submitpermission();
-            this.FetchRoleList();
+            this.FetchInitialData();
           }
         },
         error: (error: any) => {
@@ -129,35 +235,6 @@ export class RolesComponent {
       this.RoleForm.reset();
       this.RoleForm.markAsPristine();
     }
-  };
-
-  FetchRoleList() {
-    const requestData = { Flag: '2' };
-    this.apiurl.post<any>('Tbl_Roles_CRUD_Operations', requestData)
-      .subscribe(
-        (response: any) => {
-          if (response && Array.isArray(response.data)) {
-            this.RoleList = response.data.map((item: any) => {
-              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
-              return {
-                ID: item.id,
-                Name: item.roleName,
-                IsActive: isActiveString
-              };
-            });
-            this.RoleCount = this.RoleList.length;
-            console.log('this.SyllabusList',this.RoleList.length);
-          } else {
-            this.RoleList = [];
-            this.RoleCount = 0;
-          }
-        },
-        (error) => {
-          this.RoleList = [];
-          this.RoleCount = 0;
-        }
-      );
-    this.RoleCount = this.RoleList.length;
   };
 
   FetchRoleDetByID(RoleID: string) {
@@ -283,7 +360,7 @@ export class RolesComponent {
 
   handleOk() {
     this.isModalOpen = false;
-    this.FetchRoleList();
+    this.FetchInitialData();
   };
 
   fetchModulesFromDB(){

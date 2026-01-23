@@ -107,7 +107,7 @@ export const routes: Routes = [
       { path: 'SubjectStaff', component: SubjectStaffComponent },
       { path: 'Modules', component: ModulesComponent },
       { path: 'Pages', component: PagesComponent },
-      { path: 'Role', component: RolesComponent },
+      { path: 'Roles', component: RolesComponent },
       { path: 'Admission', component: AdmissionComponent },
       { path: 'AllotClassTeacher', component: AllotClassTeacherComponent },
       { path: 'Promotion', component: PromotionComponent },

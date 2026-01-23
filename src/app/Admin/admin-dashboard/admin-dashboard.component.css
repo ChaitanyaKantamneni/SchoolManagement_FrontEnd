@@ -1,3 +1,7 @@
+a{
+  text-decoration: none;
+}
+
 .sidenavbar {
   background-color: #fff;
   color: black;
@@ -182,13 +186,18 @@
   width: 100%;
 }
 
-.submenu li {
+.submenu li{
   display: flex;
   align-items: center;
   padding: 8px 10px;
   cursor: pointer;
   background: transparent;
   transition: background 0.3s ease;
+}
+
+.submenu li a{
+  display: flex;
+  align-items: center;
 }
 
 .submenu li:hover {
@@ -200,8 +209,8 @@
   color: #4f4e88;
 }
 
-.submenu li:hover mat-icon,
-.submenu li:hover .submenu-text {
+.submenu li:hover a mat-icon,
+.submenu li:hover a .submenu-text {
   color: #4f4e88;
 }
 

@@ -41,6 +41,7 @@
                 <th class="visually-hidden">Role ID</th>
                 <th>SI.No</th>
                 <th>Name</th>
+                <th *ngIf="isAdmin()">School Name</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -50,6 +51,7 @@
                 <td data-label="ID" class="visually-hidden">{{ Role.ID }}</td>
                 <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
                 <td data-label="Name">{{ Role.Name }}</td>
+                <td data-label="SchoolName" *ngIf="isAdmin()">{{ Role.SchoolName }}</td>
                 <td data-label="Status">{{ Role.IsActive }}</td>
                 <td data-label="Actions">
                   <div class="d-flex justify-content-center align-items-center h-100">
