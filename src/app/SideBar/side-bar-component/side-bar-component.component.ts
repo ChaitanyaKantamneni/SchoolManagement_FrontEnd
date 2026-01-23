@@ -79,7 +79,7 @@ export class SideBarComponentComponent implements OnInit {
       Division: 'account_tree',
       Modules: 'apps',
       Pages: 'pageview',
-      Role: 'badge',
+      Roles: 'badge',
       'School Details': 'domain'
     };
     return map[pageName] || 'menu';

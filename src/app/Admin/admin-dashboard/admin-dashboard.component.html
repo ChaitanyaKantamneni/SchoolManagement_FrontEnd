@@ -55,7 +55,7 @@
         <!-- <i class="fa" [ngClass]="isExpanded ? 'fa-chevron-left' : 'fa-chevron-right'"></i> --
       </button> -->
       <div class="d-flex flex-column">
-        <ul class="menu">
+        <!-- <ul class="menu">
           <li routerLink="/Admin/Dashboad">
             <mat-icon>dashboard</mat-icon>
             <span *ngIf="isExpanded" class="DashboardMenuLi">Dashboard</span>
@@ -157,6 +157,173 @@
               <li routerLink="/Admin/Promotion">
                 <mat-icon>trending_up</mat-icon>
                 <span>Stops</span>
+              </li>
+            </ul>
+          </li>
+        </ul> -->
+
+
+        <ul class="menu">
+          <li>
+            <a routerLink="/Admin/Dashboad" routerLinkActive="active">
+              <mat-icon>dashboard</mat-icon>
+              <span *ngIf="isExpanded" class="DashboardMenuLi">Dashboard</span>
+            </a>
+          </li>
+          <li class="menu-item has-submenu">
+            <div class="parent-row" (click)="toggleSubmenu('Masters')">
+              <mat-icon>widgets</mat-icon>
+              <span *ngIf="isExpanded" class="DashboardMenuLi">Masters</span>
+            </div>
+
+            <ul *ngIf="isExpanded && openedSubmenu === 'Masters'" class="submenu">
+              <li>
+                <a routerLink="/Admin/SchoolDetails">
+                  <mat-icon>domain</mat-icon>
+                  <span class="submenu-text">School Details</span>
+                </a>
+              </li>
+
+              <li>
+                <a routerLink="/Admin/AcademicYear">
+                  <mat-icon>calendar_month</mat-icon>
+                  <span class="submenu-text">Academic Year</span>
+                </a>
+              </li>
+
+              <li>
+                <a routerLink="/Admin/Syllabus">
+                  <mat-icon>library_books</mat-icon>
+                  <span class="submenu-text">Syllabus</span>
+                </a>
+              </li>
+
+              <li>
+                <a routerLink="/Admin/Class">
+                  <mat-icon>class</mat-icon>
+                  <span class="submenu-text">Class</span>
+                </a>
+              </li>
+
+              <li>
+                <a routerLink="/Admin/Division">
+                  <mat-icon>account_tree</mat-icon>
+                  <span class="submenu-text">Division</span>
+                </a>
+              </li>
+
+              <li>
+                <a routerLink="/Admin/Subject">
+                  <mat-icon>menu_book</mat-icon>
+                  <span class="submenu-text">Subject</span>
+                </a>
+              </li>
+
+              <li>
+                <a routerLink="/Admin/SubjectStaff">
+                  <mat-icon>person</mat-icon>
+                  <span class="submenu-text">Subject Staff</span>
+                </a>
+              </li>
+
+              <li>
+                <a routerLink="/Admin/Modules">
+                  <mat-icon>apps</mat-icon>
+                  <span class="submenu-text">Modules</span>
+                </a>
+              </li>
+
+              <li>
+                <a routerLink="/Admin/Pages">
+                  <mat-icon>pageview</mat-icon>
+                  <span class="submenu-text">Pages</span>
+                </a>
+              </li>
+
+              <li>
+                <a routerLink="/Admin/Role">
+                  <mat-icon>badge</mat-icon>
+                  <span class="submenu-text">Roles</span>
+                </a>
+              </li>
+
+              <li>
+                <a routerLink="/Admin/Staff">
+                  <mat-icon>supervisor_account</mat-icon>
+                  <span class="submenu-text">Staff</span>
+                </a>
+              </li>
+            </ul>
+          </li>
+          <li class="menu-item has-submenu">
+            <div class="parent-row" (click)="toggleSubmenu('Academic')">
+              <mat-icon>school</mat-icon>
+              <span *ngIf="isExpanded" class="DashboardMenuLi">Academic</span>
+            </div>
+
+            <ul *ngIf="isExpanded && openedSubmenu === 'Academic'" class="submenu">
+              <li>
+                <a routerLink="/Admin/Admission">
+                  <mat-icon>people</mat-icon>
+                  <span class="submenu-text">Admission</span>
+                </a>
+              </li>
+
+              <li>
+                <a routerLink="/Admin/AllotClassTeacher">
+                  <mat-icon>assignment</mat-icon>
+                  <span class="submenu-text">Allot Class teacher</span>
+                </a>
+              </li>
+
+              <li>
+                <a routerLink="/Admin/Promotion">
+                  <mat-icon>trending_up</mat-icon>
+                  <span class="submenu-text">Promotion</span>
+                </a>
+              </li>
+
+              <li>
+                <a routerLink="/Admin/DePromotion">
+                  <mat-icon>trending_down</mat-icon>
+                  <span class="submenu-text">De-Promotion</span>
+                </a>
+              </li>
+
+              <li>
+                <a routerLink="/Admin/TransferStudents">
+                  <mat-icon>swap_horiz</mat-icon>
+                  <span class="submenu-text">Transfer Student</span>
+                </a>
+              </li>
+            </ul>
+          </li>
+          <li class="menu-item has-submenu">
+            <div class="parent-row" (click)="toggleSubmenu('transportation')">
+              <mat-icon>school</mat-icon>
+              <span *ngIf="isExpanded" class="DashboardMenuLi">Transportation</span>
+            </div>
+
+            <ul *ngIf="isExpanded && openedSubmenu === 'transportation'" class="submenu">
+              <li>
+                <a routerLink="/Admin/Buses">
+                  <mat-icon>people</mat-icon>
+                  <span class="submenu-text">Busses</span>
+                </a>
+              </li>
+
+              <li>
+                <a routerLink="/Admin/AllotClassTeacher">
+                  <mat-icon>assignment</mat-icon>
+                  <span class="submenu-text">Routes</span>
+                </a>
+              </li>
+
+              <li>
+                <a routerLink="/Admin/Promotion">
+                  <mat-icon>trending_up</mat-icon>
+                  <span class="submenu-text">Stops</span>
+                </a>
               </li>
             </ul>
           </li>

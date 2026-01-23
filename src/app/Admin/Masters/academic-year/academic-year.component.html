@@ -20,13 +20,14 @@
           <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
           <!-- <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i> -->
         </div>
-        <div class="reviewstable">
+        <!-- <div class="reviewstable">
           <table *ngIf="ListedAcademicYearList.length != 0" class="table table-bordered">
             <thead>
               <tr>
                 <th class="visually-hidden">Academic Year ID</th>
                 <th>SI.No</th>
                 <th>Name</th>
+                <th *ngIf="isAdmin()">School Name</th>
                 <th>Start Date</th>
                 <th>End Date</th>
                 <th>Status</th>
@@ -38,12 +39,13 @@
                 <td data-label="ID" class="visually-hidden">{{ AcademicYear.ID }}</td>
                 <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
                 <td data-label="Name">{{ AcademicYear.Name }}</td>
+                <td data-label="SchoolName" *ngIf="isAdmin()">{{ AcademicYear.SchoolName }}</td>
                 <td data-label="StartDate">{{ AcademicYear.StartDate }}</td>
                 <td data-label="EndDate">{{ AcademicYear.EndDate }}</td>
                 <td data-label="Status">{{ AcademicYear.IsActive }}</td>
                 <td data-label="Actions">
                   <div class="d-flex justify-content-center align-items-center h-100">
-                    <!-- (click)="editreview(aminitie.propertyTypeID)" -->
+                    <!-- (click)="editreview(aminitie.propertyTypeID)" --
                     <button class="btn checkbtn" data-tooltip="Edit" (click)="editreview(AcademicYear.ID)">
                       <mat-icon class="mat-edit-icon">edit</mat-icon>
                     </button>
@@ -59,6 +61,58 @@
             <p>No data found.</p>
           </div>
           <div *ngIf="ListedAcademicYearList.length > 5" class="pagination-controls">
+            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
+            <button *ngFor="let page of getVisiblePageNumbers()"
+                    class="page-btn"
+                    [ngClass]="{'active': page === currentPage}"
+                    (click)="goToPage(page)">
+              {{ page }}
+            </button>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+          </div>
+        </div> -->
+        <div class="reviewstable">
+          <table *ngIf="AcademicYearList.length > 0" class="table table-bordered">
+            <thead>
+              <tr>
+                <th class="visually-hidden">Academic Year ID</th>
+                <th>SI.No</th>
+                <th>Name</th>
+                <th *ngIf="isAdmin()">School Name</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let AcademicYear of AcademicYearList; let i = index">
+                <td class="visually-hidden">{{ AcademicYear.ID }}</td>
+                <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td>{{ AcademicYear.Name }}</td>
+                <td *ngIf="isAdmin()">{{ AcademicYear.SchoolName }}</td>
+                <td>{{ AcademicYear.StartDate }}</td>
+                <td>{{ AcademicYear.EndDate }}</td>
+                <td>{{ AcademicYear.IsActive }}</td>
+                <td>
+                  <div class="d-flex justify-content-center align-items-center h-100">
+                    <button class="btn checkbtn" data-tooltip="Edit" (click)="editreview(AcademicYear.ID)">
+                      <mat-icon class="mat-edit-icon">edit</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div *ngIf="AcademicYearList.length === 0" class="NoDataFound">
+            <div class="NoDataFoundImg">
+              <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
+            </div>
+            <p>No data found.</p>
+          </div>
+
+          <div *ngIf="AcademicYearCount > pageSize" class="pagination-controls">
             <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
             <button *ngFor="let page of getVisiblePageNumbers()"
                     class="page-btn"

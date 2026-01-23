@@ -1,1 +1,37 @@
+.loader-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999999 !important; 
+}
 
+.loader {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  z-index: 1000000;  
+}
+
+.dot {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #536ff7;
+  animation: bounce 0.6s infinite alternate;
+}
+
+.dot1 { animation-delay: 0s; }
+.dot2 { animation-delay: 0.2s; }
+.dot3 { animation-delay: 0.4s; }
+
+@keyframes bounce {
+  0% { transform: translateY(0); opacity: 0.3; }
+  50% { transform: translateY(-15px); opacity: 1; }
+  100% { transform: translateY(0); opacity: 0.3; }
+}
