@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class SchoolCacheService {
@@ -18,5 +18,9 @@ export class SchoolCacheService {
 
   hasData(): boolean {
     return Object.keys(this.schoolMap$.value).length > 0;
+  }
+
+  getSchoolMap$(): Observable<{ [key: string]: string }> {
+    return this.schoolMap$.asObservable();
   }
 }

@@ -9,76 +9,47 @@
         <p>Total {{ AcademicYearCount }} Academic Years Added</p>
       </div>
       <div class="ComponentTopBottom">
-        <button (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Academic Year</button>
+        <button *ngIf="canAdd()" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Academic Year</button>
       </div>
     </div>
     <div class="ComponentRecords">
       <div>
-        <div class="searchreview input-container" >
-          <input type="text" id="searchQuery" class="form-control floating-input"
-            [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search... "  />
-          <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
-          <!-- <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i> -->
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="searchreview input-container" >
+            <input type="text" id="searchQuery" class="form-control floating-input"
+              [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search... "  />
+            <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
+          </div>
+          <div class="searchreview" *ngIf="isAdmin">
+            <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
+              <option value="">-- Select School --</option>
+              <option value="0">All Schools</option>
+              <option *ngFor="let school of schoolList" [value]="school.ID">
+                {{ school.Name }}
+              </option>
+            </select>
+          </div>
         </div>
-        <!-- <div class="reviewstable">
-          <table *ngIf="ListedAcademicYearList.length != 0" class="table table-bordered">
-            <thead>
-              <tr>
-                <th class="visually-hidden">Academic Year ID</th>
-                <th>SI.No</th>
-                <th>Name</th>
-                <th *ngIf="isAdmin()">School Name</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let AcademicYear of getPaginatedAcademicYearLists(),let i = index">
-                <td data-label="ID" class="visually-hidden">{{ AcademicYear.ID }}</td>
-                <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-                <td data-label="Name">{{ AcademicYear.Name }}</td>
-                <td data-label="SchoolName" *ngIf="isAdmin()">{{ AcademicYear.SchoolName }}</td>
-                <td data-label="StartDate">{{ AcademicYear.StartDate }}</td>
-                <td data-label="EndDate">{{ AcademicYear.EndDate }}</td>
-                <td data-label="Status">{{ AcademicYear.IsActive }}</td>
-                <td data-label="Actions">
-                  <div class="d-flex justify-content-center align-items-center h-100">
-                    <!-- (click)="editreview(aminitie.propertyTypeID)" --
-                    <button class="btn checkbtn" data-tooltip="Edit" (click)="editreview(AcademicYear.ID)">
-                      <mat-icon class="mat-edit-icon">edit</mat-icon>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div *ngIf="ListedAcademicYearList.length === 0" class="NoDataFound">
-            <div class="NoDataFoundImg">
-              <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
-            </div>
-            <p>No data found.</p>
-          </div>
-          <div *ngIf="ListedAcademicYearList.length > 5" class="pagination-controls">
-            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
-            <button *ngFor="let page of getVisiblePageNumbers()"
-                    class="page-btn"
-                    [ngClass]="{'active': page === currentPage}"
-                    (click)="goToPage(page)">
-              {{ page }}
-            </button>
-            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
-          </div>
-        </div> -->
         <div class="reviewstable">
           <table *ngIf="AcademicYearList.length > 0" class="table table-bordered">
             <thead>
               <tr>
                 <th class="visually-hidden">Academic Year ID</th>
                 <th>SI.No</th>
-                <th>Name</th>
-                <th *ngIf="isAdmin()">School Name</th>
+                <th (click)="sort('Name')" class="sortable-column">
+                  <span class="column-text">Academic Year</span>
+                  <span class="arrows">
+                    <mat-icon 
+                      [style.color]="sortColumn === 'Name' && sortDirection === 'asc' ? 'red' : 'inherit'">
+                      keyboard_arrow_up
+                    </mat-icon>
+                    <mat-icon 
+                      [style.color]="sortColumn === 'Name' && sortDirection === 'desc' ? 'red' : 'inherit'">
+                      keyboard_arrow_down
+                    </mat-icon>
+                  </span>
+                </th>
+                <th *ngIf="isAdmin">School Name</th>
                 <th>Start Date</th>
                 <th>End Date</th>
                 <th>Status</th>
@@ -90,7 +61,7 @@
                 <td class="visually-hidden">{{ AcademicYear.ID }}</td>
                 <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
                 <td>{{ AcademicYear.Name }}</td>
-                <td *ngIf="isAdmin()">{{ AcademicYear.SchoolName }}</td>
+                <td *ngIf="isAdmin">{{ AcademicYear.SchoolName }}</td>
                 <td>{{ AcademicYear.StartDate }}</td>
                 <td>{{ AcademicYear.EndDate }}</td>
                 <td>{{ AcademicYear.IsActive }}</td>
@@ -113,6 +84,7 @@
           </div>
 
           <div *ngIf="AcademicYearCount > pageSize" class="pagination-controls">
+            <button (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
             <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
             <button *ngFor="let page of getVisiblePageNumbers()"
                     class="page-btn"
@@ -121,6 +93,7 @@
               {{ page }}
             </button>
             <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+            <button (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
           </div>
         </div>
       </div>
@@ -137,7 +110,7 @@
           <div class="FormInputRowsContainer">
             <div class="InputRow">
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Name</label>
+                <label class="inputLabel" for="Name">Name  <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" formControlName="Name" placeholder="Enter Name" />
                   <div *ngIf="(AcademicYearForm.get('Name' ) ?. touched && AcademicYearForm.get('Name' ) ?. invalid)" class="text-danger">
@@ -148,23 +121,23 @@
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Start Date</label>
+                <label class="inputLabel" for="StartDate">Start Date</label>
                 <div class="input-with-error">
                   <input class="inputField" type="date" formControlName="StartDate" placeholder="Select Start Date" />
-                  <div *ngIf="(AcademicYearForm.get('Name' ) ?. touched && AcademicYearForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(AcademicYearForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
+                  <div *ngIf="(AcademicYearForm.get('StartDate' ) ?. touched && AcademicYearForm.get('StartDate' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(AcademicYearForm.get('StartDate' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Select Start Date.</small>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">End Date</label>
+                <label class="inputLabel" for="EndDate">End Date</label>
                 <div class="input-with-error">
                   <input class="inputField" type="date" formControlName="EndDate" placeholder="Select End Date" />
-                  <div *ngIf="(AcademicYearForm.get('Name' ) ?. touched && AcademicYearForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(AcademicYearForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
+                  <div *ngIf="(AcademicYearForm.get('EndDate' ) ?. touched && AcademicYearForm.get('EndDate' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(AcademicYearForm.get('EndDate' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Select End Date.</small>
                     </div>
                   </div>
                 </div>
@@ -176,11 +149,11 @@
                 <div class="input-with-error">
                   <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="4"></textarea>
                   <!-- <input class="inputField" id="email" formControlName="Name" placeholder="Enter Name" /> -->
-                  <div *ngIf="(AcademicYearForm.get('Name' ) ?. touched && AcademicYearForm.get('Name' ) ?. invalid)" class="text-danger">
+                  <!-- <div *ngIf="(AcademicYearForm.get('Name' ) ?. touched && AcademicYearForm.get('Name' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(AcademicYearForm.get('Name' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter Description.</small>
                     </div>
-                  </div>
+                  </div> -->
                 </div>
               </div>
               <div class="InputFieldsContainer">
