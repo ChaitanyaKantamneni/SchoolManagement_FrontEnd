@@ -7,13 +7,16 @@ export abstract class BasePermissionComponent {
 
   abstract pageName: string;
 
-  protected isAdmin: boolean;
+  // protected isAdmin: boolean;
+  protected get isAdmin(): boolean {
+    return localStorage.getItem('RollID') === '1';
+  }
 
   constructor(
     protected menuService: MenuServiceService,
     protected router: Router
   ) {
-    this.isAdmin = localStorage.getItem('RollID') === '1';
+    // this.isAdmin = localStorage.getItem('RollID') === '1';
   }
 
   private get page(): Page | undefined {

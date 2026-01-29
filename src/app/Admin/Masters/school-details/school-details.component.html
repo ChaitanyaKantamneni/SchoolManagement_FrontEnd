@@ -2,4 +2,274 @@
   <app-dashboard-top-nav></app-dashboard-top-nav>
 </div>
 <div class="MainContentDiv">
+  <div *ngIf="!IsAddNewClicked" class="w-100">
+    <div class="ComponentTop">
+      <div class="ComponentTopHeader">
+        <h5 *ngIf!="isAdmin">School Details</h5>
+        <h5 *ngIf="isAdmin">Schools Details</h5>
+        <p>Total {{ SchoolsCount }} Schools Added</p>
+      </div>
+      <div class="ComponentTopBottom">
+        <button *ngIf="canAdd()" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add School</button>
+      </div>
+    </div>
+    <div class="ComponentRecords">
+      <div>
+        <div class="ComponentRecordsTop">
+          <div class="filterOptions">
+            <div class="searchreview input-container" >
+              <input type="text" id="searchQuery" class="form-control floating-input"
+                [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search... "  />
+              <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
+            </div>
+            <!-- <div class="searchreview" *ngIf="isAdmin && SyllabusList.length != 0">
+              <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
+                <option value="">-- Select School --</option>
+                <option value="0">All Schools</option>
+                <option *ngFor="let school of schoolList" [value]="school.ID">
+                  {{ school.Name }}
+                </option>
+              </select>
+            </div> -->
+          </div>
+          <!-- <div class="DownloadButtons" *ngIf="SyllabusList.length != 0">
+            <button class="btnHover" (click)="exportSyllabus('pdf')"><mat-icon>picture_as_pdf</mat-icon></button>
+            <button class="btnHover" (click)="exportSyllabus('excel')"><mat-icon>description</mat-icon></button>
+            <button class="btnHover" (click)="exportSyllabus('print')"><mat-icon>print</mat-icon></button>
+          </div> -->
+        </div>
+        <div class="reviewstable">
+          <table id="classTable" *ngIf="SchoolsList.length != 0" class="table table-bordered">
+            <thead>
+              <tr>
+                <th class="visually-hidden">School ID</th>
+                <th>SI.No</th>
+                <th (click)="sort('Name')" class="sortable-column">
+                  <span class="column-text">School Name</span>
+                  <span class="arrows">
+                    <mat-icon 
+                      [style.color]="sortColumn === 'Name' && sortDirection === 'asc' ? 'red' : 'inherit'">
+                      keyboard_arrow_up
+                    </mat-icon>
+                    <mat-icon 
+                      [style.color]="sortColumn === 'Name' && sortDirection === 'desc' ? 'red' : 'inherit'">
+                      keyboard_arrow_down
+                    </mat-icon>
+                  </span>
+                </th>
+                <th>Phone Number</th>
+                <th>Email</th>
+                <th>Website</th>
+                <th *ngIf="isAdmin">Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let School of SchoolsList,let i = index">
+                <td data-label="ID" class="visually-hidden">{{ School.ID }}</td>
+                <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td data-label="Name">{{ School.Name }}</td>
+                <td data-label="PhoneNumber">{{ School.Phonenumber }}</td>
+                <td data-label="Email">{{ School.Email }}</td>
+                <td data-label="Website">{{ School.WebsiteUrl }}</td>
+                <td data-label="Status" *ngIf="isAdmin">{{ School.IsActive }}</td>
+                <td data-label="Actions">
+                  <div class="d-flex justify-content-center align-items-center h-100">
+                    <button *ngIf="canEdit()" class="btn checkbtn edit" data-tooltip="Edit" (click)="editreview(School.ID)">
+                      <mat-icon class="mat-edit-icon">edit</mat-icon>
+                    </button>
+                    <button *ngIf="canView()" class="btn checkbtn" data-tooltip="View" (click)="viewReview(School.ID)">
+                      <mat-icon class="mat-edit-icon">visibility</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div *ngIf="SchoolsList.length === 0" class="NoDataFound">
+            <div class="NoDataFoundImg">
+              <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
+            </div>
+            <p>No data found.</p>
+          </div>
+          <div *ngIf="SchoolsCount > pageSize" class="pagination-controls">
+            <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
+            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
+            <button *ngFor="let page of getVisiblePageNumbers()"
+                    class="page-btn"
+                    [ngClass]="{'active': page === currentPage}"
+                    (click)="goToPage(page)">
+              {{ page }}
+            </button>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="IsAddNewClicked" class="w-100">
+    <div class="AddForm">
+      <div class="AddFormTop">
+        <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+        <p>Add School</p>
+      </div>
+      <div class="AddFormConatiner">
+        <form [formGroup]="SchoolsForm">
+          <div class="FormInputRowsContainer">
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="Name">Name</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(SchoolsForm.get('Name' ) ?. touched && SchoolsForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(SchoolsForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="PhoneNumber">Phone Number</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="PhoneNumber" placeholder="Enter Phone Number" />
+                  <div *ngIf="(SchoolsForm.get('PhoneNumber' ) ?. touched && SchoolsForm.get('PhoneNumber' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(SchoolsForm.get('PhoneNumber' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Phone Number.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="Email">Email</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Email" placeholder="Enter Email" />
+                  <div *ngIf="(SchoolsForm.get('Email' ) ?. touched && SchoolsForm.get('Email' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(SchoolsForm.get('Email' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Email.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="Website">Website</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Website" placeholder="Enter Website URL" />
+                  <div *ngIf="(SchoolsForm.get('Website' ) ?. touched && SchoolsForm.get('Website' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(SchoolsForm.get('Website' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Website URL.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>              
+            </div>
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="Address">Address</label>
+                <div class="input-with-error">
+                  <textarea class="inputField" formControlName="Address" placeholder="Enter Address" rows="2"></textarea>
+                  <div *ngIf="(SchoolsForm.get('Address' ) ?. touched && SchoolsForm.get('Address' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(SchoolsForm.get('Address' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Address.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <div class="toggle-container" (click)="$event.stopPropagation()">
+                  <label class="switch">
+                    <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
+                    <span class="slider">
+                      <span
+                        class="toggle-text"
+                        [ngStyle]="{
+                          left: IsActiveStatus ? '42%' : '60%',
+                          fontSize: IsActiveStatus ? '9px' : '9px'
+                        }"
+                      >
+                        {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <span style="visibility: hidden;">hello adding new academic year</span>
+              </div>
+            </div>
+          </div>
+          <div class="ActionButtons">
+            <button class="btn" *ngIf="ViewSyllabusClicked && canEdit()" (click)="UpdateSyllabus()">Update</button>
+            <button class="btn" *ngIf="!ViewSyllabusClicked && canAdd()" (click)="SubmitSyllabus()">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isModalOpen}" [style.display]="isModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Application Status</h5>
+        <button type="button" class="close" aria-label="Close" (click)="closeModal('status')">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>{{ AminityInsStatus }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="handleOk()">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">School Details</h5>
+        <button type="button" class="close" (click)="closeModal('view')">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-2">
+          <div class="col-4"><strong>Name</strong></div>
+          <div class="col-8">{{ viewSyllabus?.Name }}</div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-4"><strong>Phone Number</strong></div>
+          <div class="col-8">{{ viewSyllabus?.AvailableFrom }}</div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-4"><strong>Email</strong></div>
+          <div class="col-8">{{ viewSyllabus?.AvailableFrom }}</div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-4"><strong>Website URL</strong></div>
+          <div class="col-8">{{ viewSyllabus?.AvailableFrom }}</div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-4"><strong>Address</strong></div>
+          <div class="col-8">{{ viewSyllabus?.Description }}</div>
+        </div>
+
+        <div class="row mb-2">
+          <div class="col-4"><strong>Status</strong></div>
+          <div class="col-8">
+            <span class="badge"
+                  [ngClass]="viewSyllabus?.IsActive ? 'badge-success' : 'badge-danger'">
+              {{ viewSyllabus?.IsActive ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

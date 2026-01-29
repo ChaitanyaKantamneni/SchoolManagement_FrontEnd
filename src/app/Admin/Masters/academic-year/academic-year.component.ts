@@ -1,330 +1,13 @@
-// import { Component } from '@angular/core';
-// import { MatIconModule } from '@angular/material/icon';
-// import { DashboardTopNavComponent } from '../../../SignInAndSignUp/dashboard-top-nav/dashboard-top-nav.component';
-// import { NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
-// import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-// import { Router } from '@angular/router';
-// import { ApiServiceService } from '../../../Services/api-service.service';
-// import { delay, forkJoin } from 'rxjs';
-// import { SchoolCacheService } from '../../../Services/school-cache.service';
-// import { LoaderService } from '../../../Services/loader.service';
-
-// @Component({
-//   selector: 'app-academic-year',
-//   standalone:true,
-//   imports: [NgIf,NgFor,NgClass,NgStyle,MatIconModule,DashboardTopNavComponent,ReactiveFormsModule,FormsModule],
-//   templateUrl: './academic-year.component.html',
-//   styleUrl: './academic-year.component.css'
-// })
-// export class AcademicYearComponent {
-//   IsAddNewClicked:boolean=false;
-//   IsActiveStatus:boolean=false;
-//   ViewAcademicYearClicked:boolean=false;
-//   currentPage = 1;
-//   pageSize = 5;
-//   visiblePageCount: number = 3;
-//   searchQuery: string = '';
-//   AcademicYearList: any[] =[];
-//   SchoolsList: any[] = [];
-//   AminityInsStatus: any = '';
-//   isModalOpen = false;
-//   AcademicYearCount: number = 0;
-//   ActiveUserId:string=localStorage.getItem('email')?.toString() || '';
-
-//   constructor(private router: Router,private apiurl:ApiServiceService,private schoolCache: SchoolCacheService,public loader: LoaderService) {}
-
-//   ngOnInit(): void {
-//     this.FetchInitialData();
-//   };
-
-//   roleId: string | null = localStorage.getItem('RollID');
-
-//   isAdmin(): boolean {
-//     return this.roleId === '1';
-//   }
-
-//   FetchInitialData() {
-//     const academicReq = this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', { Flag: '3' })
-//           .pipe(delay(500));
-
-//     this.loader.show();
-
-//     if (this.schoolCache.hasData()) {
-//       academicReq.subscribe({
-//         next: res => {
-//           this.mapAcademicYears(res);
-//           this.loader.hide();
-//         },
-//         error: () => this.loader.hide()
-//       });
-//       return;
-//     }
-
-//     forkJoin({
-//       schools: this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', { Flag: '2' }),
-//       academics: academicReq
-//     }).subscribe({
-//       next: ({ schools, academics }) => {
-//         if (schools?.data?.length) this.schoolCache.setSchools(schools.data);
-//         this.mapAcademicYears(academics);
-//         this.loader.hide();
-//       },
-//       error: () => this.loader.hide()
-//     });
-//   };
-
-//   mapAcademicYears(response: any) {
-//     const schoolMap = this.schoolCache.getSchoolMap();
-
-//     this.AcademicYearList = (response?.data || []).map((item: any) => ({
-//       ID: item.id,
-//       Name: item.name,
-//       SchoolName: schoolMap[item.schoolID] ?? 'Admin',
-//       StartDate: this.formatDateDDMMYYYY(item.startDate),
-//       EndDate: this.formatDateDDMMYYYY(item.endDate),
-//       IsActive: item.isActive === '1' ? 'Active' : 'InActive'
-//     }));
-
-//     this.AcademicYearCount = this.AcademicYearList.length;
-//   };
-
-//   AcademicYearForm: any = new FormGroup({
-//     ID: new FormControl(),
-//     Name: new FormControl(),
-//     StartDate:new FormControl(),
-//     EndDate:new FormControl(),
-//     Description: new FormControl()
-//   });
-
-//   getPaginatedAcademicYearLists() {
-//     const start = (this.currentPage - 1) * this.pageSize;
-//     return this.ListedAcademicYearList.slice(start, start + this.pageSize);
-//   };
-
-//   get ListedAcademicYearList() {
-//     return this.AcademicYearList.filter(AcademicYear =>
-//       AcademicYear.Name.toLowerCase().includes(this.searchQuery.toLowerCase())
-//     );
-//   };
-
-//   AddNewClicked(){
-//     this.IsAddNewClicked=!this.IsAddNewClicked;
-//     this.IsActiveStatus=true;
-//     this.ViewAcademicYearClicked=false;
-//   };
-
-//   SubmitAcademicYear(){
-//     if(this.AcademicYearForm.invalid){
-//       return;
-//     }
-//     else{
-//       const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
-//       const data = {
-//         Name: this.AcademicYearForm.get('Name')?.value,
-//         StartDate: this.AcademicYearForm.get('StartDate')?.value,
-//         EndDate: this.AcademicYearForm.get('EndDate')?.value,
-//         Description: this.AcademicYearForm.get('Description')?.value,
-//         IsActive:IsActiveStatusNumeric,
-//         Flag: '1'
-//       };
-
-//       this.apiurl.post("Tbl_AcademicYear_CRUD_Operations", data).subscribe({
-//         next: (response: any) => {
-//           if (response.statusCode === 200) {
-//             this.IsAddNewClicked=!this.IsAddNewClicked;
-//             // this.AminityInsStatus = response.status;
-//             this.isModalOpen = true;
-//             this.AminityInsStatus = "Academic Year Details Submitted!";
-//             this.AcademicYearForm.reset();
-//             this.AcademicYearForm.markAsPristine();
-//           }
-//         },
-//         error: (error) => {
-//           this.AminityInsStatus = "Error Updating Aminity.";
-//           this.isModalOpen = true;
-//         },
-//         complete: () => {
-//         }
-//       });
-//     }
-//   };
-
-//   FetchAcademicYearDetByID(AcademicYearID: string) {
-//     const data = {
-//       ID: AcademicYearID,
-//       Flag: "4"
-//     };
-
-//     this.apiurl.post<any>("Tbl_AcademicYear_CRUD_Operations", data).subscribe(
-//       (response: any) => {
-//         const item = response?.data?.[0];
-//         if (item) {
-//           const isActiveString = item.isActive === "1" ? true : false;
-//           this.AcademicYearForm.patchValue({
-//             ID: item.id,
-//             Name: item.name,
-//             StartDate: this.formatDateYYYYMMDD(item.startDate),
-//             EndDate: this.formatDateYYYYMMDD(item.endDate),
-//             Description: item.description
-//           });
-//           this.IsActiveStatus = isActiveString;
-//         } else {
-//           this.AcademicYearForm.reset();
-//         }
-
-//         this.IsAddNewClicked=true;
-//       },
-//       error => {
-//       }
-//     );
-//   };
-
-//   UpdateAcademicYear(){
-//     if(this.AcademicYearForm.invalid){
-//       return;
-//     }
-//     else{
-//       const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
-//       const data = {
-//         ID:this.AcademicYearForm.get('ID')?.value || '',
-//         Name: this.AcademicYearForm.get('Name')?.value || '',
-//         StartDate: this.AcademicYearForm.get('StartDate')?.value || '',
-//         EndDate: this.AcademicYearForm.get('EndDate')?.value || '',
-//         Description: this.AcademicYearForm.get('Description')?.value || '',
-//         IsActive:IsActiveStatusNumeric,
-//         Flag: '5'
-//       };
-
-//       console.log('data',data);
-//       this.apiurl.post("Tbl_AcademicYear_CRUD_Operations", data).subscribe({
-//         next: (response: any) => {
-//           if (response.statusCode === 200) {
-//             this.IsAddNewClicked=!this.IsAddNewClicked;
-//             // this.AminityInsStatus = response.status;
-//             this.isModalOpen = true;
-//             this.AminityInsStatus = "Academic Year Details Updated!";
-//             this.AcademicYearForm.reset();
-//             this.AcademicYearForm.markAsPristine();
-//           }
-//         },
-//         error: (error) => {
-//           this.AminityInsStatus = "Error Updating Aminity.";
-//           this.isModalOpen = true;
-//         },
-//         complete: () => {
-//         }
-//       });
-//     }
-//   };
-
-//   formatDateYYYYMMDD(dateStr: string | null): string {
-//     const convertToYYYYMMDD = (dateStr: string | null): string => {
-//       if (!dateStr) return '';
-//       const date = new Date(dateStr);
-//       if (isNaN(date.getTime())) return '';
-//       const year = date.getFullYear();
-//       const month = String(date.getMonth() + 1).padStart(2, '0');
-//       const day = String(date.getDate()).padStart(2, '0');
-//       return `${year}-${month}-${day}`;
-//     };
-//     return convertToYYYYMMDD(dateStr);
-//   };
-
-//   formatDateDDMMYYYY(dateStr: string | null): string {
-//     const convertToDDMMYYYY = (dateStr: string | null): string => {
-//             if (!dateStr) return '';
-//             const date = new Date(dateStr);
-//             if (isNaN(date.getTime())) return '';
-//             const day = String(date.getDate()).padStart(2, '0');
-//             const month = String(date.getMonth() + 1).padStart(2, '0');
-//             const year = date.getFullYear();
-//             return `${day}-${month}-${year}`;
-//     };
-//     return convertToDDMMYYYY(dateStr);
-//   };
-
-//   editreview(AcademicYearID: string): void {
-//     this.FetchAcademicYearDetByID(AcademicYearID);
-//     this.ViewAcademicYearClicked=true;
-//   };
-
-//   toggleChange(){
-//     if(this.IsActiveStatus){
-//       this.IsActiveStatus=false
-//     }
-//     else if(!this.IsActiveStatus){
-//       this.IsActiveStatus=true;
-//     }
-//   };
-
-//   onSearchChange(): void {
-//     this.currentPage = 1;
-//     this.getPaginatedAcademicYearLists();
-//   };
-
-//   closeModal() {
-//     this.isModalOpen = false;
-//   };
-
-//   handleOk() {
-//     this.isModalOpen = false;
-//     this.FetchInitialData();
-//   };
-
-//   previousPage() {
-//     if (this.currentPage > 1) {
-//       this.currentPage--;
-//     }
-//   };
-
-//   nextPage() {
-//     if (this.currentPage < this.totalPages()) {
-//       this.currentPage++;
-//     }
-//   };
-
-
-//   goToPage(pageNumber: number) {
-//     if (pageNumber >= 1 && pageNumber <= this.totalPages()) {
-//       this.currentPage = pageNumber;
-//     }
-//   };
-
-
-//   getVisiblePageNumbers() {
-//     const totalPages = this.totalPages();
-//     const visiblePages = [];
-
-//     let startPage = Math.max(this.currentPage - Math.floor(this.visiblePageCount / 2), 1);
-//     let endPage = Math.min(startPage + this.visiblePageCount - 1, totalPages);
-
-//     if (endPage - startPage < this.visiblePageCount - 1) {
-//       startPage = Math.max(endPage - this.visiblePageCount + 1, 1);
-//     }
-
-//     for (let i = startPage; i <= endPage; i++) {
-//       visiblePages.push(i);
-//     }
-
-//     return visiblePages;
-//   };
-
-
-//   totalPages() {
-//     return Math.ceil(this.AcademicYearCount / this.pageSize);
-//   };
-// }
-
-
-
 import { Component } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { DashboardTopNavComponent } from '../../../SignInAndSignUp/dashboard-top-nav/dashboard-top-nav.component';
 import { NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiServiceService } from '../../../Services/api-service.service';
 import { tap } from 'rxjs';
+import { MenuServiceService } from '../../../Services/menu-service.service';
+import { BasePermissionComponent  } from '../../../shared/base-crud.component';
 import { SchoolCacheService } from '../../../Services/school-cache.service';
 import { LoaderService } from '../../../Services/loader.service';
 
@@ -335,7 +18,8 @@ import { LoaderService } from '../../../Services/loader.service';
   templateUrl: './academic-year.component.html',
   styleUrls: ['./academic-year.component.css']
 })
-export class AcademicYearComponent {
+export class AcademicYearComponent extends BasePermissionComponent {
+pageName = 'AcademicYear';
   IsAddNewClicked = false;
   IsActiveStatus = false;
   ViewAcademicYearClicked = false;
@@ -344,6 +28,9 @@ export class AcademicYearComponent {
   pageSize = 5;
   visiblePageCount = 3;
   searchQuery = '';
+  private searchTimer: any;
+  private readonly SEARCH_MIN_LENGTH = 3;
+  private readonly SEARCH_DEBOUNCE = 300;
 
   AcademicYearList: any[] = [];
   AminityInsStatus = '';
@@ -357,129 +44,152 @@ export class AcademicYearComponent {
   lastCreatedDate: string | null = null;
   lastID: number | null = null;
 
+  sortColumn: string = 'Name'; 
+  sortDirection: 'asc' | 'desc' = 'desc';
+  editclicked:boolean=false;
+  schoolList: any[] = [];
+  selectedSchoolID: string = '';
+  SchoolSelectionChange:boolean=false;
 
 
   AcademicYearForm = new FormGroup({
     ID: new FormControl(),
-    Name: new FormControl(),
-    StartDate: new FormControl(),
-    EndDate: new FormControl(),
+    Name: new FormControl('', Validators.required),
+    StartDate: new FormControl('', Validators.required),
+    EndDate: new FormControl('', Validators.required),
     Description: new FormControl()
   });
 
   constructor(
-    private router: Router,
+    router: Router,
     private apiurl: ApiServiceService,
     private schoolCache: SchoolCacheService,
-    public loader: LoaderService
-  ) {}
+    public loader: LoaderService,
+    menuService: MenuServiceService
+  ) {
+super(menuService, router);
+}
 
   ngOnInit(): void {
+    this.checkViewPermission();
+    this.SchoolSelectionChange=false;
+    this.FetchSchoolsList();
     this.FetchInitialData();
   }
 
-  isAdmin(): boolean {
+  FetchSchoolsList() {
+    const requestData = { Flag: '2' };
+
+    this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.schoolList = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.id,
+                Name: item.name,
+                IsActive: isActiveString
+              };
+            });            
+          } else {
+            this.schoolList = [];
+          }
+        },
+        (error) => {
+          this.schoolList = [];
+        }
+      );
+  };
+
+  protected override get isAdmin(): boolean {
     return this.roleId === '1';
   }
 
-  FetchAcademicYearCount() {
+  FetchAcademicYearCount(isSearch: boolean) {
+    let SchoolIdSelected = '';
+
+    if (this.SchoolSelectionChange) {
+      SchoolIdSelected = this.selectedSchoolID.trim();
+    }
+
     return this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', {
-      Flag: '6'
+      Flag: isSearch ? '8' : '6',
+      SchoolID:SchoolIdSelected,
+      Name: isSearch ? this.searchQuery.trim() : null
     });
   }
 
-  // FetchInitialData() {
-  //   this.loader.show();
-  //   this.FetchAcademicYearCount().subscribe({
-  //     next: (countResponse: any) => {
-  //       this.AcademicYearCount = countResponse?.data?.[0]?.totalcount ?? 0;
-  //       if (this.currentPage > this.totalPages()) this.currentPage = this.totalPages() || 1;
+  FetchInitialData(extra: any = {}) {
+    const isSearch = !!this.searchQuery?.trim();
+    const flag = isSearch ? '7' : '3';
 
-  //       this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', {
-  //         Flag: '3',
-  //         Limit: this.pageSize,
-  //         Offset: (this.currentPage - 1) * this.pageSize
-  //       }).subscribe({
-  //         next: (response: any) => {
-  //           this.mapAcademicYears(response ?? { data: [] });
-  //           this.loader.hide();
-  //         },
-  //         error: () => {
-  //           this.AcademicYearList = [];
-  //           this.loader.hide();
-  //         }
-  //       });
-  //     },
-  //     error: () => {
-  //       this.AcademicYearList = [];
-  //       this.AcademicYearCount = 0;
-  //       this.loader.hide();
-  //     }
-  //   });
-  // }
+    let SchoolIdSelected = '';
 
-FetchInitialData() {
-  this.loader.show();
-
-  // Fetch total count first
-  this.FetchAcademicYearCount().subscribe({
-    next: (countResponse: any) => {
-      this.AcademicYearCount = countResponse?.data?.[0]?.totalcount ?? 0;
-
-      // Ensure current page is valid
-      if (this.currentPage > this.totalPages()) {
-        this.currentPage = this.totalPages() || 1;
-      }
-
-      // Determine cursor for current page
-      let cursor: { lastCreatedDate: any; lastID: number } | null = null;
-      if (this.currentPage > 1) {
-        cursor = this.pageCursors[this.currentPage - 2] || null; // previous page's last row
-      }
-
-      // Fetch data for current page
-      this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', {
-        Flag: '3',
-        Limit: this.pageSize,
-        LastCreatedDate: cursor?.lastCreatedDate ?? null,
-        LastID: cursor?.lastID ?? null
-      }).subscribe({
-        next: (response: any) => {
-          const data = response?.data || [];
-          this.mapAcademicYears(response);
-
-          // Store cursor for **this page** if not already stored
-          if (data.length > 0 && !this.pageCursors[this.currentPage - 1]) {
-            const lastRow = data[data.length - 1];
-            this.pageCursors[this.currentPage - 1] = {
-              lastCreatedDate: lastRow.createdDate,
-              lastID: Number(lastRow.id)
-            };
-          }
-
-          this.loader.hide();
-        },
-        error: () => {
-          this.AcademicYearList = [];
-          this.loader.hide();
-        }
-      });
-    },
-    error: () => {
-      this.AcademicYearList = [];
-      this.AcademicYearCount = 0;
-      this.loader.hide();
+    if (this.SchoolSelectionChange) {
+      SchoolIdSelected = this.selectedSchoolID.trim();
     }
-  });
-}
 
+    const cursor =
+      !extra.offset && this.currentPage > 1
+        ? this.pageCursors[this.currentPage - 2] || null
+        : null;
+
+    this.loader.show();
+
+    this.FetchAcademicYearCount(isSearch).subscribe({
+      next: (countResp: any) => {
+        this.AcademicYearCount = countResp?.data?.[0]?.totalcount ?? 0;
+
+        const payload: any = {
+          Flag: flag,
+          Limit: this.pageSize,
+          SortColumn: this.sortColumn,
+          SortDirection: this.sortDirection,
+          LastCreatedDate: cursor?.lastCreatedDate ?? null,
+          LastID: cursor?.lastID ?? null,
+          SchoolID:SchoolIdSelected,
+          ...extra
+        };
+
+        if (isSearch) payload.Name = this.searchQuery.trim();
+
+        this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', payload).subscribe({
+          next: (response: any) => {
+            const data = response?.data || [];
+            this.mapAcademicYears(response);
+
+            if (data.length > 0 && !this.pageCursors[this.currentPage - 1]) {
+              const lastRow = data[data.length - 1];
+              this.pageCursors[this.currentPage - 1] = {
+                lastCreatedDate: lastRow.createdDate,
+                lastID: Number(lastRow.id)
+              };
+            }
+
+            this.loader.hide();
+          },
+          error: () => {
+            this.AcademicYearList = [];
+            this.loader.hide();
+          }
+        });
+      },
+      error: () => {
+        this.AcademicYearList = [];
+        this.AcademicYearCount = 0;
+        this.loader.hide();
+      }
+    });
+  }
 
   mapAcademicYears(response: any) {
     const schoolMap = this.schoolCache.getSchoolMap() || {};
     this.AcademicYearList = (response.data || []).map((item: any) => ({
       ID: item.id,
       Name: item.name,
-      SchoolName: schoolMap[item.schoolID] ?? `School-${item.schoolID}`,
+      // SchoolName: schoolMap[item.schoolID] ?? `School-${item.schoolID}`,
+      SchoolName:item.schoolName,
       StartDate: this.formatDateDDMMYYYY(item.startDate),
       EndDate: this.formatDateDDMMYYYY(item.endDate),
       IsActive: item.isActive === '1' ? 'Active' : 'InActive'
@@ -493,7 +203,10 @@ FetchInitialData() {
   }
 
   SubmitAcademicYear() {
-    if(this.AcademicYearForm.invalid) return;
+    if(this.AcademicYearForm.invalid){
+      this.AcademicYearForm.markAllAsTouched();
+      return;
+    };
 
     const data = {
       Name: this.AcademicYearForm.get('Name')?.value,
@@ -541,7 +254,10 @@ FetchInitialData() {
   }
 
   UpdateAcademicYear() {
-    if(this.AcademicYearForm.invalid) return;
+    if(this.AcademicYearForm.invalid){
+      this.AcademicYearForm.markAllAsTouched();
+      return;
+    };
 
     const data = {
       ID: this.AcademicYearForm.get('ID')?.value || '',
@@ -569,26 +285,43 @@ FetchInitialData() {
     });
   }
 
-previousPage() {
-  if (this.currentPage > 1) {
-    this.currentPage--;
-    this.FetchInitialData();
+  previousPage() {
+    if (this.currentPage > 1) {
+      this.goToPage(this.currentPage - 1);
+    }
   }
-}
 
-nextPage() {
-  if (this.currentPage < this.totalPages()) {
-    this.currentPage++;
-    this.FetchInitialData();
+  nextPage() {
+    if (this.currentPage < this.totalPages()) {
+      this.goToPage(this.currentPage + 1);
+    }
   }
-}
 
+  firstPage() {
+    this.goToPage(1);
+  }
 
-
+  lastPage() {
+    this.goToPage(this.totalPages());
+  }
 
   goToPage(pageNumber: number) {
-    if (pageNumber >= 1 && pageNumber <= this.totalPages()) {
-      this.currentPage = pageNumber;
+    const total = this.totalPages();
+
+    if (pageNumber < 1) pageNumber = 1;
+    if (pageNumber > total) pageNumber = total;
+
+    this.currentPage = pageNumber;
+
+    const isBoundaryPage =
+      pageNumber === 1 ||
+      pageNumber === total ||
+      !this.pageCursors[pageNumber - 2];
+
+    if (isBoundaryPage) {
+      const offset = (pageNumber - 1) * this.pageSize;
+      this.FetchInitialData({ offset });
+    } else {
       this.FetchInitialData();
     }
   }
@@ -608,9 +341,31 @@ nextPage() {
   }
 
   onSearchChange() {
-    this.currentPage = 1;
-    this.FetchInitialData();
+    clearTimeout(this.searchTimer);
+
+    this.searchTimer = setTimeout(() => {
+      const value = this.searchQuery?.trim() || '';
+
+      if (value.length === 0) {
+        this.currentPage = 1;
+        this.pageSize=5;
+        this.visiblePageCount=3;
+        this.FetchInitialData();
+        return;
+      }
+
+      if (value.length < this.SEARCH_MIN_LENGTH) {
+        return;
+      }
+      
+      this.currentPage = 1;
+      this.pageSize=5;
+      this.visiblePageCount=3;
+      this.FetchInitialData();
+
+    }, this.SEARCH_DEBOUNCE);
   }
+
 
   formatDateYYYYMMDD(dateStr: string | null) {
     if (!dateStr) return '';
@@ -634,11 +389,37 @@ nextPage() {
   }
 
   editreview(AcademicYearID: string) {
+    this.editclicked=true;
     this.FetchAcademicYearDetByID(AcademicYearID);
   }
 
   toggleChange() {
     this.IsActiveStatus = !this.IsActiveStatus;
+  }
+  
+  sort(column: string) {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+    this.currentPage = 1;
+    this.pageCursors = [];
+    this.FetchInitialData();
+  }
+
+  onSchoolChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    if(schoolID=="0"){
+      this.selectedSchoolID="";
+    }else{
+      this.selectedSchoolID = schoolID;
+    }    
+    this.SchoolSelectionChange = true;
+    // this.FetchInitialData({ SchoolID: this.selectedSchoolID });
+    this.FetchInitialData();
   }
 }
 
