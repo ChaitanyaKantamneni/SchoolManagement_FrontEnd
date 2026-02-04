@@ -56,8 +56,8 @@ export class ModulesComponent extends BasePermissionComponent {
   AminityInsStatus: any = '';
   isModalOpen = false;
   isViewModalOpen= false;
-  ActiveUserId:string=localStorage.getItem('email')?.toString() || '';
-  roleId = localStorage.getItem('RollID');
+  ActiveUserId:string=sessionStorage.getItem('email')?.toString() || '';
+  roleId = sessionStorage.getItem('RollID');
 
   pageCursors: { lastCreatedDate: any; lastID: number }[] = [];
   lastCreatedDate: string | null = null;
@@ -222,7 +222,7 @@ export class ModulesComponent extends BasePermissionComponent {
           return;
         }
 
-        const isActive = item.isActive === 1;
+        const isActive = item.isActive === "1";
 
         if (mode === 'view') {
           this.isViewMode = true;
@@ -230,7 +230,7 @@ export class ModulesComponent extends BasePermissionComponent {
             ID: item.id,
             Name: item.moduleName,
             Description: item.description,
-            IsActive: item.isActive
+            IsActive: isActive
           };
           this.isViewModalOpen = true;
         }
@@ -519,15 +519,3 @@ export class ModulesComponent extends BasePermissionComponent {
     this.isViewModalOpen=true;
   };
 }
-
-
-
-
-
-
-
-
-
-
-
-

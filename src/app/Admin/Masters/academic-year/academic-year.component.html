@@ -14,20 +14,22 @@
     </div>
     <div class="ComponentRecords">
       <div>
-        <div class="d-flex justify-content-between align-items-center">
-          <div class="searchreview input-container" >
-            <input type="text" id="searchQuery" class="form-control floating-input"
-              [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search... "  />
-            <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
-          </div>
-          <div class="searchreview" *ngIf="isAdmin">
-            <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
-              <option value="">-- Select School --</option>
-              <option value="0">All Schools</option>
-              <option *ngFor="let school of schoolList" [value]="school.ID">
-                {{ school.Name }}
-              </option>
-            </select>
+        <div class="ComponentRecordsTop">
+          <div class="filterOptions">
+            <div class="searchreview input-container" >
+              <input type="text" id="searchQuery" class="form-control floating-input"
+                [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search... "  />
+              <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
+            </div>
+            <div class="searchreview" *ngIf="isAdmin">
+              <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
+                <option value="">-- Select School --</option>
+                <option value="0">All Schools</option>
+                <option *ngFor="let school of schoolList" [value]="school.ID">
+                  {{ school.Name }}
+                </option>
+              </select>
+            </div>
           </div>
         </div>
         <div class="reviewstable">
@@ -67,8 +69,11 @@
                 <td>{{ AcademicYear.IsActive }}</td>
                 <td>
                   <div class="d-flex justify-content-center align-items-center h-100">
-                    <button class="btn checkbtn" data-tooltip="Edit" (click)="editreview(AcademicYear.ID)">
+                    <button *ngIf="canEdit()" class="btn checkbtn edit" data-tooltip="Edit" (click)="editreview(AcademicYear.ID)">
                       <mat-icon class="mat-edit-icon">edit</mat-icon>
+                    </button>
+                    <button *ngIf="canView()" class="btn checkbtn" data-tooltip="View" (click)="viewReview(AcademicYear.ID)">
+                      <mat-icon class="mat-edit-icon">visibility</mat-icon>
                     </button>
                   </div>
                 </td>
@@ -120,8 +125,8 @@
                   </div>
                 </div>
               </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="StartDate">Start Date</label>
+              <!-- <div class="InputFieldsContainer">
+                <label class="inputLabel" for="StartDate">Start Date <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" type="date" formControlName="StartDate" placeholder="Select Start Date" />
                   <div *ngIf="(AcademicYearForm.get('StartDate' ) ?. touched && AcademicYearForm.get('StartDate' ) ?. invalid)" class="text-danger">
@@ -132,7 +137,7 @@
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="EndDate">End Date</label>
+                <label class="inputLabel" for="EndDate">End Date <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" type="date" formControlName="EndDate" placeholder="Select End Date" />
                   <div *ngIf="(AcademicYearForm.get('EndDate' ) ?. touched && AcademicYearForm.get('EndDate' ) ?. invalid)" class="text-danger">
@@ -141,7 +146,30 @@
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> -->
+              <div class="InputFieldsContainer">
+  <label class="inputLabel">Start Date <span class="required">*</span></label>
+  <div class="input-with-error">
+    <input class="inputField" type="date" formControlName="StartDate" />
+    <div *ngIf="AcademicYearForm.get('StartDate')?.touched && AcademicYearForm.get('StartDate')?.invalid" class="text-danger">
+      <small *ngIf="AcademicYearForm.get('StartDate')?.errors?.['required']">Please select Start Date.</small>
+      <small *ngIf="AcademicYearForm.get('StartDate')?.errors?.['invalidStartDate']">Start Date cannot be before the current year.</small>
+    </div>
+  </div>
+</div>
+
+<div class="InputFieldsContainer">
+  <label class="inputLabel">End Date <span class="required">*</span></label>
+  <div class="input-with-error">
+    <input class="inputField" type="date" formControlName="EndDate" />
+    <div *ngIf="AcademicYearForm.get('EndDate')?.touched && AcademicYearForm.get('EndDate')?.invalid" class="text-danger">
+      <small *ngIf="AcademicYearForm.get('EndDate')?.errors?.['required']">Please select End Date.</small>
+      <small *ngIf="AcademicYearForm.get('EndDate')?.errors?.['endBeforeStart']">End Date cannot be before Start Date.</small>
+      <small *ngIf="AcademicYearForm.get('EndDate')?.errors?.['endExceedsYear']">End Date cannot exceed 1 year after Start Date.</small>
+    </div>
+  </div>
+</div>
+
             </div>
             <div class="InputRow">
               <div class="InputFieldsContainer">
@@ -180,8 +208,8 @@
             </div>
           </div>
           <div class="ActionButtons">
-            <button class="btn" *ngIf="ViewAcademicYearClicked" (click)="UpdateAcademicYear()">Update</button>
-            <button class="btn" *ngIf="!ViewAcademicYearClicked" (click)="SubmitAcademicYear()">Submit</button>
+            <button class="btn" *ngIf="ViewAcademicYearClicked && canEdit()" (click)="UpdateAcademicYear()">Update</button>
+            <button class="btn" *ngIf="!ViewAcademicYearClicked && canAdd()" (click)="SubmitAcademicYear()">Submit</button>
           </div>
         </form>
       </div>
@@ -193,7 +221,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Application Status</h5>
-        <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+        <button type="button" class="close" aria-label="Close" (click)="closeModal('status')">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
@@ -203,6 +231,52 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" (click)="handleOk()">OK</button>
       </div>
+    </div>
+  </div>
+</div>
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Academic Year Details</h5>
+        <button type="button" class="close" (click)="closeModal('view')">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-2" *ngIf="viewSyllabus?.Name">
+          <div class="col-4">Name</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.Name }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.StartDate">
+          <div class="col-4">Start Date</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.StartDate }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.EndDate">
+          <div class="col-4">End Date</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.EndDate }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.Description && viewSyllabus.Description.trim() !== ''">
+          <div class="col-4">Description</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.Description }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.IsActive !== null">
+          <div class="col-4">Status</div>
+          <div class="col-8">
+            <span class="badge"
+                  [ngClass]="viewSyllabus?.IsActive ? 'badge-success' : 'badge-danger'">
+              {{ viewSyllabus?.IsActive ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <!-- <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeModal()">Close</button>
+      </div> -->
     </div>
   </div>
 </div>

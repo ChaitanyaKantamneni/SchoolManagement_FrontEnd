@@ -7,7 +7,7 @@
 // export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, next: HttpHandlerFn): Observable<HttpEvent<any>> => {
 //   const apiService = inject(ApiServiceService);
 
-//   const token = localStorage.getItem('accessToken');
+//   const token = sessionStorage.getItem('accessToken');
 //   let authReq = token ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : req;
 
 //   const isRefreshing = false;
@@ -18,19 +18,19 @@
 //       if ((error as any)?.status === 401) {
 //         if (!isRefreshing) {
 //           // refresh token logic
-//           const refreshToken = localStorage.getItem('refreshToken');
-//           const email = localStorage.getItem('email');
+//           const refreshToken = sessionStorage.getItem('refreshToken');
+//           const email = sessionStorage.getItem('email');
 //           if (refreshToken && email) {
 //             return apiService.post<any>('refresh-token', { email, refreshToken }).pipe(
 //               switchMap(tokens => {
-//                 localStorage.setItem('accessToken', tokens.accessToken);
-//                 localStorage.setItem('refreshToken', tokens.refreshToken);
+//                 sessionStorage.setItem('accessToken', tokens.accessToken);
+//                 sessionStorage.setItem('refreshToken', tokens.refreshToken);
 //                 refreshTokenSubject.next(tokens.accessToken);
 //                 const cloned = req.clone({ setHeaders: { Authorization: `Bearer ${tokens.accessToken}` } });
 //                 return next(cloned);
 //               }),
 //               catchError(err => {
-//                 localStorage.clear();
+//                 sessionStorage.clear();
 //                 return throwError(() => err);
 //               })
 //             );
@@ -59,7 +59,7 @@ let idleTimer: any;
 export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, next: HttpHandlerFn): Observable<HttpEvent<any>> => {
   const apiService = inject(ApiServiceService);
 
-  const accessToken = localStorage.getItem('accessToken');
+  const accessToken = sessionStorage.getItem('accessToken');
   let authReq = accessToken ? req.clone({ setHeaders: { Authorization: `Bearer ${accessToken}` } }) : req;
 
   resetIdleTimer();
@@ -68,14 +68,14 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, next: 
     catchError(error => {
       if ((error as any)?.status === 401) {
         // Handle token refresh
-        const refreshToken = localStorage.getItem('refreshToken');
-        const email = localStorage.getItem('email');
+        const refreshToken = sessionStorage.getItem('refreshToken');
+        const email = sessionStorage.getItem('email');
 
         if (refreshToken && email) {
           return apiService.post<any>('refresh-token', { email, refreshToken }).pipe(
             switchMap(tokens => {
-              localStorage.setItem('accessToken', tokens.accessToken);
-              localStorage.setItem('refreshToken', tokens.refreshToken);
+              sessionStorage.setItem('accessToken', tokens.accessToken);
+              sessionStorage.setItem('refreshToken', tokens.refreshToken);
 
               const clonedReq = req.clone({ setHeaders: { Authorization: `Bearer ${tokens.accessToken}` } });
               return next(clonedReq);
@@ -102,6 +102,6 @@ function resetIdleTimer() {
 }
 
 function logoutUser() {
-  localStorage.clear();
+  sessionStorage.clear();
   location.href = '/signin';
 }

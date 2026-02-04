@@ -6,35 +6,60 @@
     <div class="ComponentTop">
       <div class="ComponentTopHeader">
         <h5>Staff Management</h5>
-        <p>Total {{ StaffCount }} Staff Added</p>
+        <p>Total {{ StaffCount}} Staff Added</p>
       </div>
       <div class="ComponentTopBottom">
-        <button class="btnHover" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Staff</button>
+        <button *ngIf="canAdd()" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Staff</button>
       </div>
     </div>
     <div class="ComponentRecords">
       <div>
-        <div class="ComponentRecordsTop" *ngIf="ListedStaffList.length != 0">
-          <div class="searchreview input-container" >
-            <input type="text" id="searchQuery" class="form-control floating-input"
-              [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search... "  />
-            <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
-            <!-- <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i> -->
+        <div class="ComponentRecordsTop">
+          <div class="filterOptions">
+            <div class="searchreview input-container" >
+              <input type="text" id="searchQuery" class="form-control floating-input"
+                [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search... "  />
+              <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
+              <!-- <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i> -->
+            </div>
+            <div class="searchreview" *ngIf="isAdmin && StaffList.length != 0">
+              <select (change)="onSchoolChange($event)" class="form-control selectFormControl" >
+                <option value="">-- Select School --</option>
+                <option value="0">All Schools</option>
+                <option *ngFor="let school of schoolList" [value]="school.ID">
+                  {{ school.Name }}
+                </option>
+              </select>
+            </div>
           </div>
-          <div class="DownloadButtons">
-            <button class="btnHover" (click)="copyTable()"><mat-icon>content_copy</mat-icon></button>
-            <button class="btnHover" (click)="exportToExcel()"><mat-icon>file_download</mat-icon></button>
-            <button class="btnHover" (click)="printTable()"><mat-icon>print</mat-icon></button>
+          <div class="DownloadButtons" *ngIf="StaffList.length != 0">
+            <button class="btnHover" (click)="exportSyllabus('pdf')"><mat-icon>picture_as_pdf</mat-icon></button>
+            <button class="btnHover" (click)="exportSyllabus('excel')"><mat-icon>description</mat-icon></button>
+            <button class="btnHover" (click)="exportSyllabus('print')"><mat-icon>print</mat-icon></button>
           </div>
         </div>
         <div class="reviewstable">
-          <table id="classTable" *ngIf="ListedStaffList.length != 0" class="table table-bordered">
+          <table id="classTable" *ngIf="StaffList.length != 0" class="table table-bordered">
             <thead>
               <tr>
                 <th class="visually-hidden">Academic Year ID</th>
                 <th>SI.No</th>
-                <th>Staff Type</th>
-                <th>Name</th>
+                <th class="StaffTypeClass">Staff Type</th>
+                <th (click)="sort('Name')" class="sortable-column">
+                  <span class="column-text">Employee Name</span>
+                  <span class="arrows">
+                    <mat-icon 
+                      [style.color]="sortColumn === 'Name' && sortDirection === 'asc' ? 'red' : 'inherit'">
+                      keyboard_arrow_up
+                    </mat-icon>
+                    <mat-icon 
+                      [style.color]="sortColumn === 'Name' && sortDirection === 'desc' ? 'red' : 'inherit'">
+                      keyboard_arrow_down
+                    </mat-icon>
+                  </span>
+                </th>
+                <th *ngIf="isAdmin">School Name</th>
+                <th>Academic Year</th>
                 <th>Email</th>
                 <th>MobileNumber</th>
                 <th>Status</th>
@@ -42,32 +67,47 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let Class of getPaginatedStaffLists(),let i = index">
+              <tr *ngFor="let Class of StaffList,let i = index">
                 <td data-label="ID" class="visually-hidden">{{ Class.ID }}</td>
                 <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-                <td data-label="Staff Type">{{ getSyllabusName(Class.StaffType) }}</td>
+                <!-- <td data-label="Staff Type">{{ getSyllabusName(Class.StaffType) }}</td> -->
+                <td data-label="Staff Type">
+                  <div class="staff-type-grid">
+                    <div
+                      class="staff-type-item"
+                      *ngFor="let type of Class.StaffType; let i = index"
+                    >
+                      {{ getSyllabusName(type) }}<span *ngIf="i < Class.StaffType.length - 1">,</span>
+                    </div>
+                  </div>
+                </td>
                 <td data-label="Name">{{ Class.Name }}</td>
+                <td data-label="SchoolName" *ngIf="isAdmin">{{ Class.Schoolname }}</td>
+                <td data-label="AcademicYearName">{{ Class.AcademicYearName }}</td>
                 <td data-label="Email">{{ Class.Email }}</td>
                 <td data-label="MobileNumber">{{ Class.MobileNumber }}</td>
                 <td data-label="Status">{{ Class.IsActive }}</td>
                 <td data-label="Actions">
                   <div class="d-flex justify-content-center align-items-center h-100">
-                    <!-- (click)="editreview(aminitie.propertyTypeID)" -->
-                    <button class="btn checkbtn" data-tooltip="Edit" (click)="editreview(Class.ID)">
+                    <button *ngIf="canEdit()" class="btn checkbtn edit" data-tooltip="Edit" (click)="editreview(Class.ID)">
                       <mat-icon class="mat-edit-icon">edit</mat-icon>
+                    </button>
+                    <button *ngIf="canView()" class="btn checkbtn" data-tooltip="View" (click)="viewReview(Class.ID)">
+                      <mat-icon class="mat-edit-icon">visibility</mat-icon>
                     </button>
                   </div>
                 </td>
               </tr>
             </tbody>
           </table>
-          <div *ngIf="ListedStaffList.length === 0" class="NoDataFound">
+          <div *ngIf="StaffList.length === 0" class="NoDataFound">
             <div class="NoDataFoundImg">
               <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
             </div>
             <p>No data found.</p>
           </div>
-          <div *ngIf="ListedStaffList.length > 5" class="pagination-controls">
+          <div *ngIf="StaffCount> pageSize" class="pagination-controls">
+            <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
             <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
             <button *ngFor="let page of getVisiblePageNumbers()"
                     class="page-btn"
@@ -76,6 +116,7 @@
               {{ page }}
             </button>
             <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
           </div>
         </div>
       </div>
@@ -203,11 +244,19 @@
                   </div>
                 </div>
               </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email" style="visibility: hidden;">Strength</label>
-                <div class="input-with-error" style="visibility: hidden;">
-                  <input class="inputField" placeholder="Enter Name" />
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">School</label>
+                <div class="input-with-error">
+                  <select formControlName="School" class="form-control selectFormControl" >
+                    <option value="">-- Select School --</option>
+                    <option *ngFor="let school of schoolList" [value]="school.ID">
+                      {{ school.Name }}
+                    </option>
+                  </select>
                 </div>
+              </div>
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <span style="visibility: hidden;">hello adding new academic year</span>
               </div>
             </div>
           </div>
@@ -234,8 +283,8 @@
             </div>
           </div>
           <div class="ActionButtons">
-            <button class="btn" *ngIf="ViewStaffClicked" (click)="UpdateStaff()">Update</button>
-            <button class="btn" *ngIf="!ViewStaffClicked" (click)="SubmitStaff()">Submit</button>
+            <button class="btn" *ngIf="ViewStaffClicked && canEdit()" (click)="UpdateStaff()">Update</button>
+            <button class="btn" *ngIf="!ViewStaffClicked && canAdd()" (click)="SubmitStaff()">Submit</button>
           </div>
         </form>
       </div>
@@ -247,7 +296,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Application Status</h5>
-        <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+        <button type="button" class="close" aria-label="Close" (click)="closeModal('status')">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
@@ -257,6 +306,47 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" (click)="handleOk()">OK</button>
       </div>
+    </div>
+  </div>
+</div>
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Syllabus Details</h5>
+        <button type="button" class="close" (click)="closeModal('view')">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-2" *ngIf="viewSyllabus?.Name">
+          <div class="col-4">Name</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.Name }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.AvailableFrom">
+          <div class="col-4">Available From</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.AvailableFrom }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.Description && viewSyllabus.Description.trim() !== ''">
+          <div class="col-4">Description</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.Description }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.IsActive !== null">
+          <div class="col-4">Status</div>
+          <div class="col-8">
+            <span class="badge"
+                  [ngClass]="viewSyllabus?.IsActive ? 'badge-success' : 'badge-danger'">
+              {{ viewSyllabus?.IsActive ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <!-- <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeModal()">Close</button>
+      </div> -->
     </div>
   </div>
 </div>

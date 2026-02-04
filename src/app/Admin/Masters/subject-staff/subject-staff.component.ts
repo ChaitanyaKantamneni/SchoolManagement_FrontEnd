@@ -26,7 +26,7 @@ export class SubjectStaffComponent {
   AminityInsStatus: any = '';
   isModalOpen = false;
   ModuleCount: number = 0;
-  ActiveUserId:string=localStorage.getItem('email')?.toString() || '';
+  ActiveUserId:string=sessionStorage.getItem('email')?.toString() || '';
 
 categories:any[] = [];
 
@@ -302,7 +302,7 @@ toggleSelection(value: string) {
   };
 
   FetchClassList() {
-    const requestData = { Flag: '6' };
+    const requestData = { Flag: '9' };
 
     this.apiurl.post<any>('Tbl_Subject_CRUD_Operations', requestData)
       .subscribe(

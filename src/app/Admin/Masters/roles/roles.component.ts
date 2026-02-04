@@ -45,7 +45,7 @@ export class RolesComponent {
   AminityInsStatus: any = '';
   isModalOpen = false;
   RoleCount: number = 0;
-  ActiveUserId: string = localStorage.getItem('email')?.toString() || '';
+  ActiveUserId: string = sessionStorage.getItem('email')?.toString() || '';
   modules: any[] = [];
   selectedModule: string = '';
   expandedModuleId: string | null = null;
@@ -58,7 +58,7 @@ export class RolesComponent {
     this.FetchPageList();
   };
 
-  roleId: string | null = localStorage.getItem('RollID');
+  roleId: string | null = sessionStorage.getItem('RollID');
 
   isAdmin(): boolean {
     return this.roleId === '1';

@@ -58,8 +58,8 @@ export class SyllabusComponent extends BasePermissionComponent  {
   isModalOpen = false;
   isViewModalOpen= false;
   SyllabusCount: number = 0;
-  ActiveUserId:string=localStorage.getItem('email')?.toString() || '';
-  roleId = localStorage.getItem('RollID');
+  ActiveUserId:string=sessionStorage.getItem('email')?.toString() || '';
+  roleId = sessionStorage.getItem('RollID');
 
   pageCursors: { lastCreatedDate: any; lastID: number }[] = [];
   lastCreatedDate: string | null = null;
@@ -193,7 +193,7 @@ export class SyllabusComponent extends BasePermissionComponent  {
       SchoolName:item.schoolName,
       AcademicYearName:item.academicYearName,
       AvailableFrom: this.formatDateDDMMYYYY(item.availableFrom),
-      IsActive: item.isActive === '1' ? 'Active' : 'InActive'
+      IsActive: item.isActive === true ? 'Active' : 'InActive'
     }));
   };
 
@@ -255,7 +255,7 @@ export class SyllabusComponent extends BasePermissionComponent  {
           return;
         }
 
-        const isActive = item.isActive === "1";
+        const isActive = item.isActive === true;
 
         if (mode === 'view') {
           this.isViewMode = true;

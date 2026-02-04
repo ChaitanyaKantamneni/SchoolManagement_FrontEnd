@@ -21,7 +21,7 @@ import { HttpClient } from '@angular/common/http';
   styleUrls: ['./school-details.component.css']
 })
 export class SchoolDetailsComponent extends BasePermissionComponent {
-  pageName = 'SchoolDetails';
+  pageName = 'School Details';
 
   constructor(
     private http: HttpClient,
@@ -56,8 +56,8 @@ export class SchoolDetailsComponent extends BasePermissionComponent {
   AminityInsStatus: any = '';
   isModalOpen = false;
   isViewModalOpen= false;
-  ActiveUserId:string=localStorage.getItem('email')?.toString() || '';
-  roleId = localStorage.getItem('RollID');
+  ActiveUserId:string=sessionStorage.getItem('email')?.toString() || '';
+  roleId = sessionStorage.getItem('RollID');
 
   pageCursors: { lastCreatedDate: any; lastID: number }[] = [];
   lastCreatedDate: string | null = null;
@@ -72,12 +72,45 @@ export class SchoolDetailsComponent extends BasePermissionComponent {
 
   SchoolsForm: any = new FormGroup({
     ID: new FormControl(),
-    Name: new FormControl('', Validators.required),
-    PhoneNumber: new FormControl('', Validators.required),
-    Email: new FormControl('', Validators.required),
+    Name: new FormControl('', [Validators.required,Validators.pattern('^[a-zA-Z!@#$%^&*()_+\\-=\\[\\]{};:\'",.<>/?|`~]+$')]),
+    PhoneNumber: new FormControl('', [Validators.required,Validators.pattern(/^[0-9]{10}$/)]),
+    Email: new FormControl('', [Validators.required,Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]),
     Website: new FormControl('', Validators.required),
     Address: new FormControl('', Validators.required)
   });
+
+  allowAlphaAndSpecial(event: KeyboardEvent) {
+    const allowedRegex = /^[a-zA-Z!@#$%^&*()_+\-=\[\]{};:'",.<>/?|`~]$/;
+    if (
+      event.key === 'Backspace' ||
+      event.key === 'Tab' ||
+      event.key === 'ArrowLeft' ||
+      event.key === 'ArrowRight' ||
+      event.key === 'Delete'
+    ) {
+      return;
+    }
+
+    if (!allowedRegex.test(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  allowOnlyNumbers(event: KeyboardEvent) {
+    if (
+      event.key === 'Backspace' ||
+      event.key === 'Tab' ||
+      event.key === 'ArrowLeft' ||
+      event.key === 'ArrowRight' ||
+      event.key === 'Delete'
+    ) {
+      return;
+    }
+
+    if (!/^[0-9]$/.test(event.key)) {
+      event.preventDefault();
+    }
+  }
 
   protected override get isAdmin(): boolean {
     return this.roleId === '1';
