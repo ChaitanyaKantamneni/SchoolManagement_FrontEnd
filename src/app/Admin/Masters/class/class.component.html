@@ -120,7 +120,7 @@
           <div class="FormInputRowsContainer">
             <div class="InputRow">
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Name</label>
+                <label class="inputLabel" for="email">Name <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" formControlName="Name" placeholder="Enter Name" />
                   <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
@@ -131,17 +131,15 @@
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Syllabus</label>
+                <label class="inputLabel" for="email">Syllabus <span class="required">*</span></label>
                 <div class="input-with-error">
                   <select class="inputField" type="date" formControlName="Syllabus" placeholder="Select Start Date">
                     <option value="0" disabled>Select Syllabus</option>
                     <option *ngFor="let Syllabus of SyllabusList" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option>
                   </select>
                   <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Select Syllabus.</small>
-                    </div>
+                  <div *ngIf="ClassForm.get('Syllabus')?.hasError('min') && (ClassForm.get('Syllabus')?.touched || ClassForm.get('Syllabus')?.dirty)" class="text-danger">
+                    <small>Please Select Syllabus.</small>
                   </div>
                 </div>
               </div>
@@ -163,8 +161,8 @@
                 <div class="input-with-error">
                   <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="2"></textarea>
                   <!-- <input class="inputField" id="email" formControlName="Name" placeholder="Enter Name" /> -->
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                  <div *ngIf="(ClassForm.get('Description' ) ?. touched && ClassForm.get('Description' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Description' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter Description.</small>
                     </div>
                   </div>

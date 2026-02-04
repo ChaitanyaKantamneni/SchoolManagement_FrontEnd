@@ -13,7 +13,6 @@ import { SchoolCacheService } from '../../../Services/school-cache.service';
 import { LoaderService } from '../../../Services/loader.service';
 import { HttpClient } from '@angular/common/http';
 
-
 @Component({
   selector: 'app-syllabus',
   standalone:true,
@@ -104,8 +103,13 @@ export class SyllabusComponent extends BasePermissionComponent  {
       );
   };
 
+  // protected override get isAdmin(): boolean {
+  //   return this.roleId === '1';
+  // }
+
   protected override get isAdmin(): boolean {
-    return this.roleId === '1';
+    const role = sessionStorage.getItem('RollID') || localStorage.getItem('RollID');
+    return role === '1';
   }
 
   FetchAcademicYearCount(isSearch: boolean) {

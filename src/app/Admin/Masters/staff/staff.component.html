@@ -133,7 +133,7 @@
           <div class="FormInputRowsContainer">
             <div class="InputRow">
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Staff Type</label>
+                <label class="inputLabel" for="email">Staff Type <span class="required">*</span></label>
                 <div class="input-with-error">
                   <!-- <select class="inputField" type="date" formControlName="StaffType" placeholder="Select Class">
                     <option value="0" disabled>Select Staff Type</option>
@@ -164,9 +164,9 @@
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">First Name</label>
+                <label class="inputLabel" for="email">First Name <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="FirstName" placeholder="Enter First Name" (focus)="closeDropdown()" />
+                  <input class="inputField" formControlName="FirstName" placeholder="Enter First Name" (focus)="closeDropdown()" (keydown)="allowAlphaAndSpecial($event)" />
                   <div *ngIf="(StaffForm.get('FirstName' ) ?. touched && StaffForm.get('FirstName' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(StaffForm.get('FirstName' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter First Name.</small>
@@ -177,7 +177,7 @@
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Middle Name</label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="MiddleName" placeholder="Enter Middle Name" (focus)="closeDropdown()" />
+                  <input class="inputField" formControlName="MiddleName" placeholder="Enter Middle Name" (focus)="closeDropdown()" (keydown)="allowAlphaAndSpecial($event)" />
                   <div *ngIf="(StaffForm.get('MiddleName' ) ?. touched && StaffForm.get('MiddleName' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(StaffForm.get('MiddleName' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter Middle Name.</small>
@@ -190,7 +190,7 @@
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Last Name</label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="LastName" placeholder="Enter Last Name" (focus)="closeDropdown()" />
+                  <input class="inputField" formControlName="LastName" placeholder="Enter Last Name" (focus)="closeDropdown()" (keydown)="allowAlphaAndSpecial($event)" />
                   <div *ngIf="(StaffForm.get('LastName' ) ?. touched && StaffForm.get('LastName' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(StaffForm.get('LastName' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter Last Name.</small>
@@ -199,23 +199,29 @@
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mobile Number</label>
+                <label class="inputLabel" for="email">Mobile Number <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="MobileNumber" placeholder="Enter Mobile Number" (focus)="closeDropdown()" />
+                  <input class="inputField" formControlName="MobileNumber" placeholder="Enter Mobile Number" (focus)="closeDropdown()" minlength="10" maxlength="10" (keydown)="allowOnlyNumbers($event)" />
                   <div *ngIf="(StaffForm.get('MobileNumber' ) ?. touched && StaffForm.get('MobileNumber' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(StaffForm.get('MobileNumber' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter Mobile Number.</small>
+                    </div>
+                    <div *ngIf="(StaffForm.get('MobileNumber' ) ?. errors ?. ['pattern' ]) ">
+                      <small>Mobile number must be exactly 10 digits.</small>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Email</label>
+                <label class="inputLabel" for="email">Email <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" formControlName="Email" placeholder="Enter Email" (focus)="closeDropdown()" />
                   <div *ngIf="(StaffForm.get('Email' ) ?. touched && StaffForm.get('Email' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(StaffForm.get('Email' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter Email.</small>
+                    </div>
+                    <div *ngIf="(StaffForm.get('Email' ) ?. errors ?. ['pattern' ]) ">
+                      <small>Invalid email format.</small>
                     </div>
                   </div>
                 </div>
@@ -223,7 +229,7 @@
             </div>
             <div class="InputRow">
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Date of Birth</label>
+                <label class="inputLabel" for="email">Date of Birth <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input type="date" class="inputField" formControlName="DateOfBirth" placeholder="Enter Date of Birth" (focus)="closeDropdown()" />
                   <div *ngIf="(StaffForm.get('DateOfBirth' ) ?. touched && StaffForm.get('DateOfBirth' ) ?. invalid)" class="text-danger">
@@ -234,7 +240,7 @@
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Qualification</label>
+                <label class="inputLabel" for="email">Qualification <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" formControlName="Qualification" placeholder="Enter Qualification" (focus)="closeDropdown()" />
                   <div *ngIf="(StaffForm.get('Qualification' ) ?. touched && StaffForm.get('Qualification' ) ?. invalid)" class="text-danger">

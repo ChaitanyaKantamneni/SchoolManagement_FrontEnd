@@ -125,7 +125,7 @@
                   </div>
                 </div>
               </div>
-              <!-- <div class="InputFieldsContainer">
+              <div class="InputFieldsContainer">
                 <label class="inputLabel" for="StartDate">Start Date <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" type="date" formControlName="StartDate" placeholder="Select Start Date" />
@@ -145,9 +145,12 @@
                       <small>Please Select End Date.</small>
                     </div>
                   </div>
+                  <div *ngIf="AcademicYearForm.errors?.['dateRangeInvalid'] && AcademicYearForm.get('EndDate')?.touched" class="text-danger">
+                    <small>End Date cannot be earlier than Start Date.</small>
+                  </div>
                 </div>
-              </div> -->
-              <div class="InputFieldsContainer">
+              </div>
+              <!-- <div class="InputFieldsContainer">
   <label class="inputLabel">Start Date <span class="required">*</span></label>
   <div class="input-with-error">
     <input class="inputField" type="date" formControlName="StartDate" />
@@ -168,7 +171,7 @@
       <small *ngIf="AcademicYearForm.get('EndDate')?.errors?.['endExceedsYear']">End Date cannot exceed 1 year after Start Date.</small>
     </div>
   </div>
-</div>
+</div> -->
 
             </div>
             <div class="InputRow">

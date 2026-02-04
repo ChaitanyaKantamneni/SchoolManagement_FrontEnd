@@ -88,10 +88,10 @@ export const routes: Routes = [
       { path: 'Promotion', component: PromotionComponent },
       { path: 'DePromotion', component: DePromotionComponent },
       { path: 'TransferStudents', component: TransferStudentsComponent },
-      { path: 'Buses', component: BusesComponent },
+      { path: 'Bus', component: BusesComponent },
       { path: 'Routes', component: RoutesComponent },
       { path: 'Stops', component: StopsComponent },
-      { path: 'Fare', component: FareComponent },
+      { path: 'Fares', component: FareComponent }
     ]
   },
 
@@ -116,9 +116,10 @@ export const routes: Routes = [
       { path: 'Promotion', component: PromotionComponent },
       { path: 'DePromotion', component: DePromotionComponent },
       { path: 'TransferStudents', component: TransferStudentsComponent },
-      { path: 'Buses', component: BusesComponent },
+      { path: 'Bus', component: BusesComponent },
       { path: 'Routes', component: RoutesComponent },
-      { path: 'Stops', component: StopsComponent }
+      { path: 'Stops', component: StopsComponent },
+      { path: 'Fares', component: FareComponent }
     ]
   },
 
@@ -147,9 +148,10 @@ export const routes: Routes = [
       { path: 'Promotion', component: PromotionComponent },
       { path: 'DePromotion', component: DePromotionComponent },
       { path: 'TransferStudents', component: TransferStudentsComponent },
-      { path: 'Buses', component: BusesComponent },
+      { path: 'Bus', component: BusesComponent },
       { path: 'Routes', component: RoutesComponent },
-      { path: 'Stops', component: StopsComponent }
+      { path: 'Stops', component: StopsComponent },
+      { path: 'Fares', component: FareComponent }
     ]
   }
 ];

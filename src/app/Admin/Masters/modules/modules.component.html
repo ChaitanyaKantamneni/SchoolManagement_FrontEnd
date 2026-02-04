@@ -100,9 +100,9 @@
           <div class="FormInputRowsContainer">
             <div class="InputRow">
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Name</label>
+                <label class="inputLabel" for="email">Name <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" (keydown)="allowAlphaAndSpecial($event)" />
                   <div *ngIf="(ModuleForm.get('Name' ) ?. touched && ModuleForm.get('Name' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(ModuleForm.get('Name' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter Name.</small>

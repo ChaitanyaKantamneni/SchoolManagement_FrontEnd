@@ -204,6 +204,12 @@ export class MenuServiceService {
   canAdd(page: Page): boolean { return page.canAdd === '1'; }
   canEdit(page: Page): boolean { return page.canEdit === '1'; }
   canDelete(page: Page): boolean { return page.canDelete === '1'; }
+
+  clearMenu() {
+    this.menu = [];
+    sessionStorage.removeItem('menu');
+    this.menuLoadedSource.next(false);
+  }
 }
 
 

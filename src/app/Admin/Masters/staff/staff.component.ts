@@ -77,15 +77,48 @@ export class StaffComponent extends BasePermissionComponent {
   StaffForm: any = new FormGroup({
     ID: new FormControl(),
     StaffType: new FormControl([], Validators.required),
-    FirstName: new FormControl('', Validators.required),
-    MiddleName:new FormControl(),
-    LastName: new FormControl(),
-    MobileNumber: new FormControl('', Validators.required),
-    Email: new FormControl('', Validators.required),
+    FirstName: new FormControl('',[Validators.required,Validators.pattern('^[a-zA-Z!@#$%^&*()_+\\-=\\[\\]{};:\'",.<>/?|`~]+$')]),
+    MiddleName:new FormControl('',[Validators.pattern('^[a-zA-Z!@#$%^&*()_+\\-=\\[\\]{};:\'",.<>/?|`~]+$')]),
+    LastName: new FormControl('',[Validators.pattern('^[a-zA-Z!@#$%^&*()_+\\-=\\[\\]{};:\'",.<>/?|`~]+$')]),
+    MobileNumber: new FormControl('', [Validators.required,Validators.pattern(/^[0-9]{10}$/)]),
+    Email: new FormControl('', [Validators.required,Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]),
     DateOfBirth:new FormControl('', Validators.required),
     Qualification: new FormControl('', Validators.required),
     School:new FormControl()
   });
+
+  allowAlphaAndSpecial(event: KeyboardEvent) {
+    const allowedRegex = /^[a-zA-Z!@#$%^&*()_+\-=\[\]{};:'",.<>/?|`~]$/;
+    if (
+      event.key === 'Backspace' ||
+      event.key === 'Tab' ||
+      event.key === 'ArrowLeft' ||
+      event.key === 'ArrowRight' ||
+      event.key === 'Delete'
+    ) {
+      return;
+    }
+
+    if (!allowedRegex.test(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  allowOnlyNumbers(event: KeyboardEvent) {
+    if (
+      event.key === 'Backspace' ||
+      event.key === 'Tab' ||
+      event.key === 'ArrowLeft' ||
+      event.key === 'ArrowRight' ||
+      event.key === 'Delete'
+    ) {
+      return;
+    }
+
+    if (!/^[0-9]$/.test(event.key)) {
+      event.preventDefault();
+    }
+  }
 
   FetchSchoolsList() {
     const requestData = { Flag: '2' };

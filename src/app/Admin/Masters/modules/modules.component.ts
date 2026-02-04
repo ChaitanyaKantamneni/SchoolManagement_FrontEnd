@@ -72,9 +72,26 @@ export class ModulesComponent extends BasePermissionComponent {
 
   ModuleForm: any = new FormGroup({
     ID: new FormControl(),
-    Name: new FormControl('', Validators.required),
+    Name: new FormControl('', [Validators.required,Validators.pattern('^[a-zA-Z!@#$%^&*()_+\\-=\\[\\]{};:\'",.<>/?|`~]+$')]),
     Description: new FormControl()
   });
+
+  allowAlphaAndSpecial(event: KeyboardEvent) {
+    const allowedRegex = /^[a-zA-Z!@#$%^&*()_+\-=\[\]{};:'",.<>/?|`~]$/;
+    if (
+      event.key === 'Backspace' ||
+      event.key === 'Tab' ||
+      event.key === 'ArrowLeft' ||
+      event.key === 'ArrowRight' ||
+      event.key === 'Delete'
+    ) {
+      return;
+    }
+
+    if (!allowedRegex.test(event.key)) {
+      event.preventDefault();
+    }
+  }
 
   protected override get isAdmin(): boolean {
     return this.roleId === '1';

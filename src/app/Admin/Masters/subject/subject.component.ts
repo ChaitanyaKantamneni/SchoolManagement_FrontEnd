@@ -76,8 +76,8 @@ export class SubjectComponent extends BasePermissionComponent {
 
   ModuleForm: any = new FormGroup({
     ID: new FormControl(),
-    Class:new FormControl(),
-    Name: new FormControl(),
+    Class:new FormControl([],Validators.required),
+    Name: new FormControl('',Validators.required),
     Description: new FormControl(),
     Topics: new FormControl(),
     School: new FormControl()
