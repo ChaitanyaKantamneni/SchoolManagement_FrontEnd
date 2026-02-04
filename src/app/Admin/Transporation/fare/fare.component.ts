@@ -13,15 +13,16 @@ import { SchoolCacheService } from '../../../Services/school-cache.service';
 import { LoaderService } from '../../../Services/loader.service';
 import { HttpClient } from '@angular/common/http';
 
+
 @Component({
-  selector: 'app-stops',
+  selector: 'app-fare',
   standalone:true,
   imports: [NgIf,NgFor,NgClass,NgStyle,MatIconModule,DashboardTopNavComponent,ReactiveFormsModule,FormsModule],
-  templateUrl: './stops.component.html',
-  styleUrls: ['./stops.component.css']
+  templateUrl: './fare.component.html',
+  styleUrls: ['./fare.component.css']
 })
-export class StopsComponent extends BasePermissionComponent {
-  pageName = 'Buses';
+export class FareComponent extends BasePermissionComponent{
+  pageName = 'Fares';
 
   constructor(
     private http: HttpClient,
@@ -37,25 +38,8 @@ export class StopsComponent extends BasePermissionComponent {
     this.checkViewPermission();
     this.SchoolSelectionChange=false;
     this.FetchSchoolsList();
-    this.FetchInitialData();
+    this.FetchInitialData();    
   };
-
-  allowAlphaAndSpecial(event: KeyboardEvent) {
-    const allowedRegex = /^[a-zA-Z!@#$%^&*()_+\-=\[\]{};:'",.<>/?|`~]$/;
-    if (
-      event.key === 'Backspace' ||
-      event.key === 'Tab' ||
-      event.key === 'ArrowLeft' ||
-      event.key === 'ArrowRight' ||
-      event.key === 'Delete'
-    ) {
-      return;
-    }
-
-    if (!allowedRegex.test(event.key)) {
-      event.preventDefault();
-    }
-  }
 
   allowOnlyNumbers(event: KeyboardEvent) {
     if (
@@ -73,6 +57,86 @@ export class StopsComponent extends BasePermissionComponent {
     }
   }
 
+  RouteChange(routeId: any) {
+    this.FetchStopsListBySelectedRouteList(routeId);
+  }
+
+
+  FetchRoutesList() {
+    const requestData = { Flag: '3' };
+
+    this.apiurl.post<any>('Tbl_Route_CRUD_Operations', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.RouteList = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.id,
+                Name: item.name,
+                IsActive: isActiveString
+              };
+            });            
+          } else {
+            this.RouteList = [];
+          }
+        },
+        (error) => {
+          this.RouteList = [];
+        }
+      );
+  };
+
+  FetchStopsListBySelectedRouteList(Route:any ) {
+    const requestData = { Route,Flag: '3' };
+
+    this.apiurl.post<any>('Tbl_Stops_CRUD_Operations', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.StopList = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.id,
+                Name: item.stopName,
+                IsActive: isActiveString
+              };
+            });            
+          } else {
+            this.StopList = [];
+          }
+        },
+        (error) => {
+          this.StopList = [];
+        }
+      );
+  };
+
+  FetchBusList() {
+    const requestData = { Flag: '3' };
+
+    this.apiurl.post<any>('Tbl_Bus_CRUD_Operations', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.BusList = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.id,
+                Name: item.name,
+                IsActive: isActiveString
+              };
+            });            
+          } else {
+            this.BusList = [];
+          }
+        },
+        (error) => {
+          this.BusList = [];
+        }
+      );
+  };
+
   IsAddNewClicked:boolean=false;
   IsActiveStatus:boolean=false;
   ViewSyllabusClicked:boolean=false;
@@ -85,6 +149,8 @@ export class StopsComponent extends BasePermissionComponent {
   private readonly SEARCH_DEBOUNCE = 300;
   SyllabusList: any[] =[];
   RouteList: any[] =[];
+  StopList: any[] =[];
+  BusList:any[] =[];
   isViewMode = false;
   viewSyllabus: any = null;
   AminityInsStatus: any = '';
@@ -107,10 +173,11 @@ export class StopsComponent extends BasePermissionComponent {
 
   SyllabusForm: any = new FormGroup({
     ID: new FormControl(),
-    Route:new FormControl(0, Validators.min(1)),
-    Name: new FormControl('', [Validators.required,Validators.pattern('^[a-zA-Z!@#$%^&*()_+\\-=\\[\\]{};:\'",.<>/?|`~]+$')]),
-    StopOrder: new FormControl('', [Validators.required,Validators.pattern('^[0-9]+$')]),
-    Distance:new FormControl('', [Validators.required,Validators.pattern('^[0-9]+$')])
+    SchoolID: new FormControl(),
+    Route: new FormControl(0, Validators.min(1)),
+    Stop: new FormControl(0, Validators.min(1)),
+    Bus: new FormControl(0, Validators.min(1)),
+    Amount: new FormControl('', [Validators.required,Validators.pattern('^[0-9]+$')]),
   });
 
   FetchSchoolsList() {
@@ -138,31 +205,6 @@ export class StopsComponent extends BasePermissionComponent {
       );
   };
 
-  FetchRoutesList() {
-    const requestData = { Flag: '3' };
-
-    this.apiurl.post<any>('Tbl_Route_CRUD_Operations', requestData)
-      .subscribe(
-        (response: any) => {
-          if (response && Array.isArray(response.data)) {
-            this.RouteList = response.data.map((item: any) => {
-              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
-              return {
-                ID: item.id,
-                Name: item.name,
-                IsActive: isActiveString
-              };
-            });            
-          } else {
-            this.RouteList = [];
-          }
-        },
-        (error) => {
-          this.RouteList = [];
-        }
-      );
-  };
-
   protected override get isAdmin(): boolean {
     return this.roleId === '1';
   }
@@ -174,7 +216,7 @@ export class StopsComponent extends BasePermissionComponent {
       SchoolIdSelected = this.selectedSchoolID.trim();
     }
 
-    return this.apiurl.post<any>('Tbl_Stops_CRUD_Operations', {
+    return this.apiurl.post<any>('Tbl_Fare_CRUD_Operations', {
       Flag: isSearch ? '8' : '6',
       SchoolID:SchoolIdSelected,
       StopName: isSearch ? this.searchQuery.trim() : null
@@ -215,7 +257,7 @@ export class StopsComponent extends BasePermissionComponent {
 
         if (isSearch) payload.Name = this.searchQuery.trim();
 
-        this.apiurl.post<any>('Tbl_Stops_CRUD_Operations', payload).subscribe({
+        this.apiurl.post<any>('Tbl_Fare_CRUD_Operations', payload).subscribe({
           next: (response: any) => {
             const data = response?.data || [];
             this.mapAcademicYears(response);
@@ -247,20 +289,28 @@ export class StopsComponent extends BasePermissionComponent {
   mapAcademicYears(response: any) {
     this.SyllabusList = (response.data || []).map((item: any) => ({
       ID: item.id,
-      // SchoolName: schoolMap[item.schoolID] ?? `School-${item.schoolID}`,
       SchoolName:item.schoolName,
+      RouteID: item.routeID,
+      StopID: item.stopID,
+      BusID: item.busID,
+      Amount: item.amount,
       RouteName:item.routeName,
-      StopName: item.stopName,
-      StopOrder: item.stopOrder,
-      Distance: item.distance,
-      IsActive: item.isActive === "True" ? 'Active' : 'InActive'
+      StopName:item.stopName,
+      BusName:item.busName,
+      // Description:item.Description,
+      IsActive: item.isActive === "True" ? 'Active' : 'InActive',
+      AcademicYearName:item.academicYearName,
+
     }));
   };
 
   AddNewClicked(){
     this.FetchRoutesList();
+    this.FetchBusList();
     this.SyllabusForm.reset();
     this.SyllabusForm.get('Route').patchValue('0');
+    this.SyllabusForm.get('Stop').patchValue('0');
+    this.SyllabusForm.get('Bus').patchValue('0');
     this.IsAddNewClicked=!this.IsAddNewClicked;
     this.IsActiveStatus=true;
     this.ViewSyllabusClicked=false;
@@ -274,26 +324,27 @@ export class StopsComponent extends BasePermissionComponent {
     else{
       const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
       const data = {
-        Route: this.SyllabusForm.get('Route')?.value,
-        StopName: this.SyllabusForm.get('Name')?.value,
-        StopOrder: this.SyllabusForm.get('StopOrder')?.value,
-        Distance: this.SyllabusForm.get('Distance')?.value,
+        // SchoolID: this.SyllabusForm.get('ID')?.value,
+        RouteID: this.SyllabusForm.get('Route')?.value,
+        StopID: this.SyllabusForm.get('Stop')?.value,
+        BusID: this.SyllabusForm.get('Bus')?.value,
+        Amount: this.SyllabusForm.get('Amount')?.value,
         IsActive:IsActiveStatusNumeric,
         Flag: '1'
       };
 
-      this.apiurl.post("Tbl_Stops_CRUD_Operations", data).subscribe({
+      this.apiurl.post("Tbl_Fare_CRUD_Operations", data).subscribe({
         next: (response: any) => {
           if (response.statusCode === 200) {
             this.IsAddNewClicked=!this.IsAddNewClicked;
             this.isModalOpen = true;
-            this.AminityInsStatus = "Bus Route Stop Details Submitted!";
+            this.AminityInsStatus = "Fare Details Submitted!";
             this.SyllabusForm.reset();
             this.SyllabusForm.markAsPristine();
           }
         },
         error: (error) => {
-          this.AminityInsStatus = "Error Updating Bus Route stop.";
+          this.AminityInsStatus = "Error Updating Fare.";
           this.isModalOpen = true;
         },
         complete: () => {
@@ -314,7 +365,7 @@ export class StopsComponent extends BasePermissionComponent {
       Flag: "4"
     };
 
-    this.apiurl.post<any>("Tbl_Stops_CRUD_Operations", data).subscribe(
+    this.apiurl.post<any>("Tbl_Fare_CRUD_Operations", data).subscribe(
       (response: any) => {
 
         const item = response?.data?.[0];
@@ -324,18 +375,22 @@ export class StopsComponent extends BasePermissionComponent {
           return;
         }
 
+        this.FetchStopsListBySelectedRouteList(item.routeID);
         const isActive = item.isActive === "True";
 
         if (mode === 'view') {
           this.isViewMode = true;
           this.viewSyllabus = {
             ID: item.id,
-            // SchoolName: schoolMap[item.schoolID] ?? `School-${item.schoolID}`,
             SchoolName:item.schoolName,
+            RouteID: item.routeID,
+            StopID: item.stopID,
+            BusID: item.busID,
+            Amount: item.amount,
             RouteName:item.routeName,
-            StopName: item.stopName,
-            StopOrder: item.stopOrder,
-            Distance: item.distance,
+            StopName:item.stopName,
+            BusName:item.busName,
+            AcademicYearName:item.academicYearName,
             IsActive: isActive
           };
           this.isViewModalOpen = true;
@@ -346,10 +401,11 @@ export class StopsComponent extends BasePermissionComponent {
           this.SyllabusForm.patchValue({
             ID: item.id,
             // SchoolName: schoolMap[item.schoolID] ?? `School-${item.schoolID}`,
-            Route:item.route,
-            Name: item.stopName,
-            StopOrder: item.stopOrder,
-            Distance: item.distance
+            // SchoolName:item.schoolName,
+            Route: item.routeID,
+            Stop: item.stopID,
+            Bus: item.busID,
+            Amount: item.amount
           });
           this.IsActiveStatus = isActive;
           this.IsAddNewClicked = true;
@@ -363,7 +419,9 @@ export class StopsComponent extends BasePermissionComponent {
   };
 
   UpdateSyllabus(){
+    debugger
     if(this.SyllabusForm.invalid){
+      console.log('this.SyllabusForm',this.SyllabusForm);
       this.SyllabusForm.markAllAsTouched();
       return;
     }
@@ -371,26 +429,27 @@ export class StopsComponent extends BasePermissionComponent {
       const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
       const data = {
         ID:this.SyllabusForm.get('ID')?.value || '',
-        Route: this.SyllabusForm.get('Route')?.value,
-        StopName: this.SyllabusForm.get('Name')?.value,
-        StopOrder: this.SyllabusForm.get('StopOrder')?.value,
-        Distance: this.SyllabusForm.get('Distance')?.value,
+        RouteID: this.SyllabusForm.get('Route')?.value,
+        StopID: this.SyllabusForm.get('Stop')?.value,
+        BusID: this.SyllabusForm.get('Bus')?.value,
+        Amount: this.SyllabusForm.get('Amount')?.value,
         IsActive:IsActiveStatusNumeric,
+        AcademicYear: this.SyllabusForm.get('AcademicYear')?.value,
         Flag: '5'
       };
 
-      this.apiurl.post("Tbl_Stops_CRUD_Operations", data).subscribe({
+      this.apiurl.post("Tbl_Fare_CRUD_Operations", data).subscribe({
         next: (response: any) => {
           if (response.statusCode === 200) {
             this.IsAddNewClicked=!this.IsAddNewClicked;
             this.isModalOpen = true;
-            this.AminityInsStatus = "Bus Route Stop Details Updated!";
+            this.AminityInsStatus = "Fare Details Updated!";
             this.SyllabusForm.reset();
             this.SyllabusForm.markAsPristine();
           }
         },
         error: (error) => {
-          this.AminityInsStatus = "Error Updating Bus Route Stop.";
+          this.AminityInsStatus = "Error Updating Fare.";
           this.isModalOpen = true;
         },
         complete: () => {
@@ -512,6 +571,7 @@ export class StopsComponent extends BasePermissionComponent {
   editreview(SyllabusID: string): void {
     this.editclicked=true;
     this.FetchRoutesList();
+    this.FetchBusList();
     this.FetchSyllabusDetByID(SyllabusID,'edit');
     this.ViewSyllabusClicked=true;
   };

@@ -60,6 +60,7 @@ import { BusesComponent } from './Admin/Transporation/buses/buses.component';
 import { RoutesComponent } from './Admin/Transporation/routes/routes.component';
 import { StopsComponent } from './Admin/Transporation/stops/stops.component';
 import { schoolGuard } from './guards/school.guard';
+import { FareComponent } from './Admin/Transporation/fare/fare.component';
 
 export const routes: Routes = [
   { path: '', component: SignInComponent },
@@ -89,7 +90,8 @@ export const routes: Routes = [
       { path: 'TransferStudents', component: TransferStudentsComponent },
       { path: 'Buses', component: BusesComponent },
       { path: 'Routes', component: RoutesComponent },
-      { path: 'Stops', component: StopsComponent }
+      { path: 'Stops', component: StopsComponent },
+      { path: 'Fare', component: FareComponent },
     ]
   },
 
