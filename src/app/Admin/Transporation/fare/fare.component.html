@@ -5,11 +5,11 @@
   <div *ngIf="!IsAddNewClicked" class="w-100">
     <div class="ComponentTop">
       <div class="ComponentTopHeader">
-        <h5>Bus Routes Management</h5>
-        <p>Total {{ SyllabusCount }} Routes Added</p>
+        <h5>Bus Fare Management</h5>
+        <p>Total {{ SyllabusCount }} Fares Added</p>
       </div>
       <div class="ComponentTopBottom">
-        <button *ngIf="canAdd()" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Route</button>
+        <button *ngIf="canAdd()" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Fare</button>
       </div>
     </div>
     <div class="ComponentRecords">
@@ -22,7 +22,7 @@
               <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
               <!-- <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i> -->
             </div>
-            <div class="searchreview" *ngIf="isAdmin">
+            <div class="searchreview" *ngIf="isAdmin && SyllabusList.length != 0">
               <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
                 <option value="">-- Select School --</option>
                 <option value="0">All Schools</option>
@@ -44,20 +44,11 @@
               <tr>
                 <th class="visually-hidden">Academic Year ID</th>
                 <th>SI.No</th>
-                <th (click)="sort('Name')" class="sortable-column">
-                  <span class="column-text">Route</span>
-                  <span class="arrows">
-                    <mat-icon 
-                      [style.color]="sortColumn === 'Name' && sortDirection === 'asc' ? 'red' : 'inherit'">
-                      keyboard_arrow_up
-                    </mat-icon>
-                    <mat-icon 
-                      [style.color]="sortColumn === 'Name' && sortDirection === 'desc' ? 'red' : 'inherit'">
-                      keyboard_arrow_down
-                    </mat-icon>
-                  </span>
-                </th>
                 <th *ngIf="isAdmin">School Name</th>
+                <th>Route</th>
+                <th>Stop</th>                
+                <th>Bus</th>
+                <th>Amount</th>
                 <th>Status</th>               
                 <th>Actions</th>
               </tr>
@@ -66,8 +57,11 @@
               <tr *ngFor="let Syllabus of SyllabusList,let i = index">
                 <td data-label="ID" class="visually-hidden">{{ Syllabus.ID }}</td>
                 <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-                <td data-label="Name">{{ Syllabus.Name }}</td>
                 <td data-label="SchoolName" *ngIf="isAdmin">{{ Syllabus.SchoolName }}</td>
+                <td data-label="RouteName">{{ Syllabus.RouteName }}</td>
+                <td data-label="StopName">{{ Syllabus.StopName }}</td>                
+                <td data-label="BusName">{{ Syllabus.BusName }}</td>
+                <td data-label="Amount">{{ Syllabus.Amount }}</td>                
                 <td data-label="Status">{{ Syllabus.IsActive }}</td>
                 <td data-label="Actions">
                   <div class="d-flex justify-content-center align-items-center h-100">
@@ -109,40 +103,64 @@
     <div class="AddForm">
       <div class="AddFormTop">
         <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
-        <p>Add Route</p>
+        <p>Add Fare</p>
       </div>
       <div class="AddFormConatiner">
         <form [formGroup]="SyllabusForm">
           <div class="FormInputRowsContainer">
             <div class="InputRow">
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Name <span class="required">*</span></label>
+                <label class="inputLabel" for="email">Route <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" (keydown)="allowAlphaAndSpecial($event)" />
-                  <div *ngIf="(SyllabusForm.get('Name' ) ?. touched && SyllabusForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(SyllabusForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                    <div *ngIf="(SyllabusForm.get('Name' ) ?. errors ?. ['pattern' ]) ">
-                      <small>Only Alphabets and Special Characters.</small>
-                    </div>
+                  <select class="inputField" type="date" formControlName="Route" placeholder="Select Class" (change)="RouteChange($any($event.target).value)">
+                    <option value="0" disabled>Select Route</option>
+                    <option *ngFor="let Route of RouteList" value="{{Route.ID}}">{{Route.Name}}</option>
+                  </select>
+                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                  <div *ngIf="SyllabusForm.get('Route')?.hasError('min') && (SyllabusForm.get('Route')?.touched || SyllabusForm.get('Route')?.dirty)" class="text-danger">
+                      <small>Please Select Bus Route.</small>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Distance <span class="required">*</span></label>
+                <label class="inputLabel" for="email">Stop <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Distance" placeholder="Enter Distance" (keydown)="allowOnlyNumbers($event)" />
-                  <div *ngIf="(SyllabusForm.get('Distance' ) ?. touched && SyllabusForm.get('Distance' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(SyllabusForm.get('Distance' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Distance.</small>
-                    </div>
-                    <div *ngIf="(SyllabusForm.get('Distance' ) ?. errors ?. ['pattern' ]) ">
-                      <small>Only Numbers.</small>
+                  <select class="inputField" type="date" formControlName="Stop" placeholder="Select Stop">
+                    <option value="0" disabled>Select Stop</option>
+                    <option *ngFor="let Stop of StopList" value="{{Stop.ID}}">{{Stop.Name}}</option>
+                  </select>
+                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                  <div *ngIf="SyllabusForm.get('Stop')?.hasError('min') && (SyllabusForm.get('Stop')?.touched || SyllabusForm.get('Stop')?.dirty)" class="text-danger">
+                      <small>Please Select Stop.</small>
+                  </div>
+                </div>
+              </div>    
+            </div>
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Bus <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="Bus" placeholder="Select Bus">
+                    <option value="0" disabled>Select Bus</option>
+                    <option *ngFor="let Bus of BusList" value="{{Bus.ID}}">{{Bus.Name}}</option>
+                  </select>
+                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                  <div *ngIf="SyllabusForm.get('Bus')?.hasError('min') && (SyllabusForm.get('Bus')?.touched || SyllabusForm.get('Bus')?.dirty)" class="text-danger">
+                      <small>Please Select Bus.</small>
+                  </div>
+                </div>
+              </div> 
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Amount <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Amount" placeholder="Enter Amount" maxlength="5" (keydown)="allowOnlyNumbers($event)" />
+                  <div *ngIf="(SyllabusForm.get('Amount' ) ?. touched && SyllabusForm.get('Amount' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(SyllabusForm.get('Amount' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Amount.</small>
                     </div>
                   </div>
                 </div>
-              </div>             
+              </div>     
             </div>
             <div class="InputRow">
               <div class="InputFieldsContainer">
@@ -196,21 +214,33 @@
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">View Route</h5>
+        <h5 class="modal-title">View Fare</h5>
         <button type="button" class="close" (click)="closeModal('view')">
           <span>&times;</span>
         </button>
       </div>
       <div class="modal-body">
         <div class="row mb-2">
-          <div class="col-4">Name</div>
-          <div class="col-8">{{ viewSyllabus?.Name }}</div>
+          <div class="col-4">Route</div>
+          <div class="col-8">{{ viewSyllabus?.RouteName }}</div>
         </div>
 
         <div class="row mb-2">
-          <div class="col-4">Distance</div>
-          <div class="col-8">{{ viewSyllabus?.Distance }}</div>
+          <div class="col-4">Stop </div>
+          <div class="col-8">{{ viewSyllabus?.StopName }}</div>
         </div>
+
+         <div class="row mb-2">
+          <div class="col-4"> Bus</div>
+          <div class="col-8">{{ viewSyllabus?.BusName }}</div>
+        </div>
+
+         <div class="row mb-2">
+          <div class="col-4">Amount </div>
+          <div class="col-8">{{ viewSyllabus?.Amount }}</div>
+        </div>
+
+      
 
         <div class="row mb-2">
           <div class="col-4">Status</div>
