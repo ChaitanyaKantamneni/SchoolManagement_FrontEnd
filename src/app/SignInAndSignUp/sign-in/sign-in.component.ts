@@ -33,10 +33,10 @@ export class SignInComponent {
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-      localStorage.clear();
+      sessionStorage.clear();
       this.generateCaptcha();
     }
-    // localStorage.clear();
+    // sessionStorage.clear();
     // this.generateCaptcha();
   }
   togglePasswordVisibility(){
@@ -115,18 +115,18 @@ export class SignInComponent {
 
   //       const email = this.LoginForms.get('email')?.value;
 
-  //       localStorage.setItem('accessToken', result.accessToken);
-  //       localStorage.setItem('refreshToken', result.refreshToken);
+  //       sessionStorage.setItem('accessToken', result.accessToken);
+  //       sessionStorage.setItem('refreshToken', result.refreshToken);
 
   //       if (userData.rollId === "1") {
   //         this.RollID = "1";
-  //         localStorage.setItem("email", email);
-  //         localStorage.setItem("RollID", this.RollID);
+  //         sessionStorage.setItem("email", email);
+  //         sessionStorage.setItem("RollID", this.RollID);
   //         this.router.navigate(['/Admin']);
   //       } else if (userData.rollId === "2") {
   //         this.RollID = "2";
-  //         localStorage.setItem("email", email);
-  //         localStorage.setItem("RollID", this.RollID);
+  //         sessionStorage.setItem("email", email);
+  //         sessionStorage.setItem("RollID", this.RollID);
   //         this.router.navigate(['/UserDashboard']);
   //       } else {
   //         // this.propertyInsStatus = "Login Failed. Please try again!";
@@ -170,15 +170,18 @@ export class SignInComponent {
           return;
         }
 
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
-        localStorage.setItem('email', result.email);
-        localStorage.setItem('RollID', result.role);
+        sessionStorage.setItem('accessToken', accessToken);
+        sessionStorage.setItem('refreshToken', refreshToken);
+        sessionStorage.setItem('email', result.email);
+        sessionStorage.setItem('RollID', result.role);
+        sessionStorage.setItem('schoolId', result.schoolId);
+        sessionStorage.setItem('schoolName', result.schoolName);
 
         if (result.role === '1') {
           this.router.navigate(['/Admin']);
-        } else if (result.role !== '1') {
-          this.router.navigate(['/OthersSideBar']);
+        } else if (result.role !== '1' && result.schoolId!='') {
+          // this.router.navigate(['/OthersSideBar']);
+          this.router.navigate([`/${result.schoolName}/dashboard`]);
         } else {
           // this.propertyInsStatus = 'Login failed! Invalid role.';
           this.color = { red: true, green: false };

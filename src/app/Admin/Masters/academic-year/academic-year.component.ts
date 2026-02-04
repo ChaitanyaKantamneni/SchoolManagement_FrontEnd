@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { DashboardTopNavComponent } from '../../../SignInAndSignUp/dashboard-top-nav/dashboard-top-nav.component';
 import { NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiServiceService } from '../../../Services/api-service.service';
 import { tap } from 'rxjs';
@@ -19,7 +19,7 @@ import { LoaderService } from '../../../Services/loader.service';
   styleUrls: ['./academic-year.component.css']
 })
 export class AcademicYearComponent extends BasePermissionComponent {
-pageName = 'AcademicYear';
+  pageName = 'Academic Year';
   IsAddNewClicked = false;
   IsActiveStatus = false;
   ViewAcademicYearClicked = false;
@@ -32,13 +32,17 @@ pageName = 'AcademicYear';
   private readonly SEARCH_MIN_LENGTH = 3;
   private readonly SEARCH_DEBOUNCE = 300;
 
+  isViewMode = false;
+  viewSyllabus: any = null;
+   isViewModalOpen= false;
+
   AcademicYearList: any[] = [];
   AminityInsStatus = '';
   isModalOpen = false;
   AcademicYearCount = 0;
 
-  ActiveUserId = localStorage.getItem('SchoolID')?.toString() || '';
-  roleId = localStorage.getItem('RollID');
+  ActiveUserId = sessionStorage.getItem('SchoolID')?.toString() || '';
+  roleId = sessionStorage.getItem('RollID');
 
   pageCursors: { lastCreatedDate: any; lastID: number }[] = [];
   lastCreatedDate: string | null = null;
@@ -67,14 +71,55 @@ pageName = 'AcademicYear';
     public loader: LoaderService,
     menuService: MenuServiceService
   ) {
-super(menuService, router);
-}
+    super(menuService, router);
+  }
 
   ngOnInit(): void {
     this.checkViewPermission();
     this.SchoolSelectionChange=false;
+    const currentYear = new Date().getFullYear();
+
+    this.AcademicYearForm = new FormGroup({
+      ID: new FormControl(),
+      Name: new FormControl('', Validators.required),
+      StartDate: new FormControl('', [
+        Validators.required,
+        (control: AbstractControl) => this.startDateValidator(control, currentYear)
+      ]),
+      EndDate: new FormControl('', [
+        Validators.required,
+        (control: AbstractControl) => this.endDateValidator(control)
+      ]),
+      Description: new FormControl()
+    });
+
+    // Update EndDate validation when StartDate changes
+    this.AcademicYearForm.get('StartDate')?.valueChanges.subscribe(() => {
+      this.AcademicYearForm.get('EndDate')?.updateValueAndValidity();
+    });
     this.FetchSchoolsList();
     this.FetchInitialData();
+  }
+
+  startDateValidator(control: AbstractControl, currentYear: number) {
+    if (!control.value) return null;
+    const start = new Date(control.value);
+    const minDate = new Date(`${currentYear}-01-01`);
+    return start >= minDate ? null : { invalidStartDate: true };
+  }
+
+  endDateValidator(control: AbstractControl) {
+    const startValue = this.AcademicYearForm?.get('StartDate')?.value;
+    if (!control.value || !startValue) return null;
+
+    const start = new Date(startValue);
+    const end = new Date(control.value);
+    const max = new Date(start);
+    max.setFullYear(start.getFullYear() + 1);
+
+    if (end < start) return { endBeforeStart: true };
+    if (end > max) return { endExceedsYear: true };
+    return null;
   }
 
   FetchSchoolsList() {
@@ -122,7 +167,7 @@ super(menuService, router);
 
   FetchInitialData(extra: any = {}) {
     const isSearch = !!this.searchQuery?.trim();
-    const flag = isSearch ? '7' : '3';
+    const flag = isSearch ? '7' : '2';
 
     let SchoolIdSelected = '';
 
@@ -233,11 +278,39 @@ super(menuService, router);
     });
   }
 
-  FetchAcademicYearDetByID(AcademicYearID: string) {
-    this.apiurl.post<any>("Tbl_AcademicYear_CRUD_Operations", { ID: AcademicYearID, Flag: "4" }).subscribe({
-      next: (response: any) => {
+  FetchAcademicYearDetByID(SyllabusID: string, mode: 'view' | 'edit') {
+    const data = {
+      ID: SyllabusID,
+      Flag: "4"
+    };
+
+    this.apiurl.post<any>("Tbl_AcademicYear_CRUD_Operations", data).subscribe(
+      (response: any) => {
+
         const item = response?.data?.[0];
-        if (item) {
+        if (!item) {
+          this.AcademicYearForm.reset();
+          this.viewSyllabus = null;
+          return;
+        }
+
+        const isActive = item.isActive === "1";
+
+        if (mode === 'view') {
+          this.isViewMode = true;
+          this.viewSyllabus = {
+            ID: item.id,
+            Name: item.name,
+            StartDate: this.formatDateYYYYMMDD(item.startDate),
+            EndDate: this.formatDateYYYYMMDD(item.endDate),
+            Description: item.description,
+            IsActive: isActive
+          };
+          this.isViewModalOpen = true;
+        }
+
+        if (mode === 'edit') {
+          this.isViewMode = false;
           this.AcademicYearForm.patchValue({
             ID: item.id,
             Name: item.name,
@@ -245,13 +318,16 @@ super(menuService, router);
             EndDate: this.formatDateYYYYMMDD(item.endDate),
             Description: item.description
           });
-          this.IsActiveStatus = item.isActive === "1";
+          this.IsActiveStatus = isActive;
+          this.IsAddNewClicked = true;
         }
-        this.IsAddNewClicked = true;
-        this.ViewAcademicYearClicked = true;
+
+      },
+      error => {
+        console.error(error);
       }
-    });
-  }
+    );
+  };
 
   UpdateAcademicYear() {
     if(this.AcademicYearForm.invalid){
@@ -379,9 +455,17 @@ super(menuService, router);
     return `${d.getDate().toString().padStart(2,'0')}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getFullYear()}`;
   }
 
-  closeModal() {
-    this.isModalOpen = false;
-  }
+  closeModal(type: 'view' | 'status') {
+    console.log('type',type);
+    if (type === 'view') {
+      this.isViewModalOpen = false;
+      this.viewSyllabus = null;
+    }
+
+    if (type === 'status') {
+      this.isModalOpen = false;
+    }
+  };
 
   handleOk() {
     this.isModalOpen = false;
@@ -390,7 +474,8 @@ super(menuService, router);
 
   editreview(AcademicYearID: string) {
     this.editclicked=true;
-    this.FetchAcademicYearDetByID(AcademicYearID);
+    this.FetchAcademicYearDetByID(AcademicYearID,'edit');
+    this.ViewAcademicYearClicked=true;
   }
 
   toggleChange() {
@@ -421,6 +506,11 @@ super(menuService, router);
     // this.FetchInitialData({ SchoolID: this.selectedSchoolID });
     this.FetchInitialData();
   }
+
+  viewReview(SyllabusID: string): void {
+    this.FetchAcademicYearDetByID(SyllabusID,'view');
+    this.isViewModalOpen=true;
+  };
 }
 
 

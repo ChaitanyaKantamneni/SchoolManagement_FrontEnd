@@ -25,7 +25,7 @@ export class TransferStudentsComponent {
   AminityInsStatus: any = '';
   isModalOpen = false;
   ClassCount: number = 0;
-  ActiveUserId:string=localStorage.getItem('email')?.toString() || '';
+  ActiveUserId:string=sessionStorage.getItem('email')?.toString() || '';
 
   constructor(private router: Router,private apiurl:ApiServiceService) {}
 

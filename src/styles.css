@@ -362,9 +362,9 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .mat-edit-icon {
   font-size: 13px !important;
   vertical-align: middle;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
 }
 
 .mat-icon-button,
@@ -717,4 +717,199 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   justify-content: space-between;
   align-items: center;
   gap: 5px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 6px 10px;
+  font-size: 10px;
+  font-weight: 500;
+  border-radius: 4px;
+  color: #fff;
+}
+
+.badge-success {
+  background-color: #28a745;
+}
+
+.badge-danger {
+  background-color: #dc3545; 
+}
+
+.modal-title{
+  font-size: 16px;
+}
+
+.viewfontsize{
+  font-size: 12px;
+}
+
+.modal-body .row{
+  align-items: center;
+}
+
+.close{
+  background: transparent;
+  border: 1px solid;
+  border-radius: 50%;
+}
+
+.close:hover{
+  background:gray;
+  color: white;
+}
+
+.mat-icon{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.selectFormControl{
+  font-size: 12px;
+}
+
+/* ===============================
+   RESPONSIVE FIXES – ADD ONLY
+   =============================== */
+
+/* ===============================
+   LARGE TABLETS / SMALL LAPTOPS
+   =============================== */
+@media (min-width: 1400px) {
+
+}
+
+@media (max-width: 1200px) {
+
+}
+
+/* ===============================
+   TABLETS
+   =============================== */
+@media (max-width: 992px) {
+
+}
+
+/* ===============================
+   MOBILE DEVICES
+   =============================== */
+@media (max-width: 768px) {
+  .table thead tr th {
+    text-align: center;
+    background-color: #536ff7;
+    color: #fff;
+    font-size: 8px;
+  }
+
+  .arrows mat-icon {
+    font-size: 6px !important;
+    height: auto !important;
+    width: auto !important;
+    line-height: 18px;
+  }
+
+  .reviewstable{
+    overflow: scroll;
+  }
+
+  .AddForm .AddFormConatiner .FormInputRowsContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: column;
+  }
+
+  .AddForm .AddFormConatiner .FormInputRowsContainer .InputRow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0px;
+    flex-direction: row;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+}
+
+/* ===============================
+   SMALL MOBILE DEVICES
+   =============================== */
+@media (max-width: 480px) {
+  .table thead tr th {
+    text-align: center;
+    background-color: #536ff7;
+    color: #fff;
+    font-size: 8px;
+  }
+
+  .arrows mat-icon {
+    font-size: 6px !important;
+    height: auto !important;
+    width: auto !important;
+    line-height: 18px;
+  }
+
+  .reviewstable{
+    overflow: scroll;
+  }
+
+  .AddForm .AddFormConatiner .FormInputRowsContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: column;
+  }
+
+  .AddForm .AddFormConatiner .FormInputRowsContainer .InputRow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0px;
+    flex-direction: row;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+}
+
+/* ===============================
+   EXTRA SMALL DEVICES
+   =============================== */
+@media (max-width: 360px) {
+  .table thead tr th {
+    text-align: center;
+    background-color: #536ff7;
+    color: #fff;
+    font-size: 8px;
+  }
+
+  .arrows mat-icon {
+    font-size: 6px !important;
+    height: auto !important;
+    width: auto !important;
+    line-height: 18px;
+  }
+
+  .reviewstable{
+    overflow: scroll;
+  }
+
+  .AddForm .AddFormConatiner .FormInputRowsContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: column;
+  }
+
+  .AddForm .AddFormConatiner .FormInputRowsContainer .InputRow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0px;
+    flex-direction: row;
+    width: 100%;
+    flex-wrap: wrap;
+  }
 }

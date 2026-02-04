@@ -16,7 +16,7 @@ export class DashboardTopNavComponent {
   }
 
   logout() {
-    localStorage.clear();
+    sessionStorage.clear();
     this.router.navigate(['../signin']);
   }
 }

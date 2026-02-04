@@ -59,6 +59,7 @@ import { TransferStudentsComponent } from './Admin/AcademicModule/transfer-stude
 import { BusesComponent } from './Admin/Transporation/buses/buses.component';
 import { RoutesComponent } from './Admin/Transporation/routes/routes.component';
 import { StopsComponent } from './Admin/Transporation/stops/stops.component';
+import { schoolGuard } from './guards/school.guard';
 import { FareComponent } from './Admin/Transporation/fare/fare.component';
 
 export const routes: Routes = [
@@ -99,6 +100,37 @@ export const routes: Routes = [
     path: 'OthersSideBar', component: SideBarComponentComponent,
     children: [
       { path: '', component: AdminMainDashboardComponent },
+      { path: 'Staff', component: StaffComponent },
+      { path: 'SchoolDetails', component: SchoolDetailsComponent },
+      { path: 'AcademicYear', component: AcademicYearComponent },
+      { path: 'Syllabus', component: SyllabusComponent },
+      { path: 'Class', component: ClassComponent },
+      { path: 'Division', component: ClassDivisionComponent },
+      { path: 'Subject', component: SubjectComponent },
+      { path: 'SubjectStaff', component: SubjectStaffComponent },
+      { path: 'Modules', component: ModulesComponent },
+      { path: 'Pages', component: PagesComponent },
+      { path: 'Roles', component: RolesComponent },
+      { path: 'Admission', component: AdmissionComponent },
+      { path: 'AllotClassTeacher', component: AllotClassTeacherComponent },
+      { path: 'Promotion', component: PromotionComponent },
+      { path: 'DePromotion', component: DePromotionComponent },
+      { path: 'TransferStudents', component: TransferStudentsComponent },
+      { path: 'Buses', component: BusesComponent },
+      { path: 'Routes', component: RoutesComponent },
+      { path: 'Stops', component: StopsComponent }
+    ]
+  },
+
+  //SCHOOL ROOT
+  {
+    path: ':schoolName',
+    component: SideBarComponentComponent,
+    canActivate: [schoolGuard],
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+
+      { path: 'dashboard', component: AdminMainDashboardComponent },
       { path: 'Staff', component: StaffComponent },
       { path: 'SchoolDetails', component: SchoolDetailsComponent },
       { path: 'AcademicYear', component: AcademicYearComponent },
