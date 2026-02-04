@@ -10,6 +10,7 @@ import { MenuServiceService } from '../../../Services/menu-service.service';
 import { BasePermissionComponent  } from '../../../shared/base-crud.component';
 import { SchoolCacheService } from '../../../Services/school-cache.service';
 import { LoaderService } from '../../../Services/loader.service';
+import { dateRangeValidator } from '../../../Validators/date-range.validator';
 
 @Component({
   selector: 'app-academic-year',
@@ -56,13 +57,27 @@ export class AcademicYearComponent extends BasePermissionComponent {
   SchoolSelectionChange:boolean=false;
 
 
-  AcademicYearForm = new FormGroup({
-    ID: new FormControl(),
-    Name: new FormControl('', Validators.required),
-    StartDate: new FormControl('', Validators.required),
-    EndDate: new FormControl('', Validators.required),
-    Description: new FormControl()
-  });
+  // AcademicYearForm = new FormGroup({
+  //   ID: new FormControl(),
+  //   Name: new FormControl('', Validators.required),
+  //   StartDate: new FormControl('', Validators.required),
+  //   EndDate: new FormControl('', Validators.required),
+  //   Description: new FormControl()
+  // });
+
+  AcademicYearForm = new FormGroup(
+    {
+      ID: new FormControl(),
+      Name: new FormControl('', Validators.required),
+      StartDate: new FormControl('', Validators.required),
+      EndDate: new FormControl('', Validators.required),
+      Description: new FormControl()
+    },
+    {
+      validators: dateRangeValidator('StartDate', 'EndDate')
+    }
+  );
+
 
   constructor(
     router: Router,
@@ -77,50 +92,50 @@ export class AcademicYearComponent extends BasePermissionComponent {
   ngOnInit(): void {
     this.checkViewPermission();
     this.SchoolSelectionChange=false;
-    const currentYear = new Date().getFullYear();
+    // const currentYear = new Date().getFullYear();
 
-    this.AcademicYearForm = new FormGroup({
-      ID: new FormControl(),
-      Name: new FormControl('', Validators.required),
-      StartDate: new FormControl('', [
-        Validators.required,
-        (control: AbstractControl) => this.startDateValidator(control, currentYear)
-      ]),
-      EndDate: new FormControl('', [
-        Validators.required,
-        (control: AbstractControl) => this.endDateValidator(control)
-      ]),
-      Description: new FormControl()
-    });
+    // this.AcademicYearForm = new FormGroup({
+    //   ID: new FormControl(),
+    //   Name: new FormControl('', Validators.required),
+    //   StartDate: new FormControl('', [
+    //     Validators.required,
+    //     (control: AbstractControl) => this.startDateValidator(control, currentYear)
+    //   ]),
+    //   EndDate: new FormControl('', [
+    //     Validators.required,
+    //     (control: AbstractControl) => this.endDateValidator(control)
+    //   ]),
+    //   Description: new FormControl()
+    // });
 
-    // Update EndDate validation when StartDate changes
-    this.AcademicYearForm.get('StartDate')?.valueChanges.subscribe(() => {
-      this.AcademicYearForm.get('EndDate')?.updateValueAndValidity();
-    });
+    // // Update EndDate validation when StartDate changes
+    // this.AcademicYearForm.get('StartDate')?.valueChanges.subscribe(() => {
+    //   this.AcademicYearForm.get('EndDate')?.updateValueAndValidity();
+    // });
     this.FetchSchoolsList();
     this.FetchInitialData();
   }
 
-  startDateValidator(control: AbstractControl, currentYear: number) {
-    if (!control.value) return null;
-    const start = new Date(control.value);
-    const minDate = new Date(`${currentYear}-01-01`);
-    return start >= minDate ? null : { invalidStartDate: true };
-  }
+  // startDateValidator(control: AbstractControl, currentYear: number) {
+  //   if (!control.value) return null;
+  //   const start = new Date(control.value);
+  //   const minDate = new Date(`${currentYear}-01-01`);
+  //   return start >= minDate ? null : { invalidStartDate: true };
+  // }
 
-  endDateValidator(control: AbstractControl) {
-    const startValue = this.AcademicYearForm?.get('StartDate')?.value;
-    if (!control.value || !startValue) return null;
+  // endDateValidator(control: AbstractControl) {
+  //   const startValue = this.AcademicYearForm?.get('StartDate')?.value;
+  //   if (!control.value || !startValue) return null;
 
-    const start = new Date(startValue);
-    const end = new Date(control.value);
-    const max = new Date(start);
-    max.setFullYear(start.getFullYear() + 1);
+  //   const start = new Date(startValue);
+  //   const end = new Date(control.value);
+  //   const max = new Date(start);
+  //   max.setFullYear(start.getFullYear() + 1);
 
-    if (end < start) return { endBeforeStart: true };
-    if (end > max) return { endExceedsYear: true };
-    return null;
-  }
+  //   if (end < start) return { endBeforeStart: true };
+  //   if (end > max) return { endExceedsYear: true };
+  //   return null;
+  // }
 
   FetchSchoolsList() {
     const requestData = { Flag: '2' };
