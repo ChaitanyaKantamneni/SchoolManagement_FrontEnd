@@ -30,4 +30,9 @@ export class SideBarServiceService {
     sessionStorage.setItem('isExpanded', newValue.toString());
   }
 
+  resetSidebar() {
+    this._isExpanded.next(false);
+    sessionStorage.setItem('isExpanded', 'false');
+  }
+
 }

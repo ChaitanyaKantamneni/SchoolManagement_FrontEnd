@@ -6,57 +6,95 @@
     <div class="ComponentTop">
       <div class="ComponentTopHeader">
         <h5>Subject Management</h5>
-        <p>Total {{ ModuleCount }} Subjects Added</p>
+        <p>Total {{ SubjectsCount }} Subjects Added</p>
       </div>
       <div class="ComponentTopBottom">
-        <button (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Subject</button>
+        <button *ngIf="canAdd()" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Subject</button>
       </div>
     </div>
     <div class="ComponentRecords">
       <div>
-        <div class="searchreview input-container" >
-          <input type="text" id="searchQuery" class="form-control floating-input"
-            [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search... "  />
-          <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
-          <!-- <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i> -->
+        <div class="ComponentRecordsTop">
+          <div class="filterOptions">
+            <div class="searchreview input-container" >
+              <input type="text" id="searchQuery" class="form-control floating-input"
+                [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search... "  />
+              <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
+              <!-- <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i> -->
+            </div>
+            <div class="searchreview" *ngIf="isAdmin && SubjectsList.length != 0">
+              <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
+                <option value="">-- Select School --</option>
+                <option value="0">All Schools</option>
+                <option *ngFor="let school of schoolList" [value]="school.ID">
+                  {{ school.Name }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <div class="DownloadButtons" *ngIf="SubjectsList.length != 0">
+            <button class="btnHover" (click)="exportSyllabus('pdf')"><mat-icon>picture_as_pdf</mat-icon></button>
+            <button class="btnHover" (click)="exportSyllabus('excel')"><mat-icon>description</mat-icon></button>
+            <button class="btnHover" (click)="exportSyllabus('print')"><mat-icon>print</mat-icon></button>
+          </div>
         </div>
         <div class="reviewstable">
-          <table *ngIf="ListedModuleList.length != 0" class="table table-bordered">
+          <table *ngIf="SubjectsList.length != 0" class="table table-bordered">
             <thead>
               <tr>
                 <th class="visually-hidden">Academic Year ID</th>
                 <th>SI.No</th>
                 <th>Class</th>
-                <th>Name</th>
+                <th (click)="sort('Name')" class="sortable-column">
+                  <span class="column-text">Name</span>
+                  <span class="arrows">
+                    <mat-icon 
+                      [style.color]="sortColumn === 'Name' && sortDirection === 'asc' ? 'red' : 'inherit'">
+                      keyboard_arrow_up
+                    </mat-icon>
+                    <mat-icon 
+                      [style.color]="sortColumn === 'Name' && sortDirection === 'desc' ? 'red' : 'inherit'">
+                      keyboard_arrow_down
+                    </mat-icon>
+                  </span>
+                </th>
+<th *ngIf="isAdmin">School Name</th>
+                <th>Academic Year</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let Module of getPaginatedModuleLists(),let i = index">
+              <tr *ngFor="let Module of SubjectsList,let i = index">
                 <td data-label="ID" class="visually-hidden">{{ Module.ID }}</td>
                 <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-                <td data-label="Class">{{ getClassName(Module.Class) }}</td>
+                <td data-label="Class">{{ Module.ClassName }}</td>
                 <td data-label="Name">{{ Module.Name }}</td>
+<td data-label="SchoolName" *ngIf="isAdmin">{{ Module.SchoolName }}</td>
+                <td data-label="AcademicYearName">{{ Module.AcademicYearName }}</td>
                 <td data-label="Status">{{ Module.IsActive }}</td>
                 <td data-label="Actions">
                   <div class="d-flex justify-content-center align-items-center h-100">
                     <!-- (click)="editreview(aminitie.propertyTypeID)" -->
-                    <button class="btn checkbtn" data-tooltip="Edit" (click)="editreview(Module.ID)">
+                    <button *ngIf="canEdit()" class="btn checkbtn edit" data-tooltip="Edit" (click)="editreview(Module.ID)">
                       <mat-icon class="mat-edit-icon">edit</mat-icon>
+                    </button>
+                    <button *ngIf="canView()" class="btn checkbtn" data-tooltip="View" (click)="viewReview(Module.ID)">
+                      <mat-icon class="mat-edit-icon">visibility</mat-icon>
                     </button>
                   </div>
                 </td>
               </tr>
             </tbody>
           </table>
-          <div *ngIf="ListedModuleList.length === 0" class="NoDataFound">
+          <div *ngIf="SubjectsList.length === 0" class="NoDataFound">
             <div class="NoDataFoundImg">
               <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
             </div>
             <p>No data found.</p>
           </div>
-          <div *ngIf="ListedModuleList.length > 5" class="pagination-controls">
+          <div *ngIf="SubjectsCount > pageSize" class="pagination-controls">
+            <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
             <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
             <button *ngFor="let page of getVisiblePageNumbers()"
                     class="page-btn"
@@ -65,6 +103,7 @@
               {{ page }}
             </button>
             <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
           </div>
         </div>
       </div>
@@ -108,6 +147,17 @@
                       <small>Please Enter Name.</small>
                     </div>
                   </div>
+                </div>
+              </div>
+<div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">School</label>
+                <div class="input-with-error">
+                  <select formControlName="School" class="form-control selectFormControl" >
+                    <option value="">-- Select School --</option>
+                    <option *ngFor="let school of schoolList" [value]="school.ID">
+                      {{ school.Name }}
+                    </option>
+                  </select>
                 </div>
               </div>
               <div class="InputFieldsContainer">
@@ -163,8 +213,8 @@
             </div>
           </div>
           <div class="ActionButtons">
-            <button class="btn" *ngIf="ViewModuleClicked" (click)="UpdateModule()">Update</button>
-            <button class="btn" *ngIf="!ViewModuleClicked" (click)="SubmitModule()">Submit</button>
+            <button class="btn" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update</button>
+            <button class="btn" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitModule()">Submit</button>
           </div>
         </form>
       </div>
@@ -176,7 +226,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Application Status</h5>
-        <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+        <button type="button" class="close" aria-label="Close" (click)="closeModal('status')">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
@@ -186,6 +236,47 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" (click)="handleOk()">OK</button>
       </div>
+    </div>
+  </div>
+</div>
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Syllabus Details</h5>
+        <button type="button" class="close" (click)="closeModal('view')">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-2" *ngIf="viewSyllabus?.Name">
+          <div class="col-4">Name</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.Name }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.AvailableFrom">
+          <div class="col-4">Available From</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.AvailableFrom }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.Description && viewSyllabus.Description.trim() !== ''">
+          <div class="col-4">Description</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.Description }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.IsActive !== null">
+          <div class="col-4">Status</div>
+          <div class="col-8">
+            <span class="badge"
+                  [ngClass]="viewSyllabus?.IsActive ? 'badge-success' : 'badge-danger'">
+              {{ viewSyllabus?.IsActive ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <!-- <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeModal()">Close</button>
+      </div> -->
     </div>
   </div>
 </div>

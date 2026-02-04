@@ -5,7 +5,7 @@
   <div *ngIf="!IsAddNewClicked" class="w-100">
     <div class="ComponentTop">
       <div class="ComponentTopHeader">
-        <h5 *ngIf!="isAdmin">School Details</h5>
+        <h5 *ngIf="!isAdmin">School Details</h5>
         <h5 *ngIf="isAdmin">Schools Details</h5>
         <p>Total {{ SchoolsCount }} Schools Added</p>
       </div>
@@ -119,9 +119,9 @@
           <div class="FormInputRowsContainer">
             <div class="InputRow">
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="Name">Name</label>
+                <label class="inputLabel" for="Name">Name <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" (keydown)="allowAlphaAndSpecial($event)" />
                   <div *ngIf="(SchoolsForm.get('Name' ) ?. touched && SchoolsForm.get('Name' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(SchoolsForm.get('Name' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter Name.</small>
@@ -130,29 +130,37 @@
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="PhoneNumber">Phone Number</label>
+                <label class="inputLabel" for="PhoneNumber">Phone Number <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="PhoneNumber" placeholder="Enter Phone Number" />
+                  <input class="inputField" formControlName="PhoneNumber" placeholder="Enter Phone Number" (keydown)="allowOnlyNumbers($event)" minlength="10" maxlength="10" />
                   <div *ngIf="(SchoolsForm.get('PhoneNumber' ) ?. touched && SchoolsForm.get('PhoneNumber' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(SchoolsForm.get('PhoneNumber' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter Phone Number.</small>
                     </div>
+                    <div *ngIf="(SchoolsForm.get('PhoneNumber' ) ?. errors ?. ['pattern' ]) ">
+                      <small>Phone number must be exactly 10 digits.</small>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </div>                            
+            </div>
+            <div class="InputRow">
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="Email">Email</label>
+                <label class="inputLabel" for="Email">Email <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" formControlName="Email" placeholder="Enter Email" />
                   <div *ngIf="(SchoolsForm.get('Email' ) ?. touched && SchoolsForm.get('Email' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(SchoolsForm.get('Email' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter Email.</small>
                     </div>
+                    <div *ngIf="(SchoolsForm.get('Email' ) ?. errors ?. ['pattern' ]) ">
+                      <small>Invalid email format.</small>
+                    </div>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="Website">Website</label>
+                <label class="inputLabel" for="Website">Website <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" formControlName="Website" placeholder="Enter Website URL" />
                   <div *ngIf="(SchoolsForm.get('Website' ) ?. touched && SchoolsForm.get('Website' ) ?. invalid)" class="text-danger">
@@ -161,11 +169,11 @@
                     </div>
                   </div>
                 </div>
-              </div>              
+              </div>
             </div>
             <div class="InputRow">
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="Address">Address</label>
+                <label class="inputLabel" for="Address">Address <span class="required">*</span></label>
                 <div class="input-with-error">
                   <textarea class="inputField" formControlName="Address" placeholder="Enter Address" rows="2"></textarea>
                   <div *ngIf="(SchoolsForm.get('Address' ) ?. touched && SchoolsForm.get('Address' ) ?. invalid)" class="text-danger">
@@ -235,33 +243,33 @@
         </button>
       </div>
       <div class="modal-body">
-        <div class="row mb-2">
-          <div class="col-4"><strong>Name</strong></div>
-          <div class="col-8">{{ viewSyllabus?.Name }}</div>
+        <div class="row mb-2" *ngIf="viewSyllabus?.Name">
+          <div class="col-4">Name</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.Name }}</div>
         </div>
 
-        <div class="row mb-2">
-          <div class="col-4"><strong>Phone Number</strong></div>
-          <div class="col-8">{{ viewSyllabus?.AvailableFrom }}</div>
+        <div class="row mb-2" *ngIf="viewSyllabus?.PhoneNumber">
+          <div class="col-4">Phone Number</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.PhoneNumber }}</div>
         </div>
 
-        <div class="row mb-2">
-          <div class="col-4"><strong>Email</strong></div>
-          <div class="col-8">{{ viewSyllabus?.AvailableFrom }}</div>
+        <div class="row mb-2" *ngIf="viewSyllabus?.Email">
+          <div class="col-4">Email</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.Email }}</div>
         </div>
 
-        <div class="row mb-2">
-          <div class="col-4"><strong>Website URL</strong></div>
-          <div class="col-8">{{ viewSyllabus?.AvailableFrom }}</div>
+        <div class="row mb-2" *ngIf="viewSyllabus?.Website">
+          <div class="col-4">Website URL</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.Website }}</div>
         </div>
 
-        <div class="row mb-2">
-          <div class="col-4"><strong>Address</strong></div>
-          <div class="col-8">{{ viewSyllabus?.Description }}</div>
+        <div class="row mb-2" *ngIf="viewSyllabus?.Address && viewSyllabus.Address.trim() !== ''">
+          <div class="col-4">Address</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.Address }}</div>
         </div>
 
-        <div class="row mb-2">
-          <div class="col-4"><strong>Status</strong></div>
+        <div class="row mb-2" *ngIf="viewSyllabus?.IsActive !== null">
+          <div class="col-4">Status</div>
           <div class="col-8">
             <span class="badge"
                   [ngClass]="viewSyllabus?.IsActive ? 'badge-success' : 'badge-danger'">

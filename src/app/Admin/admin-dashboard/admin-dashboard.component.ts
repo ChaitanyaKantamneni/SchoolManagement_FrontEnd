@@ -23,7 +23,7 @@ export class AdminDashboardComponent {
       this.isExpanded = value;
     });
 
-    if(! localStorage.getItem("email")){
+    if(! sessionStorage.getItem("email")){
       this.router.navigate(['/signin'])
     }
   }
@@ -35,7 +35,7 @@ export class AdminDashboardComponent {
 
   logout() {
     this.router.navigate(['/signin'])
-    localStorage.clear();
+    sessionStorage.clear();
   }
 
   toggleSubmenu(menuName: string) {
