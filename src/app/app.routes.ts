@@ -61,6 +61,10 @@ import { RoutesComponent } from './Admin/Transporation/routes/routes.component';
 import { StopsComponent } from './Admin/Transporation/stops/stops.component';
 import { schoolGuard } from './guards/school.guard';
 import { FareComponent } from './Admin/Transporation/fare/fare.component';
+import { FeeCategoryComponent } from './Admin/Finance/fee-category/fee-category.component';
+import { FeeAllocationComponent } from './Admin/Finance/fee-allocation/fee-allocation.component';
+import { FeeDiscountCategoryComponent } from './Admin/Finance/fee-discount-category/fee-discount-category.component';
+import { ExamTypeComponent } from './Admin/Exam/exam-type/exam-type.component';
 import { WorkingDaysComponent } from './Admin/TimeTable/working-days/working-days.component';
 import { SessionsComponent } from './Admin/TimeTable/sessions/sessions.component';
 import { TimeTableComponent } from './Admin/TimeTable/time-table/time-table.component';
@@ -96,6 +100,12 @@ export const routes: Routes = [
       { path: 'Routes', component: RoutesComponent },
       { path: 'Stops', component: StopsComponent },
       { path: 'Fares', component: FareComponent },
+      { path: 'FeeCategory', component: FeeCategoryComponent },
+      { path: 'FeeAllocation', component: FeeAllocationComponent },
+      { path: 'FeeDiscountCategory', component: FeeDiscountCategoryComponent },
+      { path: 'Fare', component: FareComponent },
+      { path: 'ExamType', component: ExamTypeComponent },
+      { path: 'Fares', component: FareComponent },
       { path: 'WorkingDays', component: WorkingDaysComponent },
       { path: 'Sessions', component: SessionsComponent },
       { path: 'TimeTable', component: TimeTableComponent },
@@ -127,6 +137,12 @@ export const routes: Routes = [
       { path: 'Bus', component: BusesComponent },
       { path: 'Routes', component: RoutesComponent },
       { path: 'Stops', component: StopsComponent },
+      { path: 'Fares', component: FareComponent },
+      { path: 'FeeCategory', component: FeeCategoryComponent },
+      { path: 'FeeAllocation', component: FeeAllocationComponent },
+      { path: 'FeeDiscountCategory', component: FeeDiscountCategoryComponent },
+      { path: 'Stops', component: StopsComponent },
+      { path: 'ExamType', component: ExamTypeComponent },
       { path: 'Fares', component: FareComponent },
       { path: 'WorkingDays', component: WorkingDaysComponent },
       { path: 'Sessions', component: SessionsComponent },
@@ -163,6 +179,13 @@ export const routes: Routes = [
       { path: 'Bus', component: BusesComponent },
       { path: 'Routes', component: RoutesComponent },
       { path: 'Stops', component: StopsComponent },
+      { path: 'Fares', component: FareComponent },
+      { path: 'FeeCategory', component: FeeCategoryComponent },
+      { path: 'FeeAllocation', component: FeeAllocationComponent },
+      { path: 'FeeDiscountCategory', component: FeeDiscountCategoryComponent },
+      { path: 'Stops', component: StopsComponent },
+      { path: 'ExamType', component: ExamTypeComponent },
+
       { path: 'Fares', component: FareComponent },
       { path: 'WorkingDays', component: WorkingDaysComponent },
       { path: 'Sessions', component: SessionsComponent },

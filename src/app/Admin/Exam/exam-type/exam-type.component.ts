@@ -13,15 +13,16 @@ import { SchoolCacheService } from '../../../Services/school-cache.service';
 import { LoaderService } from '../../../Services/loader.service';
 import { HttpClient } from '@angular/common/http';
 
+
 @Component({
-  selector: 'app-routes',
+  selector: 'app-exam-type',
   standalone:true,
   imports: [NgIf,NgFor,NgClass,NgStyle,MatIconModule,DashboardTopNavComponent,ReactiveFormsModule,FormsModule],
-  templateUrl: './routes.component.html',
-  styleUrls: ['./routes.component.css']
+  templateUrl: './exam-type.component.html',
+  styleUrl: './exam-type.component.css'
 })
-export class RoutesComponent extends BasePermissionComponent {
-  pageName = 'Routes';
+export class ExamTypeComponent extends BasePermissionComponent{
+  pageName = 'ExamType';
 
   constructor(
     private http: HttpClient,
@@ -39,43 +40,6 @@ export class RoutesComponent extends BasePermissionComponent {
     this.FetchSchoolsList();
     this.FetchInitialData();
   };
-
-  IsAddNewClicked:boolean=false;
-  IsActiveStatus:boolean=false;
-  ViewSyllabusClicked:boolean=false;
-  currentPage = 1;
-  pageSize = 5;
-  visiblePageCount: number = 3;
-  searchQuery: string = '';
-  private searchTimer: any;
-  private readonly SEARCH_MIN_LENGTH = 3;
-  private readonly SEARCH_DEBOUNCE = 300;
-  SyllabusList: any[] =[];
-  isViewMode = false;
-  viewSyllabus: any = null;
-  AminityInsStatus: any = '';
-  isModalOpen = false;
-  isViewModalOpen= false;
-  SyllabusCount: number = 0;
-  ActiveUserId:string=localStorage.getItem('email')?.toString() || '';
-  roleId = localStorage.getItem('RollID');
-
-  pageCursors: { lastCreatedDate: any; lastID: number }[] = [];
-  lastCreatedDate: string | null = null;
-  lastID: number | null = null;
-
-  sortColumn: string = 'Name'; 
-  sortDirection: 'asc' | 'desc' = 'desc';
-  editclicked:boolean=false;
-  schoolList: any[] = [];
-  selectedSchoolID: string = '';
-  SchoolSelectionChange:boolean=false;
-
-  SyllabusForm: any = new FormGroup({
-    ID: new FormControl(),
-    Name: new FormControl('',[Validators.required,Validators.pattern('^[a-zA-Z!@#$%^&*()_+\\-=\\[\\]{};:\'",.<>/?|`~]+$')]),
-    Distance:new FormControl('', [Validators.required,Validators.pattern('^[0-9]+$')])
-  });
 
   allowAlphaAndSpecial(event: KeyboardEvent) {
     const allowedRegex = /^[a-zA-Z!@#$%^&*()_+\-=\[\]{};:'",.<>/?|`~]$/;
@@ -110,6 +74,45 @@ export class RoutesComponent extends BasePermissionComponent {
     }
   }
 
+  IsAddNewClicked:boolean=false;
+  IsActiveStatus:boolean=false;
+  ViewSyllabusClicked:boolean=false;
+  currentPage = 1;
+  pageSize = 5;
+  visiblePageCount: number = 3;
+  searchQuery: string = '';
+  private searchTimer: any;
+  private readonly SEARCH_MIN_LENGTH = 3;
+  private readonly SEARCH_DEBOUNCE = 300;
+  SyllabusList: any[] =[];
+  RouteList: any[] =[];
+  isViewMode = false;
+  viewSyllabus: any = null;
+  AminityInsStatus: any = '';
+  isModalOpen = false;
+  isViewModalOpen= false;
+  SyllabusCount: number = 0;
+  ActiveUserId:string=localStorage.getItem('email')?.toString() || '';
+  roleId = localStorage.getItem('RollID');
+
+  pageCursors: { lastCreatedDate: any; lastID: number }[] = [];
+  lastCreatedDate: string | null = null;
+  lastID: number | null = null;
+
+  sortColumn: string = 'StopName'; 
+  sortDirection: 'asc' | 'desc' = 'desc';
+  editclicked:boolean=false;
+  schoolList: any[] = [];
+  selectedSchoolID: string = '';
+  SchoolSelectionChange:boolean=false;
+
+  SyllabusForm: any = new FormGroup({
+    ID: new FormControl(),
+    Route:new FormControl(0, Validators.min(1)),
+    Name: new FormControl('', [Validators.required,Validators.pattern('^[a-zA-Z!@#$%^&*()_+\\-=\\[\\]{};:\'",.<>/?|`~]+$')]),
+    StopOrder: new FormControl('', [Validators.required,Validators.pattern('^[0-9]+$')]),
+    Distance:new FormControl('', [Validators.required,Validators.pattern('^[0-9]+$')])
+  });
 
   FetchSchoolsList() {
     const requestData = { Flag: '2' };
@@ -136,9 +139,41 @@ export class RoutesComponent extends BasePermissionComponent {
       );
   };
 
+  FetchRoutesList() {
+    const requestData = { Flag: '3' };
+
+    this.apiurl.post<any>('Tbl_Examtype_CRUD_Operations', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.RouteList = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.id,
+                Name: item.name,
+                ExamTypeName:item.examTypeName,
+                Priority:item.priority,
+                ExamType:item.examType,
+                MaxMark:item.maxMark,
+                PassMarks:item.passMarks,
+                ExamDuration:item.examDuration,
+                NoofQuestion:item.NoofQuestion,
+                Instructions:item.Instructions,
+                IsActive: isActiveString
+              };
+            });            
+          } else {
+            this.RouteList = [];
+          }
+        },
+        (error) => {
+          this.RouteList = [];
+        }
+      );
+  };
+
   protected override get isAdmin(): boolean {
-    const role = sessionStorage.getItem('RollID') || localStorage.getItem('RollID');
-    return role === '1';
+    return this.roleId === '1';
   }
 
   FetchAcademicYearCount(isSearch: boolean) {
@@ -148,10 +183,10 @@ export class RoutesComponent extends BasePermissionComponent {
       SchoolIdSelected = this.selectedSchoolID.trim();
     }
 
-    return this.apiurl.post<any>('Tbl_Route_CRUD_Operations', {
+    return this.apiurl.post<any>('Tbl_Examtype_CRUD_Operations', {
       Flag: isSearch ? '8' : '6',
       SchoolID:SchoolIdSelected,
-      Name: isSearch ? this.searchQuery.trim() : null
+      ExamTypeName: isSearch ? this.searchQuery.trim() : null
     });
   }
 
@@ -189,7 +224,7 @@ export class RoutesComponent extends BasePermissionComponent {
 
         if (isSearch) payload.Name = this.searchQuery.trim();
 
-        this.apiurl.post<any>('Tbl_Route_CRUD_Operations', payload).subscribe({
+        this.apiurl.post<any>('Tbl_Examtype_CRUD_Operations', payload).subscribe({
           next: (response: any) => {
             const data = response?.data || [];
             this.mapAcademicYears(response);
@@ -222,19 +257,25 @@ export class RoutesComponent extends BasePermissionComponent {
     this.SyllabusList = (response.data || []).map((item: any) => ({
       ID: item.id,
       // SchoolName: schoolMap[item.schoolID] ?? `School-${item.schoolID}`,
+      SchoolID:item.schoolID,
+      AcademicYear:item.academicYear,
       SchoolName:item.schoolName,
-      Name: item.name,
-      SchoolID: item.SchoolID,
-      Distance: item.Distance,     
-      Description:item.Description,
-      IsActive: item.isActive === "True" ? 'Active' : 'InActive',
-      AcademicYearName:item.academicYearName,
-
+      ExamTypeName:item.examTypeName,
+      Priority:item.priority,
+      ExamType:item.examType,
+      MaxMark:item.maxMark,
+      PassMarks:item.passMarks,
+      ExamDuration: item.examDuration,
+      NoofQuestion: item.noofQuestion,
+      Instructions: item.instructions,
+      IsActive: item.isActive === "True" ? 'Active' : 'InActive'
     }));
   };
 
   AddNewClicked(){
+    this.FetchRoutesList();
     this.SyllabusForm.reset();
+    this.SyllabusForm.get('Route').patchValue('0');
     this.IsAddNewClicked=!this.IsAddNewClicked;
     this.IsActiveStatus=true;
     this.ViewSyllabusClicked=false;
@@ -248,26 +289,30 @@ export class RoutesComponent extends BasePermissionComponent {
     else{
       const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
       const data = {
-        ID: this.SyllabusForm.get('ID')?.value,
-        Name: this.SyllabusForm.get('Name')?.value,
-        Distance: this.SyllabusForm.get('Distance')?.value,
-        SchoolID: this.SyllabusForm.get('SchoolID')?.value,
+        ExamTypeName: this.SyllabusForm.get('ExamTypeName')?.value,
+        Priority: this.SyllabusForm.get('Priority')?.value,
+        ExamType: this.SyllabusForm.get('ExamType')?.value,
+        MaxMark: this.SyllabusForm.get('MaxMark')?.value,
+        PassMarks: this.SyllabusForm.get('PassMarks')?.value,
+        ExamDuration: this.SyllabusForm.get('ExamDuration')?.value,
+        NoofQuestion: this.SyllabusForm.get('NoofQuestion')?.value,
+        Instructions: this.SyllabusForm.get('Instructions')?.value,
         IsActive:IsActiveStatusNumeric,
         Flag: '1'
       };
 
-      this.apiurl.post("Tbl_Route_CRUD_Operations", data).subscribe({
+      this.apiurl.post("Tbl_Examtype_CRUD_Operations", data).subscribe({
         next: (response: any) => {
           if (response.statusCode === 200) {
             this.IsAddNewClicked=!this.IsAddNewClicked;
             this.isModalOpen = true;
-            this.AminityInsStatus = "Bus Route Details Submitted!";
+            this.AminityInsStatus = "Examtype Details Submitted!";
             this.SyllabusForm.reset();
             this.SyllabusForm.markAsPristine();
           }
         },
         error: (error) => {
-          this.AminityInsStatus = "Error Updating Bus Route.";
+          this.AminityInsStatus = "Error Updating Examtype.";
           this.isModalOpen = true;
         },
         complete: () => {
@@ -288,7 +333,7 @@ export class RoutesComponent extends BasePermissionComponent {
       Flag: "4"
     };
 
-    this.apiurl.post<any>("Tbl_Route_CRUD_Operations", data).subscribe(
+    this.apiurl.post<any>("Tbl_Examtype_CRUD_Operations", data).subscribe(
       (response: any) => {
 
         const item = response?.data?.[0];
@@ -304,10 +349,17 @@ export class RoutesComponent extends BasePermissionComponent {
           this.isViewMode = true;
           this.viewSyllabus = {
             ID: item.id,
+            // SchoolName: schoolMap[item.schoolID] ?? `School-${item.schoolID}`,
+            SchoolID:item.schoolID,
             SchoolName:item.schoolName,
-            Name: item.name,
-            Distance: item.distance,
-            AcademicYearName:item.academicYearName,
+            ExamTypeName:item.examTypeName,
+            Priority:item.priority,
+            ExamType:item.examType,
+            MaxMark: item.maxMark,
+            PassMarks: item.passMarks,
+            ExamDuration: item.examDuration,
+            NoofQuestion: item.noofQuestion,
+            Instructions: item.instructions,
             IsActive: isActive
           };
           this.isViewModalOpen = true;
@@ -317,10 +369,15 @@ export class RoutesComponent extends BasePermissionComponent {
           this.isViewMode = false;
           this.SyllabusForm.patchValue({
             ID: item.id,
-            SchoolID:item.SchoolID,
-            Name: item.name,
-            Distance:item.distance,
-            // SchoolID: item.SchoolID
+            // SchoolName: schoolMap[item.schoolID] ?? `School-${item.schoolID}`,
+            ExamTypeName:item.examTypeName,
+            Priority: item.priority,
+            ExamType: item.examType,
+            MaxMark: item.maxMark,
+            PassMarks: item.passMarks,
+            ExamDuration: item.examDuration,
+            NoofQuestion: item.noofQuestion,
+            Instructions:item.instructions
           });
           this.IsActiveStatus = isActive;
           this.IsAddNewClicked = true;
@@ -341,26 +398,31 @@ export class RoutesComponent extends BasePermissionComponent {
     else{
       const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
       const data = {
-        ID: this.SyllabusForm.get('ID')?.value,
-        Name: this.SyllabusForm.get('Name')?.value,
-        Distance: this.SyllabusForm.get('Distance')?.value,
-        SchoolID: this.SyllabusForm.get('SchoolID')?.value,
+        ID:this.SyllabusForm.get('ID')?.value || '',
+        ExamTypeName: this.SyllabusForm.get('ExamTypeName')?.value,
+        Priority: this.SyllabusForm.get('Priority')?.value,
+        ExamType: this.SyllabusForm.get('ExamType')?.value,
+        MaxMark: this.SyllabusForm.get('MaxMark')?.value,
+        PassMarks: this.SyllabusForm.get('PassMarks')?.value,
+        ExamDuration: this.SyllabusForm.get('ExamDuration')?.value,
+        NoofQuestion: this.SyllabusForm.get('NoofQuestion')?.value,
+        Instructions: this.SyllabusForm.get('Instructions')?.value,
         IsActive:IsActiveStatusNumeric,
         Flag: '5'
       };
 
-      this.apiurl.post("Tbl_Route_CRUD_Operations", data).subscribe({
+      this.apiurl.post("Tbl_Examtype_CRUD_Operations", data).subscribe({
         next: (response: any) => {
           if (response.statusCode === 200) {
             this.IsAddNewClicked=!this.IsAddNewClicked;
             this.isModalOpen = true;
-            this.AminityInsStatus = "Bus Route Details Updated!";
+            this.AminityInsStatus = "Exam Type Details Updated!";
             this.SyllabusForm.reset();
             this.SyllabusForm.markAsPristine();
           }
         },
         error: (error) => {
-          this.AminityInsStatus = "Error Updating Bus Route.";
+          this.AminityInsStatus = "Error Updating Exam Type.";
           this.isModalOpen = true;
         },
         complete: () => {
@@ -481,6 +543,7 @@ export class RoutesComponent extends BasePermissionComponent {
 
   editreview(SyllabusID: string): void {
     this.editclicked=true;
+    this.FetchRoutesList();
     this.FetchSyllabusDetByID(SyllabusID,'edit');
     this.ViewSyllabusClicked=true;
   };
@@ -597,4 +660,5 @@ export class RoutesComponent extends BasePermissionComponent {
     this.FetchSyllabusDetByID(SyllabusID,'view');
     this.isViewModalOpen=true;
   };
+
 }

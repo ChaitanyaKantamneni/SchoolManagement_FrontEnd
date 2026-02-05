@@ -335,6 +335,42 @@
             </ul>
           </li>
           <li class="menu-item has-submenu">
+            <div class="parent-row" (click)="toggleSubmenu('finance')">
+              <mat-icon>school</mat-icon>
+              <span *ngIf="isExpanded" class="DashboardMenuLi">Finance</span>
+            </div>
+
+            <ul *ngIf="isExpanded && openedSubmenu === 'finance'" class="submenu">
+              <li>
+                <a routerLink="/Admin/Bus">
+                  <mat-icon>people</mat-icon>
+                  <span class="submenu-text">Bus</span>
+                </a>
+              </li>
+
+              <li>
+                <a routerLink="/Admin/Routes">
+                  <mat-icon>assignment</mat-icon>
+                  <span class="submenu-text">Routes</span>
+                </a>
+              </li>
+
+              <li>
+                <a routerLink="/Admin/Stops">
+                  <mat-icon>trending_up</mat-icon>
+                  <span class="submenu-text">Stops</span>
+                </a>
+              </li>
+
+              <li>
+                <a routerLink="/Admin/Fares">
+                  <mat-icon>trending_up</mat-icon>
+                  <span class="submenu-text">Fares</span>
+                </a>
+              </li>
+            </ul>
+          </li>
+          <li class="menu-item has-submenu">
             <div class="parent-row" (click)="toggleSubmenu('Timetable')">
               <mat-icon>school</mat-icon>
               <span *ngIf="isExpanded" class="DashboardMenuLi">Time Table</span>
