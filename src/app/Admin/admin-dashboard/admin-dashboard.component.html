@@ -363,6 +363,42 @@
               </li>
             </ul>
           </li>
+          <li class="menu-item has-submenu">
+            <div class="parent-row" (click)="toggleSubmenu('Timetable')">
+              <mat-icon>school</mat-icon>
+              <span *ngIf="isExpanded" class="DashboardMenuLi">Time Table</span>
+            </div>
+
+            <ul *ngIf="isExpanded && openedSubmenu === 'Timetable'" class="submenu">
+              <li>
+                <a routerLink="/Admin/WorkingDays">
+                  <mat-icon>people</mat-icon>
+                  <span class="submenu-text">WorkingDays</span>
+                </a>
+              </li>
+
+              <li>
+                <a routerLink="/Admin/Sessions">
+                  <mat-icon>assignment</mat-icon>
+                  <span class="submenu-text">Sessions</span>
+                </a>
+              </li>
+
+              <li>
+                <a routerLink="/Admin/TimeTable">
+                  <mat-icon>trending_up</mat-icon>
+                  <span class="submenu-text">TimeTable</span>
+                </a>
+              </li>
+
+              <li>
+                <a routerLink="/Admin/TeachersTimetable">
+                  <mat-icon>trending_up</mat-icon>
+                  <span class="submenu-text">TeachersTimeTable</span>
+                </a>
+              </li>
+            </ul>
+          </li>
         </ul>
       </div>
     </div>
