@@ -64,6 +64,7 @@ import { FareComponent } from './Admin/Transporation/fare/fare.component';
 import { FeeCategoryComponent } from './Admin/Finance/fee-category/fee-category.component';
 import { FeeAllocationComponent } from './Admin/Finance/fee-allocation/fee-allocation.component';
 import { FeeDiscountCategoryComponent } from './Admin/Finance/fee-discount-category/fee-discount-category.component';
+import { ExamTypeComponent } from './Admin/Exam/exam-type/exam-type.component';
 
 export const routes: Routes = [
   { path: '', component: SignInComponent },
@@ -98,6 +99,8 @@ export const routes: Routes = [
       { path: 'FeeCategory', component: FeeCategoryComponent },
       { path: 'FeeAllocation', component: FeeAllocationComponent },
       { path: 'FeeDiscountCategory', component: FeeDiscountCategoryComponent },
+      { path: 'Fare', component: FareComponent },
+      { path: 'ExamType', component: ExamTypeComponent },
     ]
   },
 
@@ -129,6 +132,8 @@ export const routes: Routes = [
       { path: 'FeeCategory', component: FeeCategoryComponent },
       { path: 'FeeAllocation', component: FeeAllocationComponent },
       { path: 'FeeDiscountCategory', component: FeeDiscountCategoryComponent },
+      { path: 'Stops', component: StopsComponent },
+      { path: 'ExamType', component: ExamTypeComponent },
     ]
   },
 
@@ -164,6 +169,9 @@ export const routes: Routes = [
       { path: 'FeeCategory', component: FeeCategoryComponent },
       { path: 'FeeAllocation', component: FeeAllocationComponent },
       { path: 'FeeDiscountCategory', component: FeeDiscountCategoryComponent },
+      { path: 'Stops', component: StopsComponent },
+      { path: 'ExamType', component: ExamTypeComponent },
+
     ]
   }
 ];
