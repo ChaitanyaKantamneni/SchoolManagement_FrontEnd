@@ -61,6 +61,10 @@ import { RoutesComponent } from './Admin/Transporation/routes/routes.component';
 import { StopsComponent } from './Admin/Transporation/stops/stops.component';
 import { schoolGuard } from './guards/school.guard';
 import { FareComponent } from './Admin/Transporation/fare/fare.component';
+import { WorkingDaysComponent } from './Admin/TimeTable/working-days/working-days.component';
+import { SessionsComponent } from './Admin/TimeTable/sessions/sessions.component';
+import { TimeTableComponent } from './Admin/TimeTable/time-table/time-table.component';
+import { TeachersTimeTableComponent } from './Admin/TimeTable/teachers-time-table/teachers-time-table.component';
 
 export const routes: Routes = [
   { path: '', component: SignInComponent },
@@ -91,7 +95,11 @@ export const routes: Routes = [
       { path: 'Bus', component: BusesComponent },
       { path: 'Routes', component: RoutesComponent },
       { path: 'Stops', component: StopsComponent },
-      { path: 'Fares', component: FareComponent }
+      { path: 'Fares', component: FareComponent },
+      { path: 'WorkingDays', component: WorkingDaysComponent },
+      { path: 'Sessions', component: SessionsComponent },
+      { path: 'TimeTable', component: TimeTableComponent },
+      { path: 'TeachersTimetable', component: TeachersTimeTableComponent }
     ]
   },
 
@@ -119,7 +127,11 @@ export const routes: Routes = [
       { path: 'Bus', component: BusesComponent },
       { path: 'Routes', component: RoutesComponent },
       { path: 'Stops', component: StopsComponent },
-      { path: 'Fares', component: FareComponent }
+      { path: 'Fares', component: FareComponent },
+      { path: 'WorkingDays', component: WorkingDaysComponent },
+      { path: 'Sessions', component: SessionsComponent },
+      { path: 'TimeTable', component: TimeTableComponent },
+      { path: 'TeachersTimetable', component: TeachersTimeTableComponent }
     ]
   },
 
@@ -151,7 +163,11 @@ export const routes: Routes = [
       { path: 'Bus', component: BusesComponent },
       { path: 'Routes', component: RoutesComponent },
       { path: 'Stops', component: StopsComponent },
-      { path: 'Fares', component: FareComponent }
+      { path: 'Fares', component: FareComponent },
+      { path: 'WorkingDays', component: WorkingDaysComponent },
+      { path: 'Sessions', component: SessionsComponent },
+      { path: 'TimeTable', component: TimeTableComponent },
+      { path: 'TeachersTimetable', component: TeachersTimeTableComponent }
     ]
   }
 ];
