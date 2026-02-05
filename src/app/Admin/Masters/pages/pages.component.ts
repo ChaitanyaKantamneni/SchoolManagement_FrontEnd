@@ -74,11 +74,28 @@ export class PagesComponent extends BasePermissionComponent {
 
   PageForm: any = new FormGroup({
     ID: new FormControl(),
-    Class: new FormControl('', Validators.required),
-    Name: new FormControl('', Validators.required),
+    Class: new FormControl(0, Validators.min(1)),
+    Name: new FormControl('', [Validators.required,Validators.pattern('^[a-zA-Z!@#$%^&*()_+\\-=\\[\\]{};:\'",.<>/?|`~]+$')]),
     Strength:new FormControl(),
     Description: new FormControl()
   });
+
+  allowAlphaAndSpecial(event: KeyboardEvent) {
+    const allowedRegex = /^[a-zA-Z!@#$%^&*()_+\-=\[\]{};:'",.<>/?|`~]$/;
+    if (
+      event.key === 'Backspace' ||
+      event.key === 'Tab' ||
+      event.key === 'ArrowLeft' ||
+      event.key === 'ArrowRight' ||
+      event.key === 'Delete'
+    ) {
+      return;
+    }
+
+    if (!allowedRegex.test(event.key)) {
+      event.preventDefault();
+    }
+  }
 
   protected override get isAdmin(): boolean {
     return this.roleId === '1';
@@ -199,6 +216,7 @@ export class PagesComponent extends BasePermissionComponent {
 
   AddNewClicked(){
     this.PageForm.reset();
+    this.PageForm.get('Class').patchValue('0');
     this.IsAddNewClicked=!this.IsAddNewClicked;
     this.IsActiveStatus=true;
     this.ViewPageClicked=false;

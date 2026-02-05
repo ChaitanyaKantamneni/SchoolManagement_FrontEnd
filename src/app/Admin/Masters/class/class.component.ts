@@ -76,7 +76,7 @@ export class ClassComponent extends BasePermissionComponent {
   ClassForm: any = new FormGroup({
     ID: new FormControl(),
     Name: new FormControl('',Validators.required),
-    Syllabus:new FormControl('',Validators.required),
+    Syllabus:new FormControl(0, Validators.min(1)),
     Description: new FormControl(),
     School: new FormControl()
   });
@@ -201,6 +201,7 @@ export class ClassComponent extends BasePermissionComponent {
   AddNewClicked(){
     this.FetchSyllabusList();
     this.ClassForm.reset();
+    this.ClassForm.get('Syllabus').patchValue('0');
     this.IsAddNewClicked=!this.IsAddNewClicked;
     this.IsActiveStatus=true;
     this.ViewClassClicked=false;

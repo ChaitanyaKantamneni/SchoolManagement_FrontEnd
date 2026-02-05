@@ -102,23 +102,21 @@
           <div class="FormInputRowsContainer">
             <div class="InputRow">
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Module</label>
+                <label class="inputLabel" for="email">Module <span class="required">*</span></label>
                 <div class="input-with-error">
                   <select class="inputField" type="date" formControlName="Class" placeholder="Select Module">
                     <option value="0" disabled>Select Module</option>
                     <option *ngFor="let Syllabus of SyllabusList" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option>
                   </select>
-                  <div *ngIf="(PageForm.get('Class' ) ?. touched && PageForm.get('Class' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(PageForm.get('Class' ) ?. errors ?. ['required' ]) ">
+                  <div *ngIf="PageForm.get('Class')?.hasError('min') && (PageForm.get('Class')?.touched || PageForm.get('Class')?.dirty)" class="text-danger">                    
                       <small>Please Select Module.</small>
-                    </div>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="Name">Name</label>
+                <label class="inputLabel" for="Name">Name <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" (keydown)="allowAlphaAndSpecial($event)" />
                   <div *ngIf="(PageForm.get('Name' ) ?. touched && PageForm.get('Name' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(PageForm.get('Name' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter Name.</small>

@@ -120,7 +120,7 @@
           <div class="FormInputRowsContainer">
             <div class="InputRow">
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Class</label>
+                <label class="inputLabel" for="email">Class <span class="required">*</span></label>
                 <div class="custom-multiselect">
                   <div class="select-box" (click)="dropdownOpen = !dropdownOpen">
                     {{ selectedCategories.length ? selectedCategories.length + ' selected' : 'Select Class' }}
@@ -137,9 +137,14 @@
                     </label>
                   </div>
                 </div>
+                <div *ngIf="(ModuleForm.get('Class' ) ?. touched && ModuleForm.get('Class' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('Class' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Select Class.</small>
+                    </div>
+                  </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Name</label>
+                <label class="inputLabel" for="email">Name <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" formControlName="Name" placeholder="Enter Name" />
                   <div *ngIf="(ModuleForm.get('Name' ) ?. touched && ModuleForm.get('Name' ) ?. invalid)" class="text-danger">

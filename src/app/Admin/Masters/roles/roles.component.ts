@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { DashboardTopNavComponent } from '../../../SignInAndSignUp/dashboard-top-nav/dashboard-top-nav.component';
 import { NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiServiceService } from '../../../Services/api-service.service';
 import { delay, forkJoin, Observable, tap } from 'rxjs';
@@ -163,9 +163,26 @@ export class RolesComponent {
 
   RoleForm: any = new FormGroup({
     ID: new FormControl(),
-    Name: new FormControl(),
+    Name: new FormControl('', [Validators.required,Validators.pattern('^[a-zA-Z!@#$%^&*()_+\\-=\\[\\]{};:\'",.<>/?|`~]+$')]),
     Description: new FormControl()
   });
+
+  allowAlphaAndSpecial(event: KeyboardEvent) {
+    const allowedRegex = /^[a-zA-Z!@#$%^&*()_+\-=\[\]{};:'",.<>/?|`~]$/;
+    if (
+      event.key === 'Backspace' ||
+      event.key === 'Tab' ||
+      event.key === 'ArrowLeft' ||
+      event.key === 'ArrowRight' ||
+      event.key === 'Delete'
+    ) {
+      return;
+    }
+
+    if (!allowedRegex.test(event.key)) {
+      event.preventDefault();
+    }
+  }
 
   getPaginatedRoleLists() {
     const start = (this.currentPage - 1) * this.pageSize;
@@ -194,8 +211,14 @@ export class RolesComponent {
 
   SubmitRole() {
     if (this.RoleForm.invalid) {
+      this.RoleForm.markAllAsTouched();
       return;
-    } else {
+    } 
+    else if(this.updatedPermissionsList.length===0 || this.permissionsList.length===0){
+      this.isModalOpen = true;
+      this.AminityInsStatus = "Please Select Role Permissions!";
+    }
+    else {
       const IsActiveStatusNumeric = this.IsActiveStatus ? '1' : '0';
       const data = {
         RoleName: this.RoleForm.get('Name')?.value,

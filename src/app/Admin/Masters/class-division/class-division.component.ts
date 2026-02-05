@@ -49,7 +49,7 @@ export class ClassDivisionComponent extends BasePermissionComponent {
   visiblePageCount: number = 3;
   searchQuery: string = '';
   private searchTimer: any;
-  private readonly SEARCH_MIN_LENGTH = 3;
+  private readonly SEARCH_MIN_LENGTH = 1;
   private readonly SEARCH_DEBOUNCE = 300;
   ClassDivisionList: any[] =[];
   ClassDivisionCount: number = 0;
@@ -75,12 +75,28 @@ export class ClassDivisionComponent extends BasePermissionComponent {
 
   ClassDivisionForm: any = new FormGroup({
     ID: new FormControl(),
-    Class: new FormControl(),
-    Name: new FormControl(),
-    Strength:new FormControl(),
+    Class: new FormControl(0, Validators.min(1)),
+    Name: new FormControl('',Validators.required),
+    Strength:new FormControl('',[Validators.required,Validators.pattern('^[0-9]+$')]),
     Description: new FormControl(),
     School: new FormControl()
   });
+
+  allowOnlyNumbers(event: KeyboardEvent) {
+    if (
+      event.key === 'Backspace' ||
+      event.key === 'Tab' ||
+      event.key === 'ArrowLeft' ||
+      event.key === 'ArrowRight' ||
+      event.key === 'Delete'
+    ) {
+      return;
+    }
+
+    if (!/^[0-9]$/.test(event.key)) {
+      event.preventDefault();
+    }
+  }
 
   FetchSchoolsList() {
     const requestData = { Flag: '2' };
@@ -204,6 +220,7 @@ export class ClassDivisionComponent extends BasePermissionComponent {
   AddNewClicked(){
     this.FetchClassList();
     this.ClassDivisionForm.reset();
+    this.ClassDivisionForm.get('Class').patchValue('0');
     this.IsAddNewClicked=!this.IsAddNewClicked;
     this.IsActiveStatus=true;
     this.ViewClassDivisionClicked=false;
@@ -212,7 +229,7 @@ export class ClassDivisionComponent extends BasePermissionComponent {
   FetchClassList() {
     const requestData = { Flag: '9' };
 
-    this.apiurl.post<any>('Tbl_Class_CRUD_Operations', requestData)
+    this.apiurl.post<any>('Tbl_ClassDivision_CRUD_Operations', requestData)
       .subscribe(
         (response: any) => {
           if (response && Array.isArray(response.data)) {

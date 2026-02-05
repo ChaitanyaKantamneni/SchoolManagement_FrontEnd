@@ -21,7 +21,7 @@ import { HttpClient } from '@angular/common/http';
   styleUrls: ['./routes.component.css']
 })
 export class RoutesComponent extends BasePermissionComponent {
-  pageName = 'Buses';
+  pageName = 'Routes';
 
   constructor(
     private http: HttpClient,
@@ -137,7 +137,8 @@ export class RoutesComponent extends BasePermissionComponent {
   };
 
   protected override get isAdmin(): boolean {
-    return this.roleId === '1';
+    const role = sessionStorage.getItem('RollID') || localStorage.getItem('RollID');
+    return role === '1';
   }
 
   FetchAcademicYearCount(isSearch: boolean) {

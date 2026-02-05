@@ -61,6 +61,9 @@ import { RoutesComponent } from './Admin/Transporation/routes/routes.component';
 import { StopsComponent } from './Admin/Transporation/stops/stops.component';
 import { schoolGuard } from './guards/school.guard';
 import { FareComponent } from './Admin/Transporation/fare/fare.component';
+import { FeeCategoryComponent } from './Admin/Finance/fee-category/fee-category.component';
+import { FeeAllocationComponent } from './Admin/Finance/fee-allocation/fee-allocation.component';
+import { FeeDiscountCategoryComponent } from './Admin/Finance/fee-discount-category/fee-discount-category.component';
 import { ExamTypeComponent } from './Admin/Exam/exam-type/exam-type.component';
 
 export const routes: Routes = [
@@ -89,9 +92,13 @@ export const routes: Routes = [
       { path: 'Promotion', component: PromotionComponent },
       { path: 'DePromotion', component: DePromotionComponent },
       { path: 'TransferStudents', component: TransferStudentsComponent },
-      { path: 'Buses', component: BusesComponent },
+      { path: 'Bus', component: BusesComponent },
       { path: 'Routes', component: RoutesComponent },
       { path: 'Stops', component: StopsComponent },
+      { path: 'Fares', component: FareComponent },
+      { path: 'FeeCategory', component: FeeCategoryComponent },
+      { path: 'FeeAllocation', component: FeeAllocationComponent },
+      { path: 'FeeDiscountCategory', component: FeeDiscountCategoryComponent },
       { path: 'Fare', component: FareComponent },
       { path: 'ExamType', component: ExamTypeComponent },
     ]
@@ -118,8 +125,13 @@ export const routes: Routes = [
       { path: 'Promotion', component: PromotionComponent },
       { path: 'DePromotion', component: DePromotionComponent },
       { path: 'TransferStudents', component: TransferStudentsComponent },
-      { path: 'Buses', component: BusesComponent },
+      { path: 'Bus', component: BusesComponent },
       { path: 'Routes', component: RoutesComponent },
+      { path: 'Stops', component: StopsComponent },
+      { path: 'Fares', component: FareComponent },
+      { path: 'FeeCategory', component: FeeCategoryComponent },
+      { path: 'FeeAllocation', component: FeeAllocationComponent },
+      { path: 'FeeDiscountCategory', component: FeeDiscountCategoryComponent },
       { path: 'Stops', component: StopsComponent },
       { path: 'ExamType', component: ExamTypeComponent },
     ]
@@ -150,8 +162,13 @@ export const routes: Routes = [
       { path: 'Promotion', component: PromotionComponent },
       { path: 'DePromotion', component: DePromotionComponent },
       { path: 'TransferStudents', component: TransferStudentsComponent },
-      { path: 'Buses', component: BusesComponent },
+      { path: 'Bus', component: BusesComponent },
       { path: 'Routes', component: RoutesComponent },
+      { path: 'Stops', component: StopsComponent },
+      { path: 'Fares', component: FareComponent },
+      { path: 'FeeCategory', component: FeeCategoryComponent },
+      { path: 'FeeAllocation', component: FeeAllocationComponent },
+      { path: 'FeeDiscountCategory', component: FeeDiscountCategoryComponent },
       { path: 'Stops', component: StopsComponent },
       { path: 'ExamType', component: ExamTypeComponent },
 
