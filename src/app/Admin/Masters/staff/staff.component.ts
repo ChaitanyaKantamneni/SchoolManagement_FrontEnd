@@ -55,6 +55,7 @@ export class StaffComponent extends BasePermissionComponent {
   StaffList: any[] =[];
   StaffCount: number = 0;
   StaffTypeList:any[]=[];
+  StaffTypeListBySchoolId:any[]=[];
   isViewMode = false;
   viewSyllabus: any = null;
   AminityInsStatus: any = '';
@@ -73,22 +74,26 @@ export class StaffComponent extends BasePermissionComponent {
   schoolList: any[] = [];
   selectedSchoolID: string = '';
   SchoolSelectionChange:boolean=false;
+  academicYearList:any[] = [];
+  AdminselectedSchoolID:string = '';
+  AdminselectedAcademivYearID:string = '';
 
   StaffForm: any = new FormGroup({
     ID: new FormControl(),
     StaffType: new FormControl([], Validators.required),
-    FirstName: new FormControl('',[Validators.required,Validators.pattern('^[a-zA-Z!@#$%^&*()_+\\-=\\[\\]{};:\'",.<>/?|`~]+$')]),
-    MiddleName:new FormControl('',[Validators.pattern('^[a-zA-Z!@#$%^&*()_+\\-=\\[\\]{};:\'",.<>/?|`~]+$')]),
-    LastName: new FormControl('',[Validators.pattern('^[a-zA-Z!@#$%^&*()_+\\-=\\[\\]{};:\'",.<>/?|`~]+$')]),
+    FirstName: new FormControl('',[Validators.required,Validators.pattern('^[a-zA-Z ]+$')]),
+    MiddleName:new FormControl('',[Validators.pattern('^[a-zA-Z ]+$')]),
+    LastName: new FormControl('',[Validators.pattern('^[a-zA-Z ]+$')]),
     MobileNumber: new FormControl('', [Validators.required,Validators.pattern(/^[0-9]{10}$/)]),
     Email: new FormControl('', [Validators.required,Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]),
     DateOfBirth:new FormControl('', Validators.required),
     Qualification: new FormControl('', Validators.required),
-    School:new FormControl()
+    School:new FormControl(),
+    AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
   });
 
   allowAlphaAndSpecial(event: KeyboardEvent) {
-    const allowedRegex = /^[a-zA-Z!@#$%^&*()_+\-=\[\]{};:'",.<>/?|`~]$/;
+    const allowedRegex = /^[a-zA-Z ]+$/;
     if (
       event.key === 'Backspace' ||
       event.key === 'Tab' ||
@@ -145,8 +150,34 @@ export class StaffComponent extends BasePermissionComponent {
       );
   };
 
+  FetchAcademicYearsList() {
+    const requestData = { SchoolID:this.AdminselectedSchoolID||'',Flag: '2' };
+
+    this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.academicYearList = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.id,
+                Name: item.name,
+                IsActive: isActiveString
+              };
+            });            
+          } else {
+            this.academicYearList = [];
+          }
+        },
+        (error) => {
+          this.academicYearList = [];
+        }
+      );
+  };
+
   protected override get isAdmin(): boolean {
-    return this.roleId === '1';
+    const role = sessionStorage.getItem('RollID') || localStorage.getItem('RollID');
+    return role === '1';
   }
 
   FetchAcademicYearCount(isSearch: boolean) {
@@ -264,11 +295,22 @@ export class StaffComponent extends BasePermissionComponent {
 
 
   AddNewClicked(){
-    this.selectedCategories = [];
-    this.StaffForm.get('StaffType')?.setValue([]);
+    if (this.isAdmin) {
+      this.StaffForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+    } else {
+      this.StaffForm.get('School')?.clearValidators();
+    }
+    if(this.AdminselectedSchoolID==''){
+      this.FetchAcademicYearsList();
+      this.FetchRoleListBySchoolID();
+    }
+    this.selectedCategories = [];    
     this.dropdownOpen = false;
     // this.cdr.detectChanges();
     this.StaffForm.reset();
+    this.StaffForm.get('School')?.patchValue('0');
+    this.StaffForm.get('AcademicYear')?.patchValue('0');
+    this.StaffForm.get('StaffType')?.setValue([]);
     this.IsAddNewClicked=!this.IsAddNewClicked;
     this.IsActiveStatus=true;
     this.ViewStaffClicked=false;
@@ -283,6 +325,7 @@ export class StaffComponent extends BasePermissionComponent {
       const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
       const data = {
         SchoolID:this.StaffForm.get('School')?.value,
+        AcademicYear:this.StaffForm.get('AcademicYear')?.value,
         StaffType: this.StaffForm.get('StaffType')?.value.join(','),
         FirstName: this.StaffForm.get('FirstName')?.value,
         MiddleName: this.StaffForm.get('MiddleName')?.value,
@@ -307,13 +350,13 @@ export class StaffComponent extends BasePermissionComponent {
             this.StaffForm.markAsPristine();
           }
         },
-        error: (error: any) => {
-          if (error.status === 409) {
-            this.AminityInsStatus = error.error?.Message || "Staff already exists";
-          } else if (error.status === 400) {
-            this.AminityInsStatus = error.error?.Message || "Operation failed";
+        error: (err:any) => {
+          if (err.status === 400 && err.error?.message) {
+            this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+          } else if (err.status === 500 && err.error?.Message) {
+            this.AminityInsStatus = err.error.Message;  // Database or internal error
           } else {
-            this.AminityInsStatus = "Unexpected error occurred";
+            this.AminityInsStatus = "Unexpected error occurred.";
           }
           this.isModalOpen = true;
         },
@@ -354,8 +397,10 @@ export class StaffComponent extends BasePermissionComponent {
             LastName: item.lastName,
             MobileNumber: item.mobileNumber,
             Email: item.email,
-            DateOfBirth: item.dateOfBirth,
+            DateOfBirth: this.formatDateDDMMYYYY(item.dateOfBirth),
             Qualification: item.qualification,
+            SchoolName: item.schoolName,
+            AcademicYearName: item.academicYearName,
             IsActive: isActive
           };
           this.isViewModalOpen = true;
@@ -373,8 +418,13 @@ export class StaffComponent extends BasePermissionComponent {
             Email: item.email,
             DateOfBirth: this.formatDateYYYYMMDD(item.dateOfBirth),
             Qualification: item.qualification,
-            School:item.schoolID
+            School:item.schoolID,
+            AcademicYear:item.academicYear
           });
+          this.AdminselectedSchoolID=item.schoolID;
+          this.AdminselectedAcademivYearID=item.academicYear;
+          this.FetchAcademicYearsList();
+          this.FetchRoleListBySchoolID();
           this.IsActiveStatus = isActive;
           this.IsAddNewClicked = true;
         }
@@ -396,6 +446,7 @@ export class StaffComponent extends BasePermissionComponent {
       const data = {
         ID:this.StaffForm.get('ID')?.value,
         SchoolID:this.StaffForm.get('School')?.value,
+        AcademicYear:this.StaffForm.get('AcademicYear')?.value,
         StaffType: this.StaffForm.get('StaffType')?.value.join(','),
         FirstName: this.StaffForm.get('FirstName')?.value,
         MiddleName: this.StaffForm.get('MiddleName')?.value,
@@ -421,8 +472,14 @@ export class StaffComponent extends BasePermissionComponent {
             this.StaffForm.markAsPristine();
           }
         },
-        error: (error) => {
-          this.AminityInsStatus = "Error Updating Staff.";
+        error: (err:any) => {
+          if (err.status === 400 && err.error?.message) {
+            this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+          } else if (err.status === 500 && err.error?.Message) {
+            this.AminityInsStatus = err.error.Message;  // Database or internal error
+          } else {
+            this.AminityInsStatus = "Unexpected error occurred.";
+          }
           this.isModalOpen = true;
         },
         complete: () => {
@@ -708,7 +765,9 @@ export class StaffComponent extends BasePermissionComponent {
   };
 
   FetchRoleList() {
-    const requestData = { Flag: '2' };
+    const requestData = { 
+      SchoolID:this.AdminselectedSchoolID || '',
+      Flag: '2' };
     this.apiurl.post<any>('Tbl_Roles_CRUD_Operations', requestData)
       .subscribe(
         (response: any) => {
@@ -727,6 +786,32 @@ export class StaffComponent extends BasePermissionComponent {
         },
         (error) => {
           this.StaffTypeList = [];
+        }
+      );
+  };
+
+  FetchRoleListBySchoolID() {
+    const requestData = { 
+      SchoolID:this.AdminselectedSchoolID || '',
+      Flag: '2' };
+    this.apiurl.post<any>('Tbl_Roles_CRUD_Operations', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.StaffTypeListBySchoolId = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.id,
+                Name: item.roleName,
+                IsActive: isActiveString
+              };
+            });
+          } else {
+            this.StaffTypeListBySchoolId = [];
+          }
+        },
+        (error) => {
+          this.StaffTypeListBySchoolId = [];
         }
       );
   };
@@ -799,4 +884,35 @@ export class StaffComponent extends BasePermissionComponent {
         }
       });
   };
+
+  onAdminSchoolChange(event: Event) {
+    this.StaffTypeListBySchoolId=[];
+    this.selectedCategories=[];
+    this.StaffForm.get('StaffType')?.setValue([]);
+    this.academicYearList=[];
+    this.StaffForm.get('AcademicYear').patchValue('0');
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    if(schoolID=="0"){
+      this.AdminselectedSchoolID="";
+    }else{
+      this.AdminselectedSchoolID = schoolID;
+    }   
+    this.FetchAcademicYearsList();
+    this.FetchRoleListBySchoolID();
+  };
+
+  onAdminAcademicYearChange(event: Event) {
+    this.StaffTypeListBySchoolId=[];
+    this.selectedCategories=[];
+    this.StaffForm.get('StaffType')?.setValue([]);
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    if(schoolID=="0"){
+      this.AdminselectedAcademivYearID="";
+    }else{
+      this.AdminselectedAcademivYearID = schoolID;
+    }    
+    this.FetchRoleList();
+  };  
 }

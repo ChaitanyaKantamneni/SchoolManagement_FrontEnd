@@ -70,7 +70,10 @@ export class ClassComponent extends BasePermissionComponent {
   sortDirection: 'asc' | 'desc' = 'desc';
   editclicked:boolean=false;
   schoolList: any[] = [];
+  academicYearList:any[] = [];
   selectedSchoolID: string = '';
+  AdminselectedSchoolID:string = '';
+  AdminselectedAcademivYearID:string = '';
   SchoolSelectionChange:boolean=false;
 
   ClassForm: any = new FormGroup({
@@ -78,7 +81,8 @@ export class ClassComponent extends BasePermissionComponent {
     Name: new FormControl('',Validators.required),
     Syllabus:new FormControl(0, Validators.min(1)),
     Description: new FormControl(),
-    School: new FormControl()
+    School: new FormControl(),
+    AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
   });
 
   FetchSchoolsList() {
@@ -106,8 +110,34 @@ export class ClassComponent extends BasePermissionComponent {
       );
   };
 
+  FetchAcademicYearsList() {
+    const requestData = { SchoolID:this.AdminselectedSchoolID||'',Flag: '2' };
+
+    this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.academicYearList = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.id,
+                Name: item.name,
+                IsActive: isActiveString
+              };
+            });            
+          } else {
+            this.academicYearList = [];
+          }
+        },
+        (error) => {
+          this.academicYearList = [];
+        }
+      );
+  };
+
   protected override get isAdmin(): boolean {
-    return this.roleId === '1';
+    const role = sessionStorage.getItem('RollID') || localStorage.getItem('RollID');
+    return role === '1';
   }
 
   FetchAcademicYearCount(isSearch: boolean) {
@@ -199,16 +229,28 @@ export class ClassComponent extends BasePermissionComponent {
   };
 
   AddNewClicked(){
-    this.FetchSyllabusList();
+    if (this.isAdmin) {
+      this.ClassForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+    } else {
+      this.ClassForm.get('School')?.clearValidators();
+    }
+    if(this.AdminselectedSchoolID==''){
+      this.FetchAcademicYearsList();
+    }
     this.ClassForm.reset();
     this.ClassForm.get('Syllabus').patchValue('0');
+    this.ClassForm.get('School').patchValue('0');
+    this.ClassForm.get('AcademicYear').patchValue('0');
     this.IsAddNewClicked=!this.IsAddNewClicked;
     this.IsActiveStatus=true;
     this.ViewClassClicked=false;
   };
 
   FetchSyllabusList() {
-    const requestData = { Flag: '3' };
+    const requestData = { 
+      SchoolID:this.AdminselectedSchoolID,
+      AcademicYear:this.AdminselectedAcademivYearID,
+      Flag: '3' };
 
     this.apiurl.post<any>('Tbl_Syllabus_CRUD_Operations', requestData)
       .subscribe(
@@ -243,7 +285,7 @@ export class ClassComponent extends BasePermissionComponent {
         Syllabus: this.ClassForm.get('Syllabus')?.value,
         Description: this.ClassForm.get('Description')?.value,
         SchoolID: this.ClassForm.get('School')?.value,
-        // AcademicYear: this.ClassForm.get('School')?.value,  
+        AcademicYear: this.ClassForm.get('AcademicYear')?.value, 
         IsActive:IsActiveStatusNumeric,
         Flag: '1'
       };
@@ -253,13 +295,19 @@ export class ClassComponent extends BasePermissionComponent {
           if (response.statusCode === 200) {
             this.IsAddNewClicked=!this.IsAddNewClicked;
             this.isModalOpen = true;
-            this.AminityInsStatus = "Syllabus Details Submitted!";
+            this.AminityInsStatus = "Class Details Submitted!";
             this.ClassForm.reset();
             this.ClassForm.markAsPristine();
           }
         },
-        error: (error) => {
-          this.AminityInsStatus = "Error Updating Syllabus.";
+        error: (err:any) => {
+          if (err.status === 400 && err.error?.message) {
+            this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+          } else if (err.status === 500 && err.error?.Message) {
+            this.AminityInsStatus = err.error.Message;  // Database or internal error
+          } else {
+            this.AminityInsStatus = "Unexpected error occurred.";
+          }
           this.isModalOpen = true;
         },
         complete: () => {
@@ -306,8 +354,13 @@ export class ClassComponent extends BasePermissionComponent {
             Name: item.name,
             Syllabus:item.syllabus,
             Description: item.description,
-            School:item.schoolID
+            School:item.schoolID,
+            AcademicYear:item.academicYear
           });
+          this.AdminselectedSchoolID=item.schoolID;
+          this.AdminselectedAcademivYearID=item.academicYear;
+          this.FetchAcademicYearsList();
+          this.FetchSyllabusList();
           this.IsActiveStatus = isActive;
           this.IsAddNewClicked = true;
         }
@@ -332,7 +385,7 @@ export class ClassComponent extends BasePermissionComponent {
         Syllabus: this.ClassForm.get('Syllabus')?.value,
         Description: this.ClassForm.get('Description')?.value,
         SchoolID: this.ClassForm.get('School')?.value,
-        // AcademicYear: this.ClassForm.get('School')?.value,
+        AcademicYear: this.ClassForm.get('AcademicYear')?.value, 
         IsActive:IsActiveStatusNumeric,
         Flag: '5'
       };
@@ -342,13 +395,19 @@ export class ClassComponent extends BasePermissionComponent {
           if (response.statusCode === 200) {
             this.IsAddNewClicked=!this.IsAddNewClicked;
             this.isModalOpen = true;
-            this.AminityInsStatus = "Syllabus Details Updated!";
+            this.AminityInsStatus = "Class Details Updated!";
             this.ClassForm.reset();
             this.ClassForm.markAsPristine();
           }
         },
-        error: (error) => {
-          this.AminityInsStatus = "Error Updating Syllabus.";
+        error: (err:any) => {
+          if (err.status === 400 && err.error?.message) {
+            this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+          } else if (err.status === 500 && err.error?.Message) {
+            this.AminityInsStatus = err.error.Message;  // Database or internal error
+          } else {
+            this.AminityInsStatus = "Unexpected error occurred.";
+          }
           this.isModalOpen = true;
         },
         complete: () => {
@@ -468,6 +527,13 @@ export class ClassComponent extends BasePermissionComponent {
   };
 
   editreview(SyllabusID: string): void {
+    if (this.isAdmin) {
+      this.ClassForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+      this.ClassForm.get('AcademicYear')?.setValidators([Validators.required,Validators.min(1)]);
+    } else {
+      this.ClassForm.get('School')?.clearValidators();
+      this.ClassForm.get('AcademicYear')?.clearValidators();
+    }
     this.editclicked=true;
     this.FetchSyllabusDetByID(SyllabusID,'edit');
     this.ViewClassClicked=true;
@@ -585,4 +651,33 @@ export class ClassComponent extends BasePermissionComponent {
     this.FetchSyllabusDetByID(SyllabusID,'view');
     this.isViewModalOpen=true;
   };
+
+  onAdminSchoolChange(event: Event) {
+    this.academicYearList=[];
+    this.SyllabusList = [];
+    this.ClassForm.get('Syllabus').patchValue('0');
+    this.ClassForm.get('AcademicYear').patchValue('0');
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    if(schoolID=="0"){
+      this.AdminselectedSchoolID="";
+    }else{
+      this.AdminselectedSchoolID = schoolID;
+    }    
+    this.FetchAcademicYearsList();
+  };
+
+  onAdminAcademicYearChange(event: Event) {
+    this.SyllabusList = [];    
+    this.ClassForm.get('Syllabus').patchValue('0');
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    if(schoolID=="0"){
+      this.AdminselectedAcademivYearID="";
+    }else{
+      this.AdminselectedAcademivYearID = schoolID;
+    }    
+    this.FetchSyllabusList();
+  };
+  
 }

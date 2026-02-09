@@ -22,7 +22,7 @@
               <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
               <!-- <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i> -->
             </div>
-            <div class="searchreview" *ngIf="isAdmin && SubjectsList.length != 0">
+            <div class="searchreview" *ngIf="isAdmin">
               <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
                 <option value="">-- Select School --</option>
                 <option value="0">All Schools</option>
@@ -32,11 +32,11 @@
               </select>
             </div>
           </div>
-          <div class="DownloadButtons" *ngIf="SubjectsList.length != 0">
+          <!-- <div class="DownloadButtons" *ngIf="SubjectsList.length != 0">
             <button class="btnHover" (click)="exportSyllabus('pdf')"><mat-icon>picture_as_pdf</mat-icon></button>
             <button class="btnHover" (click)="exportSyllabus('excel')"><mat-icon>description</mat-icon></button>
             <button class="btnHover" (click)="exportSyllabus('print')"><mat-icon>print</mat-icon></button>
-          </div>
+          </div> -->
         </div>
         <div class="reviewstable">
           <table *ngIf="SubjectsList.length != 0" class="table table-bordered">
@@ -119,7 +119,57 @@
         <form [formGroup]="ModuleForm">
           <div class="FormInputRowsContainer">
             <div class="InputRow">
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">School <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="School" placeholder="Select Start Date" (change)="onAdminSchoolChange($event)" >
+                    <option value="0">-- Select School --</option>
+                    <option *ngFor="let school of schoolList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="ModuleForm.get('School')?.hasError('min') && (ModuleForm.get('School')?.touched || ModuleForm.get('School')?.dirty)" class="text-danger">
+                      <small>Please Select School.</small>
+                  </div>
+                </div>
+              </div> 
               <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="AcademicYear" placeholder="Select Start Date" (change)="onAdminAcademicYearChange($event)" >
+                    <option value="0">-- Select Academic Year --</option>
+                    <option *ngFor="let school of academicYearList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="ModuleForm.get('AcademicYear')?.hasError('min') && (ModuleForm.get('AcademicYear')?.touched || ModuleForm.get('AcademicYear')?.dirty)" class="text-danger">
+                      <small>Please Select Academic Year.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <label class="inputLabel" for="email">Class <span class="required">*</span></label>
+                <div class="custom-multiselect">
+                  <div class="select-box" (click)="dropdownOpen = !dropdownOpen">
+                    {{ selectedCategories.length ? selectedCategories.length + ' selected' : 'Select Class' }}
+                    <span class="arrow">{{ dropdownOpen ? '▲' : '▼' }}</span>
+                  </div>
+
+
+                  <div class="options" *ngIf="dropdownOpen">
+                    <label *ngFor="let cat of categories">
+                      <input type="checkbox"
+                            [checked]="selectedCategories.includes(cat.ID)"
+                            (change)="toggleSelection(cat.ID)">
+                      {{cat.Name}}
+                    </label>
+                  </div>
+                </div>
+                <div *ngIf="(ModuleForm.get('Class' ) ?. touched && ModuleForm.get('Class' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('Class' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Select Class.</small>
+                    </div>
+                  </div>
+              </div>
+            </div>
+            <div class="InputRow">
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <label class="inputLabel" for="email">Class <span class="required">*</span></label>
                 <div class="custom-multiselect">
                   <div class="select-box" (click)="dropdownOpen = !dropdownOpen">
@@ -154,36 +204,7 @@
                   </div>
                 </div>
               </div>
-<div class="InputFieldsContainer" *ngIf="isAdmin">
-                <label class="inputLabel" for="email">School</label>
-                <div class="input-with-error">
-                  <select formControlName="School" class="form-control selectFormControl" >
-                    <option value="">-- Select School --</option>
-                    <option *ngFor="let school of schoolList" [value]="school.ID">
-                      {{ school.Name }}
-                    </option>
-                  </select>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <div class="toggle-container" (click)="$event.stopPropagation()">
-                  <label class="switch">
-                    <input type="checkbox" [checked]="IsActiveStatus" (click)="toggleChange()">
-                    <span class="slider">
-                      <span
-                        class="toggle-text"
-                        [ngStyle]="{
-                          left: IsActiveStatus ? '42%' : '60%',
-                          fontSize: IsActiveStatus ? '9px' : '9px'
-                        }"
-                      >
-                        {{ IsActiveStatus ? 'Active' : 'Inactive' }}
-                      </span>
-                    </span>
-                  </label>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
                 <span style="visibility: hidden;height: 3px;">hello adding new academic year</span>
               </div>
             </div>
@@ -212,9 +233,29 @@
                   </div>
                 </div>
               </div>
-              <!-- <div class="InputFieldsContainer">
-                <span style="visibility: hidden;">hello adding new academic year</span>
-              </div> -->
+            </div>
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <div class="toggle-container" (click)="$event.stopPropagation()">
+                  <label class="switch">
+                    <input type="checkbox" [checked]="IsActiveStatus" (click)="toggleChange()">
+                    <span class="slider">
+                      <span
+                        class="toggle-text"
+                        [ngStyle]="{
+                          left: IsActiveStatus ? '42%' : '60%',
+                          fontSize: IsActiveStatus ? '9px' : '9px'
+                        }"
+                      >
+                        {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <span style="visibility: hidden;height: 3px;">hello adding new academic year</span>
+              </div>
             </div>
           </div>
           <div class="ActionButtons">
@@ -248,25 +289,40 @@
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Syllabus Details</h5>
+        <h5 class="modal-title">Subject Details</h5>
         <button type="button" class="close" (click)="closeModal('view')">
           <span>&times;</span>
         </button>
       </div>
       <div class="modal-body">
         <div class="row mb-2" *ngIf="viewSyllabus?.Name">
-          <div class="col-4">Name</div>
+          <div class="col-4">Subject</div>
           <div class="col-8 viewfontsize">{{ viewSyllabus?.Name }}</div>
         </div>
 
-        <div class="row mb-2" *ngIf="viewSyllabus?.AvailableFrom">
-          <div class="col-4">Available From</div>
-          <div class="col-8 viewfontsize">{{ viewSyllabus?.AvailableFrom }}</div>
+        <div class="row mb-2" *ngIf="viewSyllabus?.ClassName">
+          <div class="col-4">Class</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.ClassName }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.SchoolName">
+          <div class="col-4">School Name</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.SchoolName }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.AcademicYearName">
+          <div class="col-4">Academic Year</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.AcademicYearName }}</div>
         </div>
 
         <div class="row mb-2" *ngIf="viewSyllabus?.Description && viewSyllabus.Description.trim() !== ''">
           <div class="col-4">Description</div>
           <div class="col-8 viewfontsize">{{ viewSyllabus?.Description }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.Topics && viewSyllabus.Topics.trim() !== ''">
+          <div class="col-4">Topics</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.Topics }}</div>
         </div>
 
         <div class="row mb-2" *ngIf="viewSyllabus?.IsActive !== null">

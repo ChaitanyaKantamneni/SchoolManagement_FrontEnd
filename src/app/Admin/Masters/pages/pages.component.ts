@@ -64,7 +64,7 @@ export class PagesComponent extends BasePermissionComponent {
   lastCreatedDate: string | null = null;
   lastID: number | null = null;
 
-  sortColumn: string = 'ModuleName'; 
+  sortColumn: string = 'PageName'; 
   sortDirection: 'asc' | 'desc' = 'desc';
   editclicked:boolean=false;
   schoolList: any[] = [];
@@ -75,13 +75,13 @@ export class PagesComponent extends BasePermissionComponent {
   PageForm: any = new FormGroup({
     ID: new FormControl(),
     Class: new FormControl(0, Validators.min(1)),
-    Name: new FormControl('', [Validators.required,Validators.pattern('^[a-zA-Z!@#$%^&*()_+\\-=\\[\\]{};:\'",.<>/?|`~]+$')]),
+    Name: new FormControl('', [Validators.required,Validators.pattern('^[a-zA-Z ]+$')]),
     Strength:new FormControl(),
     Description: new FormControl()
   });
 
   allowAlphaAndSpecial(event: KeyboardEvent) {
-    const allowedRegex = /^[a-zA-Z!@#$%^&*()_+\-=\[\]{};:'",.<>/?|`~]$/;
+    const allowedRegex = /^[a-zA-Z ]$/;
     if (
       event.key === 'Backspace' ||
       event.key === 'Tab' ||
@@ -139,7 +139,7 @@ export class PagesComponent extends BasePermissionComponent {
     return this.apiurl.post<any>('Tbl_Pages_CRUD_Operations', {
       Flag: isSearch ? '8' : '6',
       SchoolID:SchoolIdSelected,
-      Name: isSearch ? this.searchQuery.trim() : null
+      PageName: isSearch ? this.searchQuery.trim() : null
     });
   }
 
@@ -174,7 +174,7 @@ export class PagesComponent extends BasePermissionComponent {
           ...extra
         };
 
-        if (isSearch) payload.Name = this.searchQuery.trim();
+        if (isSearch) payload.PageName = this.searchQuery.trim();
 
         this.apiurl.post<any>('Tbl_Pages_CRUD_Operations', payload).subscribe({
           next: (response: any) => {
@@ -248,13 +248,13 @@ export class PagesComponent extends BasePermissionComponent {
             this.PageForm.markAsPristine();
           }
         },
-        error: (error: any) => {
-          if (error.status === 409) {
-            this.AminityInsStatus = error.error?.Message || "Division name already exists";
-          } else if (error.status === 400) {
-            this.AminityInsStatus = error.error?.Message || "Operation failed";
+        error: (err:any) => {
+          if (err.status === 400 && err.error?.message) {
+            this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+          } else if (err.status === 500 && err.error?.Message) {
+            this.AminityInsStatus = err.error.Message;  // Database or internal error
           } else {
-            this.AminityInsStatus = "Unexpected error occurred";
+            this.AminityInsStatus = "Unexpected error occurred.";
           }
           this.isModalOpen = true;
         },
@@ -290,7 +290,8 @@ export class PagesComponent extends BasePermissionComponent {
             Class: item.moduleID,
             Name: item.pageName,
             Description: item.description,
-            IsActive: isActive
+            IsActive: isActive,
+            ModuleName:item.moduleName
           };
           this.isViewModalOpen = true;
         }
@@ -342,8 +343,14 @@ export class PagesComponent extends BasePermissionComponent {
             this.PageForm.markAsPristine();
           }
         },
-        error: (error) => {
-          this.AminityInsStatus = "Error Updating Page Details.";
+        error: (err:any) => {
+          if (err.status === 400 && err.error?.message) {
+            this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+          } else if (err.status === 500 && err.error?.Message) {
+            this.AminityInsStatus = err.error.Message;  // Database or internal error
+          } else {
+            this.AminityInsStatus = "Unexpected error occurred.";
+          }
           this.isModalOpen = true;
         },
         complete: () => {

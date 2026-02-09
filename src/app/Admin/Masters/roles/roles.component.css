@@ -544,3 +544,17 @@ table tbody tr td {
   top: 0;
   z-index: 1;
 }
+
+
+.FormInputRowsContainer{
+    flex-direction: column;
+}
+
+.InputRow{
+    flex-direction: row !important;
+    width: 100% !important;
+}
+
+.inputrowdescription{
+    align-items: start !important;
+}
