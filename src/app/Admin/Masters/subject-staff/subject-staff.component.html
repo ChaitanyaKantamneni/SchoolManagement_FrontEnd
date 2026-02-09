@@ -44,7 +44,7 @@
               <tr>
                 <th class="visually-hidden">Academic Year ID</th>
                 <th>SI.No</th>
-                <th>Class</th>
+                <th>Subjects</th>
                 <th>Staff Name</th>
                 <th *ngIf="isAdmin">School Name</th>
                 <th>Academic Year</th>
@@ -134,7 +134,7 @@
                 <div class="input-with-error">
                   <select class="inputField" type="date" formControlName="Name" placeholder="Select Class">
                     <option value="0" disabled>Select Staff</option>
-                    <option *ngFor="let Syllabus of (IsAddNewClicked ? StaffListNotAssigned : StaffList)" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option>
+                    <option *ngFor="let Syllabus of (StaffListNotAssigned && StaffListNotAssigned.length > 0 ? StaffListNotAssigned : StaffList)" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option>
                   </select>
                   <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
                   <div *ngIf="ModuleForm.get('Name')?.hasError('min') && (ModuleForm.get('Name')?.touched || ModuleForm.get('Name')?.dirty)" class="text-danger">
@@ -149,7 +149,8 @@
                 <div class="input-with-error">
                   <select class="inputField" type="date" formControlName="Name" placeholder="Select Class">
                     <option value="0" disabled>Select Staff</option>
-                    <option *ngFor="let Syllabus of (IsAddNewClicked ? StaffList : StaffListNotAssigned)" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option>
+                    <option *ngFor="let Syllabus of (StaffListNotAssigned && StaffListNotAssigned.length > 0 ? StaffListNotAssigned : StaffList)" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option>
+                    <!-- <option *ngFor="let Syllabus of (IsAddNewClicked ? StaffList : StaffListNotAssigned)" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option> -->
                   </select>
                   <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
                   <div *ngIf="ModuleForm.get('Name')?.hasError('min') && (ModuleForm.get('Name')?.touched || ModuleForm.get('Name')?.dirty)" class="text-danger">
@@ -169,8 +170,8 @@
                   <div class="options" *ngIf="dropdownOpen">
                     <label *ngFor="let cat of categories">
                       <input type="checkbox"
-                            [checked]="selectedCategories.includes(cat.ID)"
-                            (change)="toggleSelection(cat.ID)">
+                            [checked]="selectedCategories.includes(cat.UniqueID)"
+                            (change)="toggleSelection(cat.UniqueID)">
                       {{cat.Name}}
                     </label>
                   </div>
@@ -218,20 +219,30 @@
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Syllabus Details</h5>
+        <h5 class="modal-title">Subject Staff Details</h5>
         <button type="button" class="close" (click)="closeModal('view')">
           <span>&times;</span>
         </button>
       </div>
       <div class="modal-body">
         <div class="row mb-2" *ngIf="viewSyllabus?.Name">
-          <div class="col-4">Name</div>
-          <div class="col-8 viewfontsize">{{ viewSyllabus?.Name }}</div>
+          <div class="col-4">Staff Name</div>
+          <div class="col-8 viewfontsize">{{ getStaffName(viewSyllabus?.Name) }}</div>
         </div>
 
-        <div class="row mb-2" *ngIf="viewSyllabus?.AvailableFrom">
-          <div class="col-4">Available From</div>
-          <div class="col-8 viewfontsize">{{ viewSyllabus?.AvailableFrom }}</div>
+        <div class="row mb-2" *ngIf="viewSyllabus?.Class">
+          <div class="col-4">Subjects</div>
+          <div class="col-8 viewfontsize">{{ getClassName(viewSyllabus?.Class) }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.SchoolName">
+          <div class="col-4">School Name</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.SchoolName }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.AcademicYearName">
+          <div class="col-4">Academic Year</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.AcademicYearName }}</div>
         </div>
 
         <div class="row mb-2" *ngIf="viewSyllabus?.Description && viewSyllabus.Description.trim() !== ''">
@@ -239,7 +250,7 @@
           <div class="col-8 viewfontsize">{{ viewSyllabus?.Description }}</div>
         </div>
 
-        <div class="row mb-2" *ngIf="viewSyllabus?.IsActive !== null">
+        <!-- <div class="row mb-2" *ngIf="viewSyllabus?.IsActive !== null">
           <div class="col-4">Status</div>
           <div class="col-8">
             <span class="badge"
@@ -247,7 +258,7 @@
               {{ viewSyllabus?.IsActive ? 'Active' : 'Inactive' }}
             </span>
           </div>
-        </div>
+        </div> -->
       </div>
       <!-- <div class="modal-footer">
         <button class="btn btn-secondary" (click)="closeModal()">Close</button>
