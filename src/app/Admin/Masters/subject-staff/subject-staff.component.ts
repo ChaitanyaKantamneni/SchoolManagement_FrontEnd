@@ -66,6 +66,7 @@ export class SubjectStaffComponent extends BasePermissionComponent {
   roleId = sessionStorage.getItem('RollID');
 
   categories:any[] = [];
+  categoriesInitialFetch:any[] = [];
 
   selectedCategories: string[] = [];
   dropdownOpen: boolean = false;
@@ -80,6 +81,9 @@ export class SubjectStaffComponent extends BasePermissionComponent {
   schoolList: any[] = [];
   selectedSchoolID: string = '';
   SchoolSelectionChange:boolean=false;
+  academicYearList:any[] = [];
+  AdminselectedSchoolID:string = '';
+  AdminselectedAcademivYearID:string = '';
 
   toggleSelection(value: string) {
     const index = this.selectedCategories.indexOf(value);
@@ -95,7 +99,9 @@ export class SubjectStaffComponent extends BasePermissionComponent {
   ModuleForm: any = new FormGroup({
     ID: new FormControl(),
     Name: new FormControl(0, Validators.min(1)),
-    Class:new FormControl([],Validators.required)
+    Class:new FormControl([],Validators.required),
+    School: new FormControl(),
+    AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
   });
 
   FetchSchoolsList() {
@@ -221,11 +227,19 @@ export class SubjectStaffComponent extends BasePermissionComponent {
   };
 
   AddNewClicked(){
+    if (this.isAdmin) {
+      this.ModuleForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+    } else {
+      this.ModuleForm.get('School')?.clearValidators();
+    }
+    if(this.AdminselectedSchoolID==''){
+      this.FetchAcademicYearsList();
+    }
     this.ModuleForm.reset();
     this.selectedCategories = [];
     this.ModuleForm.get('Name')?.patchValue('0');
-    this.FetchStaffListThatAreNotAssigned();
-    this.FetchClassList();
+    this.ModuleForm.get('School').patchValue('0');
+    this.ModuleForm.get('AcademicYear').patchValue('0');
     this.IsAddNewClicked=!this.IsAddNewClicked;
     this.IsActiveStatus=true;
     this.ViewModuleClicked=false;
@@ -238,6 +252,8 @@ export class SubjectStaffComponent extends BasePermissionComponent {
     }
     else{
       const data = {
+        SchoolID: this.ModuleForm.get('School')?.value,
+        AcademicYear: this.ModuleForm.get('AcademicYear')?.value,
         StaffName: this.ModuleForm.get('Name')?.value,
         Class:this.ModuleForm.get('Class')?.value.join(','),
         Flag: '1'
@@ -300,8 +316,16 @@ export class SubjectStaffComponent extends BasePermissionComponent {
           this.ModuleForm.patchValue({
             ID: item.id,
             Class:item.class,
-            Name: item.staffName
+            Name: item.staffName,
+            School:item.schoolID,
+            AcademicYear:item.academicYear
           });
+          this.categories = this.categories || [];
+          this.AdminselectedSchoolID=item.schoolID;
+          this.AdminselectedAcademivYearID=item.academicYear;
+          this.FetchAcademicYearsList();
+          this.FetchStaffListThatAreNotAssigned();
+          this.FetchClassListByschoolIDAndAcademicYearID();
           this.IsActiveStatus = isActive;
           this.IsAddNewClicked = true;
         }
@@ -321,6 +345,8 @@ export class SubjectStaffComponent extends BasePermissionComponent {
     else{
       const data = {
         ID: this.ModuleForm.get('ID')?.value,
+        SchoolID: this.ModuleForm.get('School')?.value,
+        AcademicYear: this.ModuleForm.get('AcademicYear')?.value,
         StaffName: this.ModuleForm.get('Name')?.value,
         Class:this.ModuleForm.get('Class')?.value.join(','),
         Flag: '4'
@@ -349,7 +375,38 @@ export class SubjectStaffComponent extends BasePermissionComponent {
   };
 
   FetchClassList() {
-    const requestData = { Flag: '9' };
+    const requestData = { 
+      SchoolID:this.AdminselectedSchoolID,
+      AcademicYear:this.AdminselectedAcademivYearID,
+      Flag: '9' };
+
+    this.apiurl.post<any>('Tbl_Subject_CRUD_Operations', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.categoriesInitialFetch = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.sNo.toString(),
+                Name: item.syllabusClassName
+              };
+            });
+            console.log('Fetched categories:', this.categories); // Debugging line
+          } else {
+            this.categoriesInitialFetch = [];
+          }
+        },
+        (error) => {
+          this.categoriesInitialFetch = [];
+        }
+      );
+  };
+
+  FetchClassListByschoolIDAndAcademicYearID() {
+    const requestData = { 
+      SchoolID:this.AdminselectedSchoolID,
+      AcademicYear:this.AdminselectedAcademivYearID,
+      Flag: '9' };
 
     this.apiurl.post<any>('Tbl_Subject_CRUD_Operations', requestData)
       .subscribe(
@@ -380,7 +437,7 @@ export class SubjectStaffComponent extends BasePermissionComponent {
 
     if (typeof staffType === 'string' || typeof staffType === 'number') {
       const staffTypeStr = staffType.toString();
-      const syllabus = this.categories.find(s => s.ID === staffTypeStr);
+      const syllabus = this.categoriesInitialFetch.find(s => s.ID === staffTypeStr);
       return syllabus?.Name ?? 'N/A';
     }
 
@@ -388,7 +445,7 @@ export class SubjectStaffComponent extends BasePermissionComponent {
       const names = staffType
         .map(id => {
           const idStr = id.toString();
-          const syllabus = this.categories.find(s => s.ID === idStr);
+          const syllabus = this.categoriesInitialFetch.find(s => s.ID === idStr);
           return syllabus?.Name;
         })
         .filter(name => name != null);
@@ -463,7 +520,10 @@ export class SubjectStaffComponent extends BasePermissionComponent {
   };
 
   FetchStaffListThatAreNotAssigned() {
-    const requestData = { Flag: '10' };
+    const requestData = { 
+      SchoolID:this.AdminselectedSchoolID,
+      AcademicYear:this.AdminselectedAcademivYearID,
+      Flag: '10' };
 
     this.apiurl.post<any>('Tbl_Staff_CRUD_Operations', requestData)
       .subscribe(
@@ -494,7 +554,9 @@ export class SubjectStaffComponent extends BasePermissionComponent {
           }
         },
         (error) => {
-          this.StaffListNotAssigned = [];
+          if (error?.status === 500) {
+            this.StaffListNotAssigned = [];
+          }
         }
       );
   };
@@ -727,5 +789,60 @@ export class SubjectStaffComponent extends BasePermissionComponent {
   viewReview(SyllabusID: string): void {
     this.FetchSyllabusDetByID(SyllabusID,'view');
     this.isViewModalOpen=true;
+  };
+
+  FetchAcademicYearsList() {
+    const requestData = { SchoolID:this.AdminselectedSchoolID||'',Flag: '2' };
+
+    this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.academicYearList = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.id,
+                Name: item.name,
+                IsActive: isActiveString
+              };
+            });            
+          } else {
+            this.academicYearList = [];
+          }
+        },
+        (error) => {
+          this.academicYearList = [];
+        }
+      );
+  };
+
+  onAdminSchoolChange(event: Event) {
+    this.academicYearList=[];
+    this.SyllabusList = [];
+    this.ModuleForm.get('Class').patchValue('0');
+    this.ModuleForm.get('AcademicYear').patchValue('0');
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    if(schoolID=="0"){
+      this.AdminselectedSchoolID="";
+    }else{
+      this.AdminselectedSchoolID = schoolID;
+    }   
+    this.FetchAcademicYearsList();
+  };
+
+  onAdminAcademicYearChange(event: Event) {
+    this.categories=[];
+    this.selectedCategories=[];
+    this.ModuleForm.get('Class').patchValue('0');
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    if(schoolID=="0"){
+      this.AdminselectedAcademivYearID="";
+    }else{
+      this.AdminselectedAcademivYearID = schoolID;
+    }    
+    this.FetchStaffListThatAreNotAssigned();
+    this.FetchClassListByschoolIDAndAcademicYearID();
   };
 }

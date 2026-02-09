@@ -22,7 +22,7 @@
               <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
               <!-- <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i> -->
             </div>
-            <div class="searchreview" *ngIf="isAdmin && SyllabusList.length != 0">
+            <div class="searchreview" *ngIf="isAdmin">
               <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
                 <option value="">-- Select School --</option>
                 <option value="0">All Schools</option>
@@ -140,22 +140,45 @@
                     </div>
                   </div>
                 </div>
+              </div>                           
+            </div>
+            <div class="InputRow" [class.inputrowdescription]="!isAdmin">
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">School <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="School" placeholder="Select Start Date" (change)="onAdminSchoolChange($event)" >
+                    <option value="0">-- Select School --</option>
+                    <option *ngFor="let school of schoolList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="SyllabusForm.get('School')?.hasError('min') && (SyllabusForm.get('School')?.touched || SyllabusForm.get('School')?.dirty)" class="text-danger">
+                      <small>Please Select School.</small>
+                  </div>
+                </div>
               </div>
               <div class="InputFieldsContainer">
-                <span style="visibility: hidden;">hello adding new academic year</span>
+                <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="AcademicYear" placeholder="Select Start Date">
+                    <option value="0">-- Select Academic Year --</option>
+                    <option *ngFor="let school of academicYearList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="SyllabusForm.get('AcademicYear')?.hasError('min') && (SyllabusForm.get('AcademicYear')?.touched || SyllabusForm.get('AcademicYear')?.dirty)" class="text-danger">
+                      <small>Please Select Academic Year.</small>
+                  </div>
+                </div>
+              </div> 
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <label class="inputLabel" for="email">Description</label>
+                <div class="input-with-error">
+                  <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="2"></textarea>                  
+                </div>
               </div>
             </div>
             <div class="InputRow">
-              <div class="InputFieldsContainer">
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <label class="inputLabel" for="email">Description</label>
                 <div class="input-with-error">
-                  <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="2"></textarea>
-                  <!-- <input class="inputField" id="email" formControlName="Name" placeholder="Enter Name" /> -->
-                  <div *ngIf="(SyllabusForm.get('Description' ) ?. touched && SyllabusForm.get('Description' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(SyllabusForm.get('Description' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Description.</small>
-                    </div>
-                  </div>
+                  <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="2"></textarea>                  
                 </div>
               </div>
               <div class="InputFieldsContainer">
@@ -175,10 +198,10 @@
                     </span>
                   </label>
                 </div>
-              </div>
-              <div class="InputFieldsContainer">
+              </div>   
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
                 <span style="visibility: hidden;">hello adding new academic year</span>
-              </div>
+              </div>               
             </div>
           </div>
           <div class="ActionButtons">
@@ -226,6 +249,16 @@
         <div class="row mb-2" *ngIf="viewSyllabus?.AvailableFrom">
           <div class="col-4">Available From</div>
           <div class="col-8 viewfontsize">{{ viewSyllabus?.AvailableFrom }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.SchoolName && viewSyllabus.SchoolName.trim() !== ''">
+          <div class="col-4">School Name</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.SchoolName }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.AcademicYearName && viewSyllabus.AcademicYearName.trim() !== ''">
+          <div class="col-4">Academic Year</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.AcademicYearName }}</div>
         </div>
 
         <div class="row mb-2" *ngIf="viewSyllabus?.Description && viewSyllabus.Description.trim() !== ''">
