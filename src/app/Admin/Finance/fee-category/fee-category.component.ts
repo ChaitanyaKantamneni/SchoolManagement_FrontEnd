@@ -72,6 +72,10 @@ export class FeeCategoryComponent extends BasePermissionComponent {
   schoolList: any[] = [];
   selectedSchoolID: string = '';
   SchoolSelectionChange:boolean=false;
+  academicYearList:any[] = [];
+  AdminselectedSchoolID:string = '';
+  AdminselectedAcademivYearID:string = '';
+  FineCollectionTypePercentage:boolean=false;
 
   ClassForm: any = new FormGroup({
     ID: new FormControl(),
@@ -85,7 +89,8 @@ export class FeeCategoryComponent extends BasePermissionComponent {
     FinecollectionType:new FormControl(0, Validators.min(1)),
     FineIncrementIn:new FormControl(),
     Description: new FormControl(),
-    School: new FormControl()
+    School: new FormControl(),
+    AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
   });
 
   allowOnlyNumbers(event: KeyboardEvent) {
@@ -125,6 +130,31 @@ export class FeeCategoryComponent extends BasePermissionComponent {
         },
         (error) => {
           this.schoolList = [];
+        }
+      );
+  };
+
+  FetchAcademicYearsList() {
+    const requestData = { SchoolID:this.AdminselectedSchoolID||'',Flag: '2' };
+
+    this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.academicYearList = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.id,
+                Name: item.name,
+                IsActive: isActiveString
+              };
+            });            
+          } else {
+            this.academicYearList = [];
+          }
+        },
+        (error) => {
+          this.academicYearList = [];
         }
       );
   };
@@ -227,19 +257,26 @@ export class FeeCategoryComponent extends BasePermissionComponent {
       Description:item.description,
       IsActive: item.isActive === "True" ? 'Active' : 'InActive',
       AcademicYearName:item.academicYearName,
-
+      SchoolName:item.schoolName
     }));
   };
 
   AddNewClicked(){
-    //this.FetchSyllabusList();
-    this.ClassForm.reset();
-    
+    if (this.isAdmin) {
+      this.ClassForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+    } else {
+      this.ClassForm.get('School')?.clearValidators();
+    }
+    if(this.AdminselectedSchoolID==''){
+      this.FetchAcademicYearsList();
+    }
+    this.ClassForm.reset();  
+    this.ClassForm.get('School').patchValue('0');
+    this.ClassForm.get('AcademicYear').patchValue('0');  
     this.ClassForm.get('Feetype').patchValue('0');
     this.ClassForm.get('FeeCollectionDuration').patchValue('0');
     this.ClassForm.get('DueDay').patchValue('0');
     this.ClassForm.get('Finetype').patchValue('0');
-    this.ClassForm.get('FineValue').patchValue('0');
     this.ClassForm.get('FinecollectionType').patchValue('0');
     this.ClassForm.get('FineIncrementIn').patchValue('0');
     this.ClassForm.get('School').patchValue('0');
@@ -289,8 +326,8 @@ export class FeeCategoryComponent extends BasePermissionComponent {
         FineCollectionType: this.ClassForm.get('FinecollectionType')?.value,
         FineIncrementIn: this.ClassForm.get('FineIncrementIn')?.value,
         Description: this.ClassForm.get('Description')?.value,
-        SchoolID: this.ClassForm.get('SchoolID')?.value,
-        // AcademicYear: this.ClassForm.get('School')?.value,  
+        SchoolID: this.ClassForm.get('School')?.value,
+        AcademicYear: this.ClassForm.get('AcademicYear')?.value,
         IsActive:IsActiveStatusNumeric,
         Flag: '1'
       };
@@ -306,8 +343,14 @@ export class FeeCategoryComponent extends BasePermissionComponent {
 
           }
         },
-        error: (error) => {
-          this.AminityInsStatus = "Error Submitting Fee Category.";
+        error: (err:any) => {
+          if (err.status === 400 && err.error?.message) {
+            this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+          } else if (err.status === 500 && err.error?.Message) {
+            this.AminityInsStatus = err.error.Message;  // Database or internal error
+          } else {
+            this.AminityInsStatus = "Unexpected error occurred.";
+          }
           this.isModalOpen = true;
         },
         complete: () => {
@@ -365,17 +408,21 @@ export class FeeCategoryComponent extends BasePermissionComponent {
             ID: item.id,
             SchoolID: item.schoolID,
             Name: item.feeCategoryName,
-            FeeType: item.feeType,
+            Feetype: item.feeType.toString(),
             FeeCollectionDuration:item.feeCollectionDuration,
-            FeeDueDay:item.feeDueDay,
-            FineType:item.fineType,
+            DueDay:item.feeDueDay,
+            Finetype:item.fineType,
             FineValue:item.fineValue,
-            FineCollectionType:item.fineCollectionType,
+            FinecollectionType:item.fineCollectionType,
             FineIncrementIn:item.fineIncrementIn,
             AcademicYearName:item.academicYearName,
             Description:item.description,
-            School:item.schoolID
+            School:item.schoolID,
+            AcademicYear:item.academicYear
           });
+          this.AdminselectedSchoolID=item.schoolID;
+          this.AdminselectedAcademivYearID=item.academicYear;
+          this.FetchAcademicYearsList();
           this.IsActiveStatus = isActive;
           this.IsAddNewClicked = true;
         }
@@ -406,7 +453,7 @@ export class FeeCategoryComponent extends BasePermissionComponent {
         FineIncrementIn: this.ClassForm.get('FineIncrementIn')?.value,
         Description: this.ClassForm.get('Description')?.value,
         SchoolID: this.ClassForm.get('School')?.value,
-        // AcademicYear: this.ClassForm.get('School')?.value,
+        AcademicYear: this.ClassForm.get('AcademicYear')?.value,
         IsActive:IsActiveStatusNumeric,
         Flag: '5'
       };
@@ -421,8 +468,14 @@ export class FeeCategoryComponent extends BasePermissionComponent {
             this.ClassForm.markAsPristine();
           }
         },
-        error: (error) => {
-          this.AminityInsStatus = "Error Updating FeeCategory.";
+        error: (err:any) => {
+          if (err.status === 400 && err.error?.message) {
+            this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+          } else if (err.status === 500 && err.error?.Message) {
+            this.AminityInsStatus = err.error.Message;  // Database or internal error
+          } else {
+            this.AminityInsStatus = "Unexpected error occurred.";
+          }
           this.isModalOpen = true;
         },
         complete: () => {
@@ -659,4 +712,31 @@ export class FeeCategoryComponent extends BasePermissionComponent {
     this.FetchSyllabusDetByID(SyllabusID,'view');
     this.isViewModalOpen=true;
   };
+
+  onAdminSchoolChange(event: Event) {
+    this.academicYearList=[];
+    this.ClassForm.get('AcademicYear').patchValue('0');
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    if(schoolID=="0"){
+      this.AdminselectedSchoolID="";
+    }else{
+      this.AdminselectedSchoolID = schoolID;
+    }   
+    this.FetchAcademicYearsList();
+  };
+
+  onFineTypeChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    this.ClassForm.get('FineIncrementIn').patchValue('0');
+    if(schoolID=="Percentage"){
+      this.FineCollectionTypePercentage=true;
+      this.ClassForm.get('FineIncrementIn')?.setValidators([Validators.required,Validators.min(1)]);
+    }else{
+      this.FineCollectionTypePercentage=false;
+      this.ClassForm.get('FineIncrementIn')?.clearValidators();
+    }   
+    this.ClassForm.get('FineIncrementIn')?.updateValueAndValidity();
+  };  
 }
