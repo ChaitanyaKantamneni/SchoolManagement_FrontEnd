@@ -1,1 +1,431 @@
-<p>fee-category works!</p>
+<div>
+  <app-dashboard-top-nav></app-dashboard-top-nav>
+</div>
+<div class="MainContentDiv">
+  <div *ngIf="!IsAddNewClicked" class="w-100">
+    <div class="ComponentTop">
+      <div class="ComponentTopHeader">
+        <h5>Fee Category</h5>
+        <p>Total {{ ClassCount }} Fee Categories Added</p>
+      </div>
+      <div class="ComponentTopBottom">
+        <button *ngIf="canAdd()" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Fee Category</button>
+      </div>
+    </div>
+    <div class="ComponentRecords">
+      <div>
+        <div class="ComponentRecordsTop">
+          <div class="filterOptions">
+            <div class="searchreview input-container" >
+              <input type="text" id="searchQuery" class="form-control floating-input"
+                [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search... "  />
+              <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
+              <!-- <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i> -->
+            </div>
+            <div class="searchreview" *ngIf="isAdmin && ClassList.length != 0">
+              <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
+                <option value="">-- Select School --</option>
+                <option value="0">All Schools</option>
+                <option *ngFor="let school of schoolList" [value]="school.ID">
+                  {{ school.Name }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <div class="DownloadButtons" *ngIf="ClassList.length != 0">
+            <button class="btnHover" (click)="exportSyllabus('pdf')"><mat-icon>picture_as_pdf</mat-icon></button>
+            <button class="btnHover" (click)="exportSyllabus('excel')"><mat-icon>description</mat-icon></button>
+            <button class="btnHover" (click)="exportSyllabus('print')"><mat-icon>print</mat-icon></button>
+          </div>
+        </div>
+        <div class="reviewstable">
+          <table id="classTable" *ngIf="ClassList.length != 0" class="table table-bordered">
+            <thead>
+              <tr>
+                <th class="visually-hidden">Academic Year ID</th>
+                <th>SI.No</th>
+                <th (click)="sort('Name')" class="sortable-column">
+                  <span class="column-text">FeeCategoryName</span>
+                  <span class="arrows">
+                    <mat-icon 
+                      [style.color]="sortColumn === 'Name' && sortDirection === 'asc' ? 'red' : 'inherit'">
+                      keyboard_arrow_up
+                    </mat-icon>
+                    <mat-icon 
+                      [style.color]="sortColumn === 'Name' && sortDirection === 'desc' ? 'red' : 'inherit'">
+                      keyboard_arrow_down
+                    </mat-icon>
+                  </span>
+                </th>
+                <!-- <th *ngIf="isAdmin">School Name</th> -->
+                
+                <th>FeeType</th>
+                <th>FeeCollectionDuration</th>
+                <th>FeeDueDay</th>
+                <th>FineType</th>
+                <th>FineValue</th>
+                <th>FineCollectionType</th>
+                <th>FineIncrementIn</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let Class of ClassList,let i = index">
+                <td data-label="ID" class="visually-hidden">{{ Class.ID }}</td>
+                <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td data-label="FeeCategoryName">{{ Class.FeeCategoryName }}</td>
+                <td data-label="FeeType" *ngIf="isAdmin">{{ Class.FeeType }}</td>
+                <td data-label="FeeCollectionDuration">{{ Class.FeeCollectionDuration }}</td>
+                <td data-label="FeeDueDay ">{{ Class.FeeDueDay }}</td>
+                <td data-label="FineType ">{{ Class.FineType }}</td>
+                <td data-label="FineValue ">{{ Class.FineValue }}</td>
+                <td data-label="FineCollectionType ">{{ Class.FineCollectionType }}</td>
+                <td data-label="FineIncrementIn ">{{ Class.FineIncrementIn }}</td>
+                <td data-label="Status">{{ Class.IsActive }}</td>
+                <td data-label="Actions">
+                  <div class="d-flex justify-content-center align-items-center h-100">
+                    <!-- (click)="editreview(aminitie.propertyTypeID)" -->
+                    <button *ngIf="canEdit()" class="btn checkbtn edit" data-tooltip="Edit" (click)="editreview(Class.ID)">
+                      <mat-icon class="mat-edit-icon">edit</mat-icon>
+                    </button>
+                    <button *ngIf="canView()" class="btn checkbtn" data-tooltip="View" (click)="viewReview(Class.ID)">
+                      <mat-icon class="mat-edit-icon">visibility</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div *ngIf="ClassList.length === 0" class="NoDataFound">
+            <div class="NoDataFoundImg">
+              <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
+            </div>
+            <p>No data found.</p>
+          </div>
+          <div *ngIf="ClassCount > pageSize" class="pagination-controls">
+            <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
+            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
+            <button *ngFor="let page of getVisiblePageNumbers()"
+                    class="page-btn"
+                    [ngClass]="{'active': page === currentPage}"
+                    (click)="goToPage(page)">
+              {{ page }}
+            </button>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="IsAddNewClicked" class="w-100">
+    <div class="AddForm">
+      <div class="AddFormTop">
+        <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+        <p>Add Fee Category</p>
+      </div>
+      <div class="AddFormConatiner">
+        <form [formGroup]="ClassForm">
+          <div class="FormInputRowsContainer">
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Name <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Fee Type <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="Feetype" placeholder="Select Start Date">
+                    <option value="0" disabled>Select</option>
+                    <option value="Normal fee">Normal fee</option>
+                    <option value="Bus fee">Bus fee</option>
+                    <option value="Admission fee">Admission fee</option>
+                    <option value="Renewal fee">Renewal fee</option>
+                  </select>
+                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                  <div *ngIf="ClassForm.get('Feetype')?.hasError('min') && (ClassForm.get('Feetype')?.touched || ClassForm.get('Feetype')?.dirty)" class="text-danger">
+                    <small>Please Select Fee type.</small>
+                  </div>
+                </div>
+              </div>              
+            </div>
+            <div class="InputRow">
+                <div class="InputFieldsContainer">
+                    <label class="inputLabel" for="email">Fee Collection Duration <span class="required">*</span></label>
+                    <div class="input-with-error">
+                    <select class="inputField" type="date" formControlName="FeeCollectionDuration" placeholder="Select Start Date">
+                        <option value="0" disabled>Select</option>
+                        <option value="Monthly">Monthly</option>
+                        <option value="Quarterly">Quarterly</option>
+                        <option value="Half Yearly">Half Yearly</option>
+                        <option value="One Time">One Time</option>
+                    </select>
+                    <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                    <div *ngIf="ClassForm.get('FeeCollectionDuration')?.hasError('min') && (ClassForm.get('FeeCollectionDuration')?.touched || ClassForm.get('FeeCollectionDuration')?.dirty)" class="text-danger">
+                        <small>Please Select Fee Collection Duration.</small>
+                    </div>
+                    </div>
+                </div>
+                <div class="InputFieldsContainer">
+                    <label class="inputLabel" for="email">Due Day <span class="required">*</span></label>
+                    <div class="input-with-error">
+                    <select class="inputField" type="date" formControlName="DueDay" placeholder="Select Start Date">
+                        <option value="0" disabled>Select</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                        <option value="16">16</option>
+                        <option value="17">17</option>
+                        <option value="18">18</option>
+                        <option value="19">19</option>
+                        <option value="20">20</option>
+                        <option value="21">21</option>
+                        <option value="22">22</option>
+                        <option value="23">23</option>
+                        <option value="24">24</option>
+                        <option value="25">25</option>
+                        <option value="26">26</option>
+                        <option value="27">27</option>
+                        <option value="28">28</option>
+                        <option value="29">29</option>
+                        <option value="30">30</option>
+                    </select>
+                    <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                    <div *ngIf="ClassForm.get('DueDay')?.hasError('min') && (ClassForm.get('DueDay')?.touched || ClassForm.get('DueDay')?.dirty)" class="text-danger">
+                        <small>Please Select Due Day.</small>
+                    </div>
+                    </div>
+                </div>
+            </div>
+            <div class="InputRow">
+                <div class="InputFieldsContainer">
+                    <label class="inputLabel" for="email">Fine Type <span class="required">*</span></label>
+                    <div class="input-with-error">
+                        <select class="inputField" type="date" formControlName="Finetype" placeholder="Select Start Date">
+                            <option value="0" disabled>Select</option>
+                            <option value="Amount">Amount</option>
+                            <option value="Percentage">Percentage</option>
+                        </select>
+                        <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                        <div *ngIf="ClassForm.get('Finetype')?.hasError('min') && (ClassForm.get('Finetype')?.touched || ClassForm.get('Finetype')?.dirty)" class="text-danger">
+                            <small>Please Select Fine Type.</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="InputFieldsContainer">
+                    <label class="inputLabel" for="email">Fine value <span class="required">*</span></label>
+                    <div class="input-with-error">
+                        <input class="inputField" formControlName="FineValue" placeholder="Enter Fine Value" (keydown)="allowOnlyNumbers($event)" minlength="1" maxlength="6" />
+                        <div *ngIf="(ClassForm.get('FineValue' ) ?. touched && ClassForm.get('FineValue' ) ?. invalid)" class="text-danger">
+                            <div *ngIf="(ClassForm.get('FineValue' ) ?. errors ?. ['required' ]) ">
+                            <small>Please Enter Fine Value.</small>
+                            </div>
+                            <div *ngIf="(ClassForm.get('FineValue' ) ?. errors ?. ['pattern' ]) ">
+                            <small>max 6 digits allowed.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="InputRow">
+                <div class="InputFieldsContainer">
+                    <label class="inputLabel" for="email">Fine Collection type <span class="required">*</span></label>
+                    <div class="input-with-error">
+                        <select class="inputField" type="date" formControlName="FinecollectionType" placeholder="Select Start Date">
+                            <option value="0" disabled>Select</option>
+                            <option value="Fixed">Fixed</option>
+                            <option value="Percentage">Percentage</option>
+                        </select>
+                        <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                        <div *ngIf="ClassForm.get('FinecollectionType')?.hasError('min') && (ClassForm.get('FinecollectionType')?.touched || ClassForm.get('FinecollectionType')?.dirty)" class="text-danger">
+                            <small>Please Select Fine Collection Type.</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="InputFieldsContainer">
+                    <label class="inputLabel" for="email">Fine Increment In <span class="required">*</span></label>
+                    <div class="input-with-error">
+                        <select class="inputField" type="date" formControlName="FineIncrementIn" placeholder="Select Start Date">
+                            <option value="0" disabled>Select</option>
+                            <option value="1">Daily</option>
+                            <option value="2">Monthly</option>
+                        </select>
+                        <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                        <div *ngIf="ClassForm.get('FineIncrementIn')?.hasError('min') && (ClassForm.get('FineIncrementIn')?.touched || ClassForm.get('FineIncrementIn')?.dirty)" class="text-danger">
+                            <small>Please Select Fine Increment In.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="InputRow">
+                <div class="InputFieldsContainer" *ngIf="isAdmin">
+                    <label class="inputLabel" for="email">School</label>
+                    <div class="input-with-error">
+                    <select formControlName="School" class="form-control selectFormControl" >
+                        <option value="">-- Select School --</option>
+                        <option *ngFor="let school of schoolList" [value]="school.ID">
+                        {{ school.Name }}
+                        </option>
+                    </select>
+                    </div>
+                </div>
+                <div class="InputFieldsContainer">
+                    <label class="inputLabel" for="email">Description</label>
+                    <div class="input-with-error">
+                        <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="2"></textarea>
+                        <!-- <input class="inputField" id="email" formControlName="Name" placeholder="Enter Name" /> -->
+                        <div *ngIf="(ClassForm.get('Description' ) ?. touched && ClassForm.get('Description' ) ?. invalid)" class="text-danger">
+                            <div *ngIf="(ClassForm.get('Description' ) ?. errors ?. ['required' ]) ">
+                            <small>Please Enter Description.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>              
+            </div>
+            <div class="InputRow">
+                <div class="InputFieldsContainer">
+                    <div class="toggle-container" (click)="$event.stopPropagation()">
+                    <label class="switch">
+                        <input type="checkbox" [checked]="IsActiveStatus" (click)="toggleChange()">
+                        <span class="slider">
+                        <span
+                            class="toggle-text"
+                            [ngStyle]="{
+                            left: IsActiveStatus ? '42%' : '60%',
+                            fontSize: IsActiveStatus ? '9px' : '9px'
+                            }"
+                        >
+                            {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                        </span>
+                        </span>
+                    </label>
+                    </div>
+                </div>
+                <div class="InputFieldsContainer">
+                    <span style="visibility: hidden;">hello adding new academic year</span>
+                </div>
+            </div>
+          </div>
+          <div class="ActionButtons">
+            <button class="btn" *ngIf="ViewClassClicked && canEdit()" (click)="UpdateClass()">Update</button>
+            <button class="btn" *ngIf="!ViewClassClicked && canAdd()" (click)="SubmitClass()">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isModalOpen}" [style.display]="isModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Application Status</h5>
+        <button type="button" class="close" aria-label="Close" (click)="closeModal('status')">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>{{ AminityInsStatus }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="handleOk()">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Syllabus Details</h5>
+        <button type="button" class="close" (click)="closeModal('view')">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-2" *ngIf="viewSyllabus?.Name">
+          <div class="col-4">Name</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.Name }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.AvailableFrom">
+          <div class="col-4">Available From</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.AvailableFrom }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.FeeCategoryName">
+          <div class="col-4">Fee Category</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.FeeCategoryName }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.FeeType">
+          <div class="col-4">Fee Type</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.FeeType }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.FeeCollectionDuration">
+          <div class="col-4">Fee Collection Duration</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.FeeCollectionDuration }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.FineType">
+          <div class="col-4">Fine Type</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.FineType }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.FineValue">
+          <div class="col-4">Fine Value</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.FineValue }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.FineCollectionType">
+          <div class="col-4">Fine Collection Type</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.FineCollectionType }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.FineIncrementIn">
+          <div class="col-4">Fine Increment In</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.FineIncrementIn }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.Description && viewSyllabus.Description.trim() !== ''">
+          <div class="col-4">Description</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.Description }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.IsActive !== null">
+          <div class="col-4">Status</div>
+          <div class="col-8">
+            <span class="badge"
+                  [ngClass]="viewSyllabus?.IsActive ? 'badge-success' : 'badge-danger'">
+              {{ viewSyllabus?.IsActive ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <!-- <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeModal()">Close</button>
+      </div> -->
+    </div>
+  </div>
+</div>

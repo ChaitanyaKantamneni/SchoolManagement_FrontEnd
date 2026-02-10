@@ -1,1 +1,179 @@
-<p>fee-allocation works!</p>
+<div>
+  <app-dashboard-top-nav></app-dashboard-top-nav>
+</div>
+
+<div class="MainContentDiv">
+  <div *ngIf="!IsAddNewClicked" class="w-100">
+
+    <div class="ComponentTop">
+      <div class="ComponentTopHeader">
+        <h5>Fee Allocation</h5>
+        <p>Total {{ ClassCount }} Fee Allocations Added</p>
+      </div>
+      <div class="ComponentTopBottom">
+        <button *ngIf="canAdd()" (click)="AddNewClicked()">
+          <mat-icon>add_circle</mat-icon>
+          Add Fee Allocation
+        </button>
+      </div>
+    </div>
+
+    <div class="ComponentRecords">
+      <div>
+        <div class="ComponentRecordsTop">
+
+          <div class="filterOptions">
+            <div class="searchreview input-container">
+              <input type="text"
+                     class="form-control floating-input"
+                     [(ngModel)]="searchQuery"
+                     (ngModelChange)="onSearchChange()"
+                     placeholder="Search..." />
+              <mat-icon style="position:absolute;left:10px;top:50%;transform:translateY(-50%)">
+                search
+              </mat-icon>
+            </div>
+
+            <div class="searchreview" *ngIf="isAdmin && ClassList.length != 0">
+              <select (change)="onSchoolChange($event)" class="form-control">
+                <option value="">-- Select School --</option>
+                <option value="0">All Schools</option>
+                <option *ngFor="let school of schoolList" [value]="school.ID">
+                  {{ school.Name }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="DownloadButtons" *ngIf="ClassList.length != 0">
+            <button class="btnHover" (click)="exportSyllabus('pdf')"><mat-icon>picture_as_pdf</mat-icon></button>
+            <button class="btnHover" (click)="exportSyllabus('excel')"><mat-icon>description</mat-icon></button>
+            <button class="btnHover" (click)="exportSyllabus('print')"><mat-icon>print</mat-icon></button>
+          </div>
+
+        </div>
+
+        <div class="reviewstable">
+          <table *ngIf="ClassList.length != 0" class="table table-bordered">
+            <thead>
+              <tr>
+                <th>SI.No</th>
+                <th>Fee Category</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngFor="let Class of ClassList; let i = index">
+                <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td>{{ Class.FeeCategoryName }}</td>
+                <td>{{ Class.FeeAmount }}</td>
+                <td>{{ Class.IsActive }}</td>
+                <td>
+                  <button *ngIf="canEdit()" (click)="editreview(Class.ID)">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button *ngIf="canView()" (click)="viewReview(Class.ID)">
+                    <mat-icon>visibility</mat-icon>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div *ngIf="ClassList.length === 0" class="NoDataFound">
+            <p>No data found.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= ADD FORM ================= -->
+
+  <div *ngIf="IsAddNewClicked" class="w-100">
+    <div class="AddForm">
+
+      <div class="AddFormTop">
+        <button (click)="AddNewClicked()">
+          <mat-icon>arrow_circle_left</mat-icon>
+        </button>
+        <p>Add Fee Allocation</p>
+      </div>
+
+      <div class="AddFormConatiner">
+        <form [formGroup]="ClassForm">
+
+          <div class="FormInputRowsContainer">
+
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label>Name *</label>
+                <input class="inputField" formControlName="Name" />
+              </div>
+
+              <div class="InputFieldsContainer">
+                <label>Fee Category *</label>
+                <select class="inputField" formControlName="Feetype">
+                  <option value="0" disabled>Select</option>
+                  <option value="Normal fee">Normal fee</option>
+                  <option value="Bus fee">Bus fee</option>
+                  <option value="Admission fee">Admission fee</option>
+                  <option value="Renewal fee">Renewal fee</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label>Amount *</label>
+                <input class="inputField" formControlName="FeeCollectionDuration" />
+              </div>
+
+              <div class="InputFieldsContainer">
+                <label>Due Day *</label>
+                <select class="inputField" formControlName="DueDay"></select>
+              </div>
+            </div>
+
+            <!-- ✅ FIXED BLOCK -->
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label>Fine Value *</label>
+                <input class="inputField" formControlName="FineValue" />
+              </div>
+            </div>
+
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label>Fine Collection Type *</label>
+                <select class="inputField" formControlName="FinecollectionType">
+                  <option value="Fixed">Fixed</option>
+                  <option value="Percentage">Percentage</option>
+                </select>
+              </div>
+
+              <div class="InputFieldsContainer">
+                <label>Fine Increment In *</label>
+                <select class="inputField" formControlName="FineIncrementIn">
+                  <option value="1">Daily</option>
+                  <option value="2">Monthly</option>
+                </select>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="ActionButtons">
+            <button *ngIf="!ViewClassClicked" (click)="SubmitClass()">Submit</button>
+            <button *ngIf="ViewClassClicked" (click)="UpdateClass()">Update</button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,8 @@
+.FormInputRowsContainer{
+    flex-direction: column;
+}
+
+.InputRow{
+    width: 100% !important;
+    flex-direction: row !important;
+}
