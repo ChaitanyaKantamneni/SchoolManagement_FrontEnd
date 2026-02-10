@@ -70,6 +70,9 @@ export class BusesComponent extends BasePermissionComponent {
   schoolList: any[] = [];
   selectedSchoolID: string = '';
   SchoolSelectionChange:boolean=false;
+  academicYearList:any[] = [];
+  AdminselectedSchoolID:string = '';
+  AdminselectedAcademivYearID:string = '';
 
   SyllabusForm: any = new FormGroup({
     ID: new FormControl(),
@@ -83,7 +86,9 @@ export class BusesComponent extends BasePermissionComponent {
     EveningStartTime: new FormControl('', Validators.required),
     DistanceCostPerKM: new FormControl('', Validators.required),
     MaxCapacity: new FormControl('', Validators.required),
-    Description: new FormControl()
+    Description: new FormControl(),
+    School: new FormControl(),
+    AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
   });
 
   FetchSchoolsList() {
@@ -107,6 +112,31 @@ export class BusesComponent extends BasePermissionComponent {
         },
         (error) => {
           this.schoolList = [];
+        }
+      );
+  };
+
+  FetchAcademicYearsList() {
+    const requestData = { SchoolID:this.AdminselectedSchoolID||'',Flag: '2' };
+
+    this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.academicYearList = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.id,
+                Name: item.name,
+                IsActive: isActiveString
+              };
+            });            
+          } else {
+            this.academicYearList = [];
+          }
+        },
+        (error) => {
+          this.academicYearList = [];
         }
       );
   };
@@ -219,7 +249,17 @@ export class BusesComponent extends BasePermissionComponent {
   };
 
   AddNewClicked(){
+    if (this.isAdmin) {
+      this.SyllabusForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+    } else {
+      this.SyllabusForm.get('School')?.clearValidators();
+    }
+    if(this.AdminselectedSchoolID==''){
+      this.FetchAcademicYearsList();
+    }
     this.SyllabusForm.reset();
+    this.SyllabusForm.get('School').patchValue('0');
+    this.SyllabusForm.get('AcademicYear').patchValue('0');
     this.IsAddNewClicked=!this.IsAddNewClicked;
     this.IsActiveStatus=true;
     this.ViewSyllabusClicked=false;
@@ -233,7 +273,6 @@ export class BusesComponent extends BasePermissionComponent {
     else{
       const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
       const data = {
-        ID: this.SyllabusForm.get('ID')?.value,
         Name: this.SyllabusForm.get('Name')?.value,
         RegNo: this.SyllabusForm.get('RegNo')?.value,
         Driver: this.SyllabusForm.get('Driver')?.value,
@@ -245,9 +284,9 @@ export class BusesComponent extends BasePermissionComponent {
         DistanceCostPerKM: this.SyllabusForm.get('DistanceCostPerKM')?.value,
         MaxCapacity: this.SyllabusForm.get('MaxCapacity')?.value,
         Description: this.SyllabusForm.get('Description')?.value,
-        IsActive:IsActiveStatusNumeric,
+        SchoolID: this.SyllabusForm.get('School')?.value,
         AcademicYear: this.SyllabusForm.get('AcademicYear')?.value,
-
+        IsActive:IsActiveStatusNumeric,        
         Flag: '1'
       };
 
@@ -300,8 +339,6 @@ export class BusesComponent extends BasePermissionComponent {
           this.isViewMode = true;
           this.viewSyllabus = {
             ID: item.id,
-            // SchoolName: schoolMap[item.schoolID] ?? `School-${item.schoolID}`,
-            SchoolName:item.schoolName,
             Name: item.name,
             RegNo: item.regNo,
             Driver: item.driver,
@@ -312,8 +349,9 @@ export class BusesComponent extends BasePermissionComponent {
             EveningStartTime: item.eveningStartTime,
             DistanceCostPerKM: item.distanceCostPerKM,
             MaxCapacity: item.maxCapacity,
-            Description:item.Description,
+            Description:item.description,
             AcademicYearName:item.academicYearName,
+            SchoolName:item.schoolName,
             IsActive: isActive
           };
           this.isViewModalOpen = true;
@@ -324,7 +362,8 @@ export class BusesComponent extends BasePermissionComponent {
           this.SyllabusForm.patchValue({
             ID: item.id,
             // SchoolName: schoolMap[item.schoolID] ?? `School-${item.schoolID}`,
-            SchoolName:item.schoolName,
+            School:item.schoolID,
+            AcademicYear:item.academicYear,
             Name: item.name,
             RegNo: item.regNo,
             Driver: item.driver,
@@ -335,8 +374,11 @@ export class BusesComponent extends BasePermissionComponent {
             EveningStartTime: item.eveningStartTime,
             DistanceCostPerKM: item.distanceCostPerKM,
             MaxCapacity: item.maxCapacity,
-            Description:item.Description
+            Description:item.description
           });
+          this.AdminselectedSchoolID=item.schoolID;
+          this.AdminselectedAcademivYearID=item.academicYear;
+          this.FetchAcademicYearsList();
           this.IsActiveStatus = isActive;
           this.IsAddNewClicked = true;
         }
@@ -357,20 +399,20 @@ export class BusesComponent extends BasePermissionComponent {
       const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
       const data = {
         ID:this.SyllabusForm.get('ID')?.value || '',
-        Name: this.SyllabusForm.get('Name')?.value || '',
-        RegNo: this.SyllabusForm.get('RegNo')?.value || '',
-        Driver: this.SyllabusForm.get('Driver')?.value || '',
-        AssistantName: this.SyllabusForm.get('AssistantName')?.value || '',
-        AssistantMobNo: this.SyllabusForm.get('AssistantMobNo')?.value || '',
-        OtherDetails: this.SyllabusForm.get('OtherDetails')?.value || '',
-        MorningStartTime: this.SyllabusForm.get('MorningStartTime')?.value || '',
-        EveningStartTime: this.SyllabusForm.get('EveningStartTime')?.value || '',
-        DistanceCostPerKM: this.SyllabusForm.get('DistanceCostPerKM')?.value || '',
-        MaxCapacity: this.SyllabusForm.get('MaxCapacity')?.value || '',
-        Description: this.SyllabusForm.get('Description')?.value || '',
-        IsActive:IsActiveStatusNumeric,
+        Name: this.SyllabusForm.get('Name')?.value,
+        RegNo: this.SyllabusForm.get('RegNo')?.value,
+        Driver: this.SyllabusForm.get('Driver')?.value,
+        AssistantName: this.SyllabusForm.get('AssistantName')?.value,
+        AssistantMobNo: this.SyllabusForm.get('AssistantMobNo')?.value,
+        OtherDetails: this.SyllabusForm.get('OtherDetails')?.value,
+        MorningStartTime: this.formatTime(this.SyllabusForm.get('MorningStartTime')?.value),
+        EveningStartTime: this.formatTime(this.SyllabusForm.get('EveningStartTime')?.value),  
+        DistanceCostPerKM: this.SyllabusForm.get('DistanceCostPerKM')?.value,
+        MaxCapacity: this.SyllabusForm.get('MaxCapacity')?.value,
+        Description: this.SyllabusForm.get('Description')?.value,
+        SchoolID: this.SyllabusForm.get('School')?.value,
         AcademicYear: this.SyllabusForm.get('AcademicYear')?.value,
-
+        IsActive:IsActiveStatusNumeric,
         Flag: '5'
       };
 
@@ -621,5 +663,18 @@ export class BusesComponent extends BasePermissionComponent {
   viewReview(SyllabusID: string): void {
     this.FetchSyllabusDetByID(SyllabusID,'view');
     this.isViewModalOpen=true;
+  };
+
+  onAdminSchoolChange(event: Event) {
+    this.academicYearList=[];
+    this.SyllabusForm.get('AcademicYear').patchValue('0');
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    if(schoolID=="0"){
+      this.AdminselectedSchoolID="";
+    }else{
+      this.AdminselectedSchoolID = schoolID;
+    }   
+    this.FetchAcademicYearsList();
   };
 }

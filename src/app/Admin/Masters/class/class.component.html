@@ -22,7 +22,7 @@
               <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
               <!-- <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i> -->
             </div>
-            <div class="searchreview" *ngIf="isAdmin && ClassList.length != 0">
+            <div class="searchreview" *ngIf="isAdmin">
               <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
                 <option value="">-- Select School --</option>
                 <option value="0">All Schools</option>
@@ -32,11 +32,11 @@
               </select>
             </div>
           </div>
-          <div class="DownloadButtons" *ngIf="ClassList.length != 0">
+          <!-- <div class="DownloadButtons" *ngIf="ClassList.length != 0">
             <button class="btnHover" (click)="exportSyllabus('pdf')"><mat-icon>picture_as_pdf</mat-icon></button>
             <button class="btnHover" (click)="exportSyllabus('excel')"><mat-icon>description</mat-icon></button>
             <button class="btnHover" (click)="exportSyllabus('print')"><mat-icon>print</mat-icon></button>
-          </div>
+          </div> -->
         </div>
         <div class="reviewstable">
           <table id="classTable" *ngIf="ClassList.length != 0" class="table table-bordered">
@@ -45,7 +45,7 @@
                 <th class="visually-hidden">Academic Year ID</th>
                 <th>SI.No</th>
                 <th (click)="sort('Name')" class="sortable-column">
-                  <span class="column-text">Syllabus</span>
+                  <span class="column-text">Class Name</span>
                   <span class="arrows">
                     <mat-icon 
                       [style.color]="sortColumn === 'Name' && sortDirection === 'asc' ? 'red' : 'inherit'">
@@ -130,6 +130,44 @@
                   </div>
                 </div>
               </div>
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">School <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="School" placeholder="Select Start Date" (change)="onAdminSchoolChange($event)" >
+                    <option value="0">-- Select School --</option>
+                    <option *ngFor="let school of schoolList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="ClassForm.get('School')?.hasError('min') && (ClassForm.get('School')?.touched || ClassForm.get('School')?.dirty)" class="text-danger">
+                      <small>Please Select School.</small>
+                  </div>
+                </div>
+              </div> 
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="AcademicYear" placeholder="Select Start Date" (change)="onAdminAcademicYearChange($event)" >
+                    <option value="0">-- Select Academic Year --</option>
+                    <option *ngFor="let school of academicYearList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="ClassForm.get('AcademicYear')?.hasError('min') && (ClassForm.get('AcademicYear')?.touched || ClassForm.get('AcademicYear')?.dirty)" class="text-danger">
+                      <small>Please Select Academic Year.</small>
+                  </div>
+                </div>
+              </div>                          
+            </div>
+            <div class="InputRow" [class.inputrowdescription]="!isAdmin">              
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="AcademicYear" placeholder="Select Start Date" (change)="onAdminAcademicYearChange($event)" >
+                    <option value="0">-- Select Academic Year --</option>
+                    <option *ngFor="let school of academicYearList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="ClassForm.get('AcademicYear')?.hasError('min') && (ClassForm.get('AcademicYear')?.touched || ClassForm.get('AcademicYear')?.dirty)" class="text-danger">
+                      <small>Please Select Academic Year.</small>
+                  </div>
+                </div>
+              </div>
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Syllabus <span class="required">*</span></label>
                 <div class="input-with-error">
@@ -137,35 +175,23 @@
                     <option value="0" disabled>Select Syllabus</option>
                     <option *ngFor="let Syllabus of SyllabusList" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option>
                   </select>
-                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
                   <div *ngIf="ClassForm.get('Syllabus')?.hasError('min') && (ClassForm.get('Syllabus')?.touched || ClassForm.get('Syllabus')?.dirty)" class="text-danger">
                     <small>Please Select Syllabus.</small>
                   </div>
                 </div>
-              </div>
-              <div class="InputFieldsContainer" *ngIf="isAdmin">
-                <label class="inputLabel" for="email">School</label>
+              </div>  
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <label class="inputLabel" for="email">Description</label>
                 <div class="input-with-error">
-                  <select formControlName="School" class="form-control selectFormControl" >
-                    <option value="">-- Select School --</option>
-                    <option *ngFor="let school of schoolList" [value]="school.ID">
-                      {{ school.Name }}
-                    </option>
-                  </select>
+                  <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="2"></textarea>                  
                 </div>
               </div>
             </div>
             <div class="InputRow">
-              <div class="InputFieldsContainer">
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <label class="inputLabel" for="email">Description</label>
                 <div class="input-with-error">
-                  <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="2"></textarea>
-                  <!-- <input class="inputField" id="email" formControlName="Name" placeholder="Enter Name" /> -->
-                  <div *ngIf="(ClassForm.get('Description' ) ?. touched && ClassForm.get('Description' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Description' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Description.</small>
-                    </div>
-                  </div>
+                  <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="2"></textarea>                  
                 </div>
               </div>
               <div class="InputFieldsContainer">
@@ -186,7 +212,7 @@
                   </label>
                 </div>
               </div>
-              <div class="InputFieldsContainer">
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
                 <span style="visibility: hidden;">hello adding new academic year</span>
               </div>
             </div>
@@ -222,7 +248,7 @@
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Syllabus Details</h5>
+        <h5 class="modal-title">Class Details</h5>
         <button type="button" class="close" (click)="closeModal('view')">
           <span>&times;</span>
         </button>
@@ -233,9 +259,19 @@
           <div class="col-8 viewfontsize">{{ viewSyllabus?.Name }}</div>
         </div>
 
-        <div class="row mb-2" *ngIf="viewSyllabus?.AvailableFrom">
-          <div class="col-4">Available From</div>
-          <div class="col-8 viewfontsize">{{ viewSyllabus?.AvailableFrom }}</div>
+        <div class="row mb-2" *ngIf="viewSyllabus?.SyllabusName">
+          <div class="col-4">Syllabus</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.SyllabusName }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.SchoolName">
+          <div class="col-4">School Name</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.SchoolName }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.AcademicYearName">
+          <div class="col-4">Academic Year</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.AcademicYearName }}</div>
         </div>
 
         <div class="row mb-2" *ngIf="viewSyllabus?.Description && viewSyllabus.Description.trim() !== ''">

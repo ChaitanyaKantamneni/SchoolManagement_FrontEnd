@@ -72,7 +72,7 @@ export class SchoolDetailsComponent extends BasePermissionComponent {
 
   SchoolsForm: any = new FormGroup({
     ID: new FormControl(),
-    Name: new FormControl('', [Validators.required,Validators.pattern('^[a-zA-Z!@#$%^&*()_+\\-=\\[\\]{};:\'",.<>/?|`~]+$')]),
+    Name: new FormControl('', [Validators.required,Validators.pattern('^[a-zA-Z ]+$')]),
     PhoneNumber: new FormControl('', [Validators.required,Validators.pattern(/^[0-9]{10}$/)]),
     Email: new FormControl('', [Validators.required,Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]),
     Website: new FormControl('', Validators.required),
@@ -80,7 +80,7 @@ export class SchoolDetailsComponent extends BasePermissionComponent {
   });
 
   allowAlphaAndSpecial(event: KeyboardEvent) {
-    const allowedRegex = /^[a-zA-Z!@#$%^&*()_+\-=\[\]{};:'",.<>/?|`~]$/;
+    const allowedRegex = /^[a-zA-Z ]$/;
     if (
       event.key === 'Backspace' ||
       event.key === 'Tab' ||
@@ -113,7 +113,8 @@ export class SchoolDetailsComponent extends BasePermissionComponent {
   }
 
   protected override get isAdmin(): boolean {
-    return this.roleId === '1';
+    const role = sessionStorage.getItem('RollID') || localStorage.getItem('RollID');
+    return role === '1';
   }
 
   FetchAcademicYearCount(isSearch: boolean) {
@@ -237,10 +238,16 @@ export class SchoolDetailsComponent extends BasePermissionComponent {
             this.AminityInsStatus = "School Details Submitted!";
             this.SchoolsForm.reset();
             this.SchoolsForm.markAsPristine();
-          }
+          }          
         },
-        error: (error) => {
-          this.AminityInsStatus = "Error Updating School.";
+        error: (err:any) => {
+          if (err.status === 400 && err.error?.message) {
+            this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+          } else if (err.status === 500 && err.error?.Message) {
+            this.AminityInsStatus = err.error.Message;  // Database or internal error
+          } else {
+            this.AminityInsStatus = "Unexpected error occurred.";
+          }
           this.isModalOpen = true;
         },
         complete: () => {
@@ -330,8 +337,14 @@ export class SchoolDetailsComponent extends BasePermissionComponent {
             this.SchoolsForm.markAsPristine();
           }
         },
-        error: (error) => {
-          this.AminityInsStatus = "Error Updating School Details.";
+        error: (err:any) => {
+          if (err.status === 400 && err.error?.message) {
+            this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+          } else if (err.status === 500 && err.error?.Message) {
+            this.AminityInsStatus = err.error.Message;  // Database or internal error
+          } else {
+            this.AminityInsStatus = "Unexpected error occurred.";
+          }
           this.isModalOpen = true;
         },
         complete: () => {

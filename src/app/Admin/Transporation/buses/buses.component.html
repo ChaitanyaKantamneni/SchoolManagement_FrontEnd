@@ -57,7 +57,7 @@
                     </mat-icon>
                   </span>
                 </th>
-                <th *ngIf="isAdmin"> Name</th>
+                <th *ngIf="isAdmin">School</th>
                 <th>RegNo</th>
                 <th>Driver</th>
                 
@@ -127,6 +127,30 @@
         <form [formGroup]="SyllabusForm">
           <div class="FormInputRowsContainer">
             <div class="InputRow">
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">School <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="School" placeholder="Select Start Date" (change)="onAdminSchoolChange($event)" >
+                    <option value="0">-- Select School --</option>
+                    <option *ngFor="let school of schoolList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="SyllabusForm.get('School')?.hasError('min') && (SyllabusForm.get('School')?.touched || SyllabusForm.get('School')?.dirty)" class="text-danger">
+                      <small>Please Select School.</small>
+                  </div>
+                </div>
+              </div> 
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="AcademicYear" placeholder="Select Start Date" >
+                    <option value="0">-- Select Academic Year --</option>
+                    <option *ngFor="let school of academicYearList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="SyllabusForm.get('AcademicYear')?.hasError('min') && (SyllabusForm.get('AcademicYear')?.touched || SyllabusForm.get('AcademicYear')?.dirty)" class="text-danger">
+                      <small>Please Select Academic Year.</small>
+                  </div>
+                </div>
+              </div>
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Name <span class="required">*</span></label>
                 <div class="input-with-error">
@@ -138,7 +162,20 @@
                   </div>
                 </div>
               </div>
-              <div class="InputFieldsContainer">
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <label class="inputLabel" for="email">RegNo <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="RegNo" placeholder="Enter RegNo" />
+                  <div *ngIf="(SyllabusForm.get('RegNo' ) ?. touched && SyllabusForm.get('RegNo' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(SyllabusForm.get('RegNo' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter RegNo.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="InputRow">              
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <label class="inputLabel" for="email">RegNo <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" formControlName="RegNo" placeholder="Enter RegNo" />
@@ -159,9 +196,7 @@
                     </div>
                   </div>
                 </div>
-              </div>              
-            </div>
-            <div class="InputRow">
+              </div>  
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Assistant Name <span class="required">*</span></label>
                 <div class="input-with-error">
@@ -173,7 +208,7 @@
                   </div>
                 </div>
               </div>
-               <div class="InputFieldsContainer">
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
                 <label class="inputLabel" for="email">Assistant Mobile No <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" formControlName="AssistantMobNo" placeholder="Enter AssistantMobileNo" />
@@ -183,7 +218,20 @@
                     </div>
                   </div>
                 </div>
-              </div>
+              </div>            
+            </div>
+            <div class="InputRow">  
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">Assistant Mobile No <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="AssistantMobNo" placeholder="Enter AssistantMobileNo" />
+                  <div *ngIf="(SyllabusForm.get('AssistantMobNo' ) ?. touched && SyllabusForm.get('AssistantMobNo' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(SyllabusForm.get('AssistantMobNo' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter AssistantMobileNo.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>             
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Morning Start Time <span class="required">*</span></label>
                 <div class="input-with-error">
@@ -195,8 +243,6 @@
                   </div>
                 </div>
               </div>
-            </div>
-            <div class="InputRow">
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Evening Start Time <span class="required">*</span></label>
                 <div class="input-with-error">
@@ -208,7 +254,20 @@
                   </div>
                 </div>
               </div>
-              <div class="InputFieldsContainer">
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <label class="inputLabel" for="email">Distance Cost Per KM <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="DistanceCostPerKM" placeholder="Enter DistanceCostPerKM" />
+                  <div *ngIf="(SyllabusForm.get('DistanceCostPerKM' ) ?. touched && SyllabusForm.get('DistanceCostPerKM' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(SyllabusForm.get('DistanceCostPerKM' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter DistanceCostPerKM.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="InputRow">
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <label class="inputLabel" for="email">Distance Cost Per KM <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" formControlName="DistanceCostPerKM" placeholder="Enter DistanceCostPerKM" />
@@ -230,12 +289,10 @@
                   </div>
                 </div>
               </div>
-            </div>
-            <div class="InputRow">
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">OtherDetails</label>
+                <label class="inputLabel" for="email">Other Details</label>
                 <div class="input-with-error">
-                  <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="2"></textarea>
+                  <textarea class="inputField" formControlName="OtherDetails" placeholder="Enter Description" rows="1"></textarea>
                   <div *ngIf="(SyllabusForm.get('OtherDetails' ) ?. touched && SyllabusForm.get('OtherDetails' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(SyllabusForm.get('OtherDetails' ) ?. errors ?. ['required' ]) ">
                       <small>Please Select OtherDetails.</small>
@@ -243,11 +300,10 @@
                   </div>
                 </div>
               </div>
-              <div class="InputFieldsContainer">
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
                 <label class="inputLabel" for="email">Description</label>
                 <div class="input-with-error">
-                  <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="2"></textarea>
-                  <!-- <input class="inputField" id="email" formControlName="Name" placeholder="Enter Name" /> -->
+                  <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="1"></textarea>
                   <div *ngIf="(SyllabusForm.get('Description' ) ?. touched && SyllabusForm.get('Description' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(SyllabusForm.get('Description' ) ?. errors ?. ['Description' ]) ">
                       <small>Please Enter Description.</small>
@@ -255,6 +311,19 @@
                   </div>
                 </div>
               </div>
+            </div>
+            <div class="InputRow"> 
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">Description</label>
+                <div class="input-with-error">
+                  <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="1"></textarea>
+                  <div *ngIf="(SyllabusForm.get('Description' ) ?. touched && SyllabusForm.get('Description' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(SyllabusForm.get('Description' ) ?. errors ?. ['Description' ]) ">
+                      <small>Please Enter Description.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>             
               <div class="InputFieldsContainer">
                 <div class="toggle-container" (click)="$event.stopPropagation()">
                   <label class="switch">
@@ -272,6 +341,12 @@
                     </span>
                   </label>
                 </div>
+              </div>
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <span style="visibility: hidden;height: 3px;">hello adding new academic year</span>
+              </div>
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <span style="visibility: hidden;height: 3px;">hello adding new academic year</span>
               </div>
             </div>
           </div>
@@ -312,51 +387,80 @@
         </button>
       </div>
       <div class="modal-body">
-        <div class="row mb-2">
-          <div class="col-4">Name</div>
-          <div class="col-8">{{ viewSyllabus?.Name }}</div>
+        <div class="row mb-2" *ngIf="viewSyllabus?.Name">
+          <div class="col-5">Name</div>
+          <div class="col-7 viewfontsize">{{ viewSyllabus?.Name }}</div>
         </div>
 
-        <div class="row mb-2">
-          <div class="col-4">Registration No</div>
-          <div class="col-8">{{ viewSyllabus?.RegNo }}</div>
+        <div class="row mb-2" *ngIf="viewSyllabus?.RegNo">
+          <div class="col-5">Registration No</div>
+          <div class="col-7 viewfontsize">{{ viewSyllabus?.RegNo }}</div>
         </div>
 
-         <div class="row mb-2">
-          <div class="col-4"> Driver</div>
-          <div class="col-8">{{ viewSyllabus?.Driver }}</div>
+         <div class="row mb-2" *ngIf="viewSyllabus?.Driver">
+          <div class="col-5"> Driver</div>
+          <div class="col-7 viewfontsize">{{ viewSyllabus?.Driver }}</div>
         </div>
 
-         <div class="row mb-2">
-          <div class="col-4">AssistantName </div>
-          <div class="col-8">{{ viewSyllabus?.AssistantName }}</div>
+         <div class="row mb-2" *ngIf="viewSyllabus?.AssistantName">
+          <div class="col-5">Assistant Name </div>
+          <div class="col-7 viewfontsize">{{ viewSyllabus?.AssistantName }}</div>
         </div>
 
-         <div class="row mb-2">
-          <div class="col-4">AssistantMobNo</div>
-          <div class="col-8">{{ viewSyllabus?.AssistantMobNo }}</div>
+         <div class="row mb-2" *ngIf="viewSyllabus?.AssistantMobNo">
+          <div class="col-5">Assistant Mob No</div>
+          <div class="col-7 viewfontsize">{{ viewSyllabus?.AssistantMobNo }}</div>
         </div>
 
-        <div class="row mb-2">
-          <div class="col-4">MorningStartTime</div>
-          <div class="col-8">{{ viewSyllabus?.MorningStartTime }}</div>
+        <div class="row mb-2" *ngIf="viewSyllabus?.MorningStartTime">
+          <div class="col-5">Morning Time</div>
+          <div class="col-7 viewfontsize">{{ viewSyllabus?.MorningStartTime }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.EveningStartTime">
+          <div class="col-5">Evening Time</div>
+          <div class="col-7 viewfontsize">{{ viewSyllabus?.EveningStartTime }}</div>
         </div>
 
         <div>
-          <div class="row mb-2">
-          <div class="col-4">DistanceCostPerKM</div>
-          <div class="col-8">{{ viewSyllabus?.DistanceCostPerKM }}</div>
+          <div class="row mb-2" *ngIf="viewSyllabus?.DistanceCostPerKM">
+          <div class="col-5">Distance Cost/KM</div>
+          <div class="col-7 viewfontsize">{{ viewSyllabus?.DistanceCostPerKM }}</div>
         </div>
         
-         <div>
-          <div class="row mb-2">
-          <div class="col-4">MaxCapacity</div>
-          <div class="col-8">{{ viewSyllabus?.MaxCapacity }}</div>
+        <div>
+          <div class="row mb-2" *ngIf="viewSyllabus?.MaxCapacity">
+          <div class="col-5">Max Capacity</div>
+          <div class="col-7 viewfontsize">{{ viewSyllabus?.MaxCapacity }}</div>
         </div>
 
-        <div class="row mb-2">
-          <div class="col-4">Status</div>
-          <div class="col-8">
+        <div>
+          <div class="row mb-2" *ngIf="viewSyllabus?.SchoolName">
+          <div class="col-5">School Name</div>
+          <div class="col-7 viewfontsize">{{ viewSyllabus?.SchoolName }}</div>
+        </div>
+
+        <div>
+          <div class="row mb-2" *ngIf="viewSyllabus?.AcademicYearName">
+          <div class="col-5">Academic Year</div>
+          <div class="col-7 viewfontsize">{{ viewSyllabus?.AcademicYearName }}</div>
+        </div>
+
+        <div>
+          <div class="row mb-2" *ngIf="viewSyllabus?.OtherDetails">
+          <div class="col-5">Other Details</div>
+          <div class="col-7 viewfontsize">{{ viewSyllabus?.OtherDetails }}</div>
+        </div>
+
+        <div>
+          <div class="row mb-2" *ngIf="viewSyllabus?.Description">
+          <div class="col-5">Description</div>
+          <div class="col-7 viewfontsize">{{ viewSyllabus?.Description }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.IsActive !== null">
+          <div class="col-5">Status</div>
+          <div class="col-7">
             <span class="badge"
                   [ngClass]="viewSyllabus?.IsActive ? 'badge-success' : 'badge-danger'">
               {{ viewSyllabus?.IsActive ? 'Active' : 'Inactive' }}

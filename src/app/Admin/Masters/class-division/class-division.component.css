@@ -1,0 +1,22 @@
+.FormInputRowsContainer{
+    flex-direction: column;
+}
+
+.InputRow{
+    flex-direction: row !important;
+    width: 100% !important;
+}
+
+.inputrowdescription{
+    align-items: start !important;
+}
+
+.arrows{
+    display: flex;
+    flex-direction: row;
+    position: absolute;
+    right: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    gap: 0px;
+}

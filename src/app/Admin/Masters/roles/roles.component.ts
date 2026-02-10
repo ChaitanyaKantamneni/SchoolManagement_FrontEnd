@@ -51,9 +51,17 @@ export class RolesComponent {
   expandedModuleId: string | null = null;
   permissionsList: any[] = [];
 
+schoolList: any[] = [];
+  selectedSchoolID: string = '';
+  SchoolSelectionChange:boolean=false;
+  academicYearList:any[] = [];
+  AdminselectedSchoolID:string = '';
+  AdminselectedAcademivYearID:string = '';
+
   constructor(private router: Router, private apiurl: ApiServiceService,private schoolCache: SchoolCacheService,public loader: LoaderService) {}
 
   ngOnInit(): void {
+this.FetchSchoolsList();
     this.FetchInitialData();
     this.FetchPageList();
   };
@@ -92,6 +100,56 @@ export class RolesComponent {
   //     this.mapRoles(roles);
   //   });
   // };
+
+FetchSchoolsList() {
+    const requestData = { Flag: '2' };
+
+    this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.schoolList = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.id,
+                Name: item.name,
+                IsActive: isActiveString
+              };
+            });            
+          } else {
+            this.schoolList = [];
+          }
+        },
+        (error) => {
+          this.schoolList = [];
+        }
+      );
+  };
+
+  FetchAcademicYearsList() {
+    const requestData = { SchoolID:this.AdminselectedSchoolID||'',Flag: '2' };
+
+    this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.academicYearList = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.id,
+                Name: item.name,
+                IsActive: isActiveString
+              };
+            });            
+          } else {
+            this.academicYearList = [];
+          }
+        },
+        (error) => {
+          this.academicYearList = [];
+        }
+      );
+  };
 
   FetchInitialData() {
     const rolesReq = this.apiurl
@@ -163,12 +221,14 @@ export class RolesComponent {
 
   RoleForm: any = new FormGroup({
     ID: new FormControl(),
-    Name: new FormControl('', [Validators.required,Validators.pattern('^[a-zA-Z!@#$%^&*()_+\\-=\\[\\]{};:\'",.<>/?|`~]+$')]),
-    Description: new FormControl()
+    Name: new FormControl('', [Validators.required,Validators.pattern('^[a-zA-Z ]+$')]),
+    Description: new FormControl(),
+    School: new FormControl(),
+    AcademicYear: new FormControl()
   });
 
   allowAlphaAndSpecial(event: KeyboardEvent) {
-    const allowedRegex = /^[a-zA-Z!@#$%^&*()_+\-=\[\]{};:'",.<>/?|`~]$/;
+    const allowedRegex = /^[a-zA-Z ]$/;
     if (
       event.key === 'Backspace' ||
       event.key === 'Tab' ||
@@ -196,9 +256,19 @@ export class RolesComponent {
   };
 
   AddNewClicked() {
+if (this.isAdmin()) {
+      this.RoleForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+    } else {
+      this.RoleForm.get('School')?.clearValidators();
+    }
+    if(this.AdminselectedSchoolID==''){
+      this.FetchAcademicYearsList();
+    }
     this.fetchNewRoleId();
     this.fetchModulesFromDB();
     this.RoleForm.reset();
+this.RoleForm.get('School').patchValue('0');
+    this.RoleForm.get('AcademicYear').patchValue('0');
     this.PagesList=[];
     this.updatedPermissionsList=[];
     this.selectedRoleId='';
@@ -210,17 +280,25 @@ export class RolesComponent {
   };
 
   SubmitRole() {
+    console.log('this.permissionsList',this.permissionsList);
     if (this.RoleForm.invalid) {
       this.RoleForm.markAllAsTouched();
       return;
-    } 
-    else if(this.updatedPermissionsList.length===0 || this.permissionsList.length===0){
-      this.isModalOpen = true;
-      this.AminityInsStatus = "Please Select Role Permissions!";
-    }
-    else {
+    }     
+    const hasPermission = this.permissionsList.some(p =>
+    p.CanView === "1" || p.CanAdd === "1" ||
+    p.CanEdit === "1" || p.CanDelete === "1"
+  );
+
+  if (!hasPermission) {
+    this.isModalOpen = true;
+    this.AminityInsStatus = "Please Select Role Permissions!";
+    return;
+  }
+  
       const IsActiveStatusNumeric = this.IsActiveStatus ? '1' : '0';
       const data = {
+SchoolID: this.RoleForm.get('School')?.value,
         RoleName: this.RoleForm.get('Name')?.value,
         Description: this.RoleForm.get('Description')?.value,
         IsActive: IsActiveStatusNumeric,
@@ -230,35 +308,41 @@ export class RolesComponent {
       this.apiurl.post("Tbl_Roles_CRUD_Operations", data).subscribe({
         next: (response: any) => {
           if (response.statusCode === 200) {
+            const newRoleId = response.data?.[0]?.id;
+
+            this.assignRoleIdToPermissions(newRoleId);
+            this.submitpermission();
             this.IsAddNewClicked=!this.IsAddNewClicked;
             this.isModalOpen = true;
             this.AminityInsStatus = "Role Details Submitted!";
             this.RoleForm.reset();
             this.RoleForm.markAsPristine();
-            this.submitpermission();
             this.FetchInitialData();
           }
         },
-        error: (error: any) => {
-          if (error.status === 409) {
-            this.AminityInsStatus = error.error?.Message || "Role name already exists";
-          } else if (error.status === 400) {
-            this.AminityInsStatus = error.error?.Message || "Operation failed";
+        error: (err:any) => {
+          if (err.status === 400 && err.error?.message) {
+            this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+          } else if (err.status === 500 && err.error?.Message) {
+            this.AminityInsStatus = err.error.Message;  // Database or internal error
           } else {
-            this.AminityInsStatus = "Unexpected error occurred";
+            this.AminityInsStatus = "Unexpected error occurred.";
           }
           this.isModalOpen = true;
         },
         complete: () => {
         }
       });
-
-      this.isModalOpen = true;
-      this.AminityInsStatus = 'Academic Year Details Submitted!';
-      this.RoleForm.reset();
-      this.RoleForm.markAsPristine();
-    }
+    
   };
+
+  assignRoleIdToPermissions(roleId: string) {
+    this.permissionsList = this.permissionsList.map(p => ({
+      ...p,
+      roleID: roleId
+    }));
+  }
+
 
   FetchRoleDetByID(RoleID: string) {
     const data = {
@@ -275,6 +359,7 @@ export class RolesComponent {
           const isActiveString = item.isActive === "1" ? true : false;
           this.RoleForm.patchValue({
             ID: item.id,
+School: item.schoolID,
             Name: item.roleName,
             Description: item.description
           });
@@ -292,11 +377,13 @@ export class RolesComponent {
 
   UpdateRole() {
     if (this.RoleForm.invalid) {
+this.RoleForm.markAllAsTouched();
       return;
     } else {
       const IsActiveStatusNumeric = this.IsActiveStatus ? '1' : '0';
       const data = {
         ID:this.selectedRoleId,
+SchoolID: this.RoleForm.get('School')?.value,
         RoleName: this.RoleForm.get('Name')?.value,
         Description: this.RoleForm.get('Description')?.value,
         IsActive: IsActiveStatusNumeric,
@@ -314,24 +401,19 @@ export class RolesComponent {
             this.updatepermission(this.selectedRoleId)
           }
         },
-        error: (error: any) => {
-          if (error.status === 409) {
-            this.AminityInsStatus = error.error?.Message || "Role name already exists";
-          } else if (error.status === 400) {
-            this.AminityInsStatus = error.error?.Message || "Operation failed";
+        error: (err:any) => {
+          if (err.status === 400 && err.error?.message) {
+            this.AminityInsStatus = err.error.message;
+          } else if (err.status === 500 && err.error?.Message) {
+            this.AminityInsStatus = err.error.Message;
           } else {
-            this.AminityInsStatus = "Unexpected error occurred";
+            this.AminityInsStatus = "Unexpected error occurred.";
           }
           this.isModalOpen = true;
         },
         complete: () => {
         }
       });
-
-      this.isModalOpen = true;
-      this.AminityInsStatus = 'Academic Year Details Submitted!';
-      this.RoleForm.reset();
-      this.RoleForm.markAsPristine();
     }
   };
 
@@ -452,36 +534,6 @@ export class RolesComponent {
     }
   };
 
-  // fetchPagesByModule(moduleId: string) {
-  //   const pagesForModule = this.PagesListFromDB.filter(
-  //     page => page.Class?.toString() === moduleId
-  //   );
-
-  //   this.PagesList = pagesForModule.map(page => {
-  //     const pageItem = {
-  //       ID: page.ID,
-  //       Name: page.Name,
-  //       CanView: false,
-  //       CanAdd: false,
-  //       CanEdit: false,
-  //       CanDelete: false
-  //     };
-
-  //     const permission = this.permissionsList.find(
-  //       p => p.pageId?.toString() === page.ID?.toString()
-  //     );
-
-  //     if (permission) {
-  //       pageItem.CanView = permission.CanView === '1';
-  //       pageItem.CanAdd = permission.CanAdd === '1';
-  //       pageItem.CanEdit = permission.CanEdit === '1';
-  //       pageItem.CanDelete = permission.CanDelete === '1';
-  //     }
-
-  //     return pageItem;
-  //   });
-  // };
-
   fetchPagesByModule(moduleId: string) {
     const pagesForModule = this.PagesListFromDB.filter(
       page => page.Class?.toString() === moduleId
@@ -504,130 +556,7 @@ export class RolesComponent {
     });
   };
 
-
-  // togglePagePermission(page: any, permission: 'CanView' | 'CanAdd' | 'CanEdit' | 'CanDelete', moduleId: string, pageId: string): void {
-  //   page[permission] = !page[permission];
-  //   this.updatePermissionsList(moduleId, pageId, permission, page[permission]);
-  // };
-
-  // updatePermissionsList(moduleId: string, pageId: string, permission: string, status: boolean): void {
-  //   console.log('Toggling permission:', { moduleId, pageId, permission, status });
-  //   console.log('Current permissionsList before update:', this.permissionsList);
-  //   const existingPermission = this.permissionsList.find(
-  //     (p) => p.moduleId === moduleId && p.pageId === pageId
-  //   );
-
-  //   if (existingPermission) {
-  //     if(this.selectedRoleId || this.selectedRoleId!='' || this.selectedRoleId!=null){
-  //       existingPermission[permission] = status ? "0" : "1";
-  //     }
-  //     else{
-  //       existingPermission[permission] = status ? "1" : "0";
-  //     }
-
-  //   } else {
-  //     const newPermission: Permission = {
-  //       moduleId,
-  //       pageId,
-  //       roleID: '1',
-  //       canView: "0",
-  //       canAdd: "0",
-  //       canEdit: "0",
-  //       canDelete: "0",
-  //       flag: "1",
-  //       status: "1"
-  //     };
-
-  //     newPermission[permission] = status ? "1" : "0";
-  //     this.permissionsList.push(newPermission);
-
-  //   console.log('Updated permissionsList:', this.permissionsList);
-  //   }
-  // };
-
-
-// new array for updated toggles
 updatedPermissionsList: Permission[] = [];
-
-// togglePagePermission(page: any, permission: string, moduleId: string, pageId: string): void {
-//   // Type assertion here ensures 'permission' is one of the valid strings
-//   const validPermission: "CanView" | "CanAdd" | "CanEdit" | "CanDelete" = permission as "CanView" | "CanAdd" | "CanEdit" | "CanDelete";
-
-//   const newValue = !page[validPermission];  // Toggle the permission value
-//   page[validPermission] = newValue;
-
-//   console.log('Toggling permission:', { moduleId, pageId, validPermission, newValue });
-
-//   if (this.selectedRoleId) {
-//     this.updateUpdatedPermissionsList(moduleId, pageId, validPermission, newValue);
-//   } else {
-//     this.updatePermissionsList(moduleId, pageId, validPermission, newValue);
-//   }
-// }
-
-// updateUpdatedPermissionsList(
-//   moduleId: string,
-//   pageId: string,
-//   permission: 'CanView' | 'CanAdd' | 'CanEdit' | 'CanDelete',
-//   status: boolean
-// ): void {
-
-//   // Define a mapping from lowercase strings to actual keys of Permission interface
-//   const permissionMap: { [key: string]: keyof Permission } = {
-//     'canview': 'CanView',
-//     'canadd': 'CanAdd',
-//     'canedit': 'CanEdit',
-//     'candelete': 'CanDelete'
-//   };
-
-//   // Use the permission value to find the correct permission key
-//   const permKey = permissionMap[permission.toLowerCase()];
-
-//   // Convert the boolean status to "1" for true and "0" for false
-//   const stringValue = status ? "1" : "0";
-
-//   // Convert moduleId and pageId to strings
-//   const moduleIdStr = moduleId?.toString();
-//   const pageIdStr = pageId?.toString();
-
-//   // Default roleId to '1' if it's not provided
-//   const roleIdStr = this.selectedRoleId?.toString() || '1';
-
-//   // Check if the permission for the given moduleId, pageId, and roleId already exists
-//   let existing = this.updatedPermissionsList.find(
-//     p => p.moduleId === moduleIdStr && p.pageId === pageIdStr && p.roleID === roleIdStr
-//   );
-
-//   // If the permission entry already exists, update it
-//   if (existing) {
-//     existing[permKey] = stringValue;  // Update the correct permission
-//     existing.flag = "1";  // Mark as updated
-//   } else {
-//     // If the permission entry doesn't exist, create a new one
-//     const newPermission: Permission = {
-//       moduleId: moduleIdStr,
-//       pageId: pageIdStr,
-//       roleID: roleIdStr,
-//       CanView: permKey === "CanView" ? stringValue : "0",
-//       CanAdd: permKey === "CanAdd" ? stringValue : "0",
-//       CanEdit: permKey === "CanEdit" ? stringValue : "0",
-//       CanDelete: permKey === "CanDelete" ? stringValue : "0",
-//       flag: "1", // Mark as active
-//       status: "1" // Default status to active
-//     };
-
-//     console.log('New permission to add:', newPermission);
-
-//     // Add the new permission to the list
-//     this.updatedPermissionsList.push(newPermission);
-//     const updatedPermissionList=this.getUpdatedFinalList();
-//     console.log('Updated Permission List after addition:', updatedPermissionList);
-//   }
-
-//   // Log the updated permissions list for debugging
-//   console.log('Updated toggled permissions:', this.updatedPermissionsList);
-// };
-
 
 togglePagePermission(page: any, permission: string, moduleId: string, pageId: string): void {
   const validPermission: "CanView" | "CanAdd" | "CanEdit" | "CanDelete" = permission as any;
@@ -687,53 +616,6 @@ updateUpdatedPermissionsList(
   console.log('Updated Permission List after addition:', updatedPermissionList);
 }
 
-
-
-
-
-// updateUpdatedPermissionsList(
-//   moduleId: string,
-//   pageId: string,
-//   permission: string, // may come as 'CanDelete' or 'canDelete'
-//   status: boolean
-// ): void {
-//   const moduleIdStr = moduleId?.toString();
-//   const pageIdStr = pageId?.toString();
-//   const roleIdStr = this.selectedRoleId?.toString() || '1';
-//   const stringValue = status ? "1" : "0";
-
-//   // Normalize permission key to lowercase
-//   const permKey = permission.charAt(0).toLowerCase() + permission.slice(1);
-
-//   let existing = this.updatedPermissionsList.find(
-//     (p) => p.moduleId === moduleIdStr && p.pageId === pageIdStr && p.roleID === roleIdStr
-//   );
-
-//   if (existing) {
-//     existing[permKey] = stringValue;
-//     existing.flag = "1";
-//   } else {
-//     const newPermission: Permission = {
-//       moduleId: moduleIdStr,
-//       pageId: pageIdStr,
-//       roleID: roleIdStr,
-//       canView: permKey === 'canView' ? stringValue : "1",
-//       canAdd: permKey === 'canAdd' ? stringValue : "1",
-//       canEdit: permKey === 'canEdit' ? stringValue : "1",
-//       canDelete: permKey === 'canDelete' ? stringValue : "1",
-//       flag: "1",
-//       status: "1"
-//     };
-//     this.updatedPermissionsList.push(newPermission);
-//   }
-
-//   console.log('Updated toggled permissions:', this.updatedPermissionsList);
-// }
-
-
-
-
-// original permissionsList update
   updatePermissionsList(
     moduleId: string,
     pageId: string,
@@ -749,7 +631,7 @@ updateUpdatedPermissionsList(
     const roleIdStr = this.RoleForm.get('ID')?.value;
 
     let existing = this.permissionsList.find(
-      p => p.moduleId === moduleIdStr && p.pageId === pageIdStr && p.roleID === roleIdStr
+      p => p.moduleId === moduleIdStr && p.pageId === pageIdStr
     );
 
     if (existing) {
@@ -759,7 +641,7 @@ updateUpdatedPermissionsList(
       const newPermission: Permission = {
         moduleId: moduleIdStr,
         pageId: pageIdStr,
-        roleID: roleIdStr,
+        roleID: '',
         CanView: permKey === 'CanView' ? stringValue : (page.CanView ? "1" : "0"),
         CanAdd: permKey === 'CanAdd' ? stringValue : (page.CanAdd ? "1" : "0"),
         CanEdit: permKey === 'CanEdit' ? stringValue : (page.CanEdit ? "1" : "0"),
@@ -776,35 +658,6 @@ updateUpdatedPermissionsList(
     );
 
     console.log('Updated toggled permissions:', this.permissionsList);
-
-    // const moduleIdStr = moduleId?.toString();
-    // const pageIdStr = pageId?.toString();
-    // const stringValue = status ? "1" : "0";
-
-    // let existing = this.permissionsList.find(
-    //   p => p.moduleId === moduleIdStr && p.pageId === pageIdStr
-    // );
-
-    // if (existing) {
-    //   existing[permission] = stringValue;
-    //   existing.flag = "4";  // Mark as "No Update"
-    // } else {
-    //   const newPermission: Permission = {
-    //     moduleId: moduleIdStr,
-    //     pageId: pageIdStr,
-    //     roleID: '1',  // Default to role '1' if no role is selected
-    //     CanView: permission === 'CanView' ? stringValue : "0",
-    //     CanAdd: permission === 'CanAdd' ? stringValue : "0",
-    //     CanEdit: permission === 'CanEdit' ? stringValue : "0",
-    //     CanDelete: permission === 'CanDelete' ? stringValue : "0",
-    //     flag: "1",  // Flag as "Active"
-    //     status: "1"  // Default to active
-    //   };
-
-    //   this.permissionsList.push(newPermission);
-    // }
-
-    // console.log('Updated permissionsList:', this.permissionsList);
   };
 
   submitpermission() {
@@ -815,7 +668,6 @@ updateUpdatedPermissionsList(
       return;
     }
 
-    // Map the updatedPermissionsList correctly, since values are strings "0" or "1"
     const permissionPayload = this.permissionsList.map(permission => ({
       roleID: permission.roleID,
       pageID: permission.pageId,
@@ -903,109 +755,10 @@ updateUpdatedPermissionsList(
     });
   };
 
-
-
-
-
-  // FetchPermissionByRoleID(roleID: string, moduleID: string) {
-  //   const payload = {
-  //     RoleID: roleID,
-  //     PageID: "0",
-  //     CanView: "0",
-  //     CanAdd: "0",
-  //     CanEdit: "0",
-  //     CanDelete: "0",
-  //     Flag: "2"
-  //   };
-
-  //   this.apiurl.post<any>("GetPermissionsByRole", payload).subscribe({
-  //     next: (response: any) => {
-  //       if (response.statusCode === 200) {
-  //         this.permissionsList = response.data.map((permission: any) => ({
-  //           ...permission,
-  //           CanView: permission.CanView === "True",
-  //           CanAdd: permission.CanAdd === "True",
-  //           CanEdit: permission.CanEdit === "True",
-  //           CanDelete: permission.CanDelete === "True"
-  //         }));
-  //         this.fetchPagesByModule(moduleID);
-  //         this.expandedModuleId = moduleID;
-  //         this.selectedModuleName = this.modules.find(module => module.ID === moduleID)?.Name || '';
-  //       } else {
-  //         this.showError(response.Message || "Error fetching permissions.");
-  //       }
-  //     },
-  //     error: () => this.showError("Error fetching permissions.")
-  //   });
-  // };
-
   showError(message: string) {
     this.AminityInsStatus = message;
     this.isModalOpen = true;
   };
-
-
-
-  // updatepermission(RollId:string) {
-  //   if (this.permissionsList.length === 0) {
-  //     this.AminityInsStatus = "No permissions to submit.";
-  //     this.isModalOpen = true;
-  //     return;
-  //   }
-
-  //   const groupedPermissions: { [key: string]: { [key: string]: any } } = {};
-
-  //   this.permissionsList.forEach(permission => {
-  //     const { moduleId, pageId, canView, canAdd, canEdit, canDelete } = permission;
-
-  //     if (!groupedPermissions[moduleId]) {
-  //       groupedPermissions[moduleId] = {};
-  //     }
-
-  //     if (!groupedPermissions[moduleId][pageId]) {
-  //       groupedPermissions[moduleId][pageId] = {
-  //         roleID: RollId,
-  //         pageID: pageId,
-  //         canView: canView || "1",
-  //         canAdd: canAdd || "1",
-  //         canEdit: canEdit || "1",
-  //         canDelete: canDelete || "1",
-  //         flag: "4",
-  //       };
-  //     }
-
-  //     groupedPermissions[moduleId][pageId].canView = canView;
-  //     groupedPermissions[moduleId][pageId].canAdd = canAdd;
-  //     groupedPermissions[moduleId][pageId].canEdit = canEdit;
-  //     groupedPermissions[moduleId][pageId].canDelete = canDelete;
-  //   });
-
-  //   const permissionPayload = [];
-  //   for (const moduleId in groupedPermissions) {
-  //     for (const pageId in groupedPermissions[moduleId]) {
-  //       permissionPayload.push(groupedPermissions[moduleId][pageId]);
-  //     }
-  //   }
-
-  //   this.apiurl.post("Tbl_RolePermissions_CRUD_Operations", permissionPayload).subscribe({
-  //     next: (response: any) => {
-  //       console.log('API response:', response);
-  //       if (response.statusCode === 200) {
-  //         this.isModalOpen = true;
-  //         this.AminityInsStatus = "Permissions Submitted Successfully!";
-  //         this.permissionsList = [];
-  //       } else {
-  //         this.isModalOpen = true;
-  //         this.AminityInsStatus = `Error: ${response.Message}`;
-  //       }
-  //     },
-  //     error: (error) => {
-  //       console.error('Error during API call:', error);
-  //       this.isModalOpen = true;
-  //       this.AminityInsStatus = "Error updating permissions.";
-  //     }
-  //   });
-  // };
 
 updatepermission(RollId: string) {
   if (!this.updatedPermissionsList || this.updatedPermissionsList.length === 0) {
@@ -1046,8 +799,6 @@ updatepermission(RollId: string) {
   });
 }
 
-
-// Merge permissionsList (UI booleans) with updatedPermissionsList (string toggles)
 getUpdatedFinalList(): Permission[] {
   if (!this.permissionsList || this.permissionsList.length === 0) {
     console.warn('permissionsList is empty!');
@@ -1095,23 +846,6 @@ fetchNewRoleId(){
     );
 }
 
-
-// fetchNewRoleId(): Observable<any> {
-//   const data = { Flag: "6" };
-//   return this.apiurl.post<any>("Tbl_Roles_CRUD_Operations", data).pipe(
-//     tap((response: any) => {
-//       const item = response?.data?.[0];
-//       if (item) {
-//         this.RoleForm.patchValue({
-//           ID: item.id // patch the new ID
-//         });
-//       } else {
-//         this.RoleForm.reset();
-//       }
-//     })
-//   );
-// }
-
 previousPage() {
     if (this.currentPage > 1) {
       this.currentPage--;  // Decrease the current page number
@@ -1156,4 +890,16 @@ previousPage() {
     return Math.ceil(this.RoleCount / this.pageSize);  // Calculate total pages based on page size
   };
 
+  onAdminSchoolChange(event: Event) {
+    this.academicYearList=[];  
+    this.RoleForm.get('AcademicYear').patchValue('0');
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    if(schoolID=="0"){
+      this.AdminselectedSchoolID="";
+    }else{
+      this.AdminselectedSchoolID = schoolID;
+    }   
+    this.FetchAcademicYearsList();
+  };
 }
