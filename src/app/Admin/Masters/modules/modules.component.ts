@@ -213,8 +213,14 @@ export class ModulesComponent extends BasePermissionComponent {
             this.ModuleForm.markAsPristine();
           }
         },
-        error: (error) => {
-          this.AminityInsStatus = "Error Updating Aminity.";
+        error: (err:any) => {
+          if (err.status === 400 && err.error?.message) {
+            this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+          } else if (err.status === 500 && err.error?.Message) {
+            this.AminityInsStatus = err.error.Message;  // Database or internal error
+          } else {
+            this.AminityInsStatus = "Unexpected error occurred.";
+          }
           this.isModalOpen = true;
         },
         complete: () => {
@@ -297,8 +303,14 @@ export class ModulesComponent extends BasePermissionComponent {
             this.ModuleForm.markAsPristine();
           }
         },
-        error: (error) => {
-          this.AminityInsStatus = "Error Updating Aminity.";
+        error: (err:any) => {
+          if (err.status === 400 && err.error?.message) {
+            this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+          } else if (err.status === 500 && err.error?.Message) {
+            this.AminityInsStatus = err.error.Message;  // Database or internal error
+          } else {
+            this.AminityInsStatus = "Unexpected error occurred.";
+          }
           this.isModalOpen = true;
         },
         complete: () => {

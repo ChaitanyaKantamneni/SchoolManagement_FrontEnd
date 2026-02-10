@@ -72,6 +72,9 @@ export class ClassDivisionComponent extends BasePermissionComponent {
   schoolList: any[] = [];
   selectedSchoolID: string = '';
   SchoolSelectionChange:boolean=false;
+  academicYearList:any[] = [];
+  AdminselectedSchoolID:string = '';
+  AdminselectedAcademivYearID:string = '';
 
   ClassDivisionForm: any = new FormGroup({
     ID: new FormControl(),
@@ -79,7 +82,8 @@ export class ClassDivisionComponent extends BasePermissionComponent {
     Name: new FormControl('',Validators.required),
     Strength:new FormControl('',[Validators.required,Validators.pattern('^[0-9]+$')]),
     Description: new FormControl(),
-    School: new FormControl()
+    School: new FormControl(),
+    AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
   });
 
   allowOnlyNumbers(event: KeyboardEvent) {
@@ -123,8 +127,34 @@ export class ClassDivisionComponent extends BasePermissionComponent {
       );
   };
 
+  FetchAcademicYearsList() {
+    const requestData = { SchoolID:this.AdminselectedSchoolID||'',Flag: '2' };
+
+    this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.academicYearList = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.id,
+                Name: item.name,
+                IsActive: isActiveString
+              };
+            });            
+          } else {
+            this.academicYearList = [];
+          }
+        },
+        (error) => {
+          this.academicYearList = [];
+        }
+      );
+  };
+
   protected override get isAdmin(): boolean {
-    return this.roleId === '1';
+    const role = sessionStorage.getItem('RollID') || localStorage.getItem('RollID');
+    return role === '1';
   }
 
   FetchAcademicYearCount(isSearch: boolean) {
@@ -218,16 +248,29 @@ export class ClassDivisionComponent extends BasePermissionComponent {
   };
 
   AddNewClicked(){
+    if (this.isAdmin) {
+      this.ClassDivisionForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+    } else {
+      this.ClassDivisionForm.get('School')?.clearValidators();
+    }
+    if(this.AdminselectedSchoolID==''){
+      this.FetchAcademicYearsList();
+    }
     this.FetchClassList();
     this.ClassDivisionForm.reset();
     this.ClassDivisionForm.get('Class').patchValue('0');
+    this.ClassDivisionForm.get('School').patchValue('0');
+    this.ClassDivisionForm.get('AcademicYear').patchValue('0');
     this.IsAddNewClicked=!this.IsAddNewClicked;
     this.IsActiveStatus=true;
     this.ViewClassDivisionClicked=false;
   };
 
   FetchClassList() {
-    const requestData = { Flag: '9' };
+    const requestData = { 
+      SchoolID:this.AdminselectedSchoolID,
+      AcademicYear:this.AdminselectedAcademivYearID,
+      Flag: '9' };
 
     this.apiurl.post<any>('Tbl_ClassDivision_CRUD_Operations', requestData)
       .subscribe(
@@ -263,7 +306,7 @@ export class ClassDivisionComponent extends BasePermissionComponent {
         Strength: this.ClassDivisionForm.get('Strength')?.value,
         Description: this.ClassDivisionForm.get('Description')?.value,
         SchoolID: this.ClassDivisionForm.get('School')?.value,
-        // AcademicYear: this.ClassDivisionForm.get('School')?.value,  
+        AcademicYear: this.ClassDivisionForm.get('AcademicYear')?.value,  
         IsActive:IsActiveStatusNumeric,
         Flag: '1'
       };
@@ -273,13 +316,19 @@ export class ClassDivisionComponent extends BasePermissionComponent {
           if (response.statusCode === 200) {
             this.IsAddNewClicked=!this.IsAddNewClicked;
             this.isModalOpen = true;
-            this.AminityInsStatus = "Syllabus Details Submitted!";
+            this.AminityInsStatus = "Class Division Details Submitted!";
             this.ClassDivisionForm.reset();
             this.ClassDivisionForm.markAsPristine();
           }
         },
-        error: (error) => {
-          this.AminityInsStatus = "Error Updating Syllabus.";
+        error: (err:any) => {
+          if (err.status === 400 && err.error?.message) {
+            this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+          } else if (err.status === 500 && err.error?.Message) {
+            this.AminityInsStatus = err.error.Message;  // Database or internal error
+          } else {
+            this.AminityInsStatus = "Unexpected error occurred.";
+          }
           this.isModalOpen = true;
         },
         complete: () => {
@@ -329,8 +378,13 @@ export class ClassDivisionComponent extends BasePermissionComponent {
             Name: item.name,
             Strength: item.strength,
             Description: item.description,
-            School:item.schoolID
+            School:item.schoolID,
+            AcademicYear:item.academicYear
           });
+          this.AdminselectedSchoolID=item.schoolID;
+          this.AdminselectedAcademivYearID=item.academicYear;
+          this.FetchAcademicYearsList();
+          this.FetchClassList();
           this.IsActiveStatus = isActive;
           this.IsAddNewClicked = true;
         }
@@ -356,7 +410,7 @@ export class ClassDivisionComponent extends BasePermissionComponent {
         Strength: this.ClassDivisionForm.get('Strength')?.value,
         Description: this.ClassDivisionForm.get('Description')?.value,
         SchoolID: this.ClassDivisionForm.get('School')?.value,
-        // AcademicYear: this.ClassDivisionForm.get('School')?.value,
+        AcademicYear: this.ClassDivisionForm.get('AcademicYear')?.value,
         IsActive:IsActiveStatusNumeric,
         Flag: '5'
       };
@@ -366,13 +420,19 @@ export class ClassDivisionComponent extends BasePermissionComponent {
           if (response.statusCode === 200) {
             this.IsAddNewClicked=!this.IsAddNewClicked;
             this.isModalOpen = true;
-            this.AminityInsStatus = "Syllabus Details Updated!";
+            this.AminityInsStatus = "Class Division Details Updated!";
             this.ClassDivisionForm.reset();
             this.ClassDivisionForm.markAsPristine();
           }
         },
-        error: (error) => {
-          this.AminityInsStatus = "Error Updating Syllabus.";
+        error: (err:any) => {
+          if (err.status === 400 && err.error?.message) {
+            this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+          } else if (err.status === 500 && err.error?.Message) {
+            this.AminityInsStatus = err.error.Message;  // Database or internal error
+          } else {
+            this.AminityInsStatus = "Unexpected error occurred.";
+          }
           this.isModalOpen = true;
         },
         complete: () => {
@@ -492,6 +552,11 @@ export class ClassDivisionComponent extends BasePermissionComponent {
   };
 
   editreview(SyllabusID: string): void {
+    if (this.isAdmin) {
+      this.ClassDivisionForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+    } else {
+      this.ClassDivisionForm.get('School')?.clearValidators();
+    }
     this.editclicked=true;
     this.FetchSyllabusDetByID(SyllabusID,'edit');
     this.ViewClassDivisionClicked=true;
@@ -608,5 +673,34 @@ export class ClassDivisionComponent extends BasePermissionComponent {
   viewReview(SyllabusID: string): void {
     this.FetchSyllabusDetByID(SyllabusID,'view');
     this.isViewModalOpen=true;
+  };
+
+  onAdminSchoolChange(event: Event) {
+    this.academicYearList=[];
+    this.SyllabusList = [];
+    this.ClassDivisionForm.get('Class').patchValue('0');
+    this.ClassDivisionForm.get('AcademicYear').patchValue('0');
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    if(schoolID=="0"){
+      this.AdminselectedSchoolID="";
+    }else{
+      this.AdminselectedSchoolID = schoolID;
+    }  
+    console.log('this.AdminselectedSchoolID',this.AdminselectedSchoolID);  
+    this.FetchAcademicYearsList();
+  };
+
+  onAdminAcademicYearChange(event: Event) {
+    this.SyllabusList = [];    
+    this.ClassDivisionForm.get('Class').patchValue('0');
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    if(schoolID=="0"){
+      this.AdminselectedAcademivYearID="";
+    }else{
+      this.AdminselectedAcademivYearID = schoolID;
+    }    
+    this.FetchClassList();
   };
 }

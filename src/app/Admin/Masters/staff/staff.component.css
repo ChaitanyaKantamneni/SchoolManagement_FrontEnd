@@ -85,4 +85,16 @@
 }
 
 
+.sortable-column .column-text{
+  margin-right: 15px;
+}
 
+.arrows{
+    display: flex;
+    flex-direction: row;
+    position: absolute;
+    right: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    gap: 0px;
+}

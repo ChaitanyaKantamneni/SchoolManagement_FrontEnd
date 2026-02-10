@@ -71,6 +71,7 @@ export class AcademicYearComponent extends BasePermissionComponent {
       Name: new FormControl('', Validators.required),
       StartDate: new FormControl('', Validators.required),
       EndDate: new FormControl('', Validators.required),
+      School:new FormControl(),
       Description: new FormControl()
     },
     {
@@ -92,50 +93,9 @@ export class AcademicYearComponent extends BasePermissionComponent {
   ngOnInit(): void {
     this.checkViewPermission();
     this.SchoolSelectionChange=false;
-    // const currentYear = new Date().getFullYear();
-
-    // this.AcademicYearForm = new FormGroup({
-    //   ID: new FormControl(),
-    //   Name: new FormControl('', Validators.required),
-    //   StartDate: new FormControl('', [
-    //     Validators.required,
-    //     (control: AbstractControl) => this.startDateValidator(control, currentYear)
-    //   ]),
-    //   EndDate: new FormControl('', [
-    //     Validators.required,
-    //     (control: AbstractControl) => this.endDateValidator(control)
-    //   ]),
-    //   Description: new FormControl()
-    // });
-
-    // // Update EndDate validation when StartDate changes
-    // this.AcademicYearForm.get('StartDate')?.valueChanges.subscribe(() => {
-    //   this.AcademicYearForm.get('EndDate')?.updateValueAndValidity();
-    // });
     this.FetchSchoolsList();
     this.FetchInitialData();
   }
-
-  // startDateValidator(control: AbstractControl, currentYear: number) {
-  //   if (!control.value) return null;
-  //   const start = new Date(control.value);
-  //   const minDate = new Date(`${currentYear}-01-01`);
-  //   return start >= minDate ? null : { invalidStartDate: true };
-  // }
-
-  // endDateValidator(control: AbstractControl) {
-  //   const startValue = this.AcademicYearForm?.get('StartDate')?.value;
-  //   if (!control.value || !startValue) return null;
-
-  //   const start = new Date(startValue);
-  //   const end = new Date(control.value);
-  //   const max = new Date(start);
-  //   max.setFullYear(start.getFullYear() + 1);
-
-  //   if (end < start) return { endBeforeStart: true };
-  //   if (end > max) return { endExceedsYear: true };
-  //   return null;
-  // }
 
   FetchSchoolsList() {
     const requestData = { Flag: '2' };
@@ -163,7 +123,8 @@ export class AcademicYearComponent extends BasePermissionComponent {
   };
 
   protected override get isAdmin(): boolean {
-    return this.roleId === '1';
+    const role = sessionStorage.getItem('RollID') || localStorage.getItem('RollID');
+    return role === '1';
   }
 
   FetchAcademicYearCount(isSearch: boolean) {
@@ -257,6 +218,13 @@ export class AcademicYearComponent extends BasePermissionComponent {
   }
 
   AddNewClicked() {
+    if (this.isAdmin) {
+      this.AcademicYearForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+    } else {
+      this.AcademicYearForm.get('School')?.clearValidators();
+    }
+    this.AcademicYearForm.reset();
+    this.AcademicYearForm.get('School')?.patchValue('0');
     this.IsAddNewClicked = !this.IsAddNewClicked;
     this.IsActiveStatus = true;
     this.ViewAcademicYearClicked = false;
@@ -274,7 +242,7 @@ export class AcademicYearComponent extends BasePermissionComponent {
       EndDate: this.AcademicYearForm.get('EndDate')?.value,
       Description: this.AcademicYearForm.get('Description')?.value,
       IsActive: this.IsActiveStatus ? "1" : "0",
-      SchoolID: this.ActiveUserId,
+      SchoolID: this.AcademicYearForm.get('School')?.value || '',
       Flag: '1'
     };
 
@@ -286,9 +254,17 @@ export class AcademicYearComponent extends BasePermissionComponent {
         this.FetchInitialData();
         this.IsAddNewClicked = false;
       },
-      error: () => {
-        this.isModalOpen = true;
-        this.AminityInsStatus = "Error Submitting Academic Year!";
+      error: (err:any) => {
+          if (err.status === 400 && err.error?.message) {
+            this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+          } else if (err.status === 500 && err.error?.Message) {
+            this.AminityInsStatus = err.error.Message;  // Database or internal error
+          } else {
+            this.AminityInsStatus = "Unexpected error occurred.";
+          }
+          this.isModalOpen = true;
+      },
+      complete: () => {
       }
     });
   }
@@ -319,6 +295,7 @@ export class AcademicYearComponent extends BasePermissionComponent {
             StartDate: this.formatDateYYYYMMDD(item.startDate),
             EndDate: this.formatDateYYYYMMDD(item.endDate),
             Description: item.description,
+            SchoolName:item.schoolName,
             IsActive: isActive
           };
           this.isViewModalOpen = true;
@@ -331,6 +308,7 @@ export class AcademicYearComponent extends BasePermissionComponent {
             Name: item.name,
             StartDate: this.formatDateYYYYMMDD(item.startDate),
             EndDate: this.formatDateYYYYMMDD(item.endDate),
+            School: item.schoolID,
             Description: item.description
           });
           this.IsActiveStatus = isActive;
@@ -357,7 +335,7 @@ export class AcademicYearComponent extends BasePermissionComponent {
       EndDate: this.AcademicYearForm.get('EndDate')?.value || '',
       Description: this.AcademicYearForm.get('Description')?.value || '',
       IsActive: this.IsActiveStatus ? "1" : "0",
-      SchoolID: this.ActiveUserId,
+      SchoolID: this.AcademicYearForm.get('School')?.value || '',
       Flag: '5'
     };
 
@@ -369,9 +347,17 @@ export class AcademicYearComponent extends BasePermissionComponent {
         this.FetchInitialData();
         this.IsAddNewClicked = false;
       },
-      error: () => {
-        this.isModalOpen = true;
-        this.AminityInsStatus = "Error Updating Academic Year!";
+      error: (err:any) => {
+          if (err.status === 400 && err.error?.message) {
+            this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+          } else if (err.status === 500 && err.error?.Message) {
+            this.AminityInsStatus = err.error.Message;  // Database or internal error
+          } else {
+            this.AminityInsStatus = "Unexpected error occurred.";
+          }
+          this.isModalOpen = true;
+      },
+      complete: () => {
       }
     });
   }
@@ -488,6 +474,11 @@ export class AcademicYearComponent extends BasePermissionComponent {
   }
 
   editreview(AcademicYearID: string) {
+    if (this.isAdmin) {
+      this.AcademicYearForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+    } else {
+      this.AcademicYearForm.get('School')?.clearValidators();
+    }
     this.editclicked=true;
     this.FetchAcademicYearDetByID(AcademicYearID,'edit');
     this.ViewAcademicYearClicked=true;

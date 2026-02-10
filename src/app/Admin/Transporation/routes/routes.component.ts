@@ -70,15 +70,70 @@ export class RoutesComponent extends BasePermissionComponent {
   schoolList: any[] = [];
   selectedSchoolID: string = '';
   SchoolSelectionChange:boolean=false;
-
+  academicYearList:any[] = [];
+  AdminselectedSchoolID:string = '';
+  AdminselectedAcademivYearID:string = '';
+// ^[a-zA-Z!@#$%^&*()_+\\-=\\[\\]{};:\'",.<>/?|`~]+$
   SyllabusForm: any = new FormGroup({
     ID: new FormControl(),
-    Name: new FormControl('',[Validators.required,Validators.pattern('^[a-zA-Z!@#$%^&*()_+\\-=\\[\\]{};:\'",.<>/?|`~]+$')]),
-    Distance:new FormControl('', [Validators.required,Validators.pattern('^[0-9]+$')])
+    Name: new FormControl('',[Validators.required,Validators.pattern('^[a-zA-Z -_ ]+$')]),
+    Distance:new FormControl('', [Validators.required,Validators.pattern('^[0-9]+$')]),
+    School: new FormControl(),
+    AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
   });
 
+  FetchSchoolsList() {
+    const requestData = { Flag: '2' };
+
+    this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.schoolList = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.id,
+                Name: item.name,
+                IsActive: isActiveString
+              };
+            });            
+          } else {
+            this.schoolList = [];
+          }
+        },
+        (error) => {
+          this.schoolList = [];
+        }
+      );
+  };
+
+  FetchAcademicYearsList() {
+    const requestData = { SchoolID:this.AdminselectedSchoolID||'',Flag: '2' };
+
+    this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.academicYearList = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.id,
+                Name: item.name,
+                IsActive: isActiveString
+              };
+            });            
+          } else {
+            this.academicYearList = [];
+          }
+        },
+        (error) => {
+          this.academicYearList = [];
+        }
+      );
+  };
+
   allowAlphaAndSpecial(event: KeyboardEvent) {
-    const allowedRegex = /^[a-zA-Z!@#$%^&*()_+\-=\[\]{};:'",.<>/?|`~]$/;
+    const allowedRegex = /^[a-zA-Z -_ ]+$/;
     if (
       event.key === 'Backspace' ||
       event.key === 'Tab' ||
@@ -109,32 +164,6 @@ export class RoutesComponent extends BasePermissionComponent {
       event.preventDefault();
     }
   }
-
-
-  FetchSchoolsList() {
-    const requestData = { Flag: '2' };
-
-    this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', requestData)
-      .subscribe(
-        (response: any) => {
-          if (response && Array.isArray(response.data)) {
-            this.schoolList = response.data.map((item: any) => {
-              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
-              return {
-                ID: item.id,
-                Name: item.name,
-                IsActive: isActiveString
-              };
-            });            
-          } else {
-            this.schoolList = [];
-          }
-        },
-        (error) => {
-          this.schoolList = [];
-        }
-      );
-  };
 
   protected override get isAdmin(): boolean {
     const role = sessionStorage.getItem('RollID') || localStorage.getItem('RollID');
@@ -234,7 +263,17 @@ export class RoutesComponent extends BasePermissionComponent {
   };
 
   AddNewClicked(){
+    if (this.isAdmin) {
+      this.SyllabusForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+    } else {
+      this.SyllabusForm.get('School')?.clearValidators();
+    }
+    if(this.AdminselectedSchoolID==''){
+      this.FetchAcademicYearsList();
+    }
     this.SyllabusForm.reset();
+    this.SyllabusForm.get('School').patchValue('0');
+    this.SyllabusForm.get('AcademicYear').patchValue('0');
     this.IsAddNewClicked=!this.IsAddNewClicked;
     this.IsActiveStatus=true;
     this.ViewSyllabusClicked=false;
@@ -251,7 +290,8 @@ export class RoutesComponent extends BasePermissionComponent {
         ID: this.SyllabusForm.get('ID')?.value,
         Name: this.SyllabusForm.get('Name')?.value,
         Distance: this.SyllabusForm.get('Distance')?.value,
-        SchoolID: this.SyllabusForm.get('SchoolID')?.value,
+        SchoolID: this.SyllabusForm.get('School')?.value,
+        AcademicYear: this.SyllabusForm.get('AcademicYear')?.value,
         IsActive:IsActiveStatusNumeric,
         Flag: '1'
       };
@@ -304,9 +344,9 @@ export class RoutesComponent extends BasePermissionComponent {
           this.isViewMode = true;
           this.viewSyllabus = {
             ID: item.id,
-            SchoolName:item.schoolName,
             Name: item.name,
             Distance: item.distance,
+            SchoolName:item.schoolName,
             AcademicYearName:item.academicYearName,
             IsActive: isActive
           };
@@ -317,11 +357,14 @@ export class RoutesComponent extends BasePermissionComponent {
           this.isViewMode = false;
           this.SyllabusForm.patchValue({
             ID: item.id,
-            SchoolID:item.SchoolID,
+            School:item.schoolID,
+            AcademicYear:item.academicYear,
             Name: item.name,
-            Distance:item.distance,
-            // SchoolID: item.SchoolID
+            Distance:item.distance
           });
+          this.AdminselectedSchoolID=item.schoolID;
+          this.AdminselectedAcademivYearID=item.academicYear;
+          this.FetchAcademicYearsList();
           this.IsActiveStatus = isActive;
           this.IsAddNewClicked = true;
         }
@@ -344,7 +387,8 @@ export class RoutesComponent extends BasePermissionComponent {
         ID: this.SyllabusForm.get('ID')?.value,
         Name: this.SyllabusForm.get('Name')?.value,
         Distance: this.SyllabusForm.get('Distance')?.value,
-        SchoolID: this.SyllabusForm.get('SchoolID')?.value,
+        SchoolID: this.SyllabusForm.get('School')?.value,
+        AcademicYear: this.SyllabusForm.get('AcademicYear')?.value,
         IsActive:IsActiveStatusNumeric,
         Flag: '5'
       };
@@ -596,5 +640,18 @@ export class RoutesComponent extends BasePermissionComponent {
   viewReview(SyllabusID: string): void {
     this.FetchSyllabusDetByID(SyllabusID,'view');
     this.isViewModalOpen=true;
+  };
+
+  onAdminSchoolChange(event: Event) {
+    this.academicYearList=[];
+    this.SyllabusForm.get('AcademicYear').patchValue('0');
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    if(schoolID=="0"){
+      this.AdminselectedSchoolID="";
+    }else{
+      this.AdminselectedSchoolID = schoolID;
+    }   
+    this.FetchAcademicYearsList();
   };
 }

@@ -31,11 +31,11 @@
               </select>
             </div> -->
           </div>
-          <div class="DownloadButtons" *ngIf="PagesList.length != 0">
+          <!-- <div class="DownloadButtons" *ngIf="PagesList.length != 0">
             <button class="btnHover" (click)="exportSyllabus('pdf')"><mat-icon>picture_as_pdf</mat-icon></button>
             <button class="btnHover" (click)="exportSyllabus('excel')"><mat-icon>description</mat-icon></button>
             <button class="btnHover" (click)="exportSyllabus('print')"><mat-icon>print</mat-icon></button>
-          </div>
+          </div> -->
         </div>
         <div class="reviewstable">
           <table *ngIf="PagesList.length != 0" class="table table-bordered">
@@ -198,9 +198,9 @@
           <div class="col-8 viewfontsize">{{ viewSyllabus?.Name }}</div>
         </div>
 
-        <div class="row mb-2" *ngIf="viewSyllabus?.Name">
+        <div class="row mb-2" *ngIf="viewSyllabus?.ModuleName">
           <div class="col-4">Module</div>
-          <div class="col-8 viewfontsize">{{ viewSyllabus?.Name }}</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.ModuleName }}</div>
         </div>
 
         <div class="row mb-2" *ngIf="viewSyllabus?.Description && viewSyllabus.Description.trim() !== ''">
