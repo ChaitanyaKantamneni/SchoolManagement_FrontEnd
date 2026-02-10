@@ -65,6 +65,11 @@ import { FeeCategoryComponent } from './Admin/Finance/fee-category/fee-category.
 import { FeeAllocationComponent } from './Admin/Finance/fee-allocation/fee-allocation.component';
 import { FeeDiscountCategoryComponent } from './Admin/Finance/fee-discount-category/fee-discount-category.component';
 import { ExamTypeComponent } from './Admin/Exam/exam-type/exam-type.component';
+import { ExammarksComponent } from './Admin/Exam/exammarks/exammarks.component';
+import { ExamresultsComponent } from './Admin/Exam/examresults/examresults.component';
+import { ExamattendenceComponent } from './Admin/Exam/examattendence/examattendence.component';
+import { SetexamComponent } from './Admin/Exam/setexam/setexam.component';
+import { ViewexamsComponent } from './Admin/Exam/viewexams/viewexams.component';
 import { WorkingDaysComponent } from './Admin/TimeTable/working-days/working-days.component';
 import { SessionsComponent } from './Admin/TimeTable/sessions/sessions.component';
 import { TimeTableComponent } from './Admin/TimeTable/time-table/time-table.component';
@@ -105,6 +110,11 @@ export const routes: Routes = [
       { path: 'FeeDiscountCategory', component: FeeDiscountCategoryComponent },
       { path: 'Fare', component: FareComponent },
       { path: 'ExamType', component: ExamTypeComponent },
+      { path: 'SetExam', component: SetexamComponent },
+      { path: 'ExamAttendece', component: ExamattendenceComponent },
+      { path: 'ExamMarks', component: ExammarksComponent },
+      { path: 'ExamResults', component: ExamresultsComponent },
+      { path: 'ViewExams', component: ViewexamsComponent },
       { path: 'Fares', component: FareComponent },
       { path: 'WorkingDays', component: WorkingDaysComponent },
       { path: 'Sessions', component: SessionsComponent },
@@ -143,6 +153,11 @@ export const routes: Routes = [
       { path: 'FeeDiscountCategory', component: FeeDiscountCategoryComponent },
       { path: 'Stops', component: StopsComponent },
       { path: 'ExamType', component: ExamTypeComponent },
+      { path: 'SetExam', component: SetexamComponent },
+      { path: 'ExamAttendece', component: ExamattendenceComponent },
+      { path: 'ExamMarks', component: ExammarksComponent },
+      { path: 'ExamResults', component: ExamresultsComponent },
+      { path: 'ViewExams', component: ViewexamsComponent },
       { path: 'Fares', component: FareComponent },
       { path: 'WorkingDays', component: WorkingDaysComponent },
       { path: 'Sessions', component: SessionsComponent },
@@ -185,6 +200,9 @@ export const routes: Routes = [
       { path: 'FeeDiscountCategory', component: FeeDiscountCategoryComponent },
       { path: 'Stops', component: StopsComponent },
       { path: 'ExamType', component: ExamTypeComponent },
+      { path: 'ViewExams', component: ViewexamsComponent },
+      { path: 'SetExam', component: SetexamComponent },
+
 
       { path: 'Fares', component: FareComponent },
       { path: 'WorkingDays', component: WorkingDaysComponent },

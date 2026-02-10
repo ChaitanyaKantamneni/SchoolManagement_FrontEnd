@@ -1,5 +1,5 @@
-import { NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
 import { Component } from '@angular/core';
+import { NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { DashboardTopNavComponent } from '../../../SignInAndSignUp/dashboard-top-nav/dashboard-top-nav.component';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -11,14 +11,13 @@ import { LoaderService } from '../../../Services/loader.service';
 import { HttpClient } from '@angular/common/http';
 
 @Component({
-  selector: 'app-exam-type',
-  standalone: true,
+  selector: 'app-setexam',
   imports: [NgIf, NgFor, NgClass, NgStyle, MatIconModule, DashboardTopNavComponent, ReactiveFormsModule, FormsModule],
-  templateUrl: './exam-type.component.html',
-  styleUrl: './exam-type.component.css'
+  templateUrl: './setexam.component.html',
+  styleUrl: './setexam.component.css'
 })
-export class ExamTypeComponent extends BasePermissionComponent {
-  pageName = 'Exam Type';
+export class SetexamComponent extends BasePermissionComponent {
+   pageName = 'Set Exam';
 
   constructor(
     private http: HttpClient,
@@ -86,8 +85,6 @@ export class ExamTypeComponent extends BasePermissionComponent {
 
   SyllabusForm = new FormGroup({
     ID: new FormControl(''),
-    SchoolID:new FormControl(''),
-    AcademicYear:new FormControl(''),
     ExamTypeName: new FormControl('', Validators.required),
     Priority: new FormControl('', Validators.required),
     ExamType: new FormControl('', Validators.required),
@@ -208,8 +205,7 @@ export class ExamTypeComponent extends BasePermissionComponent {
   mapAcademicYears(response: any) {
     this.SyllabusList = (response.data || []).map((item: any) => ({
       ID: item.id,
-      SchoolID:item.schoolID,
-      AcademicYear:item.academicYear,
+      SchoolID: item.SchoolID,
       SchoolName: item.schoolName,
       ExamTypeName: item.examTypeName,
       Priority: item.priority,
@@ -297,8 +293,7 @@ export class ExamTypeComponent extends BasePermissionComponent {
           this.isViewMode = true;
           this.viewSyllabus = {
             ID: item.id,
-            SchoolID:item.schoolID,
-            AcademicYear:item.academicYear,
+            SchoolID:item.SchoolID,
             SchoolName: item.schoolName,
             ExamTypeName: item.examTypeName,
             Priority: item.priority,
@@ -318,8 +313,6 @@ export class ExamTypeComponent extends BasePermissionComponent {
           this.isViewMode = false;
           this.SyllabusForm.patchValue({
             ID: item.id,
-            SchoolID:item.schoolID,
-            AcademicYear:item.academicYear,
             ExamTypeName: item.examTypeName,
             Priority: item.priority,
             ExamType: item.examType,
@@ -349,7 +342,6 @@ export class ExamTypeComponent extends BasePermissionComponent {
     const data = {
       ID: this.SyllabusForm.get('ID')?.value || '',
       SchoolID: this.SyllabusForm.get('SchoolID')?.value || '',
-      AcademicYear: this.SyllabusForm.get('AcademicYear')?.value || '',
       ExamTypeName: this.SyllabusForm.get('ExamTypeName')?.value || '',
       Priority: this.SyllabusForm.get('Priority')?.value || '',
       ExamType: this.SyllabusForm.get('ExamType')?.value || '',
@@ -564,4 +556,5 @@ export class ExamTypeComponent extends BasePermissionComponent {
     this.FetchSyllabusDetByID(SyllabusID, 'view');
     this.isViewModalOpen = true;
   };
+
 }
