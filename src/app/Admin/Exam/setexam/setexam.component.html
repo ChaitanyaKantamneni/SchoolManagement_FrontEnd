@@ -5,11 +5,11 @@
   <div *ngIf="!IsAddNewClicked" class="w-100">
     <div class="ComponentTop">
       <div class="ComponentTopHeader">
-        <h5>ExamType Management</h5>
-        <p>Total {{ SyllabusCount }} ExamTypes Added</p>
+        <h5>Exam Management</h5>
+        <p>Total {{ SyllabusCount }} Exams Added</p>
       </div>
       <div class="ComponentTopBottom">
-        <button *ngIf="canAdd()" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add ExamType</button>
+        <button *ngIf="canAdd()" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Exam</button>
       </div>
     </div>
     <div class="ComponentRecords">
@@ -22,7 +22,7 @@
               <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
               <!-- <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i> -->
             </div>
-            <div class="searchreview" *ngIf="isAdmin && SyllabusList.length != 0">
+            <!-- <div class="searchreview" *ngIf="isAdmin && SyllabusList.length != 0">
               <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
                 <option value="">-- Select School --</option>
                 <option value="0">All Schools</option>
@@ -30,7 +30,7 @@
                   {{ school.Name }}
                 </option>
               </select>
-            </div>
+            </div> -->
           </div>
           <!-- <div class="DownloadButtons" *ngIf="SyllabusList.length != 0">
             <button class="btnHover" (click)="exportSyllabus('pdf')"><mat-icon>picture_as_pdf</mat-icon></button>
@@ -129,20 +129,20 @@
         <form [formGroup]="SyllabusForm">
           <div class="FormInputRowsContainer">
             <div class="InputRow">
-              <!-- <div class="InputFieldsContainer">
+              <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">ExamType Name <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" formControlName="ExamTypeName" placeholder="ExamTypeName" />
                   <div *ngIf="(SyllabusForm.get('ExamTypeName' ) ?. touched && SyllabusForm.get('ExamTypeName' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(SyllabusForm.get('ExamTypeName' ) ?. errors ?. ['required' ]) ">
+                    <!-- <div *ngIf="(SyllabusForm.get('ExamTypeName' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter ExamTypeName.</small>
                     </div>
                     <div *ngIf="(SyllabusForm.get('ExamTypeName' ) ?. errors ?. ['pattern' ]) ">
                       <small>Only Alphabets and Special Characters.</small>
-                    </div> 
+                    </div> -->
                   </div>
                 </div>
-              </div>      -->
+              </div>     
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Exam Type <span class="required">*</span></label>
                 <div class="input-with-error">
@@ -154,25 +154,6 @@
                   </div>
                 </div>
               </div>
-               <div class="InputFieldsContainer">
-                  <label class="inputLabel">Exam Type <span class="required">*</span></label>
-
-                  <div class="input-with-error">
-                    <select class="inputField" formControlName="ExamTypeName">
-                      <option value="" disabled hidden>Select ExamType</option>
-                      <option value="Quarterly">Quarterly</option>
-                      <option value="HalfYearly">HalfYearly</option>
-                      <option value="Prefinal">Prefinal</option>
-                    </select>
-
-                    <div *ngIf="SyllabusForm.get('ExamTypeName')?.touched && SyllabusForm.get('ExamTypeName')?.invalid"
-                        class="text-danger">
-                      <small *ngIf="SyllabusForm.get('ExamTypeName')?.errors?.['required']">
-                        Please select ExamType.
-                      </small>
-                    </div>
-                  </div>
-                  </div>
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">PassMarks <span class="required">*</span></label>
                 <div class="input-with-error">
@@ -203,24 +184,24 @@
               </div>     
             </div>
             <div class="InputRow">
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Priority <span class="required">*</span></label>
+             <div class="InputFieldsContainer">
+  <label class="inputLabel">Priority <span class="required">*</span></label>
 
-                  <div class="input-with-error">
-                    <select class="inputField" formControlName="Priority">
-                      <option value="" disabled hidden>Select Priority</option>
-                      <option value="High">High</option>
-                      <option value="Low">Low</option>
-                    </select>
+  <div class="input-with-error">
+    <select class="inputField" formControlName="Priority">
+      <option value="" disabled hidden>Select Priority</option>
+      <option value="High">High</option>
+      <option value="Low">Low</option>
+    </select>
 
-                    <div *ngIf="SyllabusForm.get('Priority')?.touched && SyllabusForm.get('Priority')?.invalid"
-                        class="text-danger">
-                      <small *ngIf="SyllabusForm.get('Priority')?.errors?.['required']">
-                        Please select Priority.
-                      </small>
-                    </div>
-                  </div>
-                </div>
+    <div *ngIf="SyllabusForm.get('Priority')?.touched && SyllabusForm.get('Priority')?.invalid"
+         class="text-danger">
+      <small *ngIf="SyllabusForm.get('Priority')?.errors?.['required']">
+        Please select Priority.
+      </small>
+    </div>
+  </div>
+</div>
 
 
               <div class="InputFieldsContainer">
@@ -238,7 +219,7 @@
                 </div>
               </div>          
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">ExamDuration(Minutes) <span class="required">*</span></label>
+                <label class="inputLabel" for="email">ExamDuration <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" formControlName="ExamDuration" placeholder="Enter ExamDuration" (keydown)="allowOnlyNumbers($event)" />
                   <div *ngIf="(SyllabusForm.get('ExamDuration' ) ?. touched && SyllabusForm.get('ExamDuration' ) ?. invalid)" class="text-danger">
@@ -250,8 +231,7 @@
                     </div>
                   </div>
                 </div>
-              </div>
-               
+              </div> 
                <div class="InputFieldsContainer">
                <label class="inputLabel" for="email">Instructions</label>
                 <div class="input-with-error">

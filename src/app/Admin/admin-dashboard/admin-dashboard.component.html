@@ -399,6 +399,54 @@
               </li>
             </ul>
           </li>
+           <li class="menu-item has-submenu">
+            <div class="parent-row" (click)="toggleSubmenu('Exam')">
+              <mat-icon>school</mat-icon>
+              <span *ngIf="isExpanded" class="DashboardMenuLi">Exam</span>
+            </div>
+
+            <ul *ngIf="isExpanded && openedSubmenu === 'Exam'" class="submenu">
+              <li>
+                <a routerLink="/Admin/ExamType">
+                  <mat-icon>people</mat-icon>
+                  <span class="submenu-text">Exam Type</span>
+                </a>
+              </li>
+
+              <li>
+                <a routerLink="/Admin/SetExam">
+                  <mat-icon>assignment</mat-icon>
+                  <span class="submenu-text">Set Exam</span>
+                </a>
+              </li>
+
+              <li>
+                <a routerLink="/Admin/ViewExams">
+                  <mat-icon>trending_up</mat-icon>
+                  <span class="submenu-text">View Exams</span>
+                </a>
+              </li>
+
+              <li>
+                <a routerLink="/Admin/ExamAttendece">
+                  <mat-icon>trending_up</mat-icon>
+                  <span class="submenu-text">Exam Attendece</span>
+                </a>
+              </li>
+               <li>
+                <a routerLink="/Admin/ExamMarks">
+                  <mat-icon>trending_up</mat-icon>
+                  <span class="submenu-text">Exam Marks</span>
+                </a>
+              </li>
+               <li>
+                <a routerLink="/Admin/ExamResults">
+                  <mat-icon>trending_up</mat-icon>
+                  <span class="submenu-text">Exam Results</span>
+                </a>
+              </li>
+            </ul>
+          </li>
         </ul>
       </div>
     </div>
