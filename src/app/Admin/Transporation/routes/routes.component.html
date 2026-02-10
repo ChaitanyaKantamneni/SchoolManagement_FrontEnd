@@ -115,7 +115,47 @@
         <form [formGroup]="SyllabusForm">
           <div class="FormInputRowsContainer">
             <div class="InputRow">
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">School <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="School" placeholder="Select Start Date" (change)="onAdminSchoolChange($event)" >
+                    <option value="0">-- Select School --</option>
+                    <option *ngFor="let school of schoolList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="SyllabusForm.get('School')?.hasError('min') && (SyllabusForm.get('School')?.touched || SyllabusForm.get('School')?.dirty)" class="text-danger">
+                      <small>Please Select School.</small>
+                  </div>
+                </div>
+              </div> 
               <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="AcademicYear" placeholder="Select Start Date" >
+                    <option value="0">-- Select Academic Year --</option>
+                    <option *ngFor="let school of academicYearList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="SyllabusForm.get('AcademicYear')?.hasError('min') && (SyllabusForm.get('AcademicYear')?.touched || SyllabusForm.get('AcademicYear')?.dirty)" class="text-danger">
+                      <small>Please Select Academic Year.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <label class="inputLabel" for="email">Name <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Name" (keydown)="allowAlphaAndSpecial($event)" />
+                  <div *ngIf="(SyllabusForm.get('Name' ) ?. touched && SyllabusForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(SyllabusForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                    <div *ngIf="(SyllabusForm.get('Name' ) ?. errors ?. ['pattern' ]) ">
+                      <small>Only Alphabets and Special Characters.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="InputRow">
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <label class="inputLabel" for="email">Name <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" formControlName="Name" placeholder="Enter Name" (keydown)="allowAlphaAndSpecial($event)" />
@@ -142,10 +182,28 @@
                     </div>
                   </div>
                 </div>
-              </div>             
+              </div>   
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <div class="toggle-container" (click)="$event.stopPropagation()">
+                  <label class="switch">
+                    <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
+                    <span class="slider">
+                      <span
+                        class="toggle-text"
+                        [ngStyle]="{
+                          left: IsActiveStatus ? '42%' : '60%',
+                          fontSize: IsActiveStatus ? '9px' : '9px'
+                        }"
+                      >
+                        {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </div>          
             </div>
             <div class="InputRow">
-              <div class="InputFieldsContainer">
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <div class="toggle-container" (click)="$event.stopPropagation()">
                   <label class="switch">
                     <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
@@ -202,19 +260,29 @@
         </button>
       </div>
       <div class="modal-body">
-        <div class="row mb-2">
-          <div class="col-4">Name</div>
-          <div class="col-8">{{ viewSyllabus?.Name }}</div>
+        <div class="row mb-2" *ngIf="viewSyllabus?.Name">
+          <div class="col-5">Name</div>
+          <div class="col-7 viewfontsize">{{ viewSyllabus?.Name }}</div>
         </div>
 
-        <div class="row mb-2">
-          <div class="col-4">Distance</div>
-          <div class="col-8">{{ viewSyllabus?.Distance }}</div>
+        <div class="row mb-2" *ngIf="viewSyllabus?.Distance">
+          <div class="col-5">Distance</div>
+          <div class="col-7 viewfontsize">{{ viewSyllabus?.Distance }}</div>
         </div>
 
-        <div class="row mb-2">
-          <div class="col-4">Status</div>
-          <div class="col-8">
+        <div class="row mb-2" *ngIf="viewSyllabus?.SchoolName">
+          <div class="col-5">School Name</div>
+          <div class="col-7 viewfontsize">{{ viewSyllabus?.SchoolName }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.AcademicYearName">
+          <div class="col-5">Academic Year</div>
+          <div class="col-7 viewfontsize">{{ viewSyllabus?.AcademicYearName }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.IsActive !== null">
+          <div class="col-5">Status</div>
+          <div class="col-7">
             <span class="badge"
                   [ngClass]="viewSyllabus?.IsActive ? 'badge-success' : 'badge-danger'">
               {{ viewSyllabus?.IsActive ? 'Active' : 'Inactive' }}
