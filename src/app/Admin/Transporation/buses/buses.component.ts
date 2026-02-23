@@ -76,6 +76,7 @@ export class BusesComponent extends BasePermissionComponent {
 
   SyllabusForm: any = new FormGroup({
     ID: new FormControl(),
+    SchoolID: new FormControl(),
     Name: new FormControl('', Validators.required),
     RegNo:new FormControl('', Validators.required),
     Driver: new FormControl('', Validators.required),
