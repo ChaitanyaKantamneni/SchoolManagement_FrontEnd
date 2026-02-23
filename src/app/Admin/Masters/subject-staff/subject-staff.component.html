@@ -134,7 +134,7 @@
                 <div class="input-with-error">
                   <select class="inputField" type="date" formControlName="Name" placeholder="Select Class">
                     <option value="0" disabled>Select Staff</option>
-                    <option *ngFor="let Syllabus of (StaffListNotAssigned && StaffListNotAssigned.length > 0 ? StaffListNotAssigned : StaffList)" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option>
+                    <option *ngFor="let Syllabus of (IsAddNewClicked ? StaffListNotAssigned : StaffList)" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option>
                   </select>
                   <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
                   <div *ngIf="ModuleForm.get('Name')?.hasError('min') && (ModuleForm.get('Name')?.touched || ModuleForm.get('Name')?.dirty)" class="text-danger">
