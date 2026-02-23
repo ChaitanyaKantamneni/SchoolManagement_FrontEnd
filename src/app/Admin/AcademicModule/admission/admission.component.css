@@ -11,7 +11,7 @@
     align-items: start !important;
 }
 
-.modal .ActionButtons{
+.viewmodel .ActionButtons{
   display: flex;
   justify-content: center;
   align-items: center;
@@ -19,7 +19,7 @@
   gap: 5px;
 }
 
-.modal .ActionButtons .btn{
+.viewmodel .ActionButtons .btn{
   background-color: #536ff7;
   color: #fff;
   border: none;
@@ -29,8 +29,23 @@
   transition: background-color 0.3s ease;
 }
 
-.modal-dialog {
+.viewmodel .modal-dialog {
     position: relative;
-    margin: 10% auto;
+    margin: 4% auto;
     max-width: 750px;
+}
+
+.viewHeadingfontsize{
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.viewfontsize{
+    font-size: 11px;
+}
+
+.ActionButtons .btn.active-tab {
+  background-color: #17275cf5 !important;
+  color: #fff !important;
+  border-color: #17275cf5 !important;
 }
