@@ -113,17 +113,17 @@
     <div class="AddForm">
       <div class="AddFormTop">
         <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
-        <p>Add Subject</p>
+        <p>Student Registration</p>
       </div>
       <div class="AddFormConatiner">
         <div class="ActionButtons" *ngIf="ViewModuleClicked">
-          <button class="btn" (click)="tabChange('personal')">Personal Details</button>
-          <button class="btn" (click)="tabChange('parents')">Parents Details</button>
-          <button class="btn" (click)="tabChange('permanent')">Permanent Address</button>
-          <button class="btn" (click)="tabChange('temporary')">Temporary Address</button>
+          <button class="btn" [ngClass]="{'active-tab': activeTab === 'personal'}" (click)="tabChange('personal')">Personal Details</button>
+          <button class="btn" [ngClass]="{'active-tab': activeTab === 'parents'}" (click)="tabChange('parents')">Parents Details</button>
+          <button class="btn" [ngClass]="{'active-tab': activeTab === 'permanent'}" (click)="tabChange('permanent')">Permanent Address</button>
+          <button class="btn" [ngClass]="{'active-tab': activeTab === 'temporary'}" (click)="tabChange('temporary')">Temporary Address</button>
           <!-- <button class="btn" (click)="tabChange('Academic')">Temporary Address</button> -->
           <!-- <button class="btn" (click)="tabChange('login')">Login Details</button> -->
-          <button class="btn" (click)="tabChange('bus')">Allot Bus</button>
+          <button class="btn" [ngClass]="{'active-tab': activeTab === 'bus'}" (click)="tabChange('bus')">Allot Bus</button>
         </div>
         <form [formGroup]="ModuleForm">
           <div class="FormInputRowsContainer" *ngIf="activeTab === 'personal'">
@@ -921,7 +921,7 @@
     </div>
   </div>
 </div>
-<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
+<div class="modal viewmodel" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -932,52 +932,351 @@
       </div>
       <div class="modal-body">
         <div class="ActionButtons" *ngIf="isViewModalOpen">
-          <button class="btn" (click)="tabChange('personal')">Personal Details</button>
-          <button class="btn" (click)="tabChange('parents')">Parents Details</button>
-          <button class="btn" (click)="tabChange('permanent')">Permanent Address</button>
-          <button class="btn" (click)="tabChange('temporary')">Temporary Address</button>
+          <button class="btn" [ngClass]="{'active-tab': activeTab === 'personal'}" (click)="tabChange('personal')">Personal Details</button>
+          <button class="btn" [ngClass]="{'active-tab': activeTab === 'parents'}" (click)="tabChange('parents')">Parents Details</button>
+          <button class="btn" [ngClass]="{'active-tab': activeTab === 'permanent'}" (click)="tabChange('permanent')">Permanent Address</button>
+          <button class="btn" [ngClass]="{'active-tab': activeTab === 'temporary'}" (click)="tabChange('temporary')">Temporary Address</button>
           <!-- <button class="btn" (click)="tabChange('Academic')">Temporary Address</button> -->
           <!-- <button class="btn" (click)="tabChange('login')">Login Details</button> -->
-          <button class="btn" (click)="tabChange('bus')">Allot Bus</button>
+          <button class="btn" [ngClass]="{'active-tab': activeTab === 'bus'}" (click)="tabChange('bus')">Allot Bus</button>
         </div>
 
-        <div class="row mb-2" *ngIf="viewSyllabus?.Name">
-          <div class="col-4">Subject</div>
-          <div class="col-8 viewfontsize">{{ viewSyllabus?.Name }}</div>
+        <div *ngIf="activeTab === 'personal'" class="container-fluid">
+          <div class="row g-2">
+
+            <ng-container *ngIf="viewSyllabus?.SchoolName">
+              <div class="col-md-3 viewHeadingfontsize">School Name</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.SchoolName }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.AcademicYearName">
+              <div class="col-md-3 viewHeadingfontsize">Academic Year</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.AcademicYearName }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.AdmissionNo">
+              <div class="col-md-3 viewHeadingfontsize">Admission No</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.AdmissionNo }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.ClassName">
+              <div class="col-md-3 viewHeadingfontsize">Class</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.ClassName }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.ClassDivisionName">
+              <div class="col-md-3 viewHeadingfontsize">Division</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.ClassDivisionName }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.JoinDate">
+              <div class="col-md-3 viewHeadingfontsize">Join Date</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.JoinDate }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.Name">
+              <div class="col-md-3 viewHeadingfontsize">Name</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.Name }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.AadharNo">
+              <div class="col-md-3 viewHeadingfontsize">Aadhar No</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.AadharNo }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.MobileNo">
+              <div class="col-md-3 viewHeadingfontsize">Mobile No</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.MobileNo }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.Email">
+              <div class="col-md-3 viewHeadingfontsize">Email</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.Email }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.DOB">
+              <div class="col-md-3 viewHeadingfontsize">Date Of Birth</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.DOB }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.Gender">
+              <div class="col-md-3 viewHeadingfontsize">Gender</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.Gender }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.BloodGroup">
+              <div class="col-md-3 viewHeadingfontsize">Blood Group</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.BloodGroup }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.Nationality">
+              <div class="col-md-3 viewHeadingfontsize">Nationality</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.Nationality }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.Religion">
+              <div class="col-md-3 viewHeadingfontsize">Religion</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.Religion }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.Caste">
+              <div class="col-md-3 viewHeadingfontsize">Caste</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.Caste }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.IsActive !== null">
+              <div class="col-md-3 viewHeadingfontsize">Status</div>
+              <div class="col-md-3">
+                <span class="badge"
+                      [ngClass]="viewSyllabus?.IsActive ? 'badge-success' : 'badge-danger'">
+                  {{ viewSyllabus?.IsActive ? 'Active' : 'Inactive' }}
+                </span>
+              </div>
+            </ng-container>
+
+          </div>
         </div>
 
-        <div class="row mb-2" *ngIf="viewSyllabus?.ClassName">
-          <div class="col-4">Class</div>
-          <div class="col-8 viewfontsize">{{ viewSyllabus?.ClassName }}</div>
+        <div *ngIf="activeTab === 'parents'" class="container-fluid">
+          <div class="row g-2">
+
+            <!-- Father Name -->
+            <ng-container *ngIf="viewSyllabus?.FatherName">
+              <div class="col-md-3 viewHeadingfontsize">Father Name</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.FatherName }}</div>
+            </ng-container>
+
+            <!-- Father Qualification -->
+            <ng-container *ngIf="viewSyllabus?.FatherQualification">
+              <div class="col-md-3 viewHeadingfontsize">Father Qualification</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.FatherQualification }}</div>
+            </ng-container>
+
+            <!-- Father Occupation -->
+            <ng-container *ngIf="viewSyllabus?.FatherOccupation">
+              <div class="col-md-3 viewHeadingfontsize">Father Occupation</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.FatherOccupation }}</div>
+            </ng-container>
+
+            <!-- Father Mobile -->
+            <ng-container *ngIf="viewSyllabus?.FatherMobile">
+              <div class="col-md-3 viewHeadingfontsize">Father Mobile No</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.FatherMobile }}</div>
+            </ng-container>
+
+            <!-- Father Email -->
+            <ng-container *ngIf="viewSyllabus?.FatherEmail">
+              <div class="col-md-3 viewHeadingfontsize">Father Email</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.FatherEmail }}</div>
+            </ng-container>
+
+            <!-- Father Aadhar -->
+            <ng-container *ngIf="viewSyllabus?.FatherAadharNo">
+              <div class="col-md-3 viewHeadingfontsize">Father Aadhar No</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.FatherAadharNo }}</div>
+            </ng-container>
+
+            <!-- Mother Name -->
+            <ng-container *ngIf="viewSyllabus?.MotherName">
+              <div class="col-md-3 viewHeadingfontsize">Mother Name</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.MotherName }}</div>
+            </ng-container>
+
+            <!-- Mother Qualification -->
+            <ng-container *ngIf="viewSyllabus?.MotherQualification">
+              <div class="col-md-3 viewHeadingfontsize">Mother Qualification</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.MotherQualification }}</div>
+            </ng-container>
+
+            <!-- Mother Occupation -->
+            <ng-container *ngIf="viewSyllabus?.MotherOccupation">
+              <div class="col-md-3 viewHeadingfontsize">Mother Occupation</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.MotherOccupation }}</div>
+            </ng-container>
+
+            <!-- Mother Mobile -->
+            <ng-container *ngIf="viewSyllabus?.MotherMobile">
+              <div class="col-md-3 viewHeadingfontsize">Mother Mobile No</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.MotherMobile }}</div>
+            </ng-container>
+
+            <!-- Mother Email -->
+            <ng-container *ngIf="viewSyllabus?.MotherEmail">
+              <div class="col-md-3 viewHeadingfontsize">Mother Email</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.MotherEmail }}</div>
+            </ng-container>
+
+            <!-- Mother Aadhar -->
+            <ng-container *ngIf="viewSyllabus?.MotherAadharNo">
+              <div class="col-md-3 viewHeadingfontsize">Mother Aadhar No</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.MotherAadharNo }}</div>
+            </ng-container>
+
+          </div>
         </div>
 
-        <div class="row mb-2" *ngIf="viewSyllabus?.SchoolName">
-          <div class="col-4">School Name</div>
-          <div class="col-8 viewfontsize">{{ viewSyllabus?.SchoolName }}</div>
+        <div *ngIf="activeTab === 'permanent'" class="container-fluid">
+          <div class="row g-2">
+
+            <ng-container *ngIf="viewSyllabus?.PermanentAddressLine1">
+              <div class="col-md-3 viewHeadingfontsize">Address Line 1</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.PermanentAddressLine1 }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.PermanentAddressLine2">
+              <div class="col-md-3 viewHeadingfontsize">Address Line 2</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.PermanentAddressLine2 }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.PermanentPincode">
+              <div class="col-md-3 viewHeadingfontsize">Pincode</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.PermanentPincode }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.PermanentPlace">
+              <div class="col-md-3 viewHeadingfontsize">Place</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.PermanentPlace }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.PermanentCountry">
+              <div class="col-md-3 viewHeadingfontsize">Country</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.PermanentCountry }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.PermanentState">
+              <div class="col-md-3 viewHeadingfontsize">State</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.PermanentState }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.PermanentDistrict">
+              <div class="col-md-3 viewHeadingfontsize">District</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.PermanentDistrict }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.PermanentCity">
+              <div class="col-md-3 viewHeadingfontsize">City</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.PermanentCity }}
+              </div>
+            </ng-container>
+
+          </div>
         </div>
 
-        <div class="row mb-2" *ngIf="viewSyllabus?.AcademicYearName">
-          <div class="col-4">Academic Year</div>
-          <div class="col-8 viewfontsize">{{ viewSyllabus?.AcademicYearName }}</div>
+        <div *ngIf="activeTab === 'temporary'" class="container-fluid">
+          <div class="row g-2">
+
+            <ng-container *ngIf="viewSyllabus?.TemporaryAddressLine1">
+              <div class="col-md-3 viewHeadingfontsize">Address Line 1</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.TemporaryAddressLine1 }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.TemporaryAddressLine2">
+              <div class="col-md-3 viewHeadingfontsize">Address Line 2</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.TemporaryAddressLine2 }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.TemporaryPincode">
+              <div class="col-md-3 viewHeadingfontsize">Pincode</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.TemporaryPincode }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.TemporaryPlace">
+              <div class="col-md-3 viewHeadingfontsize">Place</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.TemporaryPlace }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.TemporaryCountry">
+              <div class="col-md-3 viewHeadingfontsize">Country</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.TemporaryCountry }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.TemporaryState">
+              <div class="col-md-3 viewHeadingfontsize">State</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.TemporaryState }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.TemporaryDistrict">
+              <div class="col-md-3 viewHeadingfontsize">District</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.TemporaryDistrict }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.TemporaryCity">
+              <div class="col-md-3 viewHeadingfontsize">City</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.TemporaryCity }}
+              </div>
+            </ng-container>
+
+          </div>
         </div>
 
-        <div class="row mb-2" *ngIf="viewSyllabus?.Description && viewSyllabus.Description.trim() !== ''">
-          <div class="col-4">Description</div>
-          <div class="col-8 viewfontsize">{{ viewSyllabus?.Description }}</div>
-        </div>
+        <div *ngIf="activeTab === 'bus'" class="container-fluid">
+          <div class="row g-2">
 
-        <div class="row mb-2" *ngIf="viewSyllabus?.Topics && viewSyllabus.Topics.trim() !== ''">
-          <div class="col-4">Topics</div>
-          <div class="col-8 viewfontsize">{{ viewSyllabus?.Topics }}</div>
-        </div>
+            <ng-container *ngIf="viewSyllabus?.RouteName">
+              <div class="col-md-3 viewHeadingfontsize">Route</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.RouteName }}
+              </div>
+            </ng-container>
 
-        <div class="row mb-2" *ngIf="viewSyllabus?.IsActive !== null">
-          <div class="col-4">Status</div>
-          <div class="col-8">
-            <span class="badge"
-                  [ngClass]="viewSyllabus?.IsActive ? 'badge-success' : 'badge-danger'">
-              {{ viewSyllabus?.IsActive ? 'Active' : 'Inactive' }}
-            </span>
+            <ng-container *ngIf="viewSyllabus?.StopName">
+              <div class="col-md-3 viewHeadingfontsize">Stop</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.StopName }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.BusName">
+              <div class="col-md-3 viewHeadingfontsize">Bus</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.BusName }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.FareName">
+              <div class="col-md-3 viewHeadingfontsize">Fare</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.FareName }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.StartDate">
+              <div class="col-md-3 viewHeadingfontsize">Start Date</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.StartDate }}
+              </div>
+            </ng-container>
+
           </div>
         </div>
       </div>

@@ -75,7 +75,7 @@ export class AdmissionComponent extends BasePermissionComponent {
 
   currentMode: 'view' | 'edit' = 'edit';
 
-  sortColumn: string = 'Name'; 
+  sortColumn: string = 'AdmissionNo'; 
   sortDirection: 'asc' | 'desc' = 'desc';
   editclicked:boolean=false;
   schoolList: any[] = [];
@@ -145,6 +145,44 @@ export class AdmissionComponent extends BasePermissionComponent {
   categories:any[] = [];
   selectedCategories: string[] = [];
   dropdownOpen: boolean = false;
+
+  bloodGroups = [
+    { id: '1', name: 'A+' },
+    { id: '2', name: 'A-' },
+    { id: '3', name: 'B+' },
+    { id: '4', name: 'B-' },
+    { id: '5', name: 'O+' },
+    { id: '6', name: 'O-' },
+    { id: '7', name: 'AB+' },
+    { id: '8', name: 'AB-' }
+  ];
+
+  GenderGroups = [
+    { id: '1', name: 'Male' },
+    { id: '2', name: 'Female' },
+    { id: '3', name: 'Others' }
+  ];
+
+  NationalityGroups = [
+    { id: '1', name: 'Indian' }
+  ];
+
+  ReligionsGroups = [
+    { id: '1', name: 'Hindu' },
+    { id: '2', name: 'Muslim' },
+    { id: '3', name: 'Christian' }
+  ];
+
+  CountryGroups = [
+    { id: '1', name: 'India' }
+  ];
+
+  StateGroups = [
+    { id: '1', name: 'Andhara Pradesh' },
+    { id: '2', name: 'Telangana' },
+    { id: '3', name: 'Tamil Nadu' },
+    { id: '4', name: 'Karnataka' }
+  ];
 
   noFutureDateValidator(control: any) {
     if (!control.value) return null;
@@ -265,7 +303,7 @@ export class AdmissionComponent extends BasePermissionComponent {
     return this.apiurl.post<any>('Tbl_StudentDetails_CRUD_Operations', {
       Flag: isSearch ? '8' : '6',
       SchoolID:SchoolIdSelected,
-      Name: isSearch ? this.searchQuery.trim() : null
+      AdmissionNo: isSearch ? this.searchQuery.trim() : null
     });
   }
 
@@ -301,7 +339,7 @@ export class AdmissionComponent extends BasePermissionComponent {
           ...extra
         };
 
-        if (isSearch) payload.Name = this.searchQuery.trim();
+        if (isSearch) payload.AdmissionNo = this.searchQuery.trim();
 
         this.apiurl.post<any>('Tbl_StudentDetails_CRUD_Operations', payload).subscribe({
           next: (response: any) => {
@@ -504,7 +542,7 @@ export class AdmissionComponent extends BasePermissionComponent {
               const isActiveString = item.isActive === "1" ? "Active" : "InActive";
               return {
                 ID: item.id,
-                Name: item.name
+                Name: item.stopName
               };
             });
           } else {
@@ -521,7 +559,7 @@ export class AdmissionComponent extends BasePermissionComponent {
     const requestData = { 
       SchoolID:this.AdminselectedSchoolID,
       AcademicYear:this.AdminselectedAcademivYearID,
-      Route:this.ModuleForm.get('Route')?.value,
+      RouteID:this.ModuleForm.get('Route')?.value,
       StopID:this.ModuleForm.get('Stop')?.value,
       Flag: '9' };
 
@@ -550,7 +588,7 @@ export class AdmissionComponent extends BasePermissionComponent {
     const requestData = { 
       SchoolID:this.AdminselectedSchoolID,
       AcademicYear:this.AdminselectedAcademivYearID,
-      Route:this.ModuleForm.get('Route')?.value,
+      RouteID:this.ModuleForm.get('Route')?.value,
       StopID:this.ModuleForm.get('Stop')?.value,
       BusID:this.ModuleForm.get('Bus')?.value,
       Flag: '10' };
@@ -1019,18 +1057,20 @@ export class AdmissionComponent extends BasePermissionComponent {
             FirstName: item.firstName,
             MiddleName: item.middleName,
             LastName: item.lastName,
+            Name: `${item.firstName ?? ''} ${item.middleName ?? ''} ${item.lastName ?? ''}`.replace(/\s+/g, ' ').trim(),
             AadharNo:item.aadharNo,
             MobileNo: item.mobileNo,
             Email: item.emailID,
             DOB: this.formatDateYYYYMMDD(item.dob),
-            Gender:item.gender,
-            BloodGroup: item.bloodGroup,
-            Nationality: item.nationality,
-            Religion: item.religion,
+            Gender: this.GenderGroups.find(x => x.id === item.gender)?.name || '',
+            BloodGroup: this.bloodGroups.find(x => x.id === item.bloodGroup)?.name || '',
+            Nationality: this.NationalityGroups.find(x => x.id === item.nationality)?.name || '',
+            Religion: this.ReligionsGroups.find(x => x.id === item.religion)?.name || '',
             Caste: item.caste,
             ClassName: item.className,
             SchoolName:item.schoolName,
             AcademicYearName:item.academicYearName,
+            ClassDivisionName:item.classDivisionName,
             IsActive: isActive
           };
           this.isViewModalOpen = true;
@@ -1159,8 +1199,8 @@ export class AdmissionComponent extends BasePermissionComponent {
             PermanentAddressLine2: item.permanentAddressLine2,
             PermanentPincode: item.permanentPinCode,
             PermanentPlace: item.permanentPlace,
-            PermanentCountry:item.permanentCountry,
-            PermanentState: item.permanentState,
+            PermanentCountry: this.CountryGroups.find(x => x.id === item.permanentCountry)?.name || '',
+            PermanentState: this.StateGroups.find(x => x.id === item.permanentState)?.name || '',
             PermanentDistrict: item.permanentDistrict,
             PermanentCity: item.permanentCity
           };         
@@ -1210,8 +1250,8 @@ export class AdmissionComponent extends BasePermissionComponent {
             TemporaryAddressLine2: item.temporaryAddressLine2,
             TemporaryPincode: item.temporaryPinCode,
             TemporaryPlace: item.temporaryPlace,
-            TemporaryCountry:item.temporaryCountry,
-            TemporaryState: item.temporaryState,
+            TemporaryCountry: this.CountryGroups.find(x => x.id === item.temporaryCountry)?.name || '',
+            TemporaryState: this.StateGroups.find(x => x.id === item.temporaryState)?.name || '',
             TemporaryDistrict: item.temporaryDistrict,
             TemporaryCity: item.temporaryCity
           };         
@@ -1264,18 +1304,22 @@ export class AdmissionComponent extends BasePermissionComponent {
             Bus: item.bus,
             Fare: item.fare,
             StartDate:this.formatDateYYYYMMDD(item.startDate),
-            IsActive: isActive
+            IsActive: isActive,
+            RouteName:item.routeName,
+            StopName:item.stopName,
+            BusName:item.busName,
+            FareName:item.fareName
           };         
         }
 
         if (mode === 'edit') {
           this.isViewMode = false;
           this.ModuleForm.patchValue({
-            Route:item.temporaryAddressLine1,
-            Stop: item.temporaryAddressLine2,
-            Bus: item.temporaryPinCode,
-            Fare: item.temporaryPlace,
-            StartDate:item.temporaryCountry
+            Route:item.route,
+            Stop: item.stop,
+            Bus: item.bus,
+            Fare: item.fare,
+            StartDate:this.formatDateYYYYMMDD(item.startDate)
           });
           this.AdminselectedSchoolID=item.schoolID;
           this.AdminselectedAcademivYearID=item.academicYear;
@@ -1678,6 +1722,7 @@ export class AdmissionComponent extends BasePermissionComponent {
   // };
 
   editreview(SyllabusID: string): void {
+    this.activeTab="personal";
     this.currentMode = 'edit';
     this.selectedAdmissionID = SyllabusID;
 
@@ -1883,7 +1928,7 @@ export class AdmissionComponent extends BasePermissionComponent {
   // }
 
   tabChange(tab: string) {
-    this.activeTab = tab;
+    this.activeTab = tab;    
     this.cd.detectChanges();
 
     const mode = this.currentMode;
