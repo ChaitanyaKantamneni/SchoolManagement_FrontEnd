@@ -388,79 +388,79 @@
       </div>
       <div class="modal-body">
         <div class="row mb-2" *ngIf="viewSyllabus?.Name">
-          <div class="col-5">Name</div>
-          <div class="col-7 viewfontsize">{{ viewSyllabus?.Name }}</div>
+          <div class="col-6 viewHeadingfontsize">Name</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.Name }}</div>
         </div>
 
         <div class="row mb-2" *ngIf="viewSyllabus?.RegNo">
-          <div class="col-5">Registration No</div>
-          <div class="col-7 viewfontsize">{{ viewSyllabus?.RegNo }}</div>
+          <div class="col-6 viewHeadingfontsize">Registration No</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.RegNo }}</div>
         </div>
 
          <div class="row mb-2" *ngIf="viewSyllabus?.Driver">
-          <div class="col-5"> Driver</div>
-          <div class="col-7 viewfontsize">{{ viewSyllabus?.Driver }}</div>
+          <div class="col-6 viewHeadingfontsize"> Driver</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.Driver }}</div>
         </div>
 
          <div class="row mb-2" *ngIf="viewSyllabus?.AssistantName">
-          <div class="col-5">Assistant Name </div>
-          <div class="col-7 viewfontsize">{{ viewSyllabus?.AssistantName }}</div>
+          <div class="col-6 viewHeadingfontsize">Assistant Name </div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.AssistantName }}</div>
         </div>
 
          <div class="row mb-2" *ngIf="viewSyllabus?.AssistantMobNo">
-          <div class="col-5">Assistant Mob No</div>
-          <div class="col-7 viewfontsize">{{ viewSyllabus?.AssistantMobNo }}</div>
+          <div class="col-6 viewHeadingfontsize">Assistant Mob No</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.AssistantMobNo }}</div>
         </div>
 
         <div class="row mb-2" *ngIf="viewSyllabus?.MorningStartTime">
-          <div class="col-5">Morning Time</div>
-          <div class="col-7 viewfontsize">{{ viewSyllabus?.MorningStartTime }}</div>
+          <div class="col-6 viewHeadingfontsize">Morning Time</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.MorningStartTime }}</div>
         </div>
 
         <div class="row mb-2" *ngIf="viewSyllabus?.EveningStartTime">
-          <div class="col-5">Evening Time</div>
-          <div class="col-7 viewfontsize">{{ viewSyllabus?.EveningStartTime }}</div>
+          <div class="col-6 viewHeadingfontsize">Evening Time</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.EveningStartTime }}</div>
         </div>
 
         <div>
           <div class="row mb-2" *ngIf="viewSyllabus?.DistanceCostPerKM">
-          <div class="col-5">Distance Cost/KM</div>
-          <div class="col-7 viewfontsize">{{ viewSyllabus?.DistanceCostPerKM }}</div>
+          <div class="col-6 viewHeadingfontsize">Distance Cost/KM</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.DistanceCostPerKM }}</div>
         </div>
         
         <div>
           <div class="row mb-2" *ngIf="viewSyllabus?.MaxCapacity">
-          <div class="col-5">Max Capacity</div>
-          <div class="col-7 viewfontsize">{{ viewSyllabus?.MaxCapacity }}</div>
+          <div class="col-6 viewHeadingfontsize">Max Capacity</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.MaxCapacity }}</div>
         </div>
 
         <div>
           <div class="row mb-2" *ngIf="viewSyllabus?.SchoolName">
-          <div class="col-5">School Name</div>
-          <div class="col-7 viewfontsize">{{ viewSyllabus?.SchoolName }}</div>
+          <div class="col-6 viewHeadingfontsize">School Name</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.SchoolName }}</div>
         </div>
 
         <div>
           <div class="row mb-2" *ngIf="viewSyllabus?.AcademicYearName">
-          <div class="col-5">Academic Year</div>
-          <div class="col-7 viewfontsize">{{ viewSyllabus?.AcademicYearName }}</div>
+          <div class="col-6 viewHeadingfontsize">Academic Year</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.AcademicYearName }}</div>
         </div>
 
         <div>
           <div class="row mb-2" *ngIf="viewSyllabus?.OtherDetails">
-          <div class="col-5">Other Details</div>
-          <div class="col-7 viewfontsize">{{ viewSyllabus?.OtherDetails }}</div>
+          <div class="col-6 viewHeadingfontsize">Other Details</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.OtherDetails }}</div>
         </div>
 
         <div>
           <div class="row mb-2" *ngIf="viewSyllabus?.Description">
-          <div class="col-5">Description</div>
-          <div class="col-7 viewfontsize">{{ viewSyllabus?.Description }}</div>
+          <div class="col-6 viewHeadingfontsize">Description</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.Description }}</div>
         </div>
 
         <div class="row mb-2" *ngIf="viewSyllabus?.IsActive !== null">
-          <div class="col-5">Status</div>
-          <div class="col-7">
+          <div class="col-6 viewHeadingfontsize">Status</div>
+          <div class="col-6">
             <span class="badge"
                   [ngClass]="viewSyllabus?.IsActive ? 'badge-success' : 'badge-danger'">
               {{ viewSyllabus?.IsActive ? 'Active' : 'Inactive' }}

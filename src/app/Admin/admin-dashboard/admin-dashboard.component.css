@@ -25,6 +25,7 @@ a{
 
 .totalcard{
   background-color: #F4F6F9;
+  overflow: hidden;
 }
 
 .sidenavbar.collapsed {

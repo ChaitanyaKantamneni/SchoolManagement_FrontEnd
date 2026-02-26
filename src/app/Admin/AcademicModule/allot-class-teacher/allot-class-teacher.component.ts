@@ -21,7 +21,7 @@ import { HttpClient } from '@angular/common/http';
   styleUrls: ['./allot-class-teacher.component.css']
 })
 export class AllotClassTeacherComponent extends BasePermissionComponent {
-  pageName = 'Division';
+  pageName = 'Allot Class Teacher';
 
   constructor(
     private http: HttpClient,

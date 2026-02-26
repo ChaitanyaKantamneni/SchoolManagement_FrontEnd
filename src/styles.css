@@ -135,6 +135,12 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 
 /* global css */
+.DashboardTopNav{
+  position: fixed;
+  width: 81%;
+  top: 0px;
+}
+
 .MainContentDiv{
   display: flex;
   justify-content: space-between;
@@ -738,6 +744,11 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 .modal-title{
   font-size: 16px;
+}
+
+.viewHeadingfontsize{
+    font-size: 13px;
+    font-weight: 500;
 }
 
 .viewfontsize{
