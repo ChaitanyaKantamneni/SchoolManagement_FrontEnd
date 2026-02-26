@@ -45,26 +45,25 @@
                 <th class="visually-hidden">Academic Year ID</th>
                 <th>SI.No</th>
                 <th>Name</th>
-                <th (click)="sort('Name')" class="sortable-column">
+                <th (click)="sort('ExamTypeName')" class="sortable-column">
                   <span class="column-text">Priority</span>
                   <span class="arrows">
                     <mat-icon 
-                      [style.color]="sortColumn === 'Name' && sortDirection === 'asc' ? 'red' : 'inherit'">
+                      [style.color]="sortColumn === 'ExamTypeName' && sortDirection === 'asc' ? 'red' : 'inherit'">
                       keyboard_arrow_up
                     </mat-icon>
                     <mat-icon 
-                      [style.color]="sortColumn === 'Name' && sortDirection === 'desc' ? 'red' : 'inherit'">
+                      [style.color]="sortColumn === 'ExamTypeName' && sortDirection === 'desc' ? 'red' : 'inherit'">
                       keyboard_arrow_down
                     </mat-icon>
                   </span>
                 </th>
-                <!-- <th *ngIf="isAdmin">School Name</th> -->
-                 <th>Exam Type Order</th>
+                <th *ngIf="isAdmin">School Name</th>
+                <th *ngIf="isAdmin">Academic Year</th>
+                 <th>Exam Type</th>
                 <th>Max Marks</th>
                 <th>Pass Marks</th>               
                 <th>Exam Duration</th>               
-                <th>No Of Questions</th>               
-                <th>Instructions</th>             
                 <th>Status</th>               
                 <th>Actions</th>
               </tr>
@@ -73,15 +72,14 @@
               <tr *ngFor="let Syllabus of SyllabusList,let i = index">
                 <td data-label="ID" class="visually-hidden">{{ Syllabus.ID }}</td>
                 <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-                <td data-label="ExamTypeName">{{ Syllabus.ExamTypeName }}</td>
-                <td data-label="Priority">{{ Syllabus.Priority }}</td>
-                <!-- <td data-label="ExamType" *ngIf="isAdmin">{{ Syllabus.SchoolName }}</td> -->
                 <td data-label="ExamType">{{ Syllabus.ExamType }}</td>
+                <td data-label="Priority">{{ Syllabus.Priority }}</td>
+                <td data-label="ExamType" *ngIf="isAdmin">{{ Syllabus.SchoolName }}</td>
+                <td data-label="AcademicYearName" *ngIf="isAdmin">{{ Syllabus.AcademicYearName }}</td>
+                <td data-label="ExamTypeName">{{ Syllabus.ExamTypeName }}</td>
                 <td data-label="MaxMark">{{ Syllabus.MaxMark }}</td>
                 <td data-label="PassMarks">{{ Syllabus.PassMarks }}</td>
                 <td data-label="ExamDuration">{{ Syllabus.ExamDuration }}</td>
-                <td data-label="NoofQuestion">{{ Syllabus.NoofQuestion }}</td>
-                <td data-label="Instructions">{{ Syllabus.Instructions }}</td>
                 <td data-label="Status">{{ Syllabus.IsActive }}</td>
                 <td data-label="Actions">
                   <div class="d-flex justify-content-center align-items-center h-100">
@@ -143,10 +141,23 @@
                   </div>
                 </div>
               </div>      -->
+               <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">School <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="School" placeholder="Select Start Date" (change)="onAdminSchoolChange($event)" >
+                    <option value="0">-- Select School --</option>
+                    <option *ngFor="let school of schoolList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="SyllabusForm.get('School')?.hasError('min') && (SyllabusForm.get('School')?.touched || SyllabusForm.get('School')?.dirty)" class="text-danger">
+                      <small>Please Select School.</small>
+                  </div>
+                </div>
+              </div> 
+               
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Exam Type <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="ExamType" placeholder="Enter Exam Type" />
+                  <input class="inputField" formControlName="ExamType" placeholder="Enter Exam Name" />
                   <div *ngIf="(SyllabusForm.get('ExamType')?.touched && SyllabusForm.get('ExamType')?.invalid)" class="text-danger">
                     <div *ngIf="(SyllabusForm.get('ExamType')?.errors?.['required'])">
                       <small>Please Enter Exam Type.</small>
@@ -158,8 +169,8 @@
                   <label class="inputLabel">Exam Type <span class="required">*</span></label>
 
                   <div class="input-with-error">
-                    <select class="inputField" formControlName="ExamTypeName">
-                      <option value="" disabled hidden>Select ExamType</option>
+                    <select class="inputField" formControlName="ExamTypeName" placeholder="Select Exam">
+                      <option value=""  >--Select ExamType--</option>
                       <option value="Quarterly">Quarterly</option>
                       <option value="HalfYearly">HalfYearly</option>
                       <option value="Prefinal">Prefinal</option>
@@ -203,6 +214,18 @@
               </div>     
             </div>
             <div class="InputRow">
+               <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="AcademicYear" placeholder="Select Start Date" >
+                    <option value="0">-- Select Academic Year --</option>
+                    <option *ngFor="let school of academicYearList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="SyllabusForm.get('AcademicYear')?.hasError('min') && (SyllabusForm.get('AcademicYear')?.touched || SyllabusForm.get('AcademicYear')?.dirty)" class="text-danger">
+                      <small>Please Select Academic Year.</small>
+                  </div>
+                </div>
+              </div>
                 <div class="InputFieldsContainer">
                   <label class="inputLabel">Priority <span class="required">*</span></label>
 
@@ -319,7 +342,7 @@
 <div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
-      <div class="modal-header">
+       <div class="modal-header">
         <h5 class="modal-title">ExamType  Details</h5>
         <button type="button" class="close" (click)="closeModal('view')">
           <span>&times;</span>
@@ -345,20 +368,33 @@
           <div class="col-4">PassMarks</div>
           <div class="col-8">{{ viewSyllabus?.PassMarks }}</div>
         </div>
-          <div class="row mb-2">
+
+        <div class="row mb-2">
           <div class="col-4">ExamDuration</div>
           <div class="col-8">{{ viewSyllabus?.ExamDuration }}</div>
         </div>
-          <div class="row mb-2">
+
+        <div class="row mb-2">
           <div class="col-4">NoofQuestion</div>
           <div class="col-8">{{ viewSyllabus?.NoofQuestion }}</div>
         </div>
 
-         <div class="row mb-2">
+        <div class="row mb-2">
           <div class="col-4">Instructions</div>
           <div class="col-8">{{ viewSyllabus?.Instructions }}</div>
         </div>
 
+        <div class="row mb-2" *ngIf="viewSyllabus?.SchoolName">
+          <div class="col-4">School Name</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.SchoolName }}</div>
+        </div>
+
+        
+        <div class="row mb-2" *ngIf="viewSyllabus?.AcademicYearName">
+          <div class="col-4">Academic Year</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.AcademicYearName }}</div>
+        </div>
+  
         <div class="row mb-2">
           <div class="col-4">Status</div>
           <div class="col-8">
@@ -374,5 +410,7 @@
       </div> -->
     </div>
   </div>
-</div>
+  
+
+
 <!-- <div class="modal-backdrop fade show" *ngIf="isViewModalOpen"></div> -->

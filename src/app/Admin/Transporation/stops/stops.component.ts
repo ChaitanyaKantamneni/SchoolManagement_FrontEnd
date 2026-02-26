@@ -104,13 +104,20 @@ export class StopsComponent extends BasePermissionComponent {
   schoolList: any[] = [];
   selectedSchoolID: string = '';
   SchoolSelectionChange:boolean=false;
+  academicYearList:any[] = [];
+  AdminselectedSchoolID:string = '';
+  AdminselectedAcademivYearID:string = '';
+
 
   SyllabusForm: any = new FormGroup({
     ID: new FormControl(),
+    SchoolID: new FormControl(),
     Route:new FormControl(0, Validators.min(1)),
     Name: new FormControl('', [Validators.required,Validators.pattern('^[a-zA-Z!@#$%^&*()_+\\-=\\[\\]{};:\'",.<>/?|`~]+$')]),
     StopOrder: new FormControl('', [Validators.required,Validators.pattern('^[0-9]+$')]),
-    Distance:new FormControl('', [Validators.required,Validators.pattern('^[0-9]+$')])
+    Distance:new FormControl('', [Validators.required,Validators.pattern('^[0-9]+$')]),
+    AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)]),
+    School: new FormControl()
   });
 
   FetchSchoolsList() {
@@ -137,7 +144,30 @@ export class StopsComponent extends BasePermissionComponent {
         }
       );
   };
+ FetchAcademicYearsList() {
+    const requestData = { SchoolID:this.AdminselectedSchoolID||'',Flag: '2' };
 
+    this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.academicYearList = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.id,
+                Name: item.name,
+                IsActive: isActiveString
+              };
+            });            
+          } else {
+            this.academicYearList = [];
+          }
+        },
+        (error) => {
+          this.academicYearList = [];
+        }
+      );
+  };
   FetchRoutesList() {
     const requestData = { Flag: '3' };
 
@@ -218,7 +248,7 @@ export class StopsComponent extends BasePermissionComponent {
           ...extra
         };
 
-        if (isSearch) payload.Name = this.searchQuery.trim();
+        if (isSearch) payload.StopName = this.searchQuery.trim();
 
         this.apiurl.post<any>('Tbl_Stops_CRUD_Operations', payload).subscribe({
           next: (response: any) => {
@@ -258,11 +288,20 @@ export class StopsComponent extends BasePermissionComponent {
       StopName: item.stopName,
       StopOrder: item.stopOrder,
       Distance: item.distance,
-      IsActive: item.isActive === "True" ? 'Active' : 'InActive'
+      IsActive: item.isActive === "True" ? 'Active' : 'InActive',
+      AcademicYearName:item.academicYearName
     }));
   };
 
   AddNewClicked(){
+      if (this.isAdmin) {
+      this.SyllabusForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+    } else {
+      this.SyllabusForm.get('School')?.clearValidators();
+    }
+    if(this.AdminselectedSchoolID==''){
+      this.FetchAcademicYearsList();
+    }
     this.FetchRoutesList();
     this.SyllabusForm.reset();
     this.SyllabusForm.get('Route').patchValue('0');
@@ -283,6 +322,8 @@ export class StopsComponent extends BasePermissionComponent {
         StopName: this.SyllabusForm.get('Name')?.value,
         StopOrder: this.SyllabusForm.get('StopOrder')?.value,
         Distance: this.SyllabusForm.get('Distance')?.value,
+        SchoolID: this.SyllabusForm.get('School')?.value,
+        AcademicYear: this.SyllabusForm.get('AcademicYear')?.value,
         IsActive:IsActiveStatusNumeric,
         Flag: '1'
       };
@@ -297,12 +338,18 @@ export class StopsComponent extends BasePermissionComponent {
             this.SyllabusForm.markAsPristine();
           }
         },
-        error: (error) => {
-          this.AminityInsStatus = "Error Updating Bus Route stop.";
-          this.isModalOpen = true;
-        },
-        complete: () => {
-        }
+        error: (err:any) => {
+            if (err.status === 400 && err.error?.message) {
+              this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+            } else if (err.status === 500 && err.error?.Message) {
+              this.AminityInsStatus = err.error.Message;  // Database or internal error
+            } else {
+              this.AminityInsStatus = "Unexpected error occurred.";
+            }
+            this.isModalOpen = true;
+          },
+          complete: () => {
+          }
       });
     }
   };
@@ -341,6 +388,9 @@ export class StopsComponent extends BasePermissionComponent {
             StopName: item.stopName,
             StopOrder: item.stopOrder,
             Distance: item.distance,
+            AcademicYearName:item.academicYearName,
+
+
             IsActive: isActive
           };
           this.isViewModalOpen = true;
@@ -351,11 +401,16 @@ export class StopsComponent extends BasePermissionComponent {
           this.SyllabusForm.patchValue({
             ID: item.id,
             // SchoolName: schoolMap[item.schoolID] ?? `School-${item.schoolID}`,
+            School:item.schoolID,
+            AcademicYear:item.academicYear,
             Route:item.route,
             Name: item.stopName,
             StopOrder: item.stopOrder,
             Distance: item.distance
           });
+          this.AdminselectedSchoolID=item.schoolID;
+          this.AdminselectedAcademivYearID=item.academicYear;
+          this.FetchAcademicYearsList();
           this.IsActiveStatus = isActive;
           this.IsAddNewClicked = true;
         }
@@ -380,6 +435,8 @@ export class StopsComponent extends BasePermissionComponent {
         StopName: this.SyllabusForm.get('Name')?.value,
         StopOrder: this.SyllabusForm.get('StopOrder')?.value,
         Distance: this.SyllabusForm.get('Distance')?.value,
+        SchoolID: this.SyllabusForm.get('School')?.value,
+        AcademicYear: this.SyllabusForm.get('AcademicYear')?.value,
         IsActive:IsActiveStatusNumeric,
         Flag: '5'
       };
@@ -389,17 +446,23 @@ export class StopsComponent extends BasePermissionComponent {
           if (response.statusCode === 200) {
             this.IsAddNewClicked=!this.IsAddNewClicked;
             this.isModalOpen = true;
-            this.AminityInsStatus = "Bus Route Stop Details Updated!";
+            this.AminityInsStatus = "Bus Stop Details Updated!";
             this.SyllabusForm.reset();
             this.SyllabusForm.markAsPristine();
           }
         },
-        error: (error) => {
-          this.AminityInsStatus = "Error Updating Bus Route Stop.";
-          this.isModalOpen = true;
-        },
-        complete: () => {
-        }
+        error: (err:any) => {
+            if (err.status === 400 && err.error?.message) {
+              this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+            } else if (err.status === 500 && err.error?.Message) {
+              this.AminityInsStatus = err.error.Message;  // Database or internal error
+            } else {
+              this.AminityInsStatus = "Unexpected error occurred.";
+            }
+            this.isModalOpen = true;
+          },
+          complete: () => {
+          }
       });
     }
   };
@@ -633,5 +696,16 @@ export class StopsComponent extends BasePermissionComponent {
     this.FetchSyllabusDetByID(SyllabusID,'view');
     this.isViewModalOpen=true;
   };
-
+  onAdminSchoolChange(event: Event) {
+    this.academicYearList=[];
+    this.SyllabusForm.get('AcademicYear').patchValue('0');
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    if(schoolID=="0"){
+      this.AdminselectedSchoolID="";
+    }else{
+      this.AdminselectedSchoolID = schoolID;
+    }   
+    this.FetchAcademicYearsList();
+  };
 }

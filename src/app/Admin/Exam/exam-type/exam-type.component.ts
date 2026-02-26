@@ -83,11 +83,13 @@ export class ExamTypeComponent extends BasePermissionComponent {
   schoolList: any[] = [];
   selectedSchoolID: string = '';
   SchoolSelectionChange: boolean = false;
+  academicYearList:any[] = [];
+  AdminselectedSchoolID:string = '';
+  AdminselectedAcademivYearID:string = '';
 
-  SyllabusForm = new FormGroup({
+  SyllabusForm :any= new FormGroup({
     ID: new FormControl(''),
     SchoolID:new FormControl(''),
-    AcademicYear:new FormControl(''),
     ExamTypeName: new FormControl('', Validators.required),
     Priority: new FormControl('', Validators.required),
     ExamType: new FormControl('', Validators.required),
@@ -95,7 +97,9 @@ export class ExamTypeComponent extends BasePermissionComponent {
     PassMarks: new FormControl('', [Validators.required, Validators.pattern('^[0-9]+$')]),
     ExamDuration: new FormControl('', [Validators.required, Validators.pattern('^[0-9]+$')]),
     NoofQuestion: new FormControl('', [Validators.required, Validators.pattern('^[0-9]+$')]),
-    Instructions: new FormControl('')
+    Instructions: new FormControl(''),
+    School: new FormControl(),
+    AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
   });
 
   FetchSchoolsList() {
@@ -119,6 +123,30 @@ export class ExamTypeComponent extends BasePermissionComponent {
         },
         (error) => {
           this.schoolList = [];
+        }
+      );
+  };
+FetchAcademicYearsList() {
+    const requestData = { SchoolID:this.AdminselectedSchoolID||'',Flag: '2' };
+
+    this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.academicYearList = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.id,
+                Name: item.name,
+                IsActive: isActiveString
+              };
+            });            
+          } else {
+            this.academicYearList = [];
+          }
+        },
+        (error) => {
+          this.academicYearList = [];
         }
       );
   };
@@ -225,7 +253,17 @@ export class ExamTypeComponent extends BasePermissionComponent {
   };
 
   AddNewClicked() {
+      if (this.isAdmin) {
+      this.SyllabusForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+    } else {
+      this.SyllabusForm.get('School')?.clearValidators();
+    }
+    if(this.AdminselectedSchoolID==''){
+      this.FetchAcademicYearsList();
+    }
     this.SyllabusForm.reset();
+    this.SyllabusForm.get('School').patchValue('0');
+    this.SyllabusForm.get('AcademicYear').patchValue('0');
     this.IsAddNewClicked = !this.IsAddNewClicked;
     this.IsActiveStatus = true;
     this.ViewSyllabusClicked = false;
@@ -247,6 +285,8 @@ export class ExamTypeComponent extends BasePermissionComponent {
       ExamDuration: this.SyllabusForm.get('ExamDuration')?.value,
       NoofQuestion: this.SyllabusForm.get('NoofQuestion')?.value,
       Instructions: this.SyllabusForm.get('Instructions')?.value,
+      SchoolID: this.SyllabusForm.get('School')?.value,
+      AcademicYear: this.SyllabusForm.get('AcademicYear')?.value,
       IsActive: IsActiveStatusNumeric,
       Flag: '1'
     };
@@ -318,7 +358,7 @@ export class ExamTypeComponent extends BasePermissionComponent {
           this.isViewMode = false;
           this.SyllabusForm.patchValue({
             ID: item.id,
-            SchoolID:item.schoolID,
+            School:item.schoolID,
             AcademicYear:item.academicYear,
             ExamTypeName: item.examTypeName,
             Priority: item.priority,
@@ -329,6 +369,9 @@ export class ExamTypeComponent extends BasePermissionComponent {
             NoofQuestion: item.noofQuestion,
             Instructions: item.instructions
           });
+          this.AdminselectedSchoolID=item.schoolID;
+          this.AdminselectedAcademivYearID=item.academicYear;
+          this.FetchAcademicYearsList();
           this.IsActiveStatus = isActive;
           this.IsAddNewClicked = true;
         }
@@ -344,11 +387,11 @@ export class ExamTypeComponent extends BasePermissionComponent {
       this.SyllabusForm.markAllAsTouched();
       return;
     }
-
+else{
     const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
     const data = {
       ID: this.SyllabusForm.get('ID')?.value || '',
-      SchoolID: this.SyllabusForm.get('SchoolID')?.value || '',
+      SchoolID: this.SyllabusForm.get('School')?.value,
       AcademicYear: this.SyllabusForm.get('AcademicYear')?.value || '',
       ExamTypeName: this.SyllabusForm.get('ExamTypeName')?.value || '',
       Priority: this.SyllabusForm.get('Priority')?.value || '',
@@ -377,6 +420,7 @@ export class ExamTypeComponent extends BasePermissionComponent {
         this.isModalOpen = true;
       }
     });
+  }
   };
 
   previousPage() {
@@ -563,5 +607,17 @@ export class ExamTypeComponent extends BasePermissionComponent {
   viewReview(SyllabusID: string): void {
     this.FetchSyllabusDetByID(SyllabusID, 'view');
     this.isViewModalOpen = true;
+  };
+  onAdminSchoolChange(event: Event) {
+    this.academicYearList=[];
+    this.SyllabusForm.get('AcademicYear').patchValue('0');
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    if(schoolID=="0"){
+      this.AdminselectedSchoolID="";
+    }else{
+      this.AdminselectedSchoolID = schoolID;
+    }   
+    this.FetchAcademicYearsList();
   };
 }
