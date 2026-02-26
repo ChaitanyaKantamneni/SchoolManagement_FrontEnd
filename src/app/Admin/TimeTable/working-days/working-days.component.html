@@ -59,6 +59,8 @@
                 </th>
                 <th>StartTime</th>
                 <th>EndTime</th>
+                <th *ngIf="isAdmin">School Name</th>
+                <th>Academic Year</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -71,6 +73,8 @@
                 <!-- <td data-label="SchoolName" *ngIf="isAdmin">{{ Class.SchoolName }}</td> -->
                 <td data-label="AcademicYearName">{{ Class.StartTime }}</td>
                 <td data-label="SyllabusName ">{{ Class.EndTime }}</td>
+                <td data-label="SchoolName" *ngIf="isAdmin">{{ Class.SchoolName }}</td>
+                <td data-label="AcademicYearName">{{ Class.AcademicYearName }}</td>
                 <td data-label="Status">{{ Class.IsActive }}</td>
                 <td data-label="Actions">
                   <div class="d-flex justify-content-center align-items-center h-100">
@@ -207,10 +211,10 @@
               <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <label class="inputLabel" for="email">StartTime <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input type="time" class="inputField" formControlName="StartTime" placeholder="Enter StartTime" />
-                  <div *ngIf="(ClassForm.get('StartTime' ) ?. touched && ClassForm.get('StartTime' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('StartTime' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter EndTime.</small>
+                  <input type="time" class="inputField" formControlName="EndTime" placeholder="Enter EndTime" />
+                  <div *ngIf="(ClassForm.get('EndTime' ) ?. touched && ClassForm.get('EndTime' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('EndTime' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter StartTime.</small>
                     </div>
                   </div>
                 </div>
@@ -269,40 +273,40 @@
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Syllabus Details</h5>
+        <h5 class="modal-title">Working Day Details</h5>
         <button type="button" class="close" (click)="closeModal('view')">
           <span>&times;</span>
         </button>
       </div>
       <div class="modal-body">
         <div class="row mb-2" *ngIf="viewSyllabus?.Day">
-          <div class="col-4">Day</div>
-          <div class="col-8 viewfontsize">{{ viewSyllabus?.Day }}</div>
-        </div>
-
-        <div class="row mb-2" *ngIf="viewSyllabus?.EndTime">
-          <div class="col-4">Start Time</div>
-          <div class="col-8 viewfontsize">{{ viewSyllabus?.EndTime }}</div>
+          <div class="col-6 viewHeadingfontsize">Day</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.Day }}</div>
         </div>
 
         <div class="row mb-2" *ngIf="viewSyllabus?.StartTime">
-          <div class="col-4">End Time</div>
-          <div class="col-8 viewfontsize">{{ viewSyllabus?.StartTime }}</div>
+          <div class="col-6 viewHeadingfontsize">Start Time</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.StartTime }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.EndTime">
+          <div class="col-6 viewHeadingfontsize">End Time</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.EndTime }}</div>
         </div>
 
         <div class="row mb-2" *ngIf="viewSyllabus?.SchoolName">
-          <div class="col-4">School Name</div>
-          <div class="col-8 viewfontsize">{{ viewSyllabus?.SchoolName }}</div>
+          <div class="col-6 viewHeadingfontsize">School Name</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.SchoolName }}</div>
         </div>
 
         <div class="row mb-2" *ngIf="viewSyllabus?.AcademicYearName">
-          <div class="col-4">Academic Year</div>
-          <div class="col-8 viewfontsize">{{ viewSyllabus?.AcademicYearName }}</div>
+          <div class="col-6 viewHeadingfontsize">Academic Year</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.AcademicYearName }}</div>
         </div>
 
         <div class="row mb-2" *ngIf="viewSyllabus?.IsActive !== null">
-          <div class="col-4">Status</div>
-          <div class="col-8">
+          <div class="col-6 viewHeadingfontsize">Status</div>
+          <div class="col-6">
             <span class="badge"
                   [ngClass]="viewSyllabus?.IsActive ? 'badge-success' : 'badge-danger'">
               {{ viewSyllabus?.IsActive ? 'Active' : 'Inactive' }}

@@ -19,10 +19,10 @@ import { HttpClient } from '@angular/common/http';
   standalone:true,
   imports: [NgIf,NgFor,NgClass,NgStyle,MatIconModule,DashboardTopNavComponent,ReactiveFormsModule,FormsModule],
   templateUrl: './working-days.component.html',
-  styleUrl: './working-days.component.css'
+  styleUrls: ['./working-days.component.css']
 })
 export class WorkingDaysComponent extends BasePermissionComponent {
-  pageName = 'Class';
+  pageName = 'Working Days';
   
     constructor(
       private http: HttpClient,
@@ -151,7 +151,7 @@ export class WorkingDaysComponent extends BasePermissionComponent {
       return this.apiurl.post<any>('Tbl_WorkingDays_CRUD_Operations', {
         Flag: isSearch ? '8' : '6',
         SchoolID:SchoolIdSelected,
-        Name: isSearch ? this.searchQuery.trim() : null
+        Day: isSearch ? this.searchQuery.trim() : null
       });
     }
   
@@ -187,7 +187,7 @@ export class WorkingDaysComponent extends BasePermissionComponent {
             ...extra
           };
   
-          if (isSearch) payload.Name = this.searchQuery.trim();
+          if (isSearch) payload.Day = this.searchQuery.trim();
   
           this.apiurl.post<any>('Tbl_WorkingDays_CRUD_Operations', payload).subscribe({
             next: (response: any) => {
