@@ -18,7 +18,7 @@ import { HttpClient } from '@angular/common/http';
   standalone:true,
   imports: [NgIf,NgFor,NgClass,NgStyle,MatIconModule,DashboardTopNavComponent,ReactiveFormsModule,FormsModule],
   templateUrl: './fee-category.component.html',
-  styleUrl: './fee-category.component.css'
+  styleUrls: ['./fee-category.component.css']
 })
 export class FeeCategoryComponent extends BasePermissionComponent {
   pageName = 'Fee Category';

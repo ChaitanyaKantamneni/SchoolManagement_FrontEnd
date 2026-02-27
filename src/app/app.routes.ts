@@ -63,7 +63,6 @@ import { schoolGuard } from './guards/school.guard';
 import { FareComponent } from './Admin/Transporation/fare/fare.component';
 import { FeeCategoryComponent } from './Admin/Finance/fee-category/fee-category.component';
 import { FeeAllocationComponent } from './Admin/Finance/fee-allocation/fee-allocation.component';
-import { FeeDiscountCategoryComponent } from './Admin/Finance/fee-discount-category/fee-discount-category.component';
 import { ExamTypeComponent } from './Admin/Exam/exam-type/exam-type.component';
 import { ExammarksComponent } from './Admin/Exam/exammarks/exammarks.component';
 import { ExamresultsComponent } from './Admin/Exam/examresults/examresults.component';
@@ -74,6 +73,8 @@ import { WorkingDaysComponent } from './Admin/TimeTable/working-days/working-day
 import { SessionsComponent } from './Admin/TimeTable/sessions/sessions.component';
 import { TimeTableComponent } from './Admin/TimeTable/time-table/time-table.component';
 import { TeachersTimeTableComponent } from './Admin/TimeTable/teachers-time-table/teachers-time-table.component';
+import { FeeDiscountCategoryComponent } from './Admin/Finance/fee-discount-category/fee-discount-category.component';
+import { FeeDiscountComponent } from './Admin/Finance/fee-discount/fee-discount.component';
 
 export const routes: Routes = [
   { path: '', component: SignInComponent },
@@ -108,6 +109,7 @@ export const routes: Routes = [
       { path: 'FeeCategory', component: FeeCategoryComponent },
       { path: 'FeeAllocation', component: FeeAllocationComponent },
       { path: 'FeeDiscountCategory', component: FeeDiscountCategoryComponent },
+      { path: 'FeeDiscount', component: FeeDiscountComponent },
       { path: 'Fare', component: FareComponent },
       { path: 'ExamType', component: ExamTypeComponent },
       { path: 'SetExam', component: SetexamComponent },
@@ -151,6 +153,7 @@ export const routes: Routes = [
       { path: 'FeeCategory', component: FeeCategoryComponent },
       { path: 'FeeAllocation', component: FeeAllocationComponent },
       { path: 'FeeDiscountCategory', component: FeeDiscountCategoryComponent },
+      { path: 'FeeDiscount', component: FeeDiscountComponent },
       { path: 'Stops', component: StopsComponent },
       { path: 'ExamType', component: ExamTypeComponent },
       { path: 'SetExam', component: SetexamComponent },
@@ -198,6 +201,7 @@ export const routes: Routes = [
       { path: 'FeeCategory', component: FeeCategoryComponent },
       { path: 'FeeAllocation', component: FeeAllocationComponent },
       { path: 'FeeDiscountCategory', component: FeeDiscountCategoryComponent },
+      { path: 'FeeDiscount', component: FeeDiscountComponent },
       { path: 'Stops', component: StopsComponent },
       { path: 'ExamType', component: ExamTypeComponent },
       { path: 'ViewExams', component: ViewexamsComponent },
