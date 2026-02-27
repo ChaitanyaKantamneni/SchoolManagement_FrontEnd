@@ -16,7 +16,7 @@ import { HttpClient } from '@angular/common/http';
   styleUrl: './examattendence.component.css'
 })
 export class ExamattendenceComponent  extends BasePermissionComponent{
-   pageName = 'ExamAttendence';
+   pageName = 'ViewExams';
 
   constructor(
     private http: HttpClient,
@@ -32,7 +32,6 @@ export class ExamattendenceComponent  extends BasePermissionComponent{
     this.checkViewPermission();
     this.SchoolSelectionChange = false;
     this.FetchSchoolsList();
-    this.FetchInitialData();
   };
 
   allowOnlyNumbers(event: KeyboardEvent) {
@@ -81,17 +80,30 @@ export class ExamattendenceComponent  extends BasePermissionComponent{
   schoolList: any[] = [];
   selectedSchoolID: string = '';
   SchoolSelectionChange: boolean = false;
+  isTableModalOpen = false;
+  academicYearList :any[]= [];
 
-  SyllabusForm = new FormGroup({
+  classLists:any[] = [];
+  examLists:any[]=[];
+  divisionsList:any[] = [];
+  examslist:any[] =[];
+
+
+  AdminselectedSchoolID: string = '';
+  AdminselectedAcademivYearID: string = '';
+  AdminselectedClassID:string ='';
+  AdminselectedDiviosnID:string = '';
+  AdminselecteExamID:string = '';
+
+
+  SyllabusForm :any= new FormGroup({
     ID: new FormControl(''),
-    ExamTypeName: new FormControl('', Validators.required),
-    Priority: new FormControl('', Validators.required),
-    ExamType: new FormControl('', Validators.required),
-    MaxMark: new FormControl('', [Validators.required, Validators.pattern('^[0-9]+$')]),
-    PassMarks: new FormControl('', [Validators.required, Validators.pattern('^[0-9]+$')]),
-    ExamDuration: new FormControl('', [Validators.required, Validators.pattern('^[0-9]+$')]),
-    NoofQuestion: new FormControl('', [Validators.required, Validators.pattern('^[0-9]+$')]),
-    Instructions: new FormControl('')
+    SchoolID:new FormControl(''),
+    Divisions: new FormControl(0,[Validators.required,Validators.min(1)]),
+    Class: new FormControl(0,[Validators.required,Validators.min(1)]),
+    ExamType: new FormControl(0,[Validators.required,Validators.min(1)]),
+    School: new FormControl(0,[Validators.required,Validators.min(1)]),
+    AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
   });
 
   FetchSchoolsList() {
@@ -123,6 +135,248 @@ export class ExamattendenceComponent  extends BasePermissionComponent{
     const role = sessionStorage.getItem('RollID') || localStorage.getItem('RollID');
     return role === '1';
   }
+  
+  FetchAcademicYearsList() {
+    const requestData = { 
+      SchoolID:this.AdminselectedSchoolID||'',
+      Flag: '2' 
+    };
+
+    this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.academicYearList = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.id,
+                Name: item.name,
+                IsActive: isActiveString
+              };
+            });            
+          } else {
+            this.academicYearList = [];
+          }
+        },
+        (error) => {
+          this.academicYearList = [];
+        }
+      );
+  };
+FetchClassList() {
+  const requestData = {
+    SchoolID: this.AdminselectedSchoolID || '',
+    AcademicYear: this.AdminselectedAcademivYearID || '',
+    Flag: '9'
+  };
+ 
+  this.apiurl.post<any>('Tbl_ClassDivision_CRUD_Operations', requestData)
+    .subscribe(
+      (response: any) => {
+
+        if (response && Array.isArray(response.data)) {
+          console.log(response);
+
+
+          this.classLists = response.data.map((item: any) => {
+                            console.log(this.classLists)
+
+
+            const isActiveString =
+              item.isActive === "1" || item.isActive === "True"
+                ? "Active"
+                : "InActive";
+
+            return {
+             ID: item.sNo.toString(),
+             Name: item.syllabusClassName,
+             Division: item.class
+            };
+
+          });
+
+        } else {
+          this.classLists = [];
+        }
+
+      },
+      (error) => {
+        this.classLists = [];
+      }
+    );
+}
+FetchExamsList() {
+  const requestData = {
+    SchoolID: this.AdminselectedSchoolID || '',
+    AcademicYear: this.AdminselectedAcademivYearID || '',
+    Flag: '3'
+  };
+ 
+  this.apiurl.post<any>('Tbl_Examtype_CRUD_Operations', requestData)
+    .subscribe(
+      (response: any) => {
+
+        if (response && Array.isArray(response.data)) {
+          console.log(response);
+
+
+          this.examLists = response.data.map((item: any) => {
+                            console.log(this.examLists)
+
+
+
+            const isActiveString =
+              item.isActive === "1" || item.isActive === "True"
+                ? "Active"
+                : "InActive";
+
+            return {
+             ID: item.id,
+             Name: item.examType,
+             Priority:item.priority,
+             MaxMark :item.maxMark,
+             PassMarks:item.passMarks,
+             ExamDuration:item.examDuration,
+             NoofQuestion:item.noofQuestion,
+             Instructions:item.instructions
+            };
+
+          });
+          //  this.listenExamTypeChanges();   // 👈 call here
+
+
+        } else {
+          this.examLists = [];
+        }
+
+      },
+      (error) => {
+        this.examLists = [];
+      }
+    );
+}
+
+FetchDivisionsList() {
+  const requestData = {
+    SchoolID: this.AdminselectedSchoolID || '',
+    AcademicYear: this.AdminselectedAcademivYearID || '',
+    Class :this.AdminselectedClassID || '',
+    Flag: '3'
+  };
+ 
+  this.apiurl.post<any>('Tbl_ClassDivision_CRUD_Operations', requestData)
+    .subscribe(
+      (response: any) => {
+
+        if (response && Array.isArray(response.data)) {
+          console.log(response);
+
+
+          this.divisionsList = response.data.map((item: any) => {
+                            console.log(this.divisionsList)
+
+
+            const isActiveString =
+              item.isActive === "1" || item.isActive === "True"
+                ? "Active"
+                : "InActive";
+
+            return {
+             ID: item.id,
+             Name: item.name,
+            };
+
+          });
+
+        } else {
+          this.divisionsList = [];
+        }
+
+      },
+      (error) => {
+        this.divisionsList = [];
+      }
+    );
+}
+
+FetchExamsbyclassanddivisionList() {
+  const requestData = {
+    SchoolID: this.AdminselectedSchoolID || '',
+    AcademicYear: this.AdminselectedAcademivYearID || '',
+    Class :this.AdminselectedClassID || '',
+    Divisions :this.AdminselectedDiviosnID || '',
+    ExamType :this.AdminselecteExamID || '',
+    Flag: '3'
+  };
+ 
+  this.apiurl.post<any>('Tbl_SetExam_CRUD_Operations', requestData)
+    .subscribe(
+      (response: any) => {
+
+        if (response && Array.isArray(response.data)) {
+          console.log(response);
+
+
+          this.examslist = response.data.map((item: any) => {
+                            console.log(this.examslist)
+
+
+            const isActiveString =
+              item.isActive === "1" || item.isActive === "True"
+                ? "Active"
+                : "InActive";
+                  let displayExamType = item.examTypeName;
+    
+    
+                const formattedExamDate = item.examDateAndTime
+              ? item.examDateAndTime
+                  .split(',')
+                  .map((d: string) =>
+                    new Date(d).toLocaleString('en-US', {
+                      month: '2-digit',
+                      day: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: true
+                    })
+                  )
+                  .join(' | ')
+              : '';
+
+            return {
+              ID: item.id,
+              SchoolID: item.schoolID,
+              Syllabus: item.syllabus,
+              Class: item.className,          // ← friendly for table
+              Divisions: item.divisionName,
+              ExamType: displayExamType,
+              ExamTypeID: item.examType,
+              Subjects: item.subjectName,
+              SchoolName: item.schoolName,
+              MaxMarks: item.maxMarks,
+              PassMarks: item.passMarks,
+              ExamDateAndTime: formattedExamDate,
+              Duration: item.duration,
+              NoOfQuestion: item.noOfQuestion,
+              Instructions: item.instructions,
+              IsActive: item.isActive === "True" || item.isActive === "1" ? 'Active' : 'InActive',
+              AcademicYearName: item.academicYearName
+            };
+
+          });
+
+        } else {
+          this.examslist = [];
+        }
+
+      },
+      (error) => {
+        this.examslist = [];
+      }
+    );
+}
+
 
   FetchAcademicYearCount(isSearch: boolean) {
     let SchoolIdSelected = '';
@@ -131,144 +385,136 @@ export class ExamattendenceComponent  extends BasePermissionComponent{
       SchoolIdSelected = this.selectedSchoolID.trim();
     }
 
-    return this.apiurl.post<any>('Tbl_Examtype_CRUD_Operations', {
+    return this.apiurl.post<any>('Tbl_SetExam_CRUD_Operations', {
       Flag: isSearch ? '8' : '6',
-      SchoolID: SchoolIdSelected,
+       SchoolID: this.AdminselectedSchoolID || '',
+      AcademicYear: this.AdminselectedAcademivYearID || '',
+      Class: this.AdminselectedClassID || '',
+      Divisions: this.AdminselectedDiviosnID || '',
+      ExamType: this.AdminselecteExamID || '',
       ExamTypeName: isSearch ? this.searchQuery.trim() : null
     });
   }
+private resetPaginationAndFetch() {
+ this.currentPage = 1;
+  this.pageCursors = [];        // ← Critical: clears old cursors
+  this.SyllabusList = [];       // Clear old table immediately
+  this.FetchInitialData();
+}
 
   FetchInitialData(extra: any = {}) {
-    const isSearch = !!this.searchQuery?.trim();
-    const flag = isSearch ? '7' : '2';
+  const isSearch = !!this.searchQuery?.trim();
+  const flag = isSearch ? '7' : '2';
 
-    let SchoolIdSelected = '';
+  this.loader.show();
 
-    if (this.SchoolSelectionChange) {
-      SchoolIdSelected = this.selectedSchoolID.trim();
-    }
+  this.FetchAcademicYearCount(isSearch).subscribe({
+    next: (countResp: any) => {
+      this.SyllabusCount = countResp?.data?.[0]?.totalcount ?? 0;   // ← Now correct count!
 
-    const cursor =
-      !extra.offset && this.currentPage > 1
-        ? this.pageCursors[this.currentPage - 2] || null
+      const cursor = this.currentPage > 1 && !extra.offset 
+        ? this.pageCursors[this.currentPage - 2] || null 
         : null;
 
-    this.loader.show();
+      const payload: any = {
+        Flag: flag,
+        Limit: this.pageSize,
+        SortColumn: this.sortColumn,
+        SortDirection: this.sortDirection,
+        LastCreatedDate: cursor?.lastCreatedDate ?? null,
+        LastID: cursor?.lastID ?? null,
 
-    this.FetchAcademicYearCount(isSearch).subscribe({
-      next: (countResp: any) => {
-        this.SyllabusCount = countResp?.data?.[0]?.totalcount ?? 0;
+        // ALL 5 filters always sent
+        SchoolID: this.AdminselectedSchoolID || '',
+        AcademicYear: this.AdminselectedAcademivYearID || '',
+        Class: this.AdminselectedClassID || '',
+        Divisions: this.AdminselectedDiviosnID || '',
+        ExamType: this.AdminselecteExamID || '',
 
-        const payload: any = {
-          Flag: flag,
-          Limit: this.pageSize,
-          SortColumn: this.sortColumn,
-          SortDirection: this.sortDirection,
-          LastCreatedDate: cursor?.lastCreatedDate ?? null,
-          LastID: cursor?.lastID ?? null,
-          SchoolID: SchoolIdSelected,
-          ...extra
-        };
+        ...extra
+      };
 
-        if (isSearch) payload.ExamTypeName = this.searchQuery.trim();
+      if (isSearch) payload.ExamTypeName = this.searchQuery.trim();
 
-        this.apiurl.post<any>('Tbl_Examtype_CRUD_Operations', payload).subscribe({
-          next: (response: any) => {
-            const data = response?.data || [];
-            this.mapAcademicYears(response);
+      this.apiurl.post<any>('Tbl_SetExam_CRUD_Operations', payload).subscribe({
+        next: (response: any) => {
+          this.mapAcademicYears(response);
 
-            if (data.length > 0 && !this.pageCursors[this.currentPage - 1]) {
-              const lastRow = data[data.length - 1];
-              this.pageCursors[this.currentPage - 1] = {
-                lastCreatedDate: lastRow.createdDate,
-                lastID: Number(lastRow.id)
-              };
-            }
-
-            this.loader.hide();
-          },
-          error: () => {
-            this.SyllabusList = [];
-            this.loader.hide();
+          if (response.data?.length > 0 && !this.pageCursors[this.currentPage - 1]) {
+            const lastRow = response.data[response.data.length - 1];
+            this.pageCursors[this.currentPage - 1] = {
+              lastCreatedDate: lastRow.createdDate,
+              lastID: Number(lastRow.id)
+            };
           }
-        });
-      },
-      error: () => {
-        this.SyllabusList = [];
-        this.SyllabusCount = 0;
-        this.loader.hide();
-      }
-    });
-  };
+          this.loader.hide();
+        },
+        error: () => {
+          this.SyllabusList = [];
+          this.loader.hide();
+        }
+      });
+    },
+    error: () => {
+      this.SyllabusList = [];
+      this.SyllabusCount = 0;
+      this.loader.hide();
+    }
+  });
+}
 
   mapAcademicYears(response: any) {
-    this.SyllabusList = (response.data || []).map((item: any) => ({
+  this.SyllabusList = (response.data || []).map((item: any) => {
+      
+      let displayExamType = item.examTypeName;
+    
+    
+    const formattedExamDate = item.examDateAndTime
+  ? item.examDateAndTime
+      .split(',')
+      .map((d: string) =>
+        new Date(d).toLocaleString('en-US', {
+          month: '2-digit',
+          day: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        })
+      )
+      .join(' | ')
+  : '';
+    return {
       ID: item.id,
+      SchoolID: item.schoolID,
+      Syllabus: item.syllabus,
+      Class: item.className,          // ← friendly for table
+      Divisions: item.divisionName,
+      ExamType: displayExamType,
+      ExamTypeID: item.examType,
+      Subjects: item.subjectName,
       SchoolName: item.schoolName,
-      ExamTypeName: item.examTypeName,
-      Priority: item.priority,
-      ExamType: item.examType,
-      MaxMark: item.maxMark,
+      MaxMarks: item.maxMarks,
       PassMarks: item.passMarks,
-      ExamDuration: item.examDuration,
-      NoofQuestion: item.noofQuestion,
+      ExamDateAndTime: formattedExamDate,
+      Duration: item.duration,
+      NoOfQuestion: item.noOfQuestion,
       Instructions: item.instructions,
-      IsActive: item.isActive === "True" ? 'Active' : 'InActive',
+      IsActive: item.isActive === "True" || item.isActive === "1" ? 'Active' : 'InActive',
       AcademicYearName: item.academicYearName
-    }));
-  };
-
-  AddNewClicked() {
-    this.SyllabusForm.reset();
-    this.IsAddNewClicked = !this.IsAddNewClicked;
-    this.IsActiveStatus = true;
-    this.ViewSyllabusClicked = false;
-  };
-
-  SubmitSyllabus() {
-    if (this.SyllabusForm.invalid) {
-      this.SyllabusForm.markAllAsTouched();
-      return;
-    }
-
-    const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
-    const data = {
-      ExamTypeName: this.SyllabusForm.get('ExamTypeName')?.value,
-      Priority: this.SyllabusForm.get('Priority')?.value,
-      ExamType: this.SyllabusForm.get('ExamType')?.value,
-      MaxMark: this.SyllabusForm.get('MaxMark')?.value,
-      PassMarks: this.SyllabusForm.get('PassMarks')?.value,
-      ExamDuration: this.SyllabusForm.get('ExamDuration')?.value,
-      NoofQuestion: this.SyllabusForm.get('NoofQuestion')?.value,
-      Instructions: this.SyllabusForm.get('Instructions')?.value,
-      IsActive: IsActiveStatusNumeric,
-      Flag: '1'
     };
+  });
+}
 
-    console.log('Submitting data:', data);
+onSubmit() {
+  if (this.SyllabusForm.invalid) {
+    this.SyllabusForm.markAllAsTouched();
+    return;
+  }
+  this.resetPaginationAndFetch();
+}
+ 
 
-    this.apiurl.post("Tbl_Examtype_CRUD_Operations", data).subscribe({
-      next: (response: any) => {
-        console.log('Response:', response);
-        if (response.statusCode === 200) {
-          this.IsAddNewClicked = !this.IsAddNewClicked;
-          this.isModalOpen = true;
-          this.AminityInsStatus = "Exam Type Details Submitted!";
-          this.SyllabusForm.reset();
-          this.SyllabusForm.markAsPristine();
-          this.FetchInitialData();
-        } else {
-          this.AminityInsStatus = response.message || "Error Submitting Exam Type.";
-          this.isModalOpen = true;
-        }
-      },
-      error: (error) => {
-        console.error('Error:', error);
-        this.AminityInsStatus = error?.error?.message || "Error Submitting Exam Type.";
-        this.isModalOpen = true;
-      }
-    });
-  };
 
   FetchSyllabusDetByID(SyllabusID: string, mode: 'view' | 'edit') {
     const data = {
@@ -276,8 +522,9 @@ export class ExamattendenceComponent  extends BasePermissionComponent{
       Flag: "4"
     };
 
-    this.apiurl.post<any>("Tbl_Examtype_CRUD_Operations", data).subscribe(
+    this.apiurl.post<any>("Tbl_SetExam_CRUD_Operations", data).subscribe(
       (response: any) => {
+        console.log("View Response:", response);
         const item = response?.data?.[0];
         if (!item) {
           this.SyllabusForm.reset();
@@ -288,20 +535,48 @@ export class ExamattendenceComponent  extends BasePermissionComponent{
         const isActive = item.isActive === "True";
 
         if (mode === 'view') {
-          this.isViewMode = true;
-          this.viewSyllabus = {
-            ID: item.id,
-            SchoolName: item.schoolName,
-            ExamTypeName: item.examTypeName,
-            Priority: item.priority,
-            ExamType: item.examType,
-            MaxMark: item.maxMark,
-            PassMarks: item.passMarks,
-            ExamDuration: item.examDuration,
-            NoofQuestion: item.noofQuestion,
-            Instructions: item.instructions,
-            AcademicYearName: item.academicYearName,
-            IsActive: isActive
+         let displayExamType = item.examTypeName;
+               
+                const formattedExamDate = item.examDateAndTime
+              ? item.examDateAndTime
+                  .split(',')
+                  .map((d: string) =>
+                    new Date(d).toLocaleString('en-US', {
+                      month: '2-digit',
+                      day: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: true
+                    })
+                  )
+                  .join(' | ')
+              : '';
+               const subjectsArr = item.subjects ? item.subjects.split(',') : [];
+                const divisionsArr = item.divisions ? item.divisionName.split(',') : [];
+
+                const finalDivisionDisplay = divisionsArr
+                  .map((group: string) => group.split('|').join(','))
+                  .join(' | ');
+                this.isViewMode = true;
+                this.viewSyllabus = {
+                ID: item.id,
+                SchoolID: item.schoolID,
+                Syllabus: item.syllabus,
+                // Class: this.getClassNames(item.className),
+                Class: item.className,
+                Divisions: finalDivisionDisplay,
+                ExamType: displayExamType,
+                Subjects: item.subjectName,
+                SchoolName: item.schoolName,
+                MaxMarks: item.maxMarks,
+                PassMarks: item.passMarks,
+                ExamDateAndTime: formattedExamDate,
+                Duration: item.duration,
+                NoOfQuestion: item.noOfQuestion,
+                Instructions: item.instructions,
+                AcademicYearName: item.academicYearName,
+                IsActive: item.isActive === "True" || item.isActive === "1"
           };
           this.isViewModalOpen = true;
         }
@@ -329,43 +604,7 @@ export class ExamattendenceComponent  extends BasePermissionComponent{
     );
   };
 
-  UpdateSyllabus() {
-    if (this.SyllabusForm.invalid) {
-      this.SyllabusForm.markAllAsTouched();
-      return;
-    }
 
-    const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
-    const data = {
-      ID: this.SyllabusForm.get('ID')?.value || '',
-      ExamTypeName: this.SyllabusForm.get('ExamTypeName')?.value || '',
-      Priority: this.SyllabusForm.get('Priority')?.value || '',
-      ExamType: this.SyllabusForm.get('ExamType')?.value || '',
-      MaxMark: this.SyllabusForm.get('MaxMark')?.value || '',
-      PassMarks: this.SyllabusForm.get('PassMarks')?.value || '',
-      ExamDuration: this.SyllabusForm.get('ExamDuration')?.value || '',
-      NoofQuestion: this.SyllabusForm.get('NoofQuestion')?.value || '',
-      Instructions: this.SyllabusForm.get('Instructions')?.value || '',
-      IsActive: IsActiveStatusNumeric,
-      Flag: '5'
-    };
-
-    this.apiurl.post("Tbl_Examtype_CRUD_Operations", data).subscribe({
-      next: (response: any) => {
-        if (response.statusCode === 200) {
-          this.IsAddNewClicked = !this.IsAddNewClicked;
-          this.isModalOpen = true;
-          this.AminityInsStatus = "Exam Type Details Updated!";
-          this.SyllabusForm.reset();
-          this.SyllabusForm.markAsPristine();
-        }
-      },
-      error: (error) => {
-        this.AminityInsStatus = "Error Updating Exam Type.";
-        this.isModalOpen = true;
-      }
-    });
-  };
 
   previousPage() {
     if (this.currentPage > 1) {
@@ -552,5 +791,85 @@ export class ExamattendenceComponent  extends BasePermissionComponent{
     this.FetchSyllabusDetByID(SyllabusID, 'view');
     this.isViewModalOpen = true;
   };
+    onAdminSchoolChange(event: Event) {
+    this.academicYearList=[];
+    this.SyllabusForm.get('AcademicYear').patchValue('0');
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    this.classLists=[];
+    this.isTableModalOpen = false;
+
+    if(schoolID=="0"){
+      this.AdminselectedSchoolID="";
+    }else{
+      this.AdminselectedSchoolID = schoolID;
+    }   
+    this.FetchAcademicYearsList();
+    // this.resetPaginationAndFetch();
+  };
+
+   onAdminAcademicYearchange(event: Event){
+    this.examLists =[];
+    
+    this.SyllabusForm.get('ExamType').patchValue('0');
+    this.SyllabusForm.get('Class').patchValue('0');
+    this.SyllabusForm.get('Divisions').patchValue('0');
+
+    const target = event.target as HTMLSelectElement;
+    const academicyearId = target.value;
+    if(academicyearId=="0"){
+      this.AdminselectedAcademivYearID="";
+    }else{
+      this.AdminselectedAcademivYearID = academicyearId;
+    }
+    this.classLists=[];
+    this.isTableModalOpen = false;
+
+
+    // this.tableRows = [];   
+    this.FetchExamsList();
+    this.FetchClassList();
+    // this.resetPaginationAndFetch();
+  };
+  
+    onAdminClasschange(event: Event){
+    this.divisionsList =[];
+    this.SyllabusForm.get('Divisions').patchValue('0');
+    const target = event.target as HTMLSelectElement;
+
+    const classId = target.value;
+
+    if (classId.length === 0) {
+      this.AdminselectedClassID = "";
+    } else {
+      this.AdminselectedClassID = classId; // if API expects comma separated
+    }
+    this.FetchDivisionsList();
+    // this.resetPaginationAndFetch();
+  };
+
+  onAdminDivisionsChange(event:Event){
+    const target = event.target as HTMLSelectElement;
+
+    const diviosnId = target.value;
+
+    if (diviosnId.length === 0) {
+      this.AdminselectedDiviosnID = "";
+    } else {
+      this.AdminselectedDiviosnID = diviosnId; // if API expects comma separated
+    }
+    // this.resetPaginationAndFetch();
+
+  }
+  onAdminExamtypeChange(event:Event){
+    const target = event.target as HTMLSelectElement;
+    const examId = target.value;
+    if (examId.length === 0) {
+      this.AdminselecteExamID = "";
+    } else {
+      this.AdminselecteExamID = examId; 
+    }
+    // this.resetPaginationAndFetch();
+  }
 
 }
