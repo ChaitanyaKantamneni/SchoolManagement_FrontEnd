@@ -15,14 +15,15 @@ import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-fee-discount-category',
-  imports: [],
+  standalone:true,
+  imports: [NgIf,NgFor,NgClass,NgStyle,MatIconModule,DashboardTopNavComponent,ReactiveFormsModule,FormsModule],
   templateUrl: './fee-discount-category.component.html',
-  styleUrl: './fee-discount-category.component.css'
+  styleUrls: ['./fee-discount-category.component.css']
 })
 export class FeeDiscountCategoryComponent extends BasePermissionComponent {
   pageName = 'Fee Discount Category';
 
-  constructor(
+constructor(
     private http: HttpClient,
     router: Router,
     public loader: LoaderService,
@@ -65,26 +66,32 @@ export class FeeDiscountCategoryComponent extends BasePermissionComponent {
   lastCreatedDate: string | null = null;
   lastID: number | null = null;
 
-  sortColumn: string = 'FeeDiscountCategoryName'; 
+  sortColumn: string = 'FeeCategory'; 
   sortDirection: 'asc' | 'desc' = 'desc';
   editclicked:boolean=false;
   schoolList: any[] = [];
   selectedSchoolID: string = '';
   SchoolSelectionChange:boolean=false;
+  academicYearList:any[] = [];
+  feecategorylist:any[] = [];
+  AdminselectedSchoolID:string = '';
+  AdminselectedAcademivYearID:string = '';
+  FineCollectionTypePercentage:boolean=false;
 
   ClassForm: any = new FormGroup({
     ID: new FormControl(),
     SchoolID: new FormControl(),
     Name: new FormControl('',Validators.required),
-    Feetype:new FormControl(0, Validators.min(1)),
-    FeeCollectionDuration:new FormControl(0, Validators.min(1)),
-    DueDay:new FormControl(0, Validators.min(1)),
-    Finetype:new FormControl(0, Validators.min(1)),
-    FineValue:new FormControl('',[Validators.required]),
-    FinecollectionType:new FormControl(0, Validators.min(1)),
-    FineIncrementIn:new FormControl(),
+    StartDate: new FormControl('',Validators.required),
+    EndDate: new FormControl('',Validators.required),
+    FeeCategory: new FormControl(0,[Validators.required,Validators.min(1)]),
+    DiscountType: new FormControl('',Validators.required),
+    MinAmountForDiscount: new FormControl('',Validators.required),
+    DiscountValuePerInstallment:new FormControl(0, Validators.min(1)),
     Description: new FormControl(),
-    School: new FormControl()
+
+    School: new FormControl(),
+    AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
   });
 
   allowOnlyNumbers(event: KeyboardEvent) {
@@ -124,6 +131,59 @@ export class FeeDiscountCategoryComponent extends BasePermissionComponent {
         },
         (error) => {
           this.schoolList = [];
+        }
+      );
+  };
+
+  FetchAcademicYearsList() {
+    const requestData = { SchoolID:this.AdminselectedSchoolID||'',Flag: '2' };
+
+    this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.academicYearList = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.id,
+                Name: item.name,
+                IsActive: isActiveString
+              };
+            });            
+          } else {
+            this.academicYearList = [];
+          }
+        },
+        (error) => {
+          this.academicYearList = [];
+        }
+      );
+  };
+   FetchFeeCategoryList() {
+    const requestData = { 
+      SchoolID:this.AdminselectedSchoolID||'',
+      AcademicYear: this.AdminselectedAcademivYearID,
+      Flag: '3'
+     };
+
+    this.apiurl.post<any>('Tbl_FeeCategory_CRUD_Operations', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.feecategorylist = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.id,
+                Name: item.feeCategoryName,
+                IsActive: isActiveString
+              };
+            });            
+          } else {
+            this.feecategorylist = [];
+          }
+        },
+        (error) => {
+          this.feecategorylist = [];
         }
       );
   };
@@ -179,7 +239,7 @@ export class FeeDiscountCategoryComponent extends BasePermissionComponent {
           ...extra
         };
 
-        if (isSearch) payload.FeeCategoryName = this.searchQuery.trim();
+        if (isSearch) payload.Name = this.searchQuery.trim();
 
         this.apiurl.post<any>('Tbl_FeeDiscountCategory_CRUD_Operations', payload).subscribe({
           next: (response: any) => {
@@ -215,34 +275,46 @@ export class FeeDiscountCategoryComponent extends BasePermissionComponent {
     this.ClassList = (response.data || []).map((item: any) => ({
       ID: item.id,
       SchoolID:item.schoolID,
-      FeeCategoryName: item.feeCategoryName,
-      FeeType: item.feeType,
-      FeeCollectionDuration:item.feeCollectionDuration,
-      FeeDueDay:item.feeDueDay,
-      FineType:item.fineType,
-      FineValue:item.fineValue,
-      FineCollectionType:item.fineCollectionType,
-      FineIncrementIn:item.fineIncrementIn,
+      Name: item.name,
+      StartDate: item.startDate,
+      EndDate: item.endDate,
+      FeeCategory:item.feeCategory,
+      DiscountType:item.discountType,
+      MinAmountForDiscount:item.minAmountForDiscount,
+      DiscountValuePerInstallment:item.discountValuePerInstallment,
       Description:item.description,
       IsActive: item.isActive === "True" ? 'Active' : 'InActive',
       AcademicYearName:item.academicYearName,
-
+      SchoolName:item.schoolName,
+      FeeCategoryName:item.feeCategoryName
     }));
   };
 
   AddNewClicked(){
-    //this.FetchSyllabusList();
-    this.ClassForm.reset();
-    this.ClassForm.get('Feetype').patchValue('0');
-    this.ClassForm.get('FeeCollectionDuration').patchValue('0');
-    this.ClassForm.get('DueDay').patchValue('0');
-    this.ClassForm.get('Finetype').patchValue('0');
-    this.ClassForm.get('FinecollectionType').patchValue('0');
-    this.ClassForm.get('FineIncrementIn').patchValue('0');
+    if (this.isAdmin) {
+      this.ClassForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+    } else {
+      this.ClassForm.get('School')?.clearValidators();
+    }
+    if(this.AdminselectedSchoolID==''){
+      this.FetchAcademicYearsList();
+    }
+    this.ClassForm.reset();  
     this.ClassForm.get('School').patchValue('0');
+    this.ClassForm.get('AcademicYear').patchValue('0');  
+    this.ClassForm.get('Name').patchValue('0');
+    this.ClassForm.get('StartDate').patchValue('0');
+    this.ClassForm.get('EndDate').patchValue('0');
+    this.ClassForm.get('FeeCategory').patchValue('0');
+    this.ClassForm.get('DiscountType').patchValue('0');
+    this.ClassForm.get('MinAmountForDiscount').patchValue('0');
+    this.ClassForm.get('DiscountValuePerInstallment').patchValue('0');
+    this.ClassForm.get('School').patchValue('0');
+    this.ClassForm.get('Description').patchValue('0');
     this.IsAddNewClicked=!this.IsAddNewClicked;
     this.IsActiveStatus=true;
     this.ViewClassClicked=false;
+    
   };
 
   // FetchSyllabusList() {
@@ -277,17 +349,16 @@ export class FeeDiscountCategoryComponent extends BasePermissionComponent {
     else{
       const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
       const data = {
-        FeeCategoryName: this.ClassForm.get('Name')?.value,
-        FeeType: this.ClassForm.get('Feetype')?.value,
-        FeeCollectionDuration: this.ClassForm.get('FeeCollectionDuration')?.value,
-        FeeDueDay: this.ClassForm.get('DueDay')?.value,
-        FineType: this.ClassForm.get('Finetype')?.value,
-        FineValue: this.ClassForm.get('FineValue')?.value,
-        FineCollectionType: this.ClassForm.get('FinecollectionType')?.value,
-        FineIncrementIn: this.ClassForm.get('FineIncrementIn')?.value,
+        Name: this.ClassForm.get('Name')?.value,
+        StartDate: this.ClassForm.get('StartDate')?.value,
+        EndDate: this.ClassForm.get('EndDate')?.value,
+        FeeCategory: this.ClassForm.get('FeeCategory')?.value,
+        DiscountType: this.ClassForm.get('DiscountType')?.value,
+        MinAmountForDiscount: this.ClassForm.get('MinAmountForDiscount')?.value,
+        DiscountValuePerInstallment: this.ClassForm.get('DiscountValuePerInstallment')?.value,
         Description: this.ClassForm.get('Description')?.value,
-        SchoolID: this.ClassForm.get('SchoolID')?.value,
-        // AcademicYear: this.ClassForm.get('School')?.value,  
+        SchoolID: this.ClassForm.get('School')?.value,
+        AcademicYear: this.ClassForm.get('AcademicYear')?.value,
         IsActive:IsActiveStatusNumeric,
         Flag: '1'
       };
@@ -297,14 +368,20 @@ export class FeeDiscountCategoryComponent extends BasePermissionComponent {
           if (response.statusCode === 200) {
             this.IsAddNewClicked=!this.IsAddNewClicked;
             this.isModalOpen = true;
-            this.AminityInsStatus = "Fee DiscountCategory Details Submitted!";
+            this.AminityInsStatus = "Fee Category Details Submitted!";
             this.ClassForm.reset();
             this.ClassForm.markAsPristine();
 
           }
         },
-        error: (error) => {
-          this.AminityInsStatus = "Error Submitting Fee Discount Category.";
+        error: (err:any) => {
+          if (err.status === 400 && err.error?.message) {
+            this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+          } else if (err.status === 500 && err.error?.Message) {
+            this.AminityInsStatus = err.error.Message;  // Database or internal error
+          } else {
+            this.AminityInsStatus = "Unexpected error occurred.";
+          }
           this.isModalOpen = true;
         },
         complete: () => {
@@ -338,17 +415,18 @@ export class FeeDiscountCategoryComponent extends BasePermissionComponent {
           this.viewSyllabus = {
             ID: item.id,
             SchoolID: item.schoolID,
-            FeeCategoryName: item.feeCategoryName,
-            FeeType: item.feeType,
-            FeeCollectionDuration: item.feeCollectionDuration,
-            FeeDueDay: item.feeDueDay,
-            FineType: item.fineType,
-            FineValue: item.fineValue,
-            FineCollectionType: item.fineCollectionType,
-            FineIncrementIn: item.fineIncrementIn,
-            Description: item.description,
+            Name: item.name,
+            StartDate: item.startDate,
+            EndDate: item.endDate,
+            FeeCategory:item.feeCategory,
+            DiscountType:item.discountType,
+            MinAmountForDiscount:item.minAmountForDiscount,
+            DiscountValuePerInstallment:item.discountValuePerInstallment,
+            FineIncrementIn:item.fineIncrementIn,
+            Description:item.description,
             SchoolName: item.schoolName,
             AcademicYearName: item.academicYearName,
+            FeeCategoryName:item.feeCategoryName,
             IsActive: isActive 
           };
 
@@ -361,18 +439,22 @@ export class FeeDiscountCategoryComponent extends BasePermissionComponent {
           this.ClassForm.patchValue({
             ID: item.id,
             SchoolID: item.schoolID,
-            Name: item.feeCategoryName,
-            FeeType: item.feeType,
-            FeeCollectionDuration:item.feeCollectionDuration,
-            FeeDueDay:item.feeDueDay,
-            FineType:item.fineType,
-            FineValue:item.fineValue,
-            FineCollectionType:item.fineCollectionType,
+            Name: item.name,
+            StartDate: this.formatDateYYYYMMDD(item.startDate),
+            EndDate:this.formatDateYYYYMMDD( item.endDate),
+            FeeCategory:item.feeCategory,
+            DiscountType:item.discountType,
+            MinAmountForDiscount:item.minAmountForDiscount,
+            DiscountValuePerInstallment:item.discountValuePerInstallment,
             FineIncrementIn:item.fineIncrementIn,
-            AcademicYearName:item.academicYearName,
             Description:item.description,
-            School:item.schoolID
+            School:item.schoolID,
+            AcademicYear:item.academicYear
           });
+          this.AdminselectedSchoolID=item.schoolID;
+          this.AdminselectedAcademivYearID=item.academicYear;
+          this.FetchAcademicYearsList();
+          this.FetchFeeCategoryList();
           this.IsActiveStatus = isActive;
           this.IsAddNewClicked = true;
         }
@@ -393,17 +475,16 @@ export class FeeDiscountCategoryComponent extends BasePermissionComponent {
       const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
       const data = {
         ID:this.ClassForm.get('ID')?.value || '',
-        FeeCategoryName: this.ClassForm.get('Name')?.value,
-        FeeType: this.ClassForm.get('Feetype')?.value,
-        FeeCollectionDuration: this.ClassForm.get('FeeCollectionDuration')?.value,
-        FeeDueDay: this.ClassForm.get('DueDay')?.value,
-        FineType: this.ClassForm.get('Finetype')?.value,
-        FineValue: this.ClassForm.get('FineValue')?.value,
-        FineCollectionType: this.ClassForm.get('FinecollectionType')?.value,
-        FineIncrementIn: this.ClassForm.get('FineIncrementIn')?.value,
+        Name: this.ClassForm.get('Name')?.value,
+        StartDate: this.ClassForm.get('StartDate')?.value,
+        EndDate: this.ClassForm.get('EndDate')?.value,
+        FeeCategory: this.ClassForm.get('FeeCategory')?.value,
+        DiscountType: this.ClassForm.get('DiscountType')?.value,
+        MinAmountForDiscount: this.ClassForm.get('MinAmountForDiscount')?.value,
+        DiscountValuePerInstallment: this.ClassForm.get('DiscountValuePerInstallment')?.value,
         Description: this.ClassForm.get('Description')?.value,
         SchoolID: this.ClassForm.get('School')?.value,
-        // AcademicYear: this.ClassForm.get('School')?.value,
+        AcademicYear: this.ClassForm.get('AcademicYear')?.value,
         IsActive:IsActiveStatusNumeric,
         Flag: '5'
       };
@@ -413,13 +494,19 @@ export class FeeDiscountCategoryComponent extends BasePermissionComponent {
           if (response.statusCode === 200) {
             this.IsAddNewClicked=!this.IsAddNewClicked;
             this.isModalOpen = true;
-            this.AminityInsStatus = "FeeDiscountCategory Details Updated!";
+            this.AminityInsStatus = "FeeCategory Details Updated!";
             this.ClassForm.reset();
             this.ClassForm.markAsPristine();
           }
         },
-        error: (error) => {
-          this.AminityInsStatus = "Error Updating FeeDiscountCategory.";
+        error: (err:any) => {
+          if (err.status === 400 && err.error?.message) {
+            this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+          } else if (err.status === 500 && err.error?.Message) {
+            this.AminityInsStatus = err.error.Message;  // Database or internal error
+          } else {
+            this.AminityInsStatus = "Unexpected error occurred.";
+          }
           this.isModalOpen = true;
         },
         complete: () => {
@@ -655,5 +742,47 @@ export class FeeDiscountCategoryComponent extends BasePermissionComponent {
   viewReview(SyllabusID: string): void {
     this.FetchSyllabusDetByID(SyllabusID,'view');
     this.isViewModalOpen=true;
+  };
+
+  onAdminSchoolChange(event: Event) {
+    this.academicYearList=[];
+    this.ClassForm.get('AcademicYear').patchValue('0');
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    if(schoolID=="0"){
+      this.AdminselectedSchoolID="";
+    }else{
+      this.AdminselectedSchoolID = schoolID;
+    }   
+    this.FetchAcademicYearsList();
+  };
+
+
+  onAdminAcademicyearChange(event: Event){
+    this.feecategorylist=[];
+     this.ClassForm.get('FeeCategory').patchValue('0');
+    const target = event.target as HTMLSelectElement;
+    const AcademicYearID = target.value;
+    if(AcademicYearID=="0"){
+      this.AdminselectedAcademivYearID="";
+    }else{
+      this.AdminselectedAcademivYearID = AcademicYearID;
+    }   
+    this.FetchFeeCategoryList();
+  }
+
+
+  onFineTypeChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    this.ClassForm.get('FineIncrementIn').patchValue('0');
+    if(schoolID=="Percentage"){
+      this.FineCollectionTypePercentage=true;
+      this.ClassForm.get('FineIncrementIn')?.setValidators([Validators.required,Validators.min(1)]);
+    }else{
+      this.FineCollectionTypePercentage=false;
+      this.ClassForm.get('FineIncrementIn')?.clearValidators();
+    }   
+    this.ClassForm.get('FineIncrementIn')?.updateValueAndValidity();
   };
 }
