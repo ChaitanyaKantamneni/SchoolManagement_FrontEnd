@@ -162,10 +162,11 @@
             <div class="InputRow">
               <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <label class="inputLabel" for="email">Class <span class="required">*</span></label>
+                
                 <div class="input-with-error">
                   <select class="inputField" type="date" formControlName="Class" placeholder="Select Class">
                     <option value="0" disabled>Select Class</option>
-                    <option *ngFor="let Syllabus of SyllabusList" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option>
+                    <option *ngFor="let Syllabus of SyllabusList" value="{{Syllabus.ID}}">{{Syllabus.Name}} </option>
                   </select>
                   <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
                   <div *ngIf="ClassDivisionForm.get('Class')?.hasError('min') && (ClassDivisionForm.get('Class')?.touched || ClassDivisionForm.get('Class')?.dirty)" class="text-danger">

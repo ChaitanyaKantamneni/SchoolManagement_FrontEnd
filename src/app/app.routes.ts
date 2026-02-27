@@ -54,7 +54,6 @@ import { SubjectStaffComponent } from './Admin/Masters/subject-staff/subject-sta
 import { AdmissionComponent } from './Admin/AcademicModule/admission/admission.component';
 import { AllotClassTeacherComponent } from './Admin/AcademicModule/allot-class-teacher/allot-class-teacher.component';
 import { PromotionComponent } from './Admin/AcademicModule/promotion/promotion.component';
-import { DePromotionComponent } from './Admin/AcademicModule/de-promotion/de-promotion.component';
 import { TransferStudentsComponent } from './Admin/AcademicModule/transfer-students/transfer-students.component';
 import { BusesComponent } from './Admin/Transporation/buses/buses.component';
 import { RoutesComponent } from './Admin/Transporation/routes/routes.component';
@@ -99,8 +98,7 @@ export const routes: Routes = [
       { path: 'Role', component: RolesComponent },
       { path: 'Admission', component: AdmissionComponent },
       { path: 'AllotClassTeacher', component: AllotClassTeacherComponent },
-      { path: 'Promotion', component: PromotionComponent },
-      { path: 'DePromotion', component: DePromotionComponent },
+      { path: 'ClassTransition', component: PromotionComponent },
       { path: 'TransferStudents', component: TransferStudentsComponent },
       { path: 'Bus', component: BusesComponent },
       { path: 'Routes', component: RoutesComponent },
@@ -143,8 +141,7 @@ export const routes: Routes = [
       { path: 'Roles', component: RolesComponent },
       { path: 'Admission', component: AdmissionComponent },
       { path: 'AllotClassTeacher', component: AllotClassTeacherComponent },
-      { path: 'Promotion', component: PromotionComponent },
-      { path: 'DePromotion', component: DePromotionComponent },
+      { path: 'ClassTransition', component: PromotionComponent },
       { path: 'TransferStudents', component: TransferStudentsComponent },
       { path: 'Bus', component: BusesComponent },
       { path: 'Routes', component: RoutesComponent },
@@ -191,8 +188,7 @@ export const routes: Routes = [
       { path: 'Roles', component: RolesComponent },
       { path: 'Admission', component: AdmissionComponent },
       { path: 'AllotClassTeacher', component: AllotClassTeacherComponent },
-      { path: 'Promotion', component: PromotionComponent },
-      { path: 'DePromotion', component: DePromotionComponent },
+      { path: 'ClassTransition', component: PromotionComponent },
       { path: 'TransferStudents', component: TransferStudentsComponent },
       { path: 'Bus', component: BusesComponent },
       { path: 'Routes', component: RoutesComponent },

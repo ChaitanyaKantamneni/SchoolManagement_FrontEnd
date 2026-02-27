@@ -5,65 +5,98 @@
   <div *ngIf="!IsAddNewClicked" class="w-100">
     <div class="ComponentTop">
       <div class="ComponentTopHeader">
-        <h5>Class Management</h5>
-        <p>Total {{ ClassCount }} Class Added</p>
+        <h5>Class Teacher Management</h5>
+        <p>Total {{ ClassDivisionCount }} Class Teachers Allocated</p>
       </div>
       <div class="ComponentTopBottom">
-        <button class="btnHover" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Class</button>
+        <button *ngIf="canAdd()" class="btnHover" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Allot Class Teacher</button>
       </div>
     </div>
     <div class="ComponentRecords">
       <div>
-        <div class="ComponentRecordsTop" *ngIf="ListedClassList.length != 0">
-          <div class="searchreview input-container" >
-            <input type="text" id="searchQuery" class="form-control floating-input"
-              [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search... "  />
-            <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
-            <!-- <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i> -->
+        <div class="ComponentRecordsTop">
+          <div class="filterOptions">
+            <div class="searchreview input-container" >
+              <input type="text" id="searchQuery" class="form-control floating-input"
+                [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search... "  />
+              <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
+              <!-- <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i> -->
+            </div>
+            <div class="searchreview" *ngIf="isAdmin">
+              <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
+                <option value="">-- Select School --</option>
+                <option value="0">All Schools</option>
+                <option *ngFor="let school of schoolList" [value]="school.ID">
+                  {{ school.Name }}
+                </option>
+              </select>
+            </div>
           </div>
-          <div class="DownloadButtons">
-            <button class="btnHover" (click)="copyTable()"><mat-icon>content_copy</mat-icon></button>
-            <button class="btnHover" (click)="exportToExcel()"><mat-icon>file_download</mat-icon></button>
-            <button class="btnHover" (click)="printTable()"><mat-icon>print</mat-icon></button>
-          </div>
+          <!-- <div class="DownloadButtons" *ngIf="ClassDivisionList.length != 0">
+            <button class="btnHover" (click)="exportSyllabus('pdf')"><mat-icon>picture_as_pdf</mat-icon></button>
+            <button class="btnHover" (click)="exportSyllabus('excel')"><mat-icon>description</mat-icon></button>
+            <button class="btnHover" (click)="exportSyllabus('print')"><mat-icon>print</mat-icon></button>
+          </div> -->
         </div>
         <div class="reviewstable">
-          <table id="classTable" *ngIf="ListedClassList.length != 0" class="table table-bordered">
+          <table id="classTable" *ngIf="ClassDivisionList.length != 0" class="table table-bordered">
             <thead>
               <tr>
                 <th class="visually-hidden">Academic Year ID</th>
-                <th>SI.No</th>
-                <th>Name</th>
-                <th>Syllabus</th>
+                <th>SI.No</th>                
+                <th (click)="sort('Class')" class="sortable-column">
+                  <span class="column-text">Class </span>
+                  <span class="arrows">
+                    <mat-icon 
+                      [style.color]="sortColumn === 'Class' && sortDirection === 'asc' ? 'red' : 'inherit'">
+                      keyboard_arrow_up
+                    </mat-icon>
+                    <mat-icon 
+                      [style.color]="sortColumn === 'Class' && sortDirection === 'desc' ? 'red' : 'inherit'">
+                      keyboard_arrow_down
+                    </mat-icon>
+                  </span>
+                </th>
+                <th>Division</th>
+                <th>Class Teacher</th>
+                <th *ngIf="isAdmin">School Name</th>
+                <th>Academic Year</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let Class of getPaginatedClassLists(),let i = index">
+              <tr *ngFor="let Class of ClassDivisionList,let i = index">
                 <td data-label="ID" class="visually-hidden">{{ Class.ID }}</td>
                 <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-                <td data-label="Name">{{ Class.Name }}</td>
-                <td data-label="AvailableFrom">{{ getSyllabusName(Class.Syllabus) }}</td>
+                <td data-label="Class">{{ Class.ClassName }}</td>
+                <td data-label="DivisionName">{{ Class.DivisionName }}</td>
+                <td data-label="SchoolName">{{ Class.StaffName }}</td>
+                <td data-label="AcademicYearName" *ngIf="isAdmin">{{ Class.SchoolName }}</td>
+                <td data-label="strength">{{ Class.AcademicYearName }}</td>
                 <td data-label="Status">{{ Class.IsActive }}</td>
                 <td data-label="Actions">
                   <div class="d-flex justify-content-center align-items-center h-100">
                     <!-- (click)="editreview(aminitie.propertyTypeID)" -->
-                    <button class="btn checkbtn" data-tooltip="Edit" (click)="editreview(Class.ID)">
+                    <button *ngIf="canEdit()" class="btn checkbtn edit" data-tooltip="Edit" (click)="editreview(Class.ID)">
                       <mat-icon class="mat-edit-icon">edit</mat-icon>
+                    </button>
+                    <button *ngIf="canView()" class="btn checkbtn" data-tooltip="View" (click)="viewReview(Class.ID)">
+                      <mat-icon class="mat-edit-icon">visibility</mat-icon>
                     </button>
                   </div>
                 </td>
               </tr>
             </tbody>
           </table>
-          <div *ngIf="ListedClassList.length === 0" class="NoDataFound">
+          <div *ngIf="ClassDivisionList.length === 0" class="NoDataFound">
             <div class="NoDataFoundImg">
               <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
             </div>
             <p>No data found.</p>
           </div>
-          <div *ngIf="ListedClassList.length > 5" class="pagination-controls">
+          <div *ngIf="ClassDivisionCount > pageSize" class="pagination-controls">
+            <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
             <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
             <button *ngFor="let page of getVisiblePageNumbers()"
                     class="page-btn"
@@ -72,6 +105,7 @@
               {{ page }}
             </button>
             <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
           </div>
         </div>
       </div>
@@ -81,56 +115,106 @@
     <div class="AddForm">
       <div class="AddFormTop">
         <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
-        <p>Add Class</p>
+        <p>Allot Class Teacher</p>
       </div>
       <div class="AddFormConatiner">
-        <form [formGroup]="ClassForm">
+        <form [formGroup]="ClassDivisionForm">
           <div class="FormInputRowsContainer">
             <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Name</label>
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">School <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
+                  <select class="inputField" type="date" formControlName="School" placeholder="Select Start Date" (change)="onAdminSchoolChange($event)" >
+                    <option value="0">-- Select School --</option>
+                    <option *ngFor="let school of schoolList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="ClassDivisionForm.get('School')?.hasError('min') && (ClassDivisionForm.get('School')?.touched || ClassDivisionForm.get('School')?.dirty)" class="text-danger">
+                      <small>Please Select School.</small>
+                  </div>
+                </div>
+              </div> 
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="AcademicYear" placeholder="Select Start Date" (change)="onAdminAcademicYearChange($event)" >
+                    <option value="0">-- Select Academic Year --</option>
+                    <option *ngFor="let school of academicYearList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="ClassDivisionForm.get('AcademicYear')?.hasError('min') && (ClassDivisionForm.get('AcademicYear')?.touched || ClassDivisionForm.get('AcademicYear')?.dirty)" class="text-danger">
+                      <small>Please Select Academic Year.</small>
                   </div>
                 </div>
               </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Syllabus</label>
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <label class="inputLabel" for="email">Class <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="Syllabus" placeholder="Select Start Date">
-                    <option value="0" disabled>Select Syllabus</option>
+                  <select class="inputField" type="date" formControlName="Class" placeholder="Select Class" (change)="onAdminClassChange($event)">
+                    <option value="0" disabled>Select Class</option>
                     <option *ngFor="let Syllabus of SyllabusList" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option>
                   </select>
                   <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Select Syllabus.</small>
-                    </div>
+                  <div *ngIf="ClassDivisionForm.get('Class')?.hasError('min') && (ClassDivisionForm.get('Class')?.touched || ClassDivisionForm.get('Class')?.dirty)" class="text-danger">
+                      <small>Please Select Class.</small>
                   </div>
                 </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <span style="visibility: hidden;">hello adding new academic year</span>
               </div>
             </div>
             <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Description</label>
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">Class <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="2"></textarea>
-                  <!-- <input class="inputField" id="email" formControlName="Name" placeholder="Enter Name" /> -->
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Description.</small>
-                    </div>
+                  <select class="inputField" type="date" formControlName="Class" placeholder="Select Class" (change)="onAdminClassChange($event)">
+                    <option value="0" disabled>Select Class</option>
+                    <option *ngFor="let Syllabus of SyllabusList" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option>
+                  </select>
+                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                  <div *ngIf="ClassDivisionForm.get('Class')?.hasError('min') && (ClassDivisionForm.get('Class')?.touched || ClassDivisionForm.get('Class')?.dirty)" class="text-danger">
+                      <small>Please Select Class.</small>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Division <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="Division" placeholder="Select Division">
+                    <option value="0" disabled>Select Division</option>
+                    <option *ngFor="let Syllabus of DivisionsList" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option>
+                  </select>
+                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                  <div *ngIf="ClassDivisionForm.get('Division')?.hasError('min') && (ClassDivisionForm.get('Division')?.touched || ClassDivisionForm.get('Division')?.dirty)" class="text-danger">
+                      <small>Please Select Division.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <label class="inputLabel" for="email">Class Teacher <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="ClassTeacher" placeholder="Select Class Teacher">
+                    <option value="0" disabled>Select Class Teacher</option>
+                    <option *ngFor="let Syllabus of ClassTeachersList" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option>
+                  </select>
+                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                  <div *ngIf="ClassDivisionForm.get('ClassTeacher')?.hasError('min') && (ClassDivisionForm.get('ClassTeacher')?.touched || ClassDivisionForm.get('ClassTeacher')?.dirty)" class="text-danger">
+                      <small>Please Select Class Teacher.</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="InputRow" *ngIf="isAdmin">
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">Class Teacher <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="ClassTeacher" placeholder="Select Class">
+                    <option value="0" disabled>Select Class Teacher</option>
+                    <option *ngFor="let Syllabus of ClassTeachersList" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option>
+                  </select>
+                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                  <div *ngIf="ClassDivisionForm.get('Class')?.hasError('min') && (ClassDivisionForm.get('Class')?.touched || ClassDivisionForm.get('Class')?.dirty)" class="text-danger">
+                      <small>Please Select Class Teacher.</small>
+                  </div>
+                </div>
+              </div>
+              <!-- <div class="InputFieldsContainer" >
                 <div class="toggle-container" (click)="$event.stopPropagation()">
                   <label class="switch">
                     <input type="checkbox" [checked]="IsActiveStatus" (click)="toggleChange()">
@@ -147,15 +231,15 @@
                     </span>
                   </label>
                 </div>
-              </div>
+              </div>  -->
               <div class="InputFieldsContainer">
-                <span style="visibility: hidden;">hello adding new academic year</span>
-              </div>
+                <span style="visibility: hidden;height: 3px;">hello adding new academic year</span>
+              </div>               
             </div>
           </div>
           <div class="ActionButtons">
-            <button class="btn" *ngIf="ViewClassClicked" (click)="UpdateClass()">Update</button>
-            <button class="btn" *ngIf="!ViewClassClicked" (click)="SubmitClass()">Submit</button>
+            <button class="btn" *ngIf="ViewClassDivisionClicked && canEdit()" (click)="UpdateClassDivision()">Update</button>
+            <button class="btn" *ngIf="!ViewClassDivisionClicked && canAdd()" (click)="SubmitClassDivision()">Submit</button>
           </div>
         </form>
       </div>
@@ -167,7 +251,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Application Status</h5>
-        <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+        <button type="button" class="close" aria-label="Close" (click)="closeModal('status')">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
@@ -177,6 +261,47 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" (click)="handleOk()">OK</button>
       </div>
+    </div>
+  </div>
+</div>
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Class Teacher Details</h5>
+        <button type="button" class="close" (click)="closeModal('view')">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-2" *ngIf="viewSyllabus?.ClassName">
+          <div class="col-6 viewHeadingfontsize">Class</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.ClassName }}</div>
+        </div>
+        
+        <div class="row mb-2" *ngIf="viewSyllabus?.DivisionName">
+          <div class="col-6 viewHeadingfontsize">Division</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.DivisionName }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.StaffName">
+          <div class="col-6 viewHeadingfontsize">Class Teacher Name</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.StaffName }}</div>
+        </div>        
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.SchoolName">
+          <div class="col-6 viewHeadingfontsize">School Name</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.SchoolName }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.AcademicYearName">
+          <div class="col-6 viewHeadingfontsize">Academic Year</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.AcademicYearName }}</div>
+        </div>
+      </div>
+      <!-- <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeModal()">Close</button>
+      </div> -->
     </div>
   </div>
 </div>

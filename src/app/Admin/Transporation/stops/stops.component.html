@@ -121,6 +121,30 @@
         <form [formGroup]="SyllabusForm">
           <div class="FormInputRowsContainer">
             <div class="InputRow">
+               <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">School <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="School" placeholder="Select Start Date" (change)="onAdminSchoolChange($event)" >
+                    <option value="0">-- Select School --</option>
+                    <option *ngFor="let school of schoolList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="SyllabusForm.get('School')?.hasError('min') && (SyllabusForm.get('School')?.touched || SyllabusForm.get('School')?.dirty)" class="text-danger">
+                      <small>Please Select School.</small>
+                  </div>
+                </div>
+              </div> 
+               <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="AcademicYear" placeholder="Select Start Date" >
+                    <option value="0">-- Select Academic Year --</option>
+                    <option *ngFor="let school of academicYearList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="SyllabusForm.get('AcademicYear')?.hasError('min') && (SyllabusForm.get('AcademicYear')?.touched || SyllabusForm.get('AcademicYear')?.dirty)" class="text-danger">
+                      <small>Please Select Academic Year.</small>
+                  </div>
+                </div>
+              </div>
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Bus Route <span class="required">*</span></label>
                 <div class="input-with-error">
@@ -134,7 +158,23 @@
                   </div>
                 </div>
               </div>
-              <div class="InputFieldsContainer">
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <label class="inputLabel" for="email">Stop Name <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Stop Name" (keydown)="allowAlphaAndSpecial($event)" />
+                  <div *ngIf="(SyllabusForm.get('Name' ) ?. touched && SyllabusForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(SyllabusForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Stop Name.</small>
+                    </div>
+                    <div *ngIf="(SyllabusForm.get('Name' ) ?. errors ?. ['pattern' ]) ">
+                      <small>Only Alphabets and Special Characters.</small>
+                    </div>
+                  </div>
+                </div>
+              </div> 
+            </div>
+            <div class="InputRow">
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <label class="inputLabel" for="email">Stop Name <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" formControlName="Name" placeholder="Enter Stop Name" (keydown)="allowAlphaAndSpecial($event)" />
@@ -148,12 +188,10 @@
                   </div>
                 </div>
               </div>     
-            </div>
-            <div class="InputRow">
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Stop Order <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="StopOrder" placeholder="Enter Stop Order" (keydown)="allowOnlyNumbers($event)" />
+                  <input class="inputField" formControlName="StopOrder" placeholder="Enter Stop Order" (keydown)="allowOnlyNumbers($event)" minlength="1" maxlength="3" />
                   <div *ngIf="(SyllabusForm.get('StopOrder' ) ?. touched && SyllabusForm.get('StopOrder' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(SyllabusForm.get('StopOrder' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter Stop Order.</small>
@@ -167,7 +205,7 @@
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Distance <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Distance" placeholder="Enter Distance" (keydown)="allowOnlyNumbers($event)" />
+                  <input class="inputField" formControlName="Distance" placeholder="Enter Distance" (keydown)="allowOnlyNumbers($event)" minlength="1" maxlength="3" />
                   <div *ngIf="(SyllabusForm.get('Distance' ) ?. touched && SyllabusForm.get('Distance' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(SyllabusForm.get('Distance' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter Distance.</small>
@@ -177,10 +215,28 @@
                     </div>
                   </div>
                 </div>
+              </div>
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <div class="toggle-container" (click)="$event.stopPropagation()">
+                  <label class="switch">
+                    <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
+                    <span class="slider">
+                      <span
+                        class="toggle-text"
+                        [ngStyle]="{
+                          left: IsActiveStatus ? '42%' : '60%',
+                          fontSize: IsActiveStatus ? '9px' : '9px'
+                        }"
+                      >
+                        {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                      </span>
+                    </span>
+                  </label>
+                </div>
               </div> 
             </div>
-            <div class="InputRow">
-              <div class="InputFieldsContainer">
+            <div class="InputRow" *ngIf="isAdmin">
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <div class="toggle-container" (click)="$event.stopPropagation()">
                   <label class="switch">
                     <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
@@ -238,33 +294,40 @@
       </div>
       <div class="modal-body">
         <div class="row mb-2">
-          <div class="col-4">Route Name</div>
-          <div class="col-8">{{ viewSyllabus?.RouteName }}</div>
+          <div class="col-6 viewHeadingfontsize">Route Name</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.RouteName }}</div>
         </div>
 
         <div class="row mb-2">
-          <div class="col-4">Stop Name</div>
-          <div class="col-8">{{ viewSyllabus?.StopName }}</div>
+          <div class="col-6 viewHeadingfontsize">Stop Name</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.StopName }}</div>
         </div>
 
          <div class="row mb-2">
-          <div class="col-4">Stop Order</div>
-          <div class="col-8">{{ viewSyllabus?.StopOrder }}</div>
+          <div class="col-6 viewHeadingfontsize">Stop Order</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.StopOrder }}</div>
         </div>
 
          <div class="row mb-2">
-          <div class="col-4">Distance</div>
-          <div class="col-8">{{ viewSyllabus?.Distance }}</div>
+          <div class="col-6 viewHeadingfontsize">Distance</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.Distance }}</div>
         </div>
 
          <div class="row mb-2">
-          <div class="col-4">School Name</div>
-          <div class="col-8">{{ viewSyllabus?.SchoolName }}</div>
+          <div class="col-6 viewHeadingfontsize">School Name</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.SchoolName }}</div>
         </div>
+
+        <div>
+          <div class="row mb-2" *ngIf="viewSyllabus?.AcademicYearName">
+          <div class="col-6 viewHeadingfontsize">Academic Year</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.AcademicYearName }}</div>
+        </div>
+
 
         <div class="row mb-2">
-          <div class="col-4">Status</div>
-          <div class="col-8">
+          <div class="col-6 viewHeadingfontsize">Status</div>
+          <div class="col-6">
             <span class="badge"
                   [ngClass]="viewSyllabus?.IsActive ? 'badge-success' : 'badge-danger'">
               {{ viewSyllabus?.IsActive ? 'Active' : 'Inactive' }}

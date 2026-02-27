@@ -109,6 +109,30 @@
         <form [formGroup]="SyllabusForm">
           <div class="FormInputRowsContainer">
             <div class="InputRow">
+               <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">School <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="School" placeholder="Select Start Date" (change)="onAdminSchoolChange($event)" >
+                    <option value="0">-- Select School --</option>
+                    <option *ngFor="let school of schoolList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="SyllabusForm.get('School')?.hasError('min') && (SyllabusForm.get('School')?.touched || SyllabusForm.get('School')?.dirty)" class="text-danger">
+                      <small>Please Select School.</small>
+                  </div>
+                </div>
+              </div> 
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="AcademicYear" placeholder="Select Start Date" >
+                    <option value="0">-- Select Academic Year --</option>
+                    <option *ngFor="let school of academicYearList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="SyllabusForm.get('AcademicYear')?.hasError('min') && (SyllabusForm.get('AcademicYear')?.touched || SyllabusForm.get('AcademicYear')?.dirty)" class="text-danger">
+                      <small>Please Select Academic Year.</small>
+                  </div>
+                </div>
+              </div>
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Route <span class="required">*</span></label>
                 <div class="input-with-error">
@@ -122,7 +146,7 @@
                   </div>
                 </div>
               </div>
-              <div class="InputFieldsContainer">
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
                 <label class="inputLabel" for="email">Stop <span class="required">*</span></label>
                 <div class="input-with-error">
                   <select class="inputField" type="date" formControlName="Stop" placeholder="Select Stop">
@@ -137,6 +161,19 @@
               </div>    
             </div>
             <div class="InputRow">
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">Stop <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="Stop" placeholder="Select Stop">
+                    <option value="0" disabled>Select Stop</option>
+                    <option *ngFor="let Stop of StopList" value="{{Stop.ID}}">{{Stop.Name}}</option>
+                  </select>
+                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                  <div *ngIf="SyllabusForm.get('Stop')?.hasError('min') && (SyllabusForm.get('Stop')?.touched || SyllabusForm.get('Stop')?.dirty)" class="text-danger">
+                      <small>Please Select Stop.</small>
+                  </div>
+                </div>
+              </div>  
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Bus <span class="required">*</span></label>
                 <div class="input-with-error">
@@ -160,10 +197,28 @@
                     </div>
                   </div>
                 </div>
-              </div>     
+              </div> 
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <div class="toggle-container" (click)="$event.stopPropagation()">
+                  <label class="switch">
+                    <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
+                    <span class="slider">
+                      <span
+                        class="toggle-text"
+                        [ngStyle]="{
+                          left: IsActiveStatus ? '42%' : '60%',
+                          fontSize: IsActiveStatus ? '9px' : '9px'
+                        }"
+                      >
+                        {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </div>    
             </div>
-            <div class="InputRow">
-              <div class="InputFieldsContainer">
+            <div class="InputRow" *ngIf="isAdmin">
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <div class="toggle-container" (click)="$event.stopPropagation()">
                   <label class="switch">
                     <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
@@ -221,30 +276,40 @@
       </div>
       <div class="modal-body">
         <div class="row mb-2">
-          <div class="col-4">Route</div>
-          <div class="col-8">{{ viewSyllabus?.RouteName }}</div>
+          <div class="col-6 viewHeadingfontsize">Route</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.RouteName }}</div>
         </div>
 
         <div class="row mb-2">
-          <div class="col-4">Stop </div>
-          <div class="col-8">{{ viewSyllabus?.StopName }}</div>
+          <div class="col-6 viewHeadingfontsize">Stop </div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.StopName }}</div>
         </div>
 
          <div class="row mb-2">
-          <div class="col-4"> Bus</div>
-          <div class="col-8">{{ viewSyllabus?.BusName }}</div>
+          <div class="col-6 viewHeadingfontsize"> Bus</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.BusName }}</div>
         </div>
 
          <div class="row mb-2">
-          <div class="col-4">Amount </div>
-          <div class="col-8">{{ viewSyllabus?.Amount }}</div>
+          <div class="col-6 viewHeadingfontsize">Amount </div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.Amount }}</div>
+        </div>
+        <div>
+          <div class="row mb-2" *ngIf="viewSyllabus?.SchoolName">
+          <div class="col-6 viewHeadingfontsize">School Name</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.SchoolName }}</div>
         </div>
 
+        <div>
+          <div class="row mb-2" *ngIf="viewSyllabus?.AcademicYearName">
+          <div class="col-6 viewHeadingfontsize">Academic Year</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.AcademicYearName }}</div>
+        </div>
       
 
         <div class="row mb-2">
-          <div class="col-4">Status</div>
-          <div class="col-8">
+          <div class="col-6 viewHeadingfontsize">Status</div>
+          <div class="col-6">
             <span class="badge"
                   [ngClass]="viewSyllabus?.IsActive ? 'badge-success' : 'badge-danger'">
               {{ viewSyllabus?.IsActive ? 'Active' : 'Inactive' }}

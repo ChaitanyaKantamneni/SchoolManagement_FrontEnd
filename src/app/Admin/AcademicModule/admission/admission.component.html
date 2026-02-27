@@ -6,64 +6,95 @@
     <div class="ComponentTop">
       <div class="ComponentTopHeader">
         <h5>Admission Management</h5>
-        <p>Total {{ ClassCount }} Admissions Added</p>
+        <p>Total {{ SubjectsCount }} Admissions Added</p>
       </div>
       <div class="ComponentTopBottom">
-        <button class="btnHover" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Student Registration</button>
+        <button *ngIf="canAdd()" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Student Registration</button>
       </div>
     </div>
     <div class="ComponentRecords">
       <div>
-        <div class="ComponentRecordsTop" *ngIf="ListedClassList.length != 0">
-          <div class="searchreview input-container" >
-            <input type="text" id="searchQuery" class="form-control floating-input"
-              [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search... "  />
-            <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
-            <!-- <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i> -->
+        <div class="ComponentRecordsTop">
+          <div class="filterOptions">
+            <div class="searchreview input-container" >
+              <input type="text" id="searchQuery" class="form-control floating-input"
+                [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search... "  />
+              <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
+              <!-- <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i> -->
+            </div>
+            <div class="searchreview" *ngIf="isAdmin">
+              <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
+                <option value="">-- Select School --</option>
+                <option value="0">All Schools</option>
+                <option *ngFor="let school of schoolList" [value]="school.ID">
+                  {{ school.Name }}
+                </option>
+              </select>
+            </div>
           </div>
-          <div class="DownloadButtons">
-            <button class="btnHover" (click)="copyTable()"><mat-icon>content_copy</mat-icon></button>
-            <button class="btnHover" (click)="exportToExcel()"><mat-icon>file_download</mat-icon></button>
-            <button class="btnHover" (click)="printTable()"><mat-icon>print</mat-icon></button>
-          </div>
+          <!-- <div class="DownloadButtons" *ngIf="SubjectsList.length != 0">
+            <button class="btnHover" (click)="exportSyllabus('pdf')"><mat-icon>picture_as_pdf</mat-icon></button>
+            <button class="btnHover" (click)="exportSyllabus('excel')"><mat-icon>description</mat-icon></button>
+            <button class="btnHover" (click)="exportSyllabus('print')"><mat-icon>print</mat-icon></button>
+          </div> -->
         </div>
         <div class="reviewstable">
-          <table id="classTable" *ngIf="ListedClassList.length != 0" class="table table-bordered">
+          <table *ngIf="SubjectsList.length != 0" class="table table-bordered">
             <thead>
               <tr>
                 <th class="visually-hidden">Academic Year ID</th>
                 <th>SI.No</th>
-                <th>Name</th>
-                <th>Syllabus</th>
+                <th (click)="sort('AdmissionNo')" class="sortable-column">
+                  <span class="column-text">Admission No</span>
+                  <span class="arrows">
+                    <mat-icon 
+                      [style.color]="sortColumn === 'AdmissionNo' && sortDirection === 'asc' ? 'red' : 'inherit'">
+                      keyboard_arrow_up
+                    </mat-icon>
+                    <mat-icon 
+                      [style.color]="sortColumn === 'AdmissionNo' && sortDirection === 'desc' ? 'red' : 'inherit'">
+                      keyboard_arrow_down
+                    </mat-icon>
+                  </span>
+                </th>
+                <th *ngIf="isAdmin">School Name</th>
+                <th>Academic Year</th>
+                <th>Class</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let Class of getPaginatedClassLists(),let i = index">
-                <td data-label="ID" class="visually-hidden">{{ Class.ID }}</td>
+              <tr *ngFor="let Module of SubjectsList,let i = index">
+                <td data-label="ID" class="visually-hidden">{{ Module.ID }}</td>
                 <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-                <td data-label="Name">{{ Class.Name }}</td>
-                <td data-label="AvailableFrom">{{ getSyllabusName(Class.Syllabus) }}</td>
-                <td data-label="Status">{{ Class.IsActive }}</td>
+                <td data-label="AdmissionNo">{{ Module.AdmissionNo }}</td>
+                <td data-label="SchoolName" *ngIf="isAdmin">{{ Module.SchoolName }}</td>
+                <td data-label="AcademicYearName">{{ Module.AcademicYearName }}</td>
+                <td data-label="ClassName">{{ Module.ClassName }}</td>
+                <td data-label="Status">{{ Module.IsActive }}</td>
                 <td data-label="Actions">
                   <div class="d-flex justify-content-center align-items-center h-100">
                     <!-- (click)="editreview(aminitie.propertyTypeID)" -->
-                    <button class="btn checkbtn" data-tooltip="Edit" (click)="editreview(Class.ID)">
+                    <button *ngIf="canEdit()" class="btn checkbtn edit" data-tooltip="Edit" (click)="editreview(Module.AdmissionNo)">
                       <mat-icon class="mat-edit-icon">edit</mat-icon>
+                    </button>
+                    <button *ngIf="canView()" class="btn checkbtn" data-tooltip="View" (click)="viewReview(Module.AdmissionNo)">
+                      <mat-icon class="mat-edit-icon">visibility</mat-icon>
                     </button>
                   </div>
                 </td>
               </tr>
             </tbody>
           </table>
-          <div *ngIf="ListedClassList.length === 0" class="NoDataFound">
+          <div *ngIf="SubjectsList.length === 0" class="NoDataFound">
             <div class="NoDataFoundImg">
               <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
             </div>
             <p>No data found.</p>
           </div>
-          <div *ngIf="ListedClassList.length > 5" class="pagination-controls">
+          <div *ngIf="SubjectsCount > pageSize" class="pagination-controls">
+            <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
             <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
             <button *ngFor="let page of getVisiblePageNumbers()"
                     class="page-btn"
@@ -72,6 +103,7 @@
               {{ page }}
             </button>
             <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
           </div>
         </div>
       </div>
@@ -81,254 +113,303 @@
     <div class="AddForm">
       <div class="AddFormTop">
         <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
-        <p>Add Student</p>
+        <p>Student Registration</p>
       </div>
       <div class="AddFormConatiner">
-        <div class="ActionButtons">
-          <button class="btn" (click)="tabChange('personal')">Personal Details</button>
-          <button class="btn" (click)="tabChange('parents')">Parents Details</button>
-          <button class="btn" (click)="tabChange('permanent')">Permanent Address</button>
-          <button class="btn" (click)="tabChange('temporary')">Temporary Address</button>
-          <button class="btn" (click)="tabChange('login')">Login Details</button>
-          <button class="btn" (click)="tabChange('bus')">Allot Bus</button>
+        <div class="ActionButtons" *ngIf="ViewModuleClicked">
+          <button class="btn" [ngClass]="{'active-tab': activeTab === 'personal'}" (click)="tabChange('personal')">Personal Details</button>
+          <button class="btn" [ngClass]="{'active-tab': activeTab === 'parents'}" (click)="tabChange('parents')">Parents Details</button>
+          <button class="btn" [ngClass]="{'active-tab': activeTab === 'permanent'}" (click)="tabChange('permanent')">Permanent Address</button>
+          <button class="btn" [ngClass]="{'active-tab': activeTab === 'temporary'}" (click)="tabChange('temporary')">Temporary Address</button>
+          <!-- <button class="btn" (click)="tabChange('Academic')">Temporary Address</button> -->
+          <!-- <button class="btn" (click)="tabChange('login')">Login Details</button> -->
+          <button class="btn" [ngClass]="{'active-tab': activeTab === 'bus'}" (click)="tabChange('bus')">Allot Bus</button>
         </div>
-        <form [formGroup]="ClassForm">
-          <div *ngIf="activeTab === 'personal'" class="FormInputRowsContainer">
+        <form [formGroup]="ModuleForm">
+          <div class="FormInputRowsContainer" *ngIf="activeTab === 'personal'">
             <div class="InputRow">
-              <!-- <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Admission No</label>
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">School <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
+                  <select class="inputField" type="date" formControlName="School" placeholder="Select Start Date" (change)="onAdminSchoolChange($event)" >
+                    <option value="0">-- Select School --</option>
+                    <option *ngFor="let school of schoolList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="ModuleForm.get('School')?.hasError('min') && (ModuleForm.get('School')?.touched || ModuleForm.get('School')?.dirty)" class="text-danger">
+                      <small>Please Select School.</small>
+                  </div>
+                </div>
+              </div> 
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="AcademicYear" placeholder="Select Start Date" (change)="onAdminAcademicYearChange($event)" >
+                    <option value="0">-- Select Academic Year --</option>
+                    <option *ngFor="let school of academicYearList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="ModuleForm.get('AcademicYear')?.hasError('min') && (ModuleForm.get('AcademicYear')?.touched || ModuleForm.get('AcademicYear')?.dirty)" class="text-danger">
+                      <small>Please Select Academic Year.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Admission No <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="AdmissionNo" placeholder="Enter Name" readonly />
+                  <div *ngIf="(ModuleForm.get('AdmissionNo' ) ?. touched && ModuleForm.get('AdmissionNo' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('AdmissionNo' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter AdmissionNo.</small>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Academic Year</label>
+                <label class="inputLabel" for="email">Class <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="Syllabus" placeholder="Select Start Date">
-                    <option value="0" disabled>Select Academic Year</option>
-                    <option *ngFor="let Syllabus of SyllabusList" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option>
+                  <select class="inputField" type="date" formControlName="Class" placeholder="Select Start Date" (change)="onClassSelectedChange($event)" >
+                    <option value="0">-- Select Class --</option>
+                    <option *ngFor="let class of ClassList" value="{{class.ID}}">{{class.Name}}</option>
                   </select>
-                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> --
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Select Syllabus.</small>
-                    </div>
+                  <div *ngIf="ModuleForm.get('Class')?.hasError('min') && (ModuleForm.get('Class')?.touched || ModuleForm.get('Class')?.dirty)" class="text-danger">
+                      <small>Please Select Class.</small>
                   </div>
                 </div>
-              </div> -->
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Class</label>
+              </div>
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <label class="inputLabel" for="email">Division <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="Syllabus" placeholder="Select Start Date">
-                    <option value="0" disabled>Select Class</option>
-                    <option *ngFor="let Syllabus of SyllabusList" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option>
+                  <select class="inputField" type="date" formControlName="Division" placeholder="Select Start Date" >
+                    <option value="0">-- Select Division --</option>
+                    <option *ngFor="let division of DivisionList" value="{{division.ID}}">{{division.Name}}</option>
                   </select>
-                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Select Syllabus.</small>
+                  <div *ngIf="ModuleForm.get('Division')?.hasError('min') && (ModuleForm.get('Division')?.touched || ModuleForm.get('Division')?.dirty)" class="text-danger">
+                      <small>Please Select Division.</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="InputRow">
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">Division <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="Division" placeholder="Select Start Date" >
+                    <option value="0">-- Select Division --</option>
+                    <option *ngFor="let division of DivisionList" value="{{division.ID}}">{{division.Name}}</option>
+                  </select>
+                  <div *ngIf="ModuleForm.get('Division')?.hasError('min') && (ModuleForm.get('Division')?.touched || ModuleForm.get('Division')?.dirty)" class="text-danger">
+                      <small>Please Select Division.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">First Name <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="FirstName" placeholder="Enter First Name" (keydown)="allowAlphaAndSpecial($event)" />
+                  <div *ngIf="(ModuleForm.get('FirstName' ) ?. touched && ModuleForm.get('FirstName' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('FirstName' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter First Name.</small>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Division</label>
+                <label class="inputLabel" for="email">Middle Name </label>
                 <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="Syllabus" placeholder="Select Start Date">
-                    <option value="0" disabled>Select Division</option>
-                    <option *ngFor="let Syllabus of SyllabusList" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option>
-                  </select>
-                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Select Syllabus.</small>
+                  <input class="inputField" formControlName="MiddleName" placeholder="Enter Middle Name" (keydown)="allowAlphaAndSpecial($event)" />
+                  <div *ngIf="(ModuleForm.get('MiddleName' ) ?. touched && ModuleForm.get('MiddleName' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('MiddleName' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Middle Name.</small>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Date Of Join</label>
+                <label class="inputLabel" for="email">Last Name </label>
                 <div class="input-with-error">
-                  <input type="date" class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
+                  <input class="inputField" formControlName="LastName" placeholder="Enter Last Name" (keydown)="allowAlphaAndSpecial($event)" />
+                  <div *ngIf="(ModuleForm.get('LastName' ) ?. touched && ModuleForm.get('LastName' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('LastName' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Last Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <label class="inputLabel" for="email">Join Date <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="JoinDate" placeholder="Select Join Date" type="date" />
+                  <div *ngIf="(ModuleForm.get('JoinDate' ) ?. touched && ModuleForm.get('JoinDate' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('JoinDate' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Select Join Date.</small>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
             <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">First Name</label>
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">Join Date <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
+                  <input class="inputField" formControlName="JoinDate" placeholder="Select Join Date" type="date" />
+                  <div *ngIf="(ModuleForm.get('JoinDate' ) ?. touched && ModuleForm.get('JoinDate' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('JoinDate' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Select Join Date.</small>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Middle Name</label>
+                <label class="inputLabel" for="email">Aadhar No <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
+                  <input class="inputField" formControlName="AadharNo" placeholder="Enter Aadhar Number" (keydown)="allowOnlyNumbers($event)" minlength="12" maxlength="12" />
+                  <div *ngIf="(ModuleForm.get('AadharNo' ) ?. touched && ModuleForm.get('AadharNo' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('AadharNo' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Aadhar No.</small>
+                    </div>
+                    <div *ngIf="(ModuleForm.get('AadharNo' ) ?. errors ?. ['pattern' ]) ">
+                      <small>Aadhaar number must be 12 digits and start with 2–9.</small>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Last Name</label>
+                <label class="inputLabel" for="email">Mobile No <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
+                  <input class="inputField" formControlName="MobileNo" placeholder="Enter Mobile Number" (keydown)="allowOnlyNumbers($event)" minlength="10" maxlength="10" />
+                  <div *ngIf="(ModuleForm.get('MobileNo' ) ?. touched && ModuleForm.get('MobileNo' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('MobileNo' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Mobile No.</small>
+                    </div>
+                    <div *ngIf="(ModuleForm.get('MobileNo' ) ?. errors ?. ['pattern' ]) ">
+                      <small>Mobile number must be 10 digits and start with 6–9.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Email <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Email" placeholder="Enter Email" />
+                  <div *ngIf="(ModuleForm.get('Email' ) ?. touched && ModuleForm.get('Email' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('Email' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Email.</small>
+                    </div>
+                    <div *ngIf="(ModuleForm.get('Email' ) ?. errors ?. ['pattern' ]) ">
+                      <small>Invalid email format.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <label class="inputLabel" for="email">Date Of Birth <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="DOB" placeholder="Select DOB" type="date" [max]="today" />
+                  <div *ngIf="(ModuleForm.get('DOB' ) ?. touched && ModuleForm.get('DOB' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('DOB' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Mobile No.</small>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
             <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Student EmailID</label>
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">Date Of Birth <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
+                  <input class="inputField" formControlName="DOB" placeholder="Select DOB" type="date" [max]="today" />
+                  <div *ngIf="(ModuleForm.get('DOB' ) ?. touched && ModuleForm.get('DOB' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('DOB' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Mobile No.</small>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Aadhar No</label>
+                <label class="inputLabel" for="email">Gender <span class="required">*</span></label>                
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mobile No (sms)</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Date Of Birth</label>
-                <div class="input-with-error">
-                  <input type="date" class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Gender</label>
-                <div class="input-with-error">
-                  <select class="inputField" formControlName="Syllabus" placeholder="Select Start Date">
-                    <option value="0" disabled>Select Gender</option>
+                  <select class="inputField" type="date" formControlName="Gender" placeholder="Select Start Date" >
+                    <option value="0">-- Select Gender --</option>
                     <option value="1">Male</option>
                     <option value="2">Female</option>
-                    <option value="3">Other</option>
+                    <option value="3">Others</option>
                   </select>
-                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Select Syllabus.</small>
-                    </div>
+                  <div *ngIf="ModuleForm.get('Gender')?.hasError('min') && (ModuleForm.get('Gender')?.touched || ModuleForm.get('Gender')?.dirty)" class="text-danger">
+                      <small>Please Select Gender.</small>
                   </div>
-                </div>
+                </div>                
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Blood Group</label>
+                <label class="inputLabel" for="email">Blood Group </label>
                 <div class="input-with-error">
-                  <select class="inputField" formControlName="Syllabus" placeholder="Select Start Date">
-                    <option value="0" disabled>Select Gender</option>
-                    <option value="1">Male</option>
-                    <option value="2">Female</option>
-                    <option value="3">Other</option>
-                  </select>
-                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Select Syllabus.</small>
+                    <select class="inputField" type="date" formControlName="BloodGroup" placeholder="Select Start Date" >
+                      <option value="0">-- Select Blood Group --</option>
+                      <option value="1">A+</option>
+                      <option value="2">A-</option>
+                      <option value="3">B+</option>
+                      <option value="4">B-</option>
+                      <option value="5">O+</option>
+                      <option value="6">O-</option>
+                      <option value="7">AB+</option>
+                      <option value="8">AB-</option>
+                    </select>
+                    <div *ngIf="ModuleForm.get('BloodGroup')?.hasError('min') && (ModuleForm.get('BloodGroup')?.touched || ModuleForm.get('BloodGroup')?.dirty)" class="text-danger">
+                        <small>Please Select Blood Group.</small>
                     </div>
-                  </div>
+                </div>  
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Nationality <span class="required">*</span></label>
+                <div class="input-with-error">
+                    <select class="inputField" type="date" formControlName="Nationality" placeholder="Select Start Date" >
+                      <option value="0">-- Select Nationality --</option>
+                      <option value="1">Indian</option>
+                    </select>
+                    <div *ngIf="ModuleForm.get('Nationality')?.hasError('min') && (ModuleForm.get('Nationality')?.touched || ModuleForm.get('Nationality')?.dirty)" class="text-danger">
+                        <small>Please Select Nationality.</small>
+                    </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <label class="inputLabel" for="email">Religion <span class="required">*</span></label>
+                <div class="input-with-error">
+                    <select class="inputField" type="date" formControlName="Religion" placeholder="Select Start Date" >
+                      <option value="0">-- Select Religion --</option>
+                      <option value="1">Hindu</option>
+                      <option value="2">Muslim</option>
+                      <option value="3">Christian</option>
+                    </select>
+                    <div *ngIf="ModuleForm.get('Religion')?.hasError('min') && (ModuleForm.get('Religion')?.touched || ModuleForm.get('Religion')?.dirty)" class="text-danger">
+                        <small>Please Select Religion.</small>
+                    </div>
                 </div>
               </div>
             </div>
             <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Nationality</label>
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">Religion <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <select class="inputField" formControlName="Syllabus" placeholder="Select Start Date">
-                    <option value="0" disabled>Select Gender</option>
-                    <option value="1">Male</option>
-                    <option value="2">Female</option>
-                    <option value="3">Other</option>
-                  </select>
-                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Select Syllabus.</small>
+                    <select class="inputField" type="date" formControlName="Religion" placeholder="Select Start Date" >
+                      <option value="0">-- Select Religion --</option>
+                      <option value="1">Hindu</option>
+                      <option value="2">Muslim</option>
+                      <option value="3">Christian</option>
+                    </select>
+                    <div *ngIf="ModuleForm.get('Religion')?.hasError('min') && (ModuleForm.get('Religion')?.touched || ModuleForm.get('Religion')?.dirty)" class="text-danger">
+                        <small>Please Select Religion.</small>
+                    </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Caste </label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Caste" placeholder="Enter Caste" />
+                  <div *ngIf="(ModuleForm.get('Caste' ) ?. touched && ModuleForm.get('Caste' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('Caste' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Caste.</small>
                     </div>
                   </div>
                 </div>
               </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Religion</label>
-                <div class="input-with-error">
-                  <select class="inputField" formControlName="Syllabus" placeholder="Select Start Date">
-                    <option value="0" disabled>Select Gender</option>
-                    <option value="1">Male</option>
-                    <option value="2">Female</option>
-                    <option value="3">Other</option>
-                  </select>
-                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Select Syllabus.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Document Details</label>
-                <div class="input-with-error">
-                  <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="2"></textarea>
-                  <!-- <input class="inputField" id="email" formControlName="Name" placeholder="Enter Name" /> -->
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Description.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="InputRow">
               <div class="InputFieldsContainer">
                 <div class="toggle-container" (click)="$event.stopPropagation()">
                   <label class="switch">
@@ -347,624 +428,476 @@
                   </label>
                 </div>
               </div>
-              <div class="InputFieldsContainer"></div>
-              <div class="InputFieldsContainer"></div>
+              <div class="InputFieldsContainer">
+                <span style="visibility: hidden;height: 3px;">hello adding new academic year</span>
+              </div>
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <span style="visibility: hidden;height: 3px;">hello adding new academic year</span>
+              </div>             
+            </div>
+            <div class="ActionButtons">
+              <button class="btn" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
+              <button class="btn" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitPersonalDetails()">Save & Next</button>
             </div>
           </div>
-          <div *ngIf="activeTab === 'parents'" class="FormInputRowsContainer">
+          <div class="FormInputRowsContainer" *ngIf="activeTab === 'parents'">
+            <div class="InputRow">              
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Father Name <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="FatherName" placeholder="Enter Father Name" />
+                  <div *ngIf="(ModuleForm.get('FatherName' ) ?. touched && ModuleForm.get('FatherName' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('FatherName' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Father Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Father Qualification </label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="FatherQualification" placeholder="Enter Father Qualification" />
+                  <div *ngIf="(ModuleForm.get('FatherQualification' ) ?. touched && ModuleForm.get('FatherQualification' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('FatherQualification' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Father Qualification.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Father Occupation </label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="FatherOccupation" placeholder="Enter Father Occupation" />
+                  <div *ngIf="(ModuleForm.get('FatherOccupation' ) ?. touched && ModuleForm.get('FatherOccupation' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('FatherOccupation' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Father Occupation.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>              
+            </div>
             <div class="InputRow">
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Father Name</label>
+                <label class="inputLabel" for="email">Father Mobile No <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
+                  <input class="inputField" formControlName="FatherMobile" placeholder="Enter Father Mobile No" (keydown)="allowOnlyNumbers($event)" minlength="10" maxlength="10" />
+                  <div *ngIf="(ModuleForm.get('FatherMobile' ) ?. touched && ModuleForm.get('FatherMobile' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('FatherMobile' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Mobile No.</small>
+                    </div>
+                    <div *ngIf="(ModuleForm.get('FatherMobile' ) ?. errors ?. ['pattern' ]) ">
+                      <small>Mobile number must be 10 digits and start with 6–9.</small>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Father Qualification</label>
+                <label class="inputLabel" for="email">Father Email <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
+                  <input class="inputField" formControlName="FatherEmail" placeholder="Enter Father Email" />
+                  <div *ngIf="(ModuleForm.get('FatherEmail' ) ?. touched && ModuleForm.get('FatherEmail' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('FatherEmail' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Father Email.</small>
+                    </div>
+                    <div *ngIf="(ModuleForm.get('FatherEmail' ) ?. errors ?. ['pattern' ]) ">
+                      <small>Invalid email format.</small>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Father Occupation</label>
+                <label class="inputLabel" for="email">Father Aadhar No <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
+                  <input class="inputField" formControlName="FatherAadharNo" placeholder="Enter Father Aadhar Number" (keydown)="allowOnlyNumbers($event)" minlength="12" maxlength="12" />
+                  <div *ngIf="(ModuleForm.get('FatherAadharNo' ) ?. touched && ModuleForm.get('FatherAadharNo' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('FatherAadharNo' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Father Aadhar No.</small>
+                    </div>
+                    <div *ngIf="(ModuleForm.get('FatherAadharNo' ) ?. errors ?. ['pattern' ]) ">
+                      <small>Aadhaar number must be 12 digits and start with 2–9.</small>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+            <div class="InputRow">              
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Mother Name <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="MotherName" placeholder="Enter Mother Name" />
+                  <div *ngIf="(ModuleForm.get('MotherName' ) ?. touched && ModuleForm.get('MotherName' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('MotherName' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Mother Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Mother Qualification </label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="MotherQualification" placeholder="Enter Mother Qualification" />
+                  <div *ngIf="(ModuleForm.get('MotherQualification' ) ?. touched && ModuleForm.get('MotherQualification' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('MotherQualification' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Mother Qualification.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Mother Occupation </label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="MotherOccupation" placeholder="Enter Mother Occupation" />
+                  <div *ngIf="(ModuleForm.get('MotherOccupation' ) ?. touched && ModuleForm.get('MotherOccupation' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('MotherOccupation' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Mother Occupation.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>              
+            </div>
             <div class="InputRow">
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Father Mobile No</label>
+                <label class="inputLabel" for="email">Mother Mobile No <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
+                  <input class="inputField" formControlName="MotherMobile" placeholder="Enter Mother Mobile No" (keydown)="allowOnlyNumbers($event)" minlength="10" maxlength="10" />
+                  <div *ngIf="(ModuleForm.get('MotherMobile' ) ?. touched && ModuleForm.get('MotherMobile' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('MotherMobile' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Mobile No.</small>
+                    </div>
+                    <div *ngIf="(ModuleForm.get('MotherMobile' ) ?. errors ?. ['pattern' ]) ">
+                      <small>Mobile number must be 10 digits and start with 6–9.</small>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Father EmailID</label>
+                <label class="inputLabel" for="email">Mother Email <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
+                  <input class="inputField" formControlName="MotherEmail" placeholder="Enter Mother Email" />
+                  <div *ngIf="(ModuleForm.get('MotherEmail' ) ?. touched && ModuleForm.get('MotherEmail' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('MotherEmail' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Mother Email.</small>
+                    </div>
+                    <div *ngIf="(ModuleForm.get('MotherEmail' ) ?. errors ?. ['pattern' ]) ">
+                      <small>Invalid email format.</small>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mother Name</label>
+                <label class="inputLabel" for="email">Mother Aadhar No <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
+                  <input class="inputField" formControlName="MotherAadharNo" placeholder="Enter Mother Aadhar Number" (keydown)="allowOnlyNumbers($event)" minlength="12" maxlength="12" />
+                  <div *ngIf="(ModuleForm.get('MotherAadharNo' ) ?. touched && ModuleForm.get('MotherAadharNo' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('MotherAadharNo' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Mother Aadhar No.</small>
+                    </div>
+                    <div *ngIf="(ModuleForm.get('MotherAadharNo' ) ?. errors ?. ['pattern' ]) ">
+                      <small>Aadhaar number must be 12 digits and start with 2–9.</small>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-            <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mother Qualification</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mother Occupation</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mother Mobile No</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mother EmailID</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer"></div>
-              <div class="InputFieldsContainer"></div>
-            </div>
-          </div>
-          <div *ngIf="activeTab === 'permanent'" class="FormInputRowsContainer">
-            <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Father Name</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Father Qualification</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Father Occupation</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Father Mobile No</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Father EmailID</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mother Name</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mother Qualification</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mother Occupation</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mother Mobile No</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mother EmailID</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer"></div>
-              <div class="InputFieldsContainer"></div>
+            <div class="ActionButtons">
+              <button class="btn" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
+              <button class="btn" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitPersonalDetails()">Save & Next</button>
             </div>
           </div>
-          <div *ngIf="activeTab === 'temporary'" class="FormInputRowsContainer">
+          <div class="FormInputRowsContainer" *ngIf="activeTab === 'permanent'">
+            <div class="InputRow">              
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Address Line 1 <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="PermanentAddressLine1" placeholder="Enter Address Line 1" />
+                  <div *ngIf="(ModuleForm.get('PermanentAddressLine1' ) ?. touched && ModuleForm.get('PermanentAddressLine1' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('PermanentAddressLine1' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Address Line 1.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Address Line 2 </label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="PermanentAddressLine2" placeholder="Enter Address Line 2" />
+                  <div *ngIf="(ModuleForm.get('PermanentAddressLine2' ) ?. touched && ModuleForm.get('PermanentAddressLine2' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('PermanentAddressLine2' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Address Line 2.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Pincode <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="PermanentPincode" placeholder="Enter Pincode" (keydown)="allowOnlyNumbers($event)" minlength="6" maxlength="6" />
+                  <div *ngIf="(ModuleForm.get('PermanentPincode' ) ?. touched && ModuleForm.get('PermanentPincode' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('PermanentPincode' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Pincode.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>              
+            </div>
             <div class="InputRow">
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Father Name</label>
+                <label class="inputLabel" for="email">Place </label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
+                  <input class="inputField" formControlName="PermanentPlace" placeholder="Enter Place" />
+                  <div *ngIf="(ModuleForm.get('PermanentPlace' ) ?. touched && ModuleForm.get('PermanentPlace' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('PermanentPlace' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Place.</small>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Father Qualification</label>
+                <label class="inputLabel" for="email">Country <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
+                  <select class="inputField" type="date" formControlName="PermanentCountry" placeholder="Select Start Date" >
+                    <option value="0" disabled>-- Select Country --</option>
+                    <option value="1">India</option>
+                  </select>
+                  <div *ngIf="ModuleForm.get('PermanentCountry')?.hasError('min') && (ModuleForm.get('PermanentCountry')?.touched || ModuleForm.get('PermanentCountry')?.dirty)" class="text-danger">
+                      <small>Please Select Country.</small>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Father Occupation</label>
+                <label class="inputLabel" for="email">State <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
+                  <select class="inputField" type="date" formControlName="PermanentState" placeholder="Select Start Date">
+                    <option value="0" disabled>-- Select State --</option>
+                    <option value="1">Andhara Pradesh</option>
+                    <option value="2">Telangana</option>
+                    <option value="3">Tamil Nadu</option>
+                    <option value="4">Karnataka</option>
+                  </select>
+                  <div *ngIf="ModuleForm.get('PermanentState')?.hasError('min') && (ModuleForm.get('PermanentState')?.touched || ModuleForm.get('PermanentState')?.dirty)" class="text-danger">
+                      <small>Please Select State.</small>
                   </div>
                 </div>
               </div>
             </div>
-            <div class="InputRow">
+            <div class="InputRow">              
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Father Mobile No</label>
+                <label class="inputLabel" for="email">District</label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
+                  <input class="inputField" formControlName="PermanentDistrict" placeholder="Enter District" />
+                  <div *ngIf="(ModuleForm.get('PermanentDistrict' ) ?. touched && ModuleForm.get('PermanentDistrict' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('PermanentDistrict' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter District.</small>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Father EmailID</label>
+                <label class="inputLabel" for="email">City </label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
+                  <input class="inputField" formControlName="PermanentCity" placeholder="Enter City" />
+                  <div *ngIf="(ModuleForm.get('PermanentCity' ) ?. touched && ModuleForm.get('PermanentCity' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('PermanentCity' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter City.</small>
                     </div>
                   </div>
                 </div>
-              </div>
+              </div>  
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mother Name</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                <span style="visibility: hidden;height: 3px;">hello adding new academic year</span>
+              </div>           
             </div>
-            <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mother Qualification</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mother Occupation</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mother Mobile No</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mother EmailID</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer"></div>
-              <div class="InputFieldsContainer"></div>
+            <div class="ActionButtons">
+              <button class="btn" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
+              <button class="btn" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitPersonalDetails()">Save & Next</button>
             </div>
           </div>
-          <div *ngIf="activeTab === 'login'" class="FormInputRowsContainer">
+          <div class="FormInputRowsContainer" *ngIf="activeTab === 'temporary'">
+            <div class="InputRow">              
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Address Line 1</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="TemporaryAddressLine1" placeholder="Enter Address Line 1" />
+                  <div *ngIf="(ModuleForm.get('TemporaryAddressLine1' ) ?. touched && ModuleForm.get('TemporaryAddressLine1' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('TemporaryAddressLine1' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Address Line 1.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Address Line 2 </label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="TemporaryAddressLine2" placeholder="Enter Address Line 2" />
+                  <div *ngIf="(ModuleForm.get('TemporaryAddressLine2' ) ?. touched && ModuleForm.get('TemporaryAddressLine2' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('TemporaryAddressLine2' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Address Line 2.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Pincode</label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="TemporaryPincode" placeholder="Enter Pincode" (keydown)="allowOnlyNumbers($event)" minlength="6" maxlength="6" />
+                  <div *ngIf="(ModuleForm.get('TemporaryPincode' ) ?. touched && ModuleForm.get('TemporaryPincode' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('TemporaryPincode' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Pincode.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>              
+            </div>
             <div class="InputRow">
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Father Name</label>
+                <label class="inputLabel" for="email">Place </label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
+                  <input class="inputField" formControlName="TemporaryPlace" placeholder="Enter Place" />
+                  <div *ngIf="(ModuleForm.get('TemporaryPlace' ) ?. touched && ModuleForm.get('TemporaryPlace' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('TemporaryPlace' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Place.</small>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Father Qualification</label>
+                <label class="inputLabel" for="email">Country</label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
+                  <select class="inputField" type="date" formControlName="TemporaryCountry" placeholder="Select Start Date" >
+                    <option value="0" disabled>-- Select Country --</option>
+                    <option value="1">India</option>
+                  </select>
+                  <div *ngIf="ModuleForm.get('TemporaryCountry')?.hasError('min') && (ModuleForm.get('TemporaryCountry')?.touched || ModuleForm.get('TemporaryCountry')?.dirty)" class="text-danger">
+                      <small>Please Select Country.</small>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Father Occupation</label>
+                <label class="inputLabel" for="email">State</label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
+                  <select class="inputField" type="date" formControlName="TemporaryState" placeholder="Select Start Date">
+                    <option value="0" disabled>-- Select State --</option>
+                    <option value="1">Andhara Pradesh</option>
+                    <option value="2">Telangana</option>
+                    <option value="3">Tamil Nadu</option>
+                    <option value="4">Karnataka</option>
+                  </select>
+                  <div *ngIf="ModuleForm.get('TemporaryState')?.hasError('min') && (ModuleForm.get('TemporaryState')?.touched || ModuleForm.get('TemporaryState')?.dirty)" class="text-danger">
+                      <small>Please Select State.</small>
                   </div>
                 </div>
               </div>
             </div>
-            <div class="InputRow">
+            <div class="InputRow">              
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Father Mobile No</label>
+                <label class="inputLabel" for="email">District</label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
+                  <input class="inputField" formControlName="TemporaryDistrict" placeholder="Enter District" />
+                  <div *ngIf="(ModuleForm.get('TemporaryDistrict' ) ?. touched && ModuleForm.get('TemporaryDistrict' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('TemporaryDistrict' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter District.</small>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Father EmailID</label>
+                <label class="inputLabel" for="email">City </label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
+                  <input class="inputField" formControlName="TemporaryCity" placeholder="Enter City" />
+                  <div *ngIf="(ModuleForm.get('TemporaryCity' ) ?. touched && ModuleForm.get('TemporaryCity' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('TemporaryCity' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter City.</small>
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> 
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mother Name</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                <span style="visibility: hidden;height: 3px;">hello adding new academic year</span>
+              </div>            
             </div>
-            <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mother Qualification</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mother Occupation</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mother Mobile No</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mother EmailID</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer"></div>
-              <div class="InputFieldsContainer"></div>
+            <div class="ActionButtons">
+              <button class="btn" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
+              <button class="btn" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitPersonalDetails()">Save & Next</button>
+              <button class="btn" (click)="SkipButtonClick()">Skip</button>
             </div>
           </div>
-          <div *ngIf="activeTab === 'bus'" class="FormInputRowsContainer">
+          <div class="FormInputRowsContainer" *ngIf="activeTab === 'bus'">            
             <div class="InputRow">
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Father Name</label>
+                <label class="inputLabel" for="email">Route <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
+                  <select class="inputField" type="date" formControlName="Route" placeholder="Select Start Date" (change)="onRouteSelectedChange($event)" >
+                    <option value="0" disabled>-- Select Route --</option>
+                    <option *ngFor="let school of RoutesList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="ModuleForm.get('Route')?.hasError('min') && (ModuleForm.get('Route')?.touched || ModuleForm.get('Route')?.dirty)" class="text-danger">
+                      <small>Please Select Route.</small>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Father Qualification</label>
+                <label class="inputLabel" for="email">Stop <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
+                  <select class="inputField" type="date" formControlName="Stop" placeholder="Select Start Date" (change)="onStopSelectedChange($event)" >
+                    <option value="0" disabled>-- Select Stop --</option>
+                    <option *ngFor="let school of StopsList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="ModuleForm.get('Stop')?.hasError('min') && (ModuleForm.get('Stop')?.touched || ModuleForm.get('Stop')?.dirty)" class="text-danger">
+                      <small>Please Select Stop.</small>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Father Occupation</label>
+                <label class="inputLabel" for="email">Bus <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
+                  <select class="inputField" type="date" formControlName="Bus" placeholder="Select Start Date" (change)="onBusSelectedChange($event)">
+                    <option value="0" disabled>-- Select Bus --</option>
+                    <option *ngFor="let school of BusList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="ModuleForm.get('Bus')?.hasError('min') && (ModuleForm.get('Bus')?.touched || ModuleForm.get('Bus')?.dirty)" class="text-danger">
+                      <small>Please Select Bus.</small>
                   </div>
                 </div>
               </div>
             </div>
-            <div class="InputRow">
+            <div class="InputRow">              
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Father Mobile No</label>
+                <label class="inputLabel" for="email">Fare <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
+                  <select class="inputField" type="date" formControlName="Fare" placeholder="Select Start Date">
+                    <option value="0" disabled>-- Select Fare --</option>
+                    <option *ngFor="let school of FareList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="ModuleForm.get('Fare')?.hasError('min') && (ModuleForm.get('Fare')?.touched || ModuleForm.get('Fare')?.dirty)" class="text-danger">
+                      <small>Please Select Fare.</small>
                   </div>
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Father EmailID</label>
+                <label class="inputLabel" for="email">Start Date <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
+                  <input class="inputField" formControlName="StartDate" placeholder="Enter Start Date" type="date" />
+                  <div *ngIf="(ModuleForm.get('StartDate' ) ?. touched && ModuleForm.get('StartDate' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ModuleForm.get('StartDate' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Select Start Date.</small>
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> 
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mother Name</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                <span style="visibility: hidden;height: 3px;">hello adding new academic year</span>
+              </div>            
             </div>
-            <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mother Qualification</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mother Occupation</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mother Mobile No</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Mother EmailID</label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer"></div>
-              <div class="InputFieldsContainer"></div>
+            <div class="ActionButtons">
+              <button class="btn" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
+              <button class="btn" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitPersonalDetails()">Save & Next</button>
+              <button class="btn" (click)="CancelButtonClick()">Cancel</button>
             </div>
           </div>
-          <div class="ActionButtons">
-            <button class="btn" *ngIf="ViewClassClicked" (click)="UpdateClass()">Update</button>
-            <button class="btn" *ngIf="!ViewClassClicked" (click)="SubmitClass()">Submit</button>
-          </div>
+          <!-- <div class="ActionButtons">
+            <button class="btn" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update</button>
+            <button class="btn" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitModule()">Submit</button>
+          </div> -->
         </form>
       </div>
     </div>
@@ -975,7 +908,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Application Status</h5>
-        <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+        <button type="button" class="close" aria-label="Close" (click)="closeModal('status')">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
@@ -988,4 +921,368 @@
     </div>
   </div>
 </div>
-<p>Sample Change By HavyaGalanki Branch</p>
+<div class="modal viewmodel" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Admission Details</h5>
+        <button type="button" class="close" (click)="closeModal('view')">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="ActionButtons" *ngIf="isViewModalOpen">
+          <button class="btn" [ngClass]="{'active-tab': activeTab === 'personal'}" (click)="tabChange('personal')">Personal Details</button>
+          <button class="btn" [ngClass]="{'active-tab': activeTab === 'parents'}" (click)="tabChange('parents')">Parents Details</button>
+          <button class="btn" [ngClass]="{'active-tab': activeTab === 'permanent'}" (click)="tabChange('permanent')">Permanent Address</button>
+          <button class="btn" [ngClass]="{'active-tab': activeTab === 'temporary'}" (click)="tabChange('temporary')">Temporary Address</button>
+          <!-- <button class="btn" (click)="tabChange('Academic')">Temporary Address</button> -->
+          <!-- <button class="btn" (click)="tabChange('login')">Login Details</button> -->
+          <button class="btn" [ngClass]="{'active-tab': activeTab === 'bus'}" (click)="tabChange('bus')">Allot Bus</button>
+        </div>
+
+        <div *ngIf="activeTab === 'personal'" class="container-fluid">
+          <div class="row g-2">
+
+            <ng-container *ngIf="viewSyllabus?.SchoolName">
+              <div class="col-md-3 viewHeadingfontsize">School Name</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.SchoolName }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.AcademicYearName">
+              <div class="col-md-3 viewHeadingfontsize">Academic Year</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.AcademicYearName }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.AdmissionNo">
+              <div class="col-md-3 viewHeadingfontsize">Admission No</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.AdmissionNo }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.ClassName">
+              <div class="col-md-3 viewHeadingfontsize">Class</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.ClassName }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.ClassDivisionName">
+              <div class="col-md-3 viewHeadingfontsize">Division</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.ClassDivisionName }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.JoinDate">
+              <div class="col-md-3 viewHeadingfontsize">Join Date</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.JoinDate }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.Name">
+              <div class="col-md-3 viewHeadingfontsize">Name</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.Name }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.AadharNo">
+              <div class="col-md-3 viewHeadingfontsize">Aadhar No</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.AadharNo }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.MobileNo">
+              <div class="col-md-3 viewHeadingfontsize">Mobile No</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.MobileNo }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.Email">
+              <div class="col-md-3 viewHeadingfontsize">Email</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.Email }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.DOB">
+              <div class="col-md-3 viewHeadingfontsize">Date Of Birth</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.DOB }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.Gender">
+              <div class="col-md-3 viewHeadingfontsize">Gender</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.Gender }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.BloodGroup">
+              <div class="col-md-3 viewHeadingfontsize">Blood Group</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.BloodGroup }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.Nationality">
+              <div class="col-md-3 viewHeadingfontsize">Nationality</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.Nationality }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.Religion">
+              <div class="col-md-3 viewHeadingfontsize">Religion</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.Religion }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.Caste">
+              <div class="col-md-3 viewHeadingfontsize">Caste</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.Caste }}</div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.IsActive !== null">
+              <div class="col-md-3 viewHeadingfontsize">Status</div>
+              <div class="col-md-3">
+                <span class="badge"
+                      [ngClass]="viewSyllabus?.IsActive ? 'badge-success' : 'badge-danger'">
+                  {{ viewSyllabus?.IsActive ? 'Active' : 'Inactive' }}
+                </span>
+              </div>
+            </ng-container>
+
+          </div>
+        </div>
+
+        <div *ngIf="activeTab === 'parents'" class="container-fluid">
+          <div class="row g-2">
+
+            <!-- Father Name -->
+            <ng-container *ngIf="viewSyllabus?.FatherName">
+              <div class="col-md-3 viewHeadingfontsize">Father Name</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.FatherName }}</div>
+            </ng-container>
+
+            <!-- Father Qualification -->
+            <ng-container *ngIf="viewSyllabus?.FatherQualification">
+              <div class="col-md-3 viewHeadingfontsize">Father Qualification</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.FatherQualification }}</div>
+            </ng-container>
+
+            <!-- Father Occupation -->
+            <ng-container *ngIf="viewSyllabus?.FatherOccupation">
+              <div class="col-md-3 viewHeadingfontsize">Father Occupation</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.FatherOccupation }}</div>
+            </ng-container>
+
+            <!-- Father Mobile -->
+            <ng-container *ngIf="viewSyllabus?.FatherMobile">
+              <div class="col-md-3 viewHeadingfontsize">Father Mobile No</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.FatherMobile }}</div>
+            </ng-container>
+
+            <!-- Father Email -->
+            <ng-container *ngIf="viewSyllabus?.FatherEmail">
+              <div class="col-md-3 viewHeadingfontsize">Father Email</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.FatherEmail }}</div>
+            </ng-container>
+
+            <!-- Father Aadhar -->
+            <ng-container *ngIf="viewSyllabus?.FatherAadharNo">
+              <div class="col-md-3 viewHeadingfontsize">Father Aadhar No</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.FatherAadharNo }}</div>
+            </ng-container>
+
+            <!-- Mother Name -->
+            <ng-container *ngIf="viewSyllabus?.MotherName">
+              <div class="col-md-3 viewHeadingfontsize">Mother Name</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.MotherName }}</div>
+            </ng-container>
+
+            <!-- Mother Qualification -->
+            <ng-container *ngIf="viewSyllabus?.MotherQualification">
+              <div class="col-md-3 viewHeadingfontsize">Mother Qualification</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.MotherQualification }}</div>
+            </ng-container>
+
+            <!-- Mother Occupation -->
+            <ng-container *ngIf="viewSyllabus?.MotherOccupation">
+              <div class="col-md-3 viewHeadingfontsize">Mother Occupation</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.MotherOccupation }}</div>
+            </ng-container>
+
+            <!-- Mother Mobile -->
+            <ng-container *ngIf="viewSyllabus?.MotherMobile">
+              <div class="col-md-3 viewHeadingfontsize">Mother Mobile No</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.MotherMobile }}</div>
+            </ng-container>
+
+            <!-- Mother Email -->
+            <ng-container *ngIf="viewSyllabus?.MotherEmail">
+              <div class="col-md-3 viewHeadingfontsize">Mother Email</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.MotherEmail }}</div>
+            </ng-container>
+
+            <!-- Mother Aadhar -->
+            <ng-container *ngIf="viewSyllabus?.MotherAadharNo">
+              <div class="col-md-3 viewHeadingfontsize">Mother Aadhar No</div>
+              <div class="col-md-3 viewfontsize">{{ viewSyllabus?.MotherAadharNo }}</div>
+            </ng-container>
+
+          </div>
+        </div>
+
+        <div *ngIf="activeTab === 'permanent'" class="container-fluid">
+          <div class="row g-2">
+
+            <ng-container *ngIf="viewSyllabus?.PermanentAddressLine1">
+              <div class="col-md-3 viewHeadingfontsize">Address Line 1</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.PermanentAddressLine1 }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.PermanentAddressLine2">
+              <div class="col-md-3 viewHeadingfontsize">Address Line 2</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.PermanentAddressLine2 }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.PermanentPincode">
+              <div class="col-md-3 viewHeadingfontsize">Pincode</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.PermanentPincode }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.PermanentPlace">
+              <div class="col-md-3 viewHeadingfontsize">Place</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.PermanentPlace }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.PermanentCountry">
+              <div class="col-md-3 viewHeadingfontsize">Country</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.PermanentCountry }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.PermanentState">
+              <div class="col-md-3 viewHeadingfontsize">State</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.PermanentState }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.PermanentDistrict">
+              <div class="col-md-3 viewHeadingfontsize">District</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.PermanentDistrict }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.PermanentCity">
+              <div class="col-md-3 viewHeadingfontsize">City</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.PermanentCity }}
+              </div>
+            </ng-container>
+
+          </div>
+        </div>
+
+        <div *ngIf="activeTab === 'temporary'" class="container-fluid">
+          <div class="row g-2">
+
+            <ng-container *ngIf="viewSyllabus?.TemporaryAddressLine1">
+              <div class="col-md-3 viewHeadingfontsize">Address Line 1</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.TemporaryAddressLine1 }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.TemporaryAddressLine2">
+              <div class="col-md-3 viewHeadingfontsize">Address Line 2</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.TemporaryAddressLine2 }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.TemporaryPincode">
+              <div class="col-md-3 viewHeadingfontsize">Pincode</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.TemporaryPincode }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.TemporaryPlace">
+              <div class="col-md-3 viewHeadingfontsize">Place</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.TemporaryPlace }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.TemporaryCountry">
+              <div class="col-md-3 viewHeadingfontsize">Country</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.TemporaryCountry }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.TemporaryState">
+              <div class="col-md-3 viewHeadingfontsize">State</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.TemporaryState }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.TemporaryDistrict">
+              <div class="col-md-3 viewHeadingfontsize">District</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.TemporaryDistrict }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.TemporaryCity">
+              <div class="col-md-3 viewHeadingfontsize">City</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.TemporaryCity }}
+              </div>
+            </ng-container>
+
+          </div>
+        </div>
+
+        <div *ngIf="activeTab === 'bus'" class="container-fluid">
+          <div class="row g-2">
+
+            <ng-container *ngIf="viewSyllabus?.RouteName">
+              <div class="col-md-3 viewHeadingfontsize">Route</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.RouteName }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.StopName">
+              <div class="col-md-3 viewHeadingfontsize">Stop</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.StopName }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.BusName">
+              <div class="col-md-3 viewHeadingfontsize">Bus</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.BusName }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.FareName">
+              <div class="col-md-3 viewHeadingfontsize">Fare</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.FareName }}
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="viewSyllabus?.StartDate">
+              <div class="col-md-3 viewHeadingfontsize">Start Date</div>
+              <div class="col-md-3 viewfontsize">
+                {{ viewSyllabus?.StartDate }}
+              </div>
+            </ng-container>
+
+          </div>
+        </div>
+      </div>
+      <!-- <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeModal()">Close</button>
+      </div> -->
+    </div>
+  </div>
+</div>
