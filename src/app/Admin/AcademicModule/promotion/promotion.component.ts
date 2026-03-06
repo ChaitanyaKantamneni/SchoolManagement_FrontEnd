@@ -51,6 +51,8 @@ export class PromotionComponent extends BasePermissionComponent {
       this.ClassDivisionForm.get('AcademicYear').patchValue('0');
       this.ClassDivisionForm.get('TransitionType').patchValue('0');
       this.ClassDivisionForm.get('Division').patchValue('0');
+      this.StudentsList=[];
+      this.selectedStudents=[];
       this.FetchSchoolsList();
     };
   
@@ -106,7 +108,8 @@ export class PromotionComponent extends BasePermissionComponent {
       School: new FormControl(),
       AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)]),
       TransitionClass: new FormControl(0, Validators.min(1)),
-      TransitionDivision: new FormControl(0, Validators.min(1))
+      TransitionDivision: new FormControl(0, Validators.min(1)),
+      Remarks: new FormControl()
     });
   
     allowOnlyNumbers(event: KeyboardEvent) {
@@ -485,6 +488,7 @@ export class PromotionComponent extends BasePermissionComponent {
         const data = {
           Class: this.ClassDivisionForm.get('TransitionClass')?.value,
           Division: this.ClassDivisionForm.get('TransitionDivision')?.value,
+          DePromotionRemarks: this.ClassDivisionForm.get('Remarks')?.value || '',
           AdmissionNo: this.selectedStudents
                   .map(s => s.AdmissionNo)
                   .join(','),
@@ -600,7 +604,7 @@ export class PromotionComponent extends BasePermissionComponent {
           ID:this.ClassDivisionForm.get('ID')?.value || '',
           Class: this.ClassDivisionForm.get('Class')?.value,
           Division: this.ClassDivisionForm.get('Division')?.value,
-          ClassTeacher: this.ClassDivisionForm.get('ClassTeacher')?.value,
+          ClassTeacher: this.ClassDivisionForm.get('ClassTeacher')?.value,          
           SchoolID: this.ClassDivisionForm.get('School')?.value,
           AcademicYear: this.ClassDivisionForm.get('AcademicYear')?.value,
           IsActive:IsActiveStatusNumeric,
@@ -941,6 +945,11 @@ export class PromotionComponent extends BasePermissionComponent {
       }
       else if(schoolID=="2"){
         this.SelectedTransitionID="De-Promotion";
+        if (schoolID=="2") {
+          this.ClassDivisionForm.get('Remarks')?.setValidators([Validators.required]);
+        } else {
+          this.ClassDivisionForm.get('Remarks')?.clearValidators();
+        }
       }
       else{
         this.SelectedTransitionID = schoolID;

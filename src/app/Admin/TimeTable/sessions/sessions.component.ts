@@ -21,7 +21,7 @@ import { HttpClient } from '@angular/common/http';
   styleUrls: ['./sessions.component.css']
 })
 export class SessionsComponent extends BasePermissionComponent {
-  pageName = 'Class';
+  pageName = 'Sessions';
   
     constructor(
       private http: HttpClient,
@@ -49,7 +49,7 @@ export class SessionsComponent extends BasePermissionComponent {
     visiblePageCount: number = 3;
     searchQuery: string = '';
     private searchTimer: any;
-    private readonly SEARCH_MIN_LENGTH = 3;
+    private readonly SEARCH_MIN_LENGTH = 1;
     private readonly SEARCH_DEBOUNCE = 300;
     ClassList: any[] =[];
     ClassCount: number = 0;
@@ -78,14 +78,31 @@ export class SessionsComponent extends BasePermissionComponent {
   
     ClassForm: any = new FormGroup({
       ID: new FormControl(),
-      Day:new FormControl(0, Validators.min(1)),
+      Session:new FormControl('', [Validators.required,Validators.pattern('^[a-zA-Z ]+$')]),
       StartTime: new FormControl('', Validators.required),
       EndTime: new FormControl('', Validators.required),
       School: new FormControl(),
       AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
     });
+
+  allowAlphaAndSpecial(event: KeyboardEvent) {
+    const allowedRegex = /^[a-zA-Z ]$/;
+    if (
+      event.key === 'Backspace' ||
+      event.key === 'Tab' ||
+      event.key === 'ArrowLeft' ||
+      event.key === 'ArrowRight' ||
+      event.key === 'Delete'
+    ) {
+      return;
+    }
+
+    if (!allowedRegex.test(event.key)) {
+      event.preventDefault();
+    }
+  }
   
-    FetchSchoolsList() {
+  FetchSchoolsList() {
     const requestData = { Flag: '2' };
 
     this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', requestData)
@@ -147,10 +164,10 @@ export class SessionsComponent extends BasePermissionComponent {
         SchoolIdSelected = this.selectedSchoolID.trim();
       }
   
-      return this.apiurl.post<any>('Tbl_WorkingDays_CRUD_Operations', {
+      return this.apiurl.post<any>('Tbl_Session_CRUD_Operations', {
         Flag: isSearch ? '8' : '6',
         SchoolID:SchoolIdSelected,
-        Day: isSearch ? this.searchQuery.trim() : null
+        Session: isSearch ? this.searchQuery.trim() : null
       });
     }
   
@@ -186,9 +203,9 @@ export class SessionsComponent extends BasePermissionComponent {
             ...extra
           };
   
-          if (isSearch) payload.Day = this.searchQuery.trim();
+          if (isSearch) payload.Session = this.searchQuery.trim();
   
-          this.apiurl.post<any>('Tbl_WorkingDays_CRUD_Operations', payload).subscribe({
+          this.apiurl.post<any>('Tbl_Session_CRUD_Operations', payload).subscribe({
             next: (response: any) => {
               const data = response?.data || [];
               this.mapAcademicYears(response);
@@ -220,7 +237,7 @@ export class SessionsComponent extends BasePermissionComponent {
     mapAcademicYears(response: any) {
       this.ClassList = (response.data || []).map((item: any) => ({
         ID: item.id,
-        Day: item.day,
+        Session: item.session,
         StartTime: item.startTime,
         EndTime: item.endTime,
         SchoolName:item.schoolName,
@@ -239,7 +256,6 @@ export class SessionsComponent extends BasePermissionComponent {
         this.FetchAcademicYearsList();
       }
       this.ClassForm.reset();
-      this.ClassForm.get('Day').patchValue('0');
       this.ClassForm.get('School').patchValue('0');
       this.ClassForm.get('AcademicYear').patchValue('0');
       this.IsAddNewClicked=!this.IsAddNewClicked;
@@ -285,7 +301,7 @@ export class SessionsComponent extends BasePermissionComponent {
       // else{
         const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
         const data = {
-          Day: this.ClassForm.get('Day')?.value,
+          Session: this.ClassForm.get('Session')?.value,
           StartTime: this.formatTime(this.ClassForm.get('StartTime')?.value),
           EndTime: this.formatTime(this.ClassForm.get('EndTime')?.value),
           SchoolID: this.ClassForm.get('School')?.value,
@@ -294,7 +310,7 @@ export class SessionsComponent extends BasePermissionComponent {
           Flag: '1'
         };
   
-        this.apiurl.post("Tbl_WorkingDays_CRUD_Operations", data).subscribe({
+        this.apiurl.post("Tbl_Session_CRUD_Operations", data).subscribe({
           next: (response: any) => {
             if (response.statusCode === 200) {
               this.IsAddNewClicked=!this.IsAddNewClicked;
@@ -326,7 +342,7 @@ export class SessionsComponent extends BasePermissionComponent {
         Flag: "4"
       };
   
-      this.apiurl.post<any>("Tbl_WorkingDays_CRUD_Operations", data).subscribe(
+      this.apiurl.post<any>("Tbl_Session_CRUD_Operations", data).subscribe(
         (response: any) => {
   
           const item = response?.data?.[0];
@@ -342,7 +358,7 @@ export class SessionsComponent extends BasePermissionComponent {
             this.isViewMode = true;
             this.viewSyllabus = {
               ID: item.id,
-              Day: item.day,
+              Session: item.session,
               EndTime:item.endTime,
               StartTime: item.startTime,
               SchoolName:item.schoolName,
@@ -356,7 +372,7 @@ export class SessionsComponent extends BasePermissionComponent {
             this.isViewMode = false;
             this.ClassForm.patchValue({
               ID: item.id,
-              Day: item.day,
+              Session: item.session,
               EndTime:item.endTime,
               StartTime: item.startTime,
               School:item.schoolID,
@@ -385,7 +401,7 @@ export class SessionsComponent extends BasePermissionComponent {
         const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
         const data = {
           ID:this.ClassForm.get('ID')?.value || '',
-          Day: this.ClassForm.get('Day')?.value,
+          Session: this.ClassForm.get('Session')?.value,
           StartTime: this.formatTime(this.ClassForm.get('StartTime')?.value),
           EndTime: this.formatTime(this.ClassForm.get('EndTime')?.value),
           SchoolID: this.ClassForm.get('School')?.value,
@@ -394,7 +410,7 @@ export class SessionsComponent extends BasePermissionComponent {
           Flag: '5'
         };
   
-        this.apiurl.post("Tbl_WorkingDays_CRUD_Operations", data).subscribe({
+        this.apiurl.post("Tbl_Session_CRUD_Operations", data).subscribe({
           next: (response: any) => {
             if (response.statusCode === 200) {
               this.IsAddNewClicked=!this.IsAddNewClicked;

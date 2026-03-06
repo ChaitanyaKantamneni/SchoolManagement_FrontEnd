@@ -231,7 +231,7 @@ export class SubjectStaffComponent extends BasePermissionComponent {
     this.SyllabusList = (response.data || []).map((item: any) => ({
       ID: item.id,
       Class:item.class,
-      Name: item.staffName,
+      Name: item.staffFullName,
       SchoolName:item.schoolName,
       AcademicYearName:item.academicYearName,
       IsActive: item.isActive === true ? 'Active' : 'InActive'
@@ -255,6 +255,7 @@ export class SubjectStaffComponent extends BasePermissionComponent {
     this.IsAddNewClicked=!this.IsAddNewClicked;
     this.IsActiveStatus=true;
     this.ViewModuleClicked=false;
+    this.FetchStaffList();
   };
 
   SubmitModule(){
@@ -511,7 +512,7 @@ getClassName(uniqueID: string | string[]): string {
 
     if (typeof staffType === 'string' || typeof staffType === 'number') {
       const staffTypeStr = staffType.toString();
-      const syllabus = this.StaffList.find(s => s.ID === staffTypeStr);
+      const syllabus = this.StaffListNotAssigned.find(s => s.ID === staffTypeStr);
       return syllabus?.Name ?? 'N/A';
     }
 
@@ -519,7 +520,7 @@ getClassName(uniqueID: string | string[]): string {
       const names = staffType
         .map(id => {
           const idStr = id.toString();
-          const syllabus = this.StaffList.find(s => s.ID === idStr);
+          const syllabus = this.StaffListNotAssigned.find(s => s.ID === idStr);
           return syllabus?.Name;
         })
         .filter(name => name != null);
@@ -539,7 +540,7 @@ getClassName(uniqueID: string | string[]): string {
       .subscribe(
         (response: any) => {
           if (response && Array.isArray(response.data)) {
-            this.StaffList = response.data.map((item: any) => {
+            this.StaffListNotAssigned = response.data.map((item: any) => {
               const isActiveString = item.isActive === "1" ? "Active" : "InActive";
 
               // Check if staffType is a comma-separated string and convert it to an array
@@ -560,11 +561,11 @@ getClassName(uniqueID: string | string[]): string {
               };
             });
           } else {
-            this.StaffList = [];
+            this.StaffListNotAssigned = [];
           }
         },
         (error) => {
-          this.StaffList = [];
+          this.StaffListNotAssigned = [];
         }
       );
   };
