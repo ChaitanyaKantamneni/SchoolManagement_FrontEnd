@@ -185,7 +185,7 @@
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">StartTime <span class="required">*</span></label>
+                <label class="inputLabel" for="email">Start Time <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input type="time" class="inputField" formControlName="StartTime" placeholder="Enter StartTime" />
                   <div *ngIf="(ClassForm.get('StartTime' ) ?. touched && ClassForm.get('StartTime' ) ?. invalid)" class="text-danger">
@@ -196,7 +196,7 @@
                 </div>                
               </div>
               <div class="InputFieldsContainer" *ngIf="!isAdmin">
-                <label class="inputLabel" for="email">EndTime <span class="required">*</span></label>
+                <label class="inputLabel" for="email">End Time <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input type="time" class="inputField" formControlName="EndTime" placeholder="Enter EndTime" />
                   <div *ngIf="(ClassForm.get('EndTime' ) ?. touched && ClassForm.get('EndTime' ) ?. invalid)" class="text-danger">
@@ -209,7 +209,7 @@
             </div>
             <div class="InputRow">
               <div class="InputFieldsContainer" *ngIf="isAdmin">
-                <label class="inputLabel" for="email">StartTime <span class="required">*</span></label>
+                <label class="inputLabel" for="email">End Time <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input type="time" class="inputField" formControlName="EndTime" placeholder="Enter EndTime" />
                   <div *ngIf="(ClassForm.get('EndTime' ) ?. touched && ClassForm.get('EndTime' ) ?. invalid)" class="text-danger">

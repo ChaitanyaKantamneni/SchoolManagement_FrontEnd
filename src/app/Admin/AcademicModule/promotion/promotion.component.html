@@ -191,6 +191,22 @@
                 </div>
               </div>
             </div>
+            <div class="InputRow" *ngIf="SelectedTransitionID=='De-Promotion'">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="Remarks">Remarks <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <textarea class="inputField" formControlName="Remarks" placeholder="Enter Remarks" rows="2"></textarea>
+                  <div *ngIf="(ClassDivisionForm.get('Remarks' ) ?. touched && ClassDivisionForm.get('Remarks' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassDivisionForm.get('Remarks' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Remarks.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <span style="visibility: hidden;height: 3px;">hello adding new academic year</span>
+              </div> 
+            </div>
           </div>
           <div class="ActionButtons">
             <button class="btn" *ngIf="ViewClassDivisionClicked && canEdit()" (click)="UpdateClassDivision()">Update</button>

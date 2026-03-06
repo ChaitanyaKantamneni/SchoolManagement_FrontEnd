@@ -1,6 +1,6 @@
 <div class="row justify-content-center align-items-center m-0 w-100 totalcard">
   <nav class="navbar navbar-expand-md navbar-light bg-light d-md-none col-12">
-    <a class="navbar-brand" href="/home"><img class="h-100" src="Images/Logo1.jpg"></a>
+    <a class="navbar-brand"><img class="h-100" src="Images/Logo1.jpg"></a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -44,7 +44,7 @@
 
   <div class="sidenavbar col-12 col-md-3" [ngClass]="{'collapsed': !isExpanded}">
     <div class="logo">
-      <a href="/home">
+      <a>
         <img *ngIf="!isExpanded" src="Images/Logo1.jpg" alt="BUSERELE" />
         <img *ngIf="isExpanded" src="Images/Logo1.jpg" alt="BUSERELE" />
       </a>
