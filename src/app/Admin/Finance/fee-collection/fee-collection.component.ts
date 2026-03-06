@@ -13,15 +13,15 @@ import { SchoolCacheService } from '../../../Services/school-cache.service';
 import { LoaderService } from '../../../Services/loader.service';
 import { HttpClient } from '@angular/common/http';
 
-@Component({   
-  selector: 'app-fee-discount',
+@Component({
+  selector: 'app-fee-collection',
   standalone:true,
   imports: [NgIf,NgFor,NgClass,NgStyle,MatIconModule,DashboardTopNavComponent,ReactiveFormsModule,FormsModule],
-  templateUrl: './fee-discount.component.html',
-  styleUrls: ['./fee-discount.component.css']
+  templateUrl: './fee-collection.component.html',
+  styleUrl: './fee-collection.component.css'
 })
-export class FeeDiscountComponent extends BasePermissionComponent {
-  pageName = 'Fee Discount';
+export class FeeCollectionComponent extends BasePermissionComponent {
+  pageName = 'Fee Collection';
 
 constructor(
     private http: HttpClient,
@@ -241,21 +241,27 @@ constructor(
   };
 
   mapAcademicYears(response: any) {
-    this.ClassDivisionList = (response.data || []).map((item: any) => ({
-      ID: item.id,
-      Class: item.class,
-      Division: item.division,
-      Student: item.student,
-      DiscountCategory: item.discountCategory,
-      FeeDiscountCategoryName: item.feeDiscountCategoryName,
-      ClassName: item.className,
-      DivisionName:item.classDivisionName,
-      SchoolName:item.schoolName,
-      AcademicYearName:item.academicYearName,
-      StudentFullName:item.studentFullName,
-      IsActive: item.isActive === '1' ? 'Active' : 'InActive'
-    }));
-  };
+
+  this.ClassDivisionList = (response.data || []).map((item: any) => ({
+    ID: item.id,
+    RegistrationNo: item.registrationNo,
+    StudentName: item.studentFullName,
+    AdmissionNo: item.admissionNo,
+    ClassName: item.className,
+    DivisionName: item.classDivisionName,
+    AcademicYearName: item.academicYearName,
+    FeeAmount: item.feeAmount,
+    Discount: item.discountAmount,
+    Advance: item.advanceAmount,
+    TotalPaid: item.totalPaid,
+    Date: this.formatDateDDMMYYYY(item.createdDate),
+    Staff: item.staffName,
+    SchoolName: item.schoolName,
+    IsActive: item.isActive === '1' ? 'Active' : 'InActive'
+
+  }));
+
+}
 
   AddNewClicked(){
     if (this.isAdmin) {

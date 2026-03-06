@@ -74,6 +74,7 @@ import { TimeTableComponent } from './Admin/TimeTable/time-table/time-table.comp
 import { TeachersTimeTableComponent } from './Admin/TimeTable/teachers-time-table/teachers-time-table.component';
 import { FeeDiscountCategoryComponent } from './Admin/Finance/fee-discount-category/fee-discount-category.component';
 import { FeeDiscountComponent } from './Admin/Finance/fee-discount/fee-discount.component';
+import { FeeCollectionComponent } from './Admin/Finance/fee-collection/fee-collection.component';
 
 export const routes: Routes = [
   { path: '', component: SignInComponent },
@@ -108,6 +109,7 @@ export const routes: Routes = [
       { path: 'FeeAllocation', component: FeeAllocationComponent },
       { path: 'FeeDiscountCategory', component: FeeDiscountCategoryComponent },
       { path: 'FeeDiscount', component: FeeDiscountComponent },
+      { path: 'FeeCollection', component: FeeCollectionComponent },
       { path: 'Fare', component: FareComponent },
       { path: 'ExamType', component: ExamTypeComponent },
       { path: 'SetExam', component: SetexamComponent },
