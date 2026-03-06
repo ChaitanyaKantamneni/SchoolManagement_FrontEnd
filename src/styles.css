@@ -362,7 +362,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   text-align: center;
   padding: 4px 8px;
   vertical-align: middle;
-  white-space: nowrap;
+  white-space: break-spaces;
 }
 
 .mat-edit-icon {

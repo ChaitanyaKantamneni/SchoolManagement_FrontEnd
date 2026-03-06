@@ -5,11 +5,11 @@
   <div *ngIf="!IsAddNewClicked" class="w-100">
     <div class="ComponentTop">
       <div class="ComponentTopHeader">
-        <h5>Working Days Management</h5>
-        <p>Total {{ ClassCount }} Working Days Added</p>
+        <h5>Session Management</h5>
+        <p>Total {{ ClassCount }} Sessions Added</p>
       </div>
       <div class="ComponentTopBottom">
-        <button *ngIf="canAdd()" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Working Day</button>
+        <button *ngIf="canAdd()" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Session</button>
       </div>
     </div>
     <div class="ComponentRecords">
@@ -44,15 +44,15 @@
               <tr>
                 <th class="visually-hidden">Academic Year ID</th>
                 <th>SI.No</th>
-                <th (click)="sort('Day')" class="sortable-column">
-                  <span class="column-text">Day</span>
+                <th (click)="sort('Session')" class="sortable-column">
+                  <span class="column-text">Session</span>
                   <span class="arrows">
                     <mat-icon 
-                      [style.color]="sortColumn === 'Day' && sortDirection === 'asc' ? 'red' : 'inherit'">
+                      [style.color]="sortColumn === 'Session' && sortDirection === 'asc' ? 'red' : 'inherit'">
                       keyboard_arrow_up
                     </mat-icon>
                     <mat-icon 
-                      [style.color]="sortColumn === 'Day' && sortDirection === 'desc' ? 'red' : 'inherit'">
+                      [style.color]="sortColumn === 'Session' && sortDirection === 'desc' ? 'red' : 'inherit'">
                       keyboard_arrow_down
                     </mat-icon>
                   </span>
@@ -69,7 +69,7 @@
               <tr *ngFor="let Class of ClassList,let i = index">
                 <td data-label="ID" class="visually-hidden">{{ Class.ID }}</td>
                 <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-                <td data-label="Name">{{ Class.Day }}</td>
+                <td data-label="Session">{{ Class.Session }}</td>
                 <!-- <td data-label="SchoolName" *ngIf="isAdmin">{{ Class.SchoolName }}</td> -->
                 <td data-label="AcademicYearName">{{ Class.StartTime }}</td>
                 <td data-label="SyllabusName ">{{ Class.EndTime }}</td>
@@ -116,7 +116,7 @@
     <div class="AddForm">
       <div class="AddFormTop">
         <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
-        <p>Add Working Days</p>
+        <p>Add Session</p>
       </div>
       <div class="AddFormConatiner">
         <form [formGroup]="ClassForm">
@@ -147,40 +147,26 @@
                 </div>
               </div>
               <div class="InputFieldsContainer" *ngIf="!isAdmin">
-                <label class="inputLabel" for="email">Day <span class="required">*</span></label>
+                <label class="inputLabel" for="email">Session <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="Day" placeholder="Select Class">
-                    <option value="0" disabled>Select</option>
-                    <option value="Monday">Monday</option>
-                    <option value="Tuesday">Tuesday</option>
-                    <option value="Wednesday">Wednesday</option>
-                    <option value="Thursday">Thursday</option>
-                    <option value="Friday">Friday</option>
-                    <option value="Saturday">Saturday</option>
-                    <option value="Sunday">Sunday</option>
-                  </select>
-                  <div *ngIf="ClassForm.get('Day')?.hasError('min') && (ClassForm.get('Day')?.touched || ClassForm.get('Day')?.dirty)" class="text-danger">
-                      <small>Please Select Day.</small>
+                  <input class="inputField" formControlName="Session" placeholder="Enter Session" (keydown)="allowAlphaAndSpecial($event)" />
+                  <div *ngIf="(ClassForm.get('Session' ) ?. touched && ClassForm.get('Session' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Session' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Session.</small>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
             <div class="InputRow">
               <div class="InputFieldsContainer" *ngIf="isAdmin">
-                <label class="inputLabel" for="email">Day <span class="required">*</span></label>
+                <label class="inputLabel" for="email">Session <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="Day" placeholder="Select Class">
-                    <option value="0" disabled>Select</option>
-                    <option value="Monday">Monday</option>
-                    <option value="Tuesday">Tuesday</option>
-                    <option value="Wednesday">Wednesday</option>
-                    <option value="Thursday">Thursday</option>
-                    <option value="Friday">Friday</option>
-                    <option value="Saturday">Saturday</option>
-                    <option value="Sunday">Sunday</option>
-                  </select>
-                  <div *ngIf="ClassForm.get('Route')?.hasError('min') && (ClassForm.get('Route')?.touched || ClassForm.get('Route')?.dirty)" class="text-danger">
-                      <small>Please Select Day.</small>
+                  <input class="inputField" formControlName="Session" placeholder="Enter Session" (keydown)="allowAlphaAndSpecial($event)" />
+                  <div *ngIf="(ClassForm.get('Session' ) ?. touched && ClassForm.get('Session' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Session' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Session.</small>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -273,15 +259,15 @@
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Working Day Details</h5>
+        <h5 class="modal-title">Session Details</h5>
         <button type="button" class="close" (click)="closeModal('view')">
           <span>&times;</span>
         </button>
       </div>
       <div class="modal-body">
-        <div class="row mb-2" *ngIf="viewSyllabus?.Day">
-          <div class="col-6 viewHeadingfontsize">Day</div>
-          <div class="col-6 viewfontsize">{{ viewSyllabus?.Day }}</div>
+        <div class="row mb-2" *ngIf="viewSyllabus?.Session">
+          <div class="col-6 viewHeadingfontsize">Session Name</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.Session }}</div>
         </div>
 
         <div class="row mb-2" *ngIf="viewSyllabus?.StartTime">
