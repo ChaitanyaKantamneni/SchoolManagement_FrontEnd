@@ -34,34 +34,7 @@
                   </div>
                 </div>
               </div> 
-                 <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Class<span class="required">*</span></label>
-                <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="Class" placeholder="Select Start Class" (change)="onAdminClasschange($event)">
-                    <option value="0">-- Select Class--</option>
-                    <option *ngFor="let school of classLists" value="{{school.ID}}">{{school.Name}}</option>
-                  </select>
-                  <div *ngIf="SyllabusForm.get('Class')?.hasError('min') && (SyllabusForm.get('Class')?.touched || SyllabusForm.get('Class')?.dirty)" class="text-danger">
-                      <small>Please Select Class.</small>
-                  </div>
-                </div>
-              </div>  
-             
-               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">ExamType<span class="required">*</span></label>
-                <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="ExamType" placeholder="Select Start Date" (change)="onAdminExamtypeChange($event)"  >
-                    <option value="0">-- Select Exam --</option>
-                    <option *ngFor="let school of examLists" value="{{school.ID}}">{{school.Name}}</option>
-                  </select>
-                  <div *ngIf="SyllabusForm.get('ExamType')?.hasError('min') && (SyllabusForm.get('ExamType')?.touched || SyllabusForm.get('ExamType')?.dirty)" class="text-danger">
-                      <small>Please Select ExamType.</small>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="InputRow">
-               <div class="InputFieldsContainer">
+                <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
                 <div class="input-with-error">
                   <select class="inputField" type="date" formControlName="AcademicYear" placeholder="Select Start Date" (change)="onAdminAcademicYearchange($event)">
@@ -73,6 +46,20 @@
                   </div>
                 </div>
               </div>
+            </div>
+            <div class="InputRow">
+                <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Class<span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="Class" placeholder="Select Start Class" (change)="onAdminClasschange($event)">
+                    <option value="0">-- Select Class--</option>
+                    <option *ngFor="let school of classLists" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="SyllabusForm.get('Class')?.hasError('min') && (SyllabusForm.get('Class')?.touched || SyllabusForm.get('Class')?.dirty)" class="text-danger">
+                      <small>Please Select Class.</small>
+                  </div>
+                </div>
+              </div> 
                 <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Divisions<span class="required">*</span></label>
                 <div class="input-with-error">
@@ -87,10 +74,21 @@
               </div> 
             
                  </div>
-                   
-             
+                 <div class ="InputRow">
+                      <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">ExamType<span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="ExamType" placeholder="Select Start Date" (change)="onAdminExamtypeChange($event)"  >
+                    <option value="0">-- Select Exam --</option>
+                    <option *ngFor="let school of examLists" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="SyllabusForm.get('ExamType')?.hasError('min') && (SyllabusForm.get('ExamType')?.touched || SyllabusForm.get('ExamType')?.dirty)" class="text-danger">
+                      <small>Please Select ExamType.</small>
+                  </div>
+                </div>
+              </div>
+                 </div>
              </div>
-     
        <div class="ActionButtons">
 <button type="button" class="btn" (click)="onSubmit()">Submit</button>
         </div>
@@ -150,32 +148,31 @@
                 <th *ngIf="isAdmin">School Name</th>
                 <th *ngIf="isAdmin">Academic Year</th>               
                 <th>Status</th>               
-                <th>Actions</th>
+                <!-- <th>Actions</th> -->
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let Syllabus of SyllabusList,let i = index">
-                <td data-label="ID" class="visually-hidden">{{ Syllabus.ID }}</td>
+                <td data-label="ID" class="visually-hidden">{{ Syllabus.RowID }}</td>
                 <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
                 <td data-label="ExamType">{{ Syllabus.ExamType }}</td>
-                <td data-label="Subjects">{{ Syllabus.Subjects }}</td>
+                <td data-label="Subjects">{{ Syllabus.IndividualSubjectName }}</td>
                
                 <td data-label="MaxMark">{{ Syllabus.MaxMarks }}</td>
                 <td data-label="PassMarks">{{ Syllabus.PassMarks }}</td>
                 <td data-label="Duration">{{ Syllabus.Duration }}</td>
-                <td data-label="ExamDateAndTime">{{ Syllabus.ExamDateAndTime }}</td>
+                <td data-label="ExamDateAndTime">{{ Syllabus.SubjectExamDateAndTime }}</td>
                  <td data-label="ExamType" *ngIf="isAdmin">{{ Syllabus.SchoolName }}</td>
                 <td data-label="AcademicYearName" *ngIf="isAdmin">{{ Syllabus.AcademicYearName }}</td>
                 <td data-label="Status">{{ Syllabus.IsActive }}</td>
-                <td data-label="Actions">
+                <!-- <td data-label="Actions">
                   <div class="d-flex justify-content-center align-items-center h-100">
-                    <!-- (click)="editreview(aminitie.propertyTypeID)" -->
                    
-                    <button *ngIf="canView()" class="btn checkbtn" data-tooltip="View" (click)="viewReview(Syllabus.ID)">
+                    <!-- <button *ngIf="canView()" class="btn checkbtn" data-tooltip="View" (click)="viewReview(Syllabus.ID)">
                       <mat-icon class="mat-edit-icon">visibility</mat-icon>
-                    </button>
+                    </button> -
                   </div>
-                </td>
+                </td> -->
               </tr>
             </tbody>
           </table>

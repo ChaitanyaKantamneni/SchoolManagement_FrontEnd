@@ -349,7 +349,7 @@ FetchExamsbyclassanddivisionList() {
               ID: item.id,
               SchoolID: item.schoolID,
               Syllabus: item.syllabus,
-              Class: item.className,          // ← friendly for table
+              Class: item.className,          
               Divisions: item.divisionName,
               ExamType: displayExamType,
               ExamTypeID: item.examType,
@@ -405,7 +405,7 @@ private resetPaginationAndFetch() {
 
   FetchInitialData(extra: any = {}) {
   const isSearch = !!this.searchQuery?.trim();
-  const flag = isSearch ? '7' : '2';
+  const flag = isSearch ? '7' : '10';
 
   this.loader.show();
 
@@ -485,6 +485,18 @@ private resetPaginationAndFetch() {
       )
       .join(' | ')
   : '';
+
+  const formattedSubjectExamDate = item.subjectExamDateAndTime
+  ? new Date(item.subjectExamDateAndTime).toLocaleString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    })
+  : '';
+
     return {
       ID: item.id,
       SchoolID: item.schoolID,
@@ -502,7 +514,12 @@ private resetPaginationAndFetch() {
       NoOfQuestion: item.noOfQuestion,
       Instructions: item.instructions,
       IsActive: item.isActive === "True" || item.isActive === "1" ? 'Active' : 'InActive',
-      AcademicYearName: item.academicYearName
+      AcademicYearName: item.academicYearName,
+      RowID: item.rowID,
+      SubjectIndex: item.subjectIndex,
+      SubjectID: item.subjectID,
+      IndividualSubjectName:item.individualSubjectName,
+      SubjectExamDateAndTime: formattedSubjectExamDate
     };
   });
 }
@@ -514,6 +531,18 @@ onSubmit() {
   }
   this.resetPaginationAndFetch();
 }
+
+formatDateYYYYMMDD(dateStr: string | null) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
+  }
+
+  formatDateDDMMYYYY(dateStr: string | null) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    return `${d.getDate().toString().padStart(2,'0')}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getFullYear()}`;
+  }
  
 
 
@@ -535,52 +564,54 @@ onSubmit() {
 
         const isActive = item.isActive === "True";
 
-        if (mode === 'view') {
-         let displayExamType = item.examTypeName;
-               
-                const formattedExamDate = item.examDateAndTime
-              ? item.examDateAndTime
-                  .split(',')
-                  .map((d: string) =>
-                    new Date(d).toLocaleString('en-US', {
-                      month: '2-digit',
-                      day: '2-digit',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      hour12: true
-                    })
-                  )
-                  .join(' | ')
-              : '';
-               const subjectsArr = item.subjects ? item.subjects.split(',') : [];
-                const divisionsArr = item.divisions ? item.divisionName.split(',') : [];
+           if (mode === 'view') {
 
-                const finalDivisionDisplay = divisionsArr
-                  .map((group: string) => group.split('|').join(','))
-                  .join(' | ');
-                this.isViewMode = true;
-                this.viewSyllabus = {
-                ID: item.id,
-                SchoolID: item.schoolID,
-                Syllabus: item.syllabus,
-                // Class: this.getClassNames(item.className),
-                Class: item.className,
-                Divisions: finalDivisionDisplay,
-                ExamType: displayExamType,
-                Subjects: item.subjectName,
-                SchoolName: item.schoolName,
-                MaxMarks: item.maxMarks,
-                PassMarks: item.passMarks,
-                ExamDateAndTime: formattedExamDate,
-                Duration: item.duration,
-                NoOfQuestion: item.noOfQuestion,
-                Instructions: item.instructions,
-                AcademicYearName: item.academicYearName,
-                IsActive: item.isActive === "True" || item.isActive === "1"
-          };
-          this.isViewModalOpen = true;
-        }
+        const formattedExamDate = item.examDateAndTime
+          ? item.examDateAndTime
+              .split(',')
+              .map((d: string) =>
+                new Date(d).toLocaleString('en-US', {
+                  month: '2-digit',
+                  day: '2-digit',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: true
+                })
+              )
+              .join(' | ')
+          : '';
+
+        const divisionsArr = item.divisions ? item.divisions.split('|') : [];
+
+        const finalDivisionDisplay = divisionsArr
+          .map((group: string) => group.split(',').join('|'))
+          .join(' , ');
+
+        this.isViewMode = true;
+
+        this.viewSyllabus = {
+          ID: item.id,
+          SchoolID: item.schoolID,
+          Syllabus: item.syllabus,
+          Class: item.className,
+          Divisions: finalDivisionDisplay,
+          ExamType: item.examTypeName,
+          Subjects: item.subjectName,
+          SchoolName: item.schoolName,
+          MaxMarks: item.maxMarks,
+          PassMarks: item.passMarks,
+          ExamDateAndTime: formattedExamDate,
+          Duration: item.duration,
+          NoOfQuestion: item.noOfQuestion,
+          Instructions: item.instructions,
+          AcademicYearName: item.academicYearName,
+          DivisionName:item.divisionName,
+          IsActive: isActive
+        };
+
+        this.isViewModalOpen = true;
+      }
 
         if (mode === 'edit') {
           this.isViewMode = false;
