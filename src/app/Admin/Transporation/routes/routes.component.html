@@ -172,7 +172,7 @@
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Distance <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Distance" placeholder="Enter Distance" (keydown)="allowOnlyNumbers($event)" />
+                  <input class="inputField" formControlName="Distance" placeholder="Enter Distance" (keydown)="allowOnlyNumbers($event)" minlength="1" maxlength="3" />
                   <div *ngIf="(SyllabusForm.get('Distance' ) ?. touched && SyllabusForm.get('Distance' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(SyllabusForm.get('Distance' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter Distance.</small>
@@ -261,28 +261,28 @@
       </div>
       <div class="modal-body">
         <div class="row mb-2" *ngIf="viewSyllabus?.Name">
-          <div class="col-5">Name</div>
-          <div class="col-7 viewfontsize">{{ viewSyllabus?.Name }}</div>
+          <div class="col-6 viewHeadingfontsize">Name</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.Name }}</div>
         </div>
 
         <div class="row mb-2" *ngIf="viewSyllabus?.Distance">
-          <div class="col-5">Distance</div>
-          <div class="col-7 viewfontsize">{{ viewSyllabus?.Distance }}</div>
+          <div class="col-6 viewHeadingfontsize">Distance</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.Distance }}</div>
         </div>
 
         <div class="row mb-2" *ngIf="viewSyllabus?.SchoolName">
-          <div class="col-5">School Name</div>
-          <div class="col-7 viewfontsize">{{ viewSyllabus?.SchoolName }}</div>
+          <div class="col-6 viewHeadingfontsize">School Name</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.SchoolName }}</div>
         </div>
 
         <div class="row mb-2" *ngIf="viewSyllabus?.AcademicYearName">
-          <div class="col-5">Academic Year</div>
-          <div class="col-7 viewfontsize">{{ viewSyllabus?.AcademicYearName }}</div>
+          <div class="col-6 viewHeadingfontsize">Academic Year</div>
+          <div class="col-6 viewfontsize">{{ viewSyllabus?.AcademicYearName }}</div>
         </div>
 
         <div class="row mb-2" *ngIf="viewSyllabus?.IsActive !== null">
-          <div class="col-5">Status</div>
-          <div class="col-7">
+          <div class="col-6 viewHeadingfontsize">Status</div>
+          <div class="col-6">
             <span class="badge"
                   [ngClass]="viewSyllabus?.IsActive ? 'badge-success' : 'badge-danger'">
               {{ viewSyllabus?.IsActive ? 'Active' : 'Inactive' }}

@@ -41,7 +41,7 @@ export class StopsComponent extends BasePermissionComponent {
   };
 
   allowAlphaAndSpecial(event: KeyboardEvent) {
-    const allowedRegex = /^[a-zA-Z!@#$%^&*()_+\-=\[\]{};:'",.<>/?|`~]$/;
+    const allowedRegex = /^[a-zA-Z ]$/;
     if (
       event.key === 'Backspace' ||
       event.key === 'Tab' ||
@@ -113,7 +113,7 @@ export class StopsComponent extends BasePermissionComponent {
     ID: new FormControl(),
     SchoolID: new FormControl(),
     Route:new FormControl(0, Validators.min(1)),
-    Name: new FormControl('', [Validators.required,Validators.pattern('^[a-zA-Z!@#$%^&*()_+\\-=\\[\\]{};:\'",.<>/?|`~]+$')]),
+    Name: new FormControl('', [Validators.required,Validators.pattern('^[a-zA-Z ]+$')]),
     StopOrder: new FormControl('', [Validators.required,Validators.pattern('^[0-9]+$')]),
     Distance:new FormControl('', [Validators.required,Validators.pattern('^[0-9]+$')]),
     AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)]),
@@ -305,6 +305,7 @@ export class StopsComponent extends BasePermissionComponent {
     this.FetchRoutesList();
     this.SyllabusForm.reset();
     this.SyllabusForm.get('Route').patchValue('0');
+    this.SyllabusForm.get('AcademicYear').patchValue('0');
     this.IsAddNewClicked=!this.IsAddNewClicked;
     this.IsActiveStatus=true;
     this.ViewSyllabusClicked=false;

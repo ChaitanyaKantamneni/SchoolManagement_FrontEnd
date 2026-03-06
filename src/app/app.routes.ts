@@ -54,7 +54,6 @@ import { SubjectStaffComponent } from './Admin/Masters/subject-staff/subject-sta
 import { AdmissionComponent } from './Admin/AcademicModule/admission/admission.component';
 import { AllotClassTeacherComponent } from './Admin/AcademicModule/allot-class-teacher/allot-class-teacher.component';
 import { PromotionComponent } from './Admin/AcademicModule/promotion/promotion.component';
-import { DePromotionComponent } from './Admin/AcademicModule/de-promotion/de-promotion.component';
 import { TransferStudentsComponent } from './Admin/AcademicModule/transfer-students/transfer-students.component';
 import { BusesComponent } from './Admin/Transporation/buses/buses.component';
 import { RoutesComponent } from './Admin/Transporation/routes/routes.component';
@@ -63,7 +62,6 @@ import { schoolGuard } from './guards/school.guard';
 import { FareComponent } from './Admin/Transporation/fare/fare.component';
 import { FeeCategoryComponent } from './Admin/Finance/fee-category/fee-category.component';
 import { FeeAllocationComponent } from './Admin/Finance/fee-allocation/fee-allocation.component';
-import { FeeDiscountCategoryComponent } from './Admin/Finance/fee-discount-category/fee-discount-category.component';
 import { ExamTypeComponent } from './Admin/Exam/exam-type/exam-type.component';
 import { ExammarksComponent } from './Admin/Exam/exammarks/exammarks.component';
 import { ExamresultsComponent } from './Admin/Exam/examresults/examresults.component';
@@ -74,6 +72,9 @@ import { WorkingDaysComponent } from './Admin/TimeTable/working-days/working-day
 import { SessionsComponent } from './Admin/TimeTable/sessions/sessions.component';
 import { TimeTableComponent } from './Admin/TimeTable/time-table/time-table.component';
 import { TeachersTimeTableComponent } from './Admin/TimeTable/teachers-time-table/teachers-time-table.component';
+import { FeeDiscountCategoryComponent } from './Admin/Finance/fee-discount-category/fee-discount-category.component';
+import { FeeDiscountComponent } from './Admin/Finance/fee-discount/fee-discount.component';
+import { FeeCollectionComponent } from './Admin/Finance/fee-collection/fee-collection.component';
 
 export const routes: Routes = [
   { path: '', component: SignInComponent },
@@ -98,8 +99,7 @@ export const routes: Routes = [
       { path: 'Role', component: RolesComponent },
       { path: 'Admission', component: AdmissionComponent },
       { path: 'AllotClassTeacher', component: AllotClassTeacherComponent },
-      { path: 'Promotion', component: PromotionComponent },
-      { path: 'DePromotion', component: DePromotionComponent },
+      { path: 'ClassTransition', component: PromotionComponent },
       { path: 'TransferStudents', component: TransferStudentsComponent },
       { path: 'Bus', component: BusesComponent },
       { path: 'Routes', component: RoutesComponent },
@@ -108,6 +108,8 @@ export const routes: Routes = [
       { path: 'FeeCategory', component: FeeCategoryComponent },
       { path: 'FeeAllocation', component: FeeAllocationComponent },
       { path: 'FeeDiscountCategory', component: FeeDiscountCategoryComponent },
+      { path: 'FeeDiscount', component: FeeDiscountComponent },
+      { path: 'FeeCollection', component: FeeCollectionComponent },
       { path: 'Fare', component: FareComponent },
       { path: 'ExamType', component: ExamTypeComponent },
       { path: 'SetExam', component: SetexamComponent },
@@ -141,8 +143,7 @@ export const routes: Routes = [
       { path: 'Roles', component: RolesComponent },
       { path: 'Admission', component: AdmissionComponent },
       { path: 'AllotClassTeacher', component: AllotClassTeacherComponent },
-      { path: 'Promotion', component: PromotionComponent },
-      { path: 'DePromotion', component: DePromotionComponent },
+      { path: 'ClassTransition', component: PromotionComponent },
       { path: 'TransferStudents', component: TransferStudentsComponent },
       { path: 'Bus', component: BusesComponent },
       { path: 'Routes', component: RoutesComponent },
@@ -151,6 +152,7 @@ export const routes: Routes = [
       { path: 'FeeCategory', component: FeeCategoryComponent },
       { path: 'FeeAllocation', component: FeeAllocationComponent },
       { path: 'FeeDiscountCategory', component: FeeDiscountCategoryComponent },
+      { path: 'FeeDiscount', component: FeeDiscountComponent },
       { path: 'Stops', component: StopsComponent },
       { path: 'ExamType', component: ExamTypeComponent },
       { path: 'SetExam', component: SetexamComponent },
@@ -188,8 +190,7 @@ export const routes: Routes = [
       { path: 'Roles', component: RolesComponent },
       { path: 'Admission', component: AdmissionComponent },
       { path: 'AllotClassTeacher', component: AllotClassTeacherComponent },
-      { path: 'Promotion', component: PromotionComponent },
-      { path: 'DePromotion', component: DePromotionComponent },
+      { path: 'ClassTransition', component: PromotionComponent },
       { path: 'TransferStudents', component: TransferStudentsComponent },
       { path: 'Bus', component: BusesComponent },
       { path: 'Routes', component: RoutesComponent },
@@ -198,6 +199,7 @@ export const routes: Routes = [
       { path: 'FeeCategory', component: FeeCategoryComponent },
       { path: 'FeeAllocation', component: FeeAllocationComponent },
       { path: 'FeeDiscountCategory', component: FeeDiscountCategoryComponent },
+      { path: 'FeeDiscount', component: FeeDiscountComponent },
       { path: 'Stops', component: StopsComponent },
       { path: 'ExamType', component: ExamTypeComponent },
       { path: 'ViewExams', component: ViewexamsComponent },

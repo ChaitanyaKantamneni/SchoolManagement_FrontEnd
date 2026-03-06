@@ -1,0 +1,291 @@
+<div>
+  <app-dashboard-top-nav></app-dashboard-top-nav>
+</div>
+
+<div class="MainContentDiv">
+
+  <div *ngIf="!IsAddNewClicked" class="w-100">
+
+    <div class="ComponentTop">
+      <div class="ComponentTopHeader">
+        <h5>Finance Collection</h5>
+        <p>Total {{ ClassDivisionCount }} Fee Discounts Allocated</p>
+      </div>
+
+      <div class="ComponentTopBottom">
+        <button *ngIf="canAdd()" class="btnHover" (click)="AddNewClicked()">
+          <mat-icon>add_circle</mat-icon>
+          Collect Fees
+        </button>
+      </div>
+    </div>
+
+
+    <div class="ComponentRecords">
+      <div>
+
+        <div class="ComponentRecordsTop">
+
+          <div class="filterOptions">
+
+            <div class="searchreview input-container">
+
+              <input
+                type="text"
+                id="searchQuery"
+                class="form-control floating-input"
+                [(ngModel)]="searchQuery"
+                (ngModelChange)="onSearchChange()"
+                placeholder="Search..."
+              />
+
+              <mat-icon
+                style="position:absolute; left:10px; top:50%; transform:translateY(-50%); pointer-events:none;">
+                search
+              </mat-icon>
+
+            </div>
+
+
+            <div class="searchreview" *ngIf="isAdmin">
+
+              <select
+                (change)="onSchoolChange($event)"
+                class="form-control"
+                style="font-size:11px;">
+
+                <option value="">-- Select School --</option>
+                <option value="0">All Schools</option>
+
+                <option
+                  *ngFor="let school of schoolList"
+                  [value]="school.ID">
+
+                  {{ school.Name }}
+
+                </option>
+
+              </select>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="reviewstable">
+
+          <table
+            id="classTable"
+            *ngIf="ClassDivisionList.length != 0"
+            class="table table-bordered">
+
+            <thead>
+
+              <tr>
+
+                <th class="visually-hidden">ID</th>
+
+                <th>SI.No</th>
+
+                <th>Registration No</th>
+
+                <th>Student Name</th>
+
+                <th>Admission No</th>
+
+                <th>Class & Division</th>
+
+                <th>Academic Year</th>
+
+                <th>Fee Amount</th>
+
+                <th>Discount</th>
+
+                <th>Advance</th>
+
+                <th>Total Paid</th>
+
+                <th>Date</th>
+
+                <th>Staff</th>
+
+                <th *ngIf="isAdmin">School Name</th>
+
+                <th>Actions</th>
+
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              <tr *ngFor="let Class of ClassDivisionList; let i = index">
+
+                <td class="visually-hidden">{{ Class.ID }}</td>
+
+                <td>
+                  {{ (currentPage - 1) * pageSize + i + 1 }}
+                </td>
+
+                <td>
+                  {{ Class.RegistrationNo }}
+                </td>
+
+                <td>
+                  {{ Class.StudentName }}
+                </td>
+
+                <td>
+                  {{ Class.AdmissionNo }}
+                </td>
+
+                <td>
+                  {{ Class.ClassName }} - {{ Class.DivisionName }}
+                </td>
+
+                <td>
+                  {{ Class.AcademicYearName }}
+                </td>
+
+                <td>
+                  {{ Class.FeeAmount }}
+                </td>
+
+                <td>
+                  {{ Class.Discount }}
+                </td>
+
+                <td>
+                  {{ Class.Advance }}
+                </td>
+
+                <td>
+                  {{ Class.TotalPaid }}
+                </td>
+
+                <td>
+                  {{ Class.Date }}
+                </td>
+
+                <td>
+                  {{ Class.Staff }}
+                </td>
+
+                <td *ngIf="isAdmin">
+                  {{ Class.SchoolName }}
+                </td>
+
+
+                <td data-label="Actions">
+
+                  <div class="d-flex justify-content-center align-items-center h-100">
+
+                    <button
+                      *ngIf="canEdit()"
+                      class="btn checkbtn edit"
+                      data-tooltip="Edit"
+                      (click)="editreview(Class.ID)">
+
+                      <mat-icon class="mat-edit-icon">
+                        edit
+                      </mat-icon>
+
+                    </button>
+
+
+                    <button
+                      *ngIf="canView()"
+                      class="btn checkbtn"
+                      data-tooltip="View"
+                      (click)="viewReview(Class.ID)">
+
+                      <mat-icon class="mat-edit-icon">
+                        visibility
+                      </mat-icon>
+
+                    </button>
+
+                  </div>
+
+                </td>
+
+              </tr>
+
+            </tbody>
+
+          </table>
+
+
+          <div *ngIf="ClassDivisionList.length === 0" class="NoDataFound">
+
+            <div class="NoDataFoundImg">
+              <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
+            </div>
+
+            <p>No data found.</p>
+
+          </div>
+
+
+          <div *ngIf="ClassDivisionCount > pageSize" class="pagination-controls">
+
+            <button
+              *ngIf="totalPages() > 3"
+              (click)="goToPage(1)"
+              [disabled]="currentPage === 1"
+              class="arrow-btn FirstandLastButton">
+
+              First
+
+            </button>
+
+
+            <button
+              (click)="previousPage()"
+              [disabled]="currentPage === 1"
+              class="arrow-btn">
+
+              ←
+
+            </button>
+
+
+            <button
+              *ngFor="let page of getVisiblePageNumbers()"
+              class="page-btn"
+              [ngClass]="{'active': page === currentPage}"
+              (click)="goToPage(page)">
+
+              {{ page }}
+
+            </button>
+
+            <button
+              (click)="nextPage()"
+              [disabled]="currentPage === totalPages()"
+              class="arrow-btn">
+
+              →
+
+            </button>
+
+            <button
+              *ngIf="totalPages() > 3"
+              (click)="goToPage(totalPages())"
+              [disabled]="currentPage === totalPages()"
+              class="arrow-btn FirstandLastButton">
+
+              Last
+
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>

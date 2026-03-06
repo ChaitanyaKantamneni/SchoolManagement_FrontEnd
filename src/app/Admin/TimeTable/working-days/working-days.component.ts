@@ -19,10 +19,10 @@ import { HttpClient } from '@angular/common/http';
   standalone:true,
   imports: [NgIf,NgFor,NgClass,NgStyle,MatIconModule,DashboardTopNavComponent,ReactiveFormsModule,FormsModule],
   templateUrl: './working-days.component.html',
-  styleUrl: './working-days.component.css'
+  styleUrls: ['./working-days.component.css']
 })
 export class WorkingDaysComponent extends BasePermissionComponent {
-  pageName = 'Class';
+  pageName = 'Working Days';
   
     constructor(
       private http: HttpClient,
@@ -73,6 +73,9 @@ export class WorkingDaysComponent extends BasePermissionComponent {
     schoolList: any[] = [];
     selectedSchoolID: string = '';
     SchoolSelectionChange:boolean=false;
+    academicYearList:any[] = [];
+    AdminselectedSchoolID:string = '';
+    AdminselectedAcademivYearID:string = '';
   
     ClassForm: any = new FormGroup({
       ID: new FormControl(),
@@ -80,36 +83,62 @@ export class WorkingDaysComponent extends BasePermissionComponent {
       StartTime: new FormControl('', Validators.required),
       EndTime: new FormControl('', Validators.required),
       School: new FormControl(),
-      AcademicYear:new FormControl(0, Validators.min(1)),
+      AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
     });
   
     FetchSchoolsList() {
-      const requestData = { Flag: '2' };
-  
-      this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', requestData)
-        .subscribe(
-          (response: any) => {
-            if (response && Array.isArray(response.data)) {
-              this.schoolList = response.data.map((item: any) => {
-                const isActiveString = item.isActive === "1" ? "Active" : "InActive";
-                return {
-                  ID: item.id,
-                  Name: item.name,
-                  IsActive: isActiveString
-                };
-              });            
-            } else {
-              this.schoolList = [];
-            }
-          },
-          (error) => {
+    const requestData = { Flag: '2' };
+
+    this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.schoolList = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.id,
+                Name: item.name,
+                IsActive: isActiveString
+              };
+            });            
+          } else {
             this.schoolList = [];
           }
-        );
+        },
+        (error) => {
+          this.schoolList = [];
+        }
+      );
+  };
+
+  FetchAcademicYearsList() {
+    const requestData = { SchoolID:this.AdminselectedSchoolID||'',Flag: '2' };
+
+    this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.academicYearList = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.id,
+                Name: item.name,
+                IsActive: isActiveString
+              };
+            });            
+          } else {
+            this.academicYearList = [];
+          }
+        },
+        (error) => {
+          this.academicYearList = [];
+        }
+      );
     };
   
     protected override get isAdmin(): boolean {
-      return this.roleId === '1';
+      const role = sessionStorage.getItem('RollID') || localStorage.getItem('RollID');
+      return role === '1';
     }
   
     FetchAcademicYearCount(isSearch: boolean) {
@@ -122,7 +151,7 @@ export class WorkingDaysComponent extends BasePermissionComponent {
       return this.apiurl.post<any>('Tbl_WorkingDays_CRUD_Operations', {
         Flag: isSearch ? '8' : '6',
         SchoolID:SchoolIdSelected,
-        Name: isSearch ? this.searchQuery.trim() : null
+        Day: isSearch ? this.searchQuery.trim() : null
       });
     }
   
@@ -158,7 +187,7 @@ export class WorkingDaysComponent extends BasePermissionComponent {
             ...extra
           };
   
-          if (isSearch) payload.Name = this.searchQuery.trim();
+          if (isSearch) payload.Day = this.searchQuery.trim();
   
           this.apiurl.post<any>('Tbl_WorkingDays_CRUD_Operations', payload).subscribe({
             next: (response: any) => {
@@ -202,9 +231,18 @@ export class WorkingDaysComponent extends BasePermissionComponent {
     };
   
     AddNewClicked(){
-      this.FetchSyllabusList();
+      if (this.isAdmin) {
+        this.ClassForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+      } else {
+        this.ClassForm.get('School')?.clearValidators();
+      }
+      if(this.AdminselectedSchoolID==''){
+        this.FetchAcademicYearsList();
+      }
       this.ClassForm.reset();
       this.ClassForm.get('Day').patchValue('0');
+      this.ClassForm.get('School').patchValue('0');
+      this.ClassForm.get('AcademicYear').patchValue('0');
       this.IsAddNewClicked=!this.IsAddNewClicked;
       this.IsActiveStatus=true;
       this.ViewClassClicked=false;
@@ -241,18 +279,18 @@ export class WorkingDaysComponent extends BasePermissionComponent {
 
   
     SubmitClass(){
-      if(this.ClassForm.invalid){
-        this.ClassForm.markAllAsTouched();
-        return;
-      }
-      else{
+      // if(this.ClassForm.invalid){
+      //   this.ClassForm.markAllAsTouched();
+      //   return;
+      // }
+      // else{
         const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
         const data = {
           Day: this.ClassForm.get('Day')?.value,
           StartTime: this.formatTime(this.ClassForm.get('StartTime')?.value),
           EndTime: this.formatTime(this.ClassForm.get('EndTime')?.value),
           SchoolID: this.ClassForm.get('School')?.value,
-          AcademicYear: this.ClassForm.get('AcademicYear')?.value,  
+          AcademicYear: this.ClassForm.get('AcademicYear')?.value,
           IsActive:IsActiveStatusNumeric,
           Flag: '1'
         };
@@ -267,14 +305,20 @@ export class WorkingDaysComponent extends BasePermissionComponent {
               this.ClassForm.markAsPristine();
             }
           },
-          error: (error) => {
-            this.AminityInsStatus = "Error Submitting Working Day.";
+          error: (err:any) => {
+            if (err.status === 400 && err.error?.message) {
+              this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+            } else if (err.status === 500 && err.error?.Message) {
+              this.AminityInsStatus = err.error.Message;  // Database or internal error
+            } else {
+              this.AminityInsStatus = "Unexpected error occurred.";
+            }
             this.isModalOpen = true;
           },
           complete: () => {
           }
         });
-      }
+      // }
     };
   
     FetchSyllabusDetByID(SyllabusID: string, mode: 'view' | 'edit') {
@@ -293,14 +337,15 @@ export class WorkingDaysComponent extends BasePermissionComponent {
             return;
           }
   
-          const isActive = item.isActive === '1';
+          const isActive = item.isActive === "True";
   
           if (mode === 'view') {
             this.isViewMode = true;
             this.viewSyllabus = {
               ID: item.id,
-              Name: item.name,
-              SyllabusName: item.syllabusName,
+              Day: item.day,
+              EndTime:item.endTime,
+              StartTime: item.startTime,
               SchoolName:item.schoolName,
               AcademicYearName:item.academicYearName,
               IsActive: isActive
@@ -312,11 +357,15 @@ export class WorkingDaysComponent extends BasePermissionComponent {
             this.isViewMode = false;
             this.ClassForm.patchValue({
               ID: item.id,
-              Name: item.name,
-              Syllabus:item.syllabus,
-              Description: item.description,
-              School:item.schoolID
+              Day: item.day,
+              EndTime:item.endTime,
+              StartTime: item.startTime,
+              School:item.schoolID,
+              AcademicYear:item.academicYear
             });
+            this.AdminselectedSchoolID=item.schoolID;
+            this.AdminselectedAcademivYearID=item.academicYear;
+            this.FetchAcademicYearsList();
             this.IsActiveStatus = isActive;
             this.IsAddNewClicked = true;
           }
@@ -341,7 +390,7 @@ export class WorkingDaysComponent extends BasePermissionComponent {
           StartTime: this.formatTime(this.ClassForm.get('StartTime')?.value),
           EndTime: this.formatTime(this.ClassForm.get('EndTime')?.value),
           SchoolID: this.ClassForm.get('School')?.value,
-          AcademicYear: this.ClassForm.get('AcademicYear')?.value, 
+          AcademicYear: this.ClassForm.get('AcademicYear')?.value,
           IsActive:IsActiveStatusNumeric,
           Flag: '5'
         };
@@ -356,8 +405,14 @@ export class WorkingDaysComponent extends BasePermissionComponent {
               this.ClassForm.markAsPristine();
             }
           },
-          error: (error) => {
-            this.AminityInsStatus = "Error Updating Working Day.";
+          error: (err:any) => {
+            if (err.status === 400 && err.error?.message) {
+              this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+            } else if (err.status === 500 && err.error?.Message) {
+              this.AminityInsStatus = err.error.Message;  // Database or internal error
+            } else {
+              this.AminityInsStatus = "Unexpected error occurred.";
+            }
             this.isModalOpen = true;
           },
           complete: () => {
@@ -593,5 +648,18 @@ export class WorkingDaysComponent extends BasePermissionComponent {
     viewReview(SyllabusID: string): void {
       this.FetchSyllabusDetByID(SyllabusID,'view');
       this.isViewModalOpen=true;
+    };
+
+    onAdminSchoolChange(event: Event) {
+      this.academicYearList=[];
+      this.ClassForm.get('AcademicYear').patchValue('0');
+      const target = event.target as HTMLSelectElement;
+      const schoolID = target.value;
+      if(schoolID=="0"){
+        this.AdminselectedSchoolID="";
+      }else{
+        this.AdminselectedSchoolID = schoolID;
+      }   
+      this.FetchAcademicYearsList();
     };
 }

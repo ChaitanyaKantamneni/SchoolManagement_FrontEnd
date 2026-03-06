@@ -14,16 +14,16 @@ import { LoaderService } from '../../../Services/loader.service';
 import { HttpClient } from '@angular/common/http';
 
 @Component({
-  selector: 'app-allot-class-teacher',
+  selector: 'app-fee-collection',
   standalone:true,
   imports: [NgIf,NgFor,NgClass,NgStyle,MatIconModule,DashboardTopNavComponent,ReactiveFormsModule,FormsModule],
-  templateUrl: './allot-class-teacher.component.html',
-  styleUrls: ['./allot-class-teacher.component.css']
+  templateUrl: './fee-collection.component.html',
+  styleUrl: './fee-collection.component.css'
 })
-export class AllotClassTeacherComponent extends BasePermissionComponent {
-  pageName = 'Allot Class Teacher';
+export class FeeCollectionComponent extends BasePermissionComponent {
+  pageName = 'Fee Collection';
 
-  constructor(
+constructor(
     private http: HttpClient,
     router: Router,
     public loader: LoaderService,
@@ -75,16 +75,19 @@ export class AllotClassTeacherComponent extends BasePermissionComponent {
   academicYearList:any[] = [];
   DivisionsList:any[] = [];
   ClassTeachersList:any[] = [];
+  DiscountCategoryList:any[] = [];
   StaffList:any[] = [];
   AdminselectedSchoolID:string = '';
   AdminselectedAcademivYearID:string = '';
   AdminselectedClassID:string = '';
+  AdminselectedClassDivisionID:string = '';
 
   ClassDivisionForm: any = new FormGroup({
     ID: new FormControl(),
     Class: new FormControl(0, Validators.min(1)),
     Division: new FormControl(0, Validators.min(1)),
     ClassTeacher: new FormControl(0, Validators.min(1)),
+    DiscountCategory: new FormControl(0, Validators.min(1)),
     School: new FormControl(),
     AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
   });
@@ -167,7 +170,7 @@ export class AllotClassTeacherComponent extends BasePermissionComponent {
       SchoolIdSelected = this.selectedSchoolID.trim();
     }
 
-    return this.apiurl.post<any>('Tbl_AllotClassTeacher_CRUD_Operations', {
+    return this.apiurl.post<any>('Tbl_FeeDiscount_CRUD_Operations', {
       Flag: isSearch ? '8' : '6',
       SchoolID:SchoolIdSelected,
       Class: isSearch ? this.searchQuery.trim() : null
@@ -208,7 +211,7 @@ export class AllotClassTeacherComponent extends BasePermissionComponent {
 
         if (isSearch) payload.Class = this.searchQuery.trim();
 
-        this.apiurl.post<any>('Tbl_AllotClassTeacher_CRUD_Operations', payload).subscribe({
+        this.apiurl.post<any>('Tbl_FeeDiscount_CRUD_Operations', payload).subscribe({
           next: (response: any) => {
             const data = response?.data || [];
             this.mapAcademicYears(response);
@@ -238,19 +241,27 @@ export class AllotClassTeacherComponent extends BasePermissionComponent {
   };
 
   mapAcademicYears(response: any) {
-    this.ClassDivisionList = (response.data || []).map((item: any) => ({
-      ID: item.id,
-      Class: item.class,
-      Division: item.division,
-      ClassTeacher: item.classTeacher,
-      ClassName: item.className,
-      StaffName: item.staffName,
-      DivisionName:item.divisionName,
-      SchoolName:item.schoolName,
-      AcademicYearName:item.academicYearName,
-      IsActive: item.isActive === '1' ? 'Active' : 'InActive'
-    }));
-  };
+
+  this.ClassDivisionList = (response.data || []).map((item: any) => ({
+    ID: item.id,
+    RegistrationNo: item.registrationNo,
+    StudentName: item.studentFullName,
+    AdmissionNo: item.admissionNo,
+    ClassName: item.className,
+    DivisionName: item.classDivisionName,
+    AcademicYearName: item.academicYearName,
+    FeeAmount: item.feeAmount,
+    Discount: item.discountAmount,
+    Advance: item.advanceAmount,
+    TotalPaid: item.totalPaid,
+    Date: this.formatDateDDMMYYYY(item.createdDate),
+    Staff: item.staffName,
+    SchoolName: item.schoolName,
+    IsActive: item.isActive === '1' ? 'Active' : 'InActive'
+
+  }));
+
+}
 
   AddNewClicked(){
     if (this.isAdmin) {
@@ -267,6 +278,7 @@ export class AllotClassTeacherComponent extends BasePermissionComponent {
     this.ClassDivisionForm.get('School').patchValue('0');
     this.ClassDivisionForm.get('AcademicYear').patchValue('0');
     this.ClassDivisionForm.get('ClassTeacher').patchValue('0');
+    this.ClassDivisionForm.get('DiscountCategory').patchValue('0');
     this.ClassDivisionForm.get('Division').patchValue('0');
     this.IsAddNewClicked=!this.IsAddNewClicked;
     this.IsActiveStatus=true;
@@ -328,72 +340,25 @@ export class AllotClassTeacherComponent extends BasePermissionComponent {
       );
   };
 
-  FetchStaffList() {
+  FetchClassStudentsList() {
     const requestData = { 
-      SchoolID:this.AdminselectedSchoolID||'',
-      AcademicYear:this.AdminselectedAcademivYearID||'',Flag: '9' };
+      SchoolID:this.AdminselectedSchoolID || '',
+            AcademicYear:this.AdminselectedAcademivYearID || '',
+            Class:this.AdminselectedClassID || '',
+            Division:this.AdminselectedClassDivisionID,
+            Flag: '3' };
 
-    this.apiurl.post<any>('Tbl_Staff_CRUD_Operations', requestData)
+    this.apiurl.post<any>('Tbl_StudentDetails_CRUD_Operations', requestData)
       .subscribe(
         (response: any) => {
           if (response && Array.isArray(response.data)) {
             this.ClassTeachersList = response.data.map((item: any) => {
               const isActiveString = item.isActive === "1" ? "Active" : "InActive";
 
-              // Check if staffType is a comma-separated string and convert it to an array
-              const staffTypeArray = item.staffType ? item.staffType.split(',').map((id: string) => id.trim()) : [];
-
               return {
                 ID: item.id,
-                StaffType: staffTypeArray, // Ensure StaffType is always an array
-                Name: item.firstName + ' ' + item.middleName + ' ' + item.lastName + ' ' + '-' + ' ' + item.email,
-                FirstName: item.firstName,
-                MiddleName: item.middleName,
-                LastName: item.lastName,
-                MobileNumber: item.mobileNumber,
-                Email: item.email,
-                DateOfBirth: item.dateOfBirth,
-                Qualification: item.qualification,
-                IsActive: isActiveString
-              };
-            });
-          } else {
-            this.ClassTeachersList = [];
-          }
-        },
-        (error) => {
-          this.ClassTeachersList = [];
-        }
-      );
-  };
-
-  FetchClassTeachersList() {
-    const requestData = { 
-      SchoolID:this.AdminselectedSchoolID||'',
-      AcademicYear:this.AdminselectedAcademivYearID||'',Flag: '11' };
-
-    this.apiurl.post<any>('Tbl_Staff_CRUD_Operations', requestData)
-      .subscribe(
-        (response: any) => {
-          if (response && Array.isArray(response.data)) {
-            this.ClassTeachersList = response.data.map((item: any) => {
-              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
-
-              // Check if staffType is a comma-separated string and convert it to an array
-              const staffTypeArray = item.staffType ? item.staffType.split(',').map((id: string) => id.trim()) : [];
-
-              return {
-                ID: item.id,
-                StaffType: staffTypeArray, // Ensure StaffType is always an array
-                Name: item.firstName + ' ' + item.middleName + ' ' + item.lastName + ' ' + '-' + ' ' + item.email,
-                FirstName: item.firstName,
-                MiddleName: item.middleName,
-                LastName: item.lastName,
-                MobileNumber: item.mobileNumber,
-                Email: item.email,
-                DateOfBirth: item.dateOfBirth,
-                Qualification: item.qualification,
-                IsActive: isActiveString
+                AdmissionNo:item.admissionNo,
+                Name: `${item.admissionNo ?? ''} - ${item.firstName ?? ''} ${item.middleName ?? ''} ${item.lastName ?? ''}`.replace(/\s+/g, ' ').trim()
               };
             });
             console.log("ClassTeachersList",this.ClassTeachersList);
@@ -407,6 +372,37 @@ export class AllotClassTeacherComponent extends BasePermissionComponent {
       );
   };
 
+  FetchDiscountCategoryList() {
+    const requestData = { 
+      SchoolID:this.AdminselectedSchoolID || '',
+            AcademicYear:this.AdminselectedAcademivYearID || '',
+            Flag: '3' };
+
+    this.apiurl.post<any>('Tbl_FeeDiscountCategory_CRUD_Operations', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.DiscountCategoryList = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+
+              return {
+                ID: item.id,
+                SchoolID: item.schoolID,
+                Name: item.name,
+               
+                IsActive: isActiveString
+              };
+            });
+          } else {
+            this.DiscountCategoryList = [];
+          }
+        },
+        (error) => {
+          this.DiscountCategoryList = [];
+        }
+      );
+  };
+
   SubmitClassDivision(){
     if(this.ClassDivisionForm.invalid){
       console.log('Invalid form',this.ClassDivisionForm);
@@ -416,21 +412,22 @@ export class AllotClassTeacherComponent extends BasePermissionComponent {
     else{
       const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
       const data = {
+        SchoolID: this.ClassDivisionForm.get('School')?.value,
+        AcademicYear: this.ClassDivisionForm.get('AcademicYear')?.value,
         Class: this.ClassDivisionForm.get('Class')?.value,
         Division: this.ClassDivisionForm.get('Division')?.value,
-        ClassTeacher: this.ClassDivisionForm.get('ClassTeacher')?.value,
-        SchoolID: this.ClassDivisionForm.get('School')?.value,
-        AcademicYear: this.ClassDivisionForm.get('AcademicYear')?.value,  
+        Student: this.ClassDivisionForm.get('ClassTeacher')?.value, 
+        DiscountCategory: this.ClassDivisionForm.get('DiscountCategory')?.value,           
         IsActive:IsActiveStatusNumeric,
         Flag: '1'
       };
 
-      this.apiurl.post("Tbl_AllotClassTeacher_CRUD_Operations", data).subscribe({
+      this.apiurl.post("Tbl_FeeDiscount_CRUD_Operations", data).subscribe({
         next: (response: any) => {
           if (response.statusCode === 200) {
             this.IsAddNewClicked=!this.IsAddNewClicked;
             this.isModalOpen = true;
-            this.AminityInsStatus = "Class Teacher Allocation Submitted!";
+            this.AminityInsStatus = "Fee Discount Allocation Submitted!";
             this.ClassDivisionForm.reset();
             this.ClassDivisionForm.markAsPristine();
           }
@@ -457,7 +454,7 @@ export class AllotClassTeacherComponent extends BasePermissionComponent {
       Flag: "4"
     };
 
-    this.apiurl.post<any>("Tbl_AllotClassTeacher_CRUD_Operations", data).subscribe(
+    this.apiurl.post<any>("Tbl_FeeDiscount_CRUD_Operations", data).subscribe(
       (response: any) => {
 
         const item = response?.data?.[0];
@@ -473,12 +470,17 @@ export class AllotClassTeacherComponent extends BasePermissionComponent {
           this.isViewMode = true;
           this.viewSyllabus = {
             ID: item.id,
-            Class: item.class,
-            Division: item.division,
-            ClassTeacher: item.classTeacher,
-            ClassName: item.className,
-            StaffName: item.staffName,
-            DivisionName:item.divisionName,
+            Name: item.studentFullName,
+            Class: item.className,
+            Division: item.classDivisionName,
+            DiscountCategory: item.discountCategory,
+            FeeDiscountCategoryName: item.feeDiscountCategoryName,
+            FeeCategory:item.feeCategory,
+            DiscountType:item.discountType,
+            MinAmountForDiscount:item.minAmountForDiscount,
+            DiscountValuePerInstallment:item.discountValuePerInstallment,
+            FineIncrementIn:item.fineIncrementIn,
+            Description:item.description,
             SchoolName:item.schoolName,
             AcademicYearName:item.academicYearName,
             IsActive: isActive
@@ -492,17 +494,19 @@ export class AllotClassTeacherComponent extends BasePermissionComponent {
             ID: item.id,
             Class: item.class,
             Division: item.division,
-            ClassTeacher: item.classTeacher,
+            ClassTeacher: item.student,
+            DiscountCategory: item.discountCategory,
             School:item.schoolID,
             AcademicYear:item.academicYear
           });
           this.AdminselectedSchoolID=item.schoolID;
           this.AdminselectedAcademivYearID=item.academicYear;
           this.AdminselectedClassID=item.class;
-          this.FetchAcademicYearsList();          
-          this.FetchStaffList();
+          this.FetchAcademicYearsList(); 
           this.FetchClassList();
           this.FetchDivisionsList();
+          this.FetchClassStudentsList();
+          this.FetchDiscountCategoryList();
           this.IsActiveStatus = isActive;
           this.IsAddNewClicked = true;
         }
@@ -523,21 +527,22 @@ export class AllotClassTeacherComponent extends BasePermissionComponent {
       const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
       const data = {
         ID:this.ClassDivisionForm.get('ID')?.value || '',
-        Class: this.ClassDivisionForm.get('Class')?.value,
-        Division: this.ClassDivisionForm.get('Division')?.value,
-        ClassTeacher: this.ClassDivisionForm.get('ClassTeacher')?.value,
         SchoolID: this.ClassDivisionForm.get('School')?.value,
         AcademicYear: this.ClassDivisionForm.get('AcademicYear')?.value,
+        Class: this.ClassDivisionForm.get('Class')?.value,
+        Division: this.ClassDivisionForm.get('Division')?.value,
+        Student: this.ClassDivisionForm.get('ClassTeacher')?.value, 
+        DiscountCategory: this.ClassDivisionForm.get('DiscountCategory')?.value,
         IsActive:IsActiveStatusNumeric,
         Flag: '5'
       };
 
-      this.apiurl.post("Tbl_AllotClassTeacher_CRUD_Operations", data).subscribe({
+      this.apiurl.post("Tbl_FeeDiscount_CRUD_Operations", data).subscribe({
         next: (response: any) => {
           if (response.statusCode === 200) {
             this.IsAddNewClicked=!this.IsAddNewClicked;
             this.isModalOpen = true;
-            this.AminityInsStatus = "Class Teacher Allocation Updated!";
+            this.AminityInsStatus = "Fee Discount Allocation Updated!";
             this.ClassDivisionForm.reset();
             this.ClassDivisionForm.markAsPristine();
           }
@@ -810,9 +815,9 @@ export class AllotClassTeacherComponent extends BasePermissionComponent {
 
   onAdminAcademicYearChange(event: Event) {
     this.SyllabusList = [];
-    this.ClassTeachersList = [];    
+    this.DiscountCategoryList = [];    
     this.ClassDivisionForm.get('Class').patchValue('0');
-    this.ClassDivisionForm.get('ClassTeacher').patchValue('0');
+    this.ClassDivisionForm.get('DiscountCategory').patchValue('0');
     const target = event.target as HTMLSelectElement;
     const schoolID = target.value;
     if(schoolID=="0"){
@@ -821,7 +826,7 @@ export class AllotClassTeacherComponent extends BasePermissionComponent {
       this.AdminselectedAcademivYearID = schoolID;
     }    
     this.FetchClassList();
-    this.FetchClassTeachersList();
+    this.FetchDiscountCategoryList();
   };
 
   onAdminClassChange(event: Event) {
@@ -835,5 +840,17 @@ export class AllotClassTeacherComponent extends BasePermissionComponent {
       this.AdminselectedClassID = schoolID;
     }    
     this.FetchDivisionsList();
+  };
+
+  onAdminDivisionChange(event: Event) {
+      this.ClassTeachersList = [];  
+      const target = event.target as HTMLSelectElement;
+      const schoolID = target.value;
+      if(schoolID=="0"){
+        this.AdminselectedClassDivisionID="";
+      }else{
+        this.AdminselectedClassDivisionID = schoolID;
+      }    
+      this.FetchClassStudentsList();
   };
 }

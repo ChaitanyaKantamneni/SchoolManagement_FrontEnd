@@ -11,6 +11,10 @@
     align-items: start !important;
 }
 
+.sortable-column .column-text{
+  margin-right: 15px;
+}
+
 .arrows{
     display: flex;
     flex-direction: row;
