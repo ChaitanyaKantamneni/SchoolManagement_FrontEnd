@@ -14,15 +14,16 @@ import { LoaderService } from '../../../Services/loader.service';
 import { HttpClient } from '@angular/common/http';
 
 @Component({
-  selector: 'app-fee-allocation',
+  selector: 'app-fee-discount',
   standalone:true,
-  imports: [NgIf,NgFor,NgClass,NgStyle,MatIconModule,DashboardTopNavComponent,ReactiveFormsModule,FormsModule],  templateUrl: './fee-allocation.component.html',
-  styleUrl: './fee-allocation.component.css'
+  imports: [NgIf,NgFor,NgClass,NgStyle,MatIconModule,DashboardTopNavComponent,ReactiveFormsModule,FormsModule],
+  templateUrl: './fee-discount.component.html',
+  styleUrls: ['./fee-discount.component.css']
 })
-export class FeeAllocationComponent extends BasePermissionComponent{
-  pageName = 'Fee Allocation';
+export class FeeDiscountComponent extends BasePermissionComponent {
+  pageName = 'Fee Discount';
 
-  constructor(
+constructor(
     private http: HttpClient,
     router: Router,
     public loader: LoaderService,
@@ -53,9 +54,6 @@ export class FeeAllocationComponent extends BasePermissionComponent{
   ClassList: any[] =[];
   ClassCount: number = 0;
   SyllabusList: any[] =[];
-  feeCategoryList: any[] = [];
-  FeeAllocationList: any[] = [];
-
   isViewMode = false;
   viewSyllabus: any = null;
   AminityInsStatus: any = '';
@@ -68,39 +66,35 @@ export class FeeAllocationComponent extends BasePermissionComponent{
   lastCreatedDate: string | null = null;
   lastID: number | null = null;
 
-  sortColumn: string = 'FeeAllocation'; 
+  sortColumn: string = 'FeeCategory'; 
   sortDirection: 'asc' | 'desc' = 'desc';
   editclicked:boolean=false;
   schoolList: any[] = [];
   selectedSchoolID: string = '';
   SchoolSelectionChange:boolean=false;
   academicYearList:any[] = [];
+  feecategorylist:any[] = [];
   AdminselectedSchoolID:string = '';
   AdminselectedAcademivYearID:string = '';
   FineCollectionTypePercentage:boolean=false;
+  studentList: any[] = [];
 
   ClassForm: any = new FormGroup({
     ID: new FormControl(),
     SchoolID: new FormControl(),
-    Syllabus: new FormControl('',Validators.required),
+    StudentName: new FormControl('',Validators.required),
+    // StartDate: new FormControl('',Validators.required),
+    // EndDate: new FormControl('',Validators.required),
     Class: new FormControl('',Validators.required),
-    Divisions: new FormControl('',Validators.required),
-    FeeCategory: new FormControl('',Validators.required),
-    Amount: new FormControl('',Validators.required),
-    StartDate: new FormControl('',Validators.required),
-    EndDate:new FormControl(0, Validators.min(1)),
-   
+    Division: new FormControl('',Validators.required),
+    DiscountCategory: new FormControl('',Validators.required),
+    DiscountType: new FormControl('',Validators.required),
+    DiscountValue: new FormControl('',Validators.required),
+    FeeCategory: new FormControl(0,[Validators.required,Validators.min(1)]),
+    Description: new FormControl(),
     School: new FormControl(),
     AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
   });
-
-    categories:any[] = [];
-
-    feecategories:any[] = [];
-
-    selectedCategories: string[] = [];
-    dropdownOpen: boolean = false;
-
 
   allowOnlyNumbers(event: KeyboardEvent) {
     if (
@@ -119,9 +113,7 @@ export class FeeAllocationComponent extends BasePermissionComponent{
   }
 
   FetchSchoolsList() {
-    const requestData = { 
-      Flag: '2'
-     };
+    const requestData = { Flag: '2' };
 
     this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', requestData)
       .subscribe(
@@ -146,10 +138,7 @@ export class FeeAllocationComponent extends BasePermissionComponent{
   };
 
   FetchAcademicYearsList() {
-    const requestData = { 
-      SchoolID:this.AdminselectedSchoolID||'',
-      Flag: '2'
-    };
+    const requestData = { SchoolID:this.AdminselectedSchoolID||'',Flag: '2' };
 
     this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)
       .subscribe(
@@ -172,20 +161,19 @@ export class FeeAllocationComponent extends BasePermissionComponent{
         }
       );
   };
+  
+   FetchFeeCategoryList() {
+    const requestData = { 
+      SchoolID:this.AdminselectedSchoolID||'',
+      AcademicYear: this.AdminselectedAcademivYearID,
+      Flag: '3'
+     };
 
- FetchFeeCategoryList() {
-  const requestData = {
-    SchoolID: this.AdminselectedSchoolID,
-    AcademicYear: this.AdminselectedAcademivYearID,
-    Flag: '3'
-  };
-  console.log("Request:", requestData);
-
-  this.apiurl.post<any>('Tbl_FeeCategory_CRUD_Operations', requestData)
+    this.apiurl.post<any>('Tbl_FeeCategory_CRUD_Operations', requestData)
       .subscribe(
         (response: any) => {
           if (response && Array.isArray(response.data)) {
-            this.feecategories = response.data.map((item: any) => {
+            this.feecategorylist = response.data.map((item: any) => {
               const isActiveString = item.isActive === "1" ? "Active" : "InActive";
               return {
                 ID: item.id,
@@ -194,15 +182,14 @@ export class FeeAllocationComponent extends BasePermissionComponent{
               };
             });            
           } else {
-            this.feecategories = [];
+            this.feecategorylist = [];
           }
         },
         (error) => {
-          this.feecategories = [];
+          this.feecategorylist = [];
         }
       );
-}
-
+  };
 
   protected override get isAdmin(): boolean {
     const role = sessionStorage.getItem('RollID') || localStorage.getItem('RollID');
@@ -210,14 +197,13 @@ export class FeeAllocationComponent extends BasePermissionComponent{
   }
 
   FetchAcademicYearCount(isSearch: boolean) {
-    // let SchoolIdSelected = '';
+    let SchoolIdSelected = '';
 
-    // if (this.SchoolSelectionChange) {
-    //   SchoolIdSelected = this.selectedSchoolID.trim();
-    // }
-    const SchoolIdSelected = this.selectedSchoolID?.trim() || '';
+    if (this.SchoolSelectionChange) {
+      SchoolIdSelected = this.selectedSchoolID.trim();
+    }
 
-    return this.apiurl.post<any>('Tbl_FeeAllocation_CRUD_Operations', {
+    return this.apiurl.post<any>('Tbl_FeeDiscount_CRUD_Operations', {
       Flag: isSearch ? '8' : '6',
       SchoolID:SchoolIdSelected,
       FeeCategoryName: isSearch ? this.searchQuery.trim() : null
@@ -228,13 +214,11 @@ export class FeeAllocationComponent extends BasePermissionComponent{
     const isSearch = !!this.searchQuery?.trim();
     const flag = isSearch ? '7' : '2';
 
-    // let SchoolIdSelected = '';
+    let SchoolIdSelected = '';
 
-    // if (this.SchoolSelectionChange) {
-    //   SchoolIdSelected = this.selectedSchoolID.trim();
-    // }
-
-    const SchoolIdSelected = this.selectedSchoolID?.trim() || '';
+    if (this.SchoolSelectionChange) {
+      SchoolIdSelected = this.selectedSchoolID.trim();
+    }
 
     const cursor =
       !extra.offset && this.currentPage > 1
@@ -258,9 +242,9 @@ export class FeeAllocationComponent extends BasePermissionComponent{
           ...extra
         };
 
-        if (isSearch) payload.FeeCategoryName = this.searchQuery.trim();
+        if (isSearch) payload.Name = this.searchQuery.trim();
 
-        this.apiurl.post<any>('Tbl_FeeAllocation_CRUD_Operations', payload).subscribe({
+        this.apiurl.post<any>('Tbl_FeeDiscount_CRUD_Operations', payload).subscribe({
           next: (response: any) => {
             const data = response?.data || [];
             this.mapAcademicYears(response);
@@ -276,13 +260,13 @@ export class FeeAllocationComponent extends BasePermissionComponent{
             this.loader.hide();
           },
           error: () => {
-            this.FeeAllocationList = [];
+            this.ClassList = [];
             this.loader.hide();
           }
         });
       },
       error: () => {
-        this.FeeAllocationList = [];
+        this.ClassList = [];
         this.ClassCount = 0;
         this.loader.hide();
       }
@@ -291,23 +275,22 @@ export class FeeAllocationComponent extends BasePermissionComponent{
 
 
   mapAcademicYears(response: any) {
-    this.FeeAllocationList = (response.data || []).map((item: any) => ({
+    this.ClassList = (response.data || []).map((item: any) => ({
       ID: item.id,
       SchoolID:item.schoolID,
-      Syllabus: item.syllabus,
+      Name: item.name,
+      // StartDate: item.startDate,
+      // EndDate: item.endDate,\
       Class: item.class,
-      Divisions:item.divisions,
+      Division: item.division,
+      // DivisionCategory: item.divisionCategory,
+      DiscountType: item.discountType,
+      DiscountValue: item.discountValue,
       FeeCategory:item.feeCategory,
-      Amount:item.amount,
-      StartDate:this.formatDateYYYYMMDD(item.startDate),
-      EndDate:this.formatDateYYYYMMDD(item.endDate),
-      IsActive: item.isActive === "1" ? 'Active' : 'InActive',
+      // Description:item.description,
+      IsActive: item.isActive === "True" ? 'Active' : 'InActive',
       AcademicYearName:item.academicYearName,
       SchoolName:item.schoolName,
-      SyllabusName:item.syllabusName,
-      ClassName:item.className,
-      DivisionName:item.divisionName,
-      FeeCategoryName:item.feeCategoryName
     }));
   };
 
@@ -320,89 +303,21 @@ export class FeeAllocationComponent extends BasePermissionComponent{
     if(this.AdminselectedSchoolID==''){
       this.FetchAcademicYearsList();
     }
-    this.categories=[];
-    this.selectedCategories=[];
     this.ClassForm.reset();  
-    this.ClassForm.get('School').patchValue('0');
-    this.ClassForm.get('AcademicYear').patchValue('0');  
-    this.ClassForm.get('Syllabus').patchValue('0');
-    this.ClassForm.get('Class').patchValue('0');
-    this.ClassForm.get('Divisions').patchValue('0');
-    this.ClassForm.get('FeeCategory').patchValue('0');
-    this.ClassForm.get('Amount').patchValue('0');
-    this.ClassForm.get('StartDate').patchValue('0');
-    this.ClassForm.get('EndDate').patchValue('0');
-    // this.ClassForm.get('School').patchValue('0');
+    // this.ClassForm.get('SchoolID').patchValue('0');
+    // this.ClassForm.get('Name').patchValue('0');
+    // this.ClassForm.get('Class').patchValue('0');
+    // this.ClassForm.get('Division').patchValue('0');
+    // this.ClassForm.get('DivisionCategory').patchValue('0');
+    // this.ClassForm.get('DiscountType').patchValue('0');
+    // this.ClassForm.get('DiscountValue').patchValue('0');
+    // this.ClassForm.get('FeeCategory').patchValue('0');
+    // this.ClassForm.get('SchoolName').patchValue('0');
+    // this.ClassForm.get('Description').patchValue('0');
     this.IsAddNewClicked=!this.IsAddNewClicked;
     this.IsActiveStatus=true;
     this.ViewClassClicked=false;
-  };
-
-  toggleSelection(value: string) {
-    const index = this.selectedCategories.indexOf(value);
-    if (index > -1) {
-      this.selectedCategories.splice(index, 1);
-    } else {
-      this.selectedCategories.push(value);
-    }
-    this.ClassForm.get('Divisions')?.setValue(this.selectedCategories);
-  }
-
-  FetchClassList() {
-    const requestData = { 
-      SchoolID:this.AdminselectedSchoolID,
-      AcademicYear:this.AdminselectedAcademivYearID,
-      Syllabus:this.ClassForm.get('Syllabus')?.value,
-      Flag: '3' };
-
-    this.apiurl.post<any>('Tbl_Class_CRUD_Operations', requestData)
-      .subscribe(
-        (response: any) => {
-          if (response && Array.isArray(response.data)) {
-            this.ClassList = response.data.map((item: any) => {
-              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
-              return {
-                ID: item.id,
-                Name: item.name
-              };
-            });
-          } else {
-            this.ClassList = [];
-          }
-        },
-        (error) => {
-          this.ClassList = [];
-        }
-      );
-
-  };
-
-  FetchClassDivisionList() {
-    const requestData = { 
-      SchoolID:this.AdminselectedSchoolID,
-      AcademicYear:this.AdminselectedAcademivYearID,
-      Class:this.ClassForm.get('Class')?.value,
-      Flag: '3' };
-
-    this.apiurl.post<any>('Tbl_ClassDivision_CRUD_Operations', requestData)
-      .subscribe(
-        (response: any) => {
-          if (response && Array.isArray(response.data)) {
-            this.categories = response.data.map((item: any) => {
-              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
-              return {
-                ID: item.id,
-                Name: item.name
-              };
-            });
-          } else {
-            this.categories = [];
-          }
-        },
-        (error) => {
-          this.categories = [];
-        }
-      );
+    
   };
 
   // FetchSyllabusList() {
@@ -436,33 +351,27 @@ export class FeeAllocationComponent extends BasePermissionComponent{
     }
     else{
       const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
-      const divisionValue = this.ClassForm.get('Divisions')?.value;
-      const divisions = Array.isArray(divisionValue)
-        ? divisionValue.join(',')
-        : divisionValue || '';
       const data = {
-        Syllabus: this.ClassForm.get('Syllabus')?.value,
+        Name: this.ClassForm.get('Name')?.value,
         Class: this.ClassForm.get('Class')?.value,
-        // Divisions: this.ClassForm.get('Divisions')?.value.join(','),
-        Divisions: divisions,
-        FeeCategory: this.ClassForm.get('FeeCategory')?.value,
-        Amount: this.ClassForm.get('Amount')?.value,
-        StartDate: this.ClassForm.get('StartDate')?.value,
-        EndDate: this.ClassForm.get('EndDate')?.value,
-      
-        SchoolID: this.ClassForm.get('School')?.value,
+        Division: this.ClassForm.get('Division')?.value,
+        // DivisionCategory: this.ClassForm.get('DivisionCategory')?.value,
+        DiscountType: this.ClassForm.get('DiscountType')?.value,
+        DiscountValue: this.ClassForm.get('DiscountValue')?.value,
+        DiscountValuePerInstallment: this.ClassForm.get('FeeCategory')?.value,
+        FeeCategory: this.ClassForm.get('Description')?.value,
+        SchoolID: this.ClassForm.get('SchoolName')?.value,
         AcademicYear: this.ClassForm.get('AcademicYear')?.value,
-
         IsActive:IsActiveStatusNumeric,
         Flag: '1'
       };
 
-      this.apiurl.post("Tbl_FeeAllocation_CRUD_Operations", data).subscribe({
+      this.apiurl.post("Tbl_FeeDiscount_CRUD_Operations", data).subscribe({
         next: (response: any) => {
           if (response.statusCode === 200) {
             this.IsAddNewClicked=!this.IsAddNewClicked;
             this.isModalOpen = true;
-            this.AminityInsStatus = "Fee Allocation Details Submitted!";
+            this.AminityInsStatus = "Fee Discount Details Submitted!";
             this.ClassForm.reset();
             this.ClassForm.markAsPristine();
 
@@ -490,7 +399,7 @@ export class FeeAllocationComponent extends BasePermissionComponent{
       Flag: "4"
     };
 
-    this.apiurl.post<any>("Tbl_FeeAllocation_CRUD_Operations", data).subscribe(
+    this.apiurl.post<any>("Tbl_FeeDiscount_CRUD_Operations", data).subscribe(
       (response: any) => {
 
         const item = response?.data?.[0];
@@ -501,9 +410,7 @@ export class FeeAllocationComponent extends BasePermissionComponent{
         }
 
         // ✅ normalize once
-        const isActive = item.isActive === "1";
-        const classArray = item.divisions? item.divisions.split(',').map((x: string) => x.trim()): [];
-
+        const isActive = item.isActive === "True";
 
         if (mode === 'view') {
           this.isViewMode = true;
@@ -511,18 +418,17 @@ export class FeeAllocationComponent extends BasePermissionComponent{
           this.viewSyllabus = {
             ID: item.id,
             SchoolID: item.schoolID,
-            Syllabus: item.syllabus,
+            Name: item.name,
             Class: item.class,
-            Divisions:item.divisions,
-            FeeCategory:item.feeCategory,
-            Amount:item.amount,
-            StartDate:this.formatDateYYYYMMDD(item.startDate),
-            EndDate:this.formatDateYYYYMMDD(item.endDate),
+            Division: item.division,
+            // DivisionCategory:item.divisionCategory,
+            DiscountType:item.discountType,
+            MinAmountForDiscount:item.minAmountForDiscount,
+            DiscountValuePerInstallment:item.discountValuePerInstallment,
+            FineIncrementIn:item.fineIncrementIn,
+            Description:item.description,
             SchoolName: item.schoolName,
             AcademicYearName: item.academicYearName,
-            SyllabusName:item.syllabusName,
-            ClassName:item.className,
-            DivisionName:item.divisionName,
             FeeCategoryName:item.feeCategoryName,
             IsActive: isActive 
           };
@@ -531,69 +437,30 @@ export class FeeAllocationComponent extends BasePermissionComponent{
         }
 
 
-        // if (mode === 'edit') {
-        //   this.isViewMode = false;
-        //   this.ClassForm.patchValue({
-        //     ID: item.id,
-        //     SchoolID: item.schoolID,
-        //     Syllabus: item.syllabus,
-        //     Class: item.class,
-        //     Divisions:item.divisions,
-        //     FeeCategory:item.feeCategory,
-        //     Amount:item.amount,
-        //     StartDate:this.formatDateYYYYMMDD(item.startDate),
-        //     EndDate:this.formatDateYYYYMMDD(item.endDate),
-        //     School:item.schoolID,
-        //     AcademicYear:item.academicYear
-        //   });
-        //   this.selectedCategories = [...classArray];
-        //   this.categories = this.categories || [];
-        //   this.AdminselectedSchoolID=item.schoolID;
-        //   this.AdminselectedAcademivYearID=item.academicYear;
-        //   this.FetchAcademicYearsList();
-        //   this.FetchFeeCategoryList();
-        //   this.FetchSyllabusList();
-        //   this.FetchClassList();
-        //   this.FetchClassDivisionList();
-        //   this.IsActiveStatus = isActive;
-        //   this.IsAddNewClicked = true;
-        // }
-
         if (mode === 'edit') {
-            this.isViewMode = false;
-
-            const divisionArray = item.divisions
-              ? item.divisions.split(',').map((x: string) => x.trim())
-              : [];
-
-            this.ClassForm.patchValue({
-              ID: item.id,
-              SchoolID: item.schoolID,
-              Syllabus: item.syllabus,
-              Class: item.class,
-              Divisions: divisionArray,
-              FeeCategory: item.feeCategory,
-              Amount: item.amount,
-              StartDate: this.formatDateYYYYMMDD(item.startDate),
-              EndDate: this.formatDateYYYYMMDD(item.endDate),
-              School: item.schoolID,
-              AcademicYear: item.academicYear
-            });
-
-            this.selectedCategories = [...divisionArray];
-
-            this.AdminselectedSchoolID = item.schoolID;
-            this.AdminselectedAcademivYearID = item.academicYear;
-
-            this.FetchAcademicYearsList();
-            this.FetchFeeCategoryList();
-            this.FetchSyllabusList();
-            this.FetchClassList();
-            this.FetchClassDivisionList();
-
-            this.IsActiveStatus = item.isActive === "1";
-            this.IsAddNewClicked = true;
-          }
+          this.isViewMode = false;
+          this.ClassForm.patchValue({
+            ID: item.id,
+            SchoolID: item.schoolID,
+            Name: item.name,
+            StartDate: this.formatDateYYYYMMDD(item.startDate),
+            EndDate:this.formatDateYYYYMMDD( item.endDate),
+            FeeCategory:item.feeCategory,
+            DiscountType:item.discountType,
+            MinAmountForDiscount:item.minAmountForDiscount,
+            DiscountValuePerInstallment:item.discountValuePerInstallment,
+            FineIncrementIn:item.fineIncrementIn,
+            Description:item.description,
+            SchoolName:item.schoolID,
+            AcademicYear:item.academicYear
+          });
+          this.AdminselectedSchoolID=item.schoolID;
+          this.AdminselectedAcademivYearID=item.academicYear;
+          this.FetchAcademicYearsList();
+          this.FetchFeeCategoryList();
+          this.IsActiveStatus = isActive;
+          this.IsAddNewClicked = true;
+        }
 
       },
       error => {
@@ -611,25 +478,26 @@ export class FeeAllocationComponent extends BasePermissionComponent{
       const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
       const data = {
         ID:this.ClassForm.get('ID')?.value || '',
-        Syllabus: this.ClassForm.get('Syllabus')?.value,
+        Name: this.ClassForm.get('Name')?.value,
         Class: this.ClassForm.get('Class')?.value,
-        Divisions: this.ClassForm.get('Divisions')?.value.join(','),
+        Division: this.ClassForm.get('Division')?.value,
+        // DiscountCategory: this.ClassForm.get('DivisionCategory')?.value,
+        DiscountType: this.ClassForm.get('DiscountType')?.value,
+        DiscountValue: this.ClassForm.get('DiscountValue')?.value,
         FeeCategory: this.ClassForm.get('FeeCategory')?.value,
-        Amount: this.ClassForm.get('Amount')?.value,
-        StartDate: this.ClassForm.get('StartDate')?.value,
-        EndDate: this.ClassForm.get('EndDate')?.value,
+        // Description: this.ClassForm.get('Description')?.value,
         SchoolID: this.ClassForm.get('School')?.value,
         AcademicYear: this.ClassForm.get('AcademicYear')?.value,
         IsActive:IsActiveStatusNumeric,
         Flag: '5'
       };
 
-      this.apiurl.post("Tbl_FeeAllocation_CRUD_Operations", data).subscribe({
+      this.apiurl.post("Tbl_FeeDiscount_CRUD_Operations", data).subscribe({
         next: (response: any) => {
           if (response.statusCode === 200) {
             this.IsAddNewClicked=!this.IsAddNewClicked;
             this.isModalOpen = true;
-            this.AminityInsStatus = "Fee Allocation Details Updated!";
+            this.AminityInsStatus = "FeeDiscount Details Updated!";
             this.ClassForm.reset();
             this.ClassForm.markAsPristine();
           }
@@ -783,16 +651,16 @@ export class FeeAllocationComponent extends BasePermissionComponent{
   };
 
   onSchoolChange(event: Event) {
-  const target = event.target as HTMLSelectElement;
-  const schoolID = target.value;
-
-  this.selectedSchoolID = schoolID === "0" ? '' : schoolID;
-
-  this.currentPage = 1;
-  this.pageCursors = [];
-
-  this.FetchInitialData();
-}
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    if(schoolID=="0"){
+      this.selectedSchoolID="";
+    }else{
+      this.selectedSchoolID = schoolID;
+    }    
+    this.SchoolSelectionChange = true;
+    this.FetchInitialData();
+  };
 
   exportToExcel() {
       const isSearch = !!this.searchQuery?.trim();
@@ -880,85 +748,30 @@ export class FeeAllocationComponent extends BasePermissionComponent{
   };
 
   onAdminSchoolChange(event: Event) {
-
-  this.academicYearList = [];
-  this.SyllabusList = [];
-  this.feecategories = [];
-
-  this.ClassForm.get('Class')?.patchValue('0');
-  this.ClassForm.get('AcademicYear')?.patchValue('0');
-
-  const target = event.target as HTMLSelectElement;
-  const schoolID = target.value;
-
-  if (schoolID == "0") {
-    this.AdminselectedSchoolID = "";
-  } else {
-    this.AdminselectedSchoolID = schoolID;
-  }
-
-  this.FetchAcademicYearsList();
-}
-
- onAdminAcademicYearchange(event: Event){
-    this.feecategories =[];
-    this.SyllabusListbySchool = [];
-    this.ClassForm.get('FeeCategory').patchValue('0');
-    this.ClassForm.get('Syllabus').patchValue('0');
+    this.academicYearList=[];
+    this.ClassForm.get('AcademicYear').patchValue('0');
     const target = event.target as HTMLSelectElement;
-    const academicyearId = target.value;
-    if(academicyearId=="0"){
+    const schoolID = target.value;
+    if(schoolID=="0"){
+      this.AdminselectedSchoolID="";
+    }else{
+      this.AdminselectedSchoolID = schoolID;
+    }   
+    this.FetchAcademicYearsList();
+  };
+
+
+  onAdminAcademicyearChange(event: Event){
+    this.feecategorylist=[];
+     this.ClassForm.get('FeeCategory').patchValue('0');
+    const target = event.target as HTMLSelectElement;
+    const AcademicYearID = target.value;
+    if(AcademicYearID=="0"){
       this.AdminselectedAcademivYearID="";
     }else{
-      this.AdminselectedAcademivYearID = academicyearId;
+      this.AdminselectedAcademivYearID = AcademicYearID;
     }   
     this.FetchFeeCategoryList();
-    this.FetchSyllabusList();
-  }
-
-  onAdminSyllabusChange(event: Event){
-    this.ClassList =[];
-    this.ClassForm.get('Class').patchValue('0');
-    this.FetchClassList();
-  }
-
-  onAdminClassChange(event: Event){
-    this.categories =[];
-    this.selectedCategories = [];
-    this.ClassForm.get('Divisions').patchValue('0');
-    this.FetchClassDivisionList();
-  }
-
-  SyllabusListbySchool: any[] = [];
-  FetchSyllabusList() {
-
-    const requestData = {
-      SchoolID: this.AdminselectedSchoolID,
-      AcademicYear: this.AdminselectedAcademivYearID,
-      Flag: '3'
-    };
-    
-
-    this.apiurl.post<any>('Tbl_Syllabus_CRUD_Operations', requestData)
-        .subscribe(
-          (response: any) => {
-            if (response && Array.isArray(response.data)) {
-              this.SyllabusListbySchool = response.data.map((item: any) => {
-                const isActiveString = item.isActive === "1" ? "Active" : "InActive";
-                return {
-                  ID: item.id,
-                  Name: item.name,
-                  IsActive: isActiveString
-                };
-              });            
-            } else {
-              this.SyllabusListbySchool = [];
-            }
-          },
-          (error) => {
-            this.SyllabusListbySchool = [];
-          }
-        );
   }
 
 
@@ -974,6 +787,5 @@ export class FeeAllocationComponent extends BasePermissionComponent{
       this.ClassForm.get('FineIncrementIn')?.clearValidators();
     }   
     this.ClassForm.get('FineIncrementIn')?.updateValueAndValidity();
-  };  
-
+  };
 }

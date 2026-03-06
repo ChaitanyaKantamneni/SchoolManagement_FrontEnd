@@ -5,11 +5,11 @@
   <div *ngIf="!IsAddNewClicked" class="w-100">
     <div class="ComponentTop">
       <div class="ComponentTopHeader">
-        <h5>Fee Discount Category</h5>
-        <p>Total {{ ClassCount }} Fee Discount Categories Added</p>
+        <h5>Fee Category</h5>
+        <p>Total {{ ClassCount }} Fee Categories Added</p>
       </div>
       <div class="ComponentTopBottom">
-        <button *ngIf="canAdd()" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Fee Discount Category</button>
+        <button *ngIf="canAdd()" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Fee Category</button>
       </div>
     </div>
     <div class="ComponentRecords">
@@ -44,23 +44,22 @@
               <tr>
                 <th class="visually-hidden">Academic Year ID</th>
                 <th>SI.No</th>
-                <th (click)="sort('Name')" class="sortable-column">
-                  <span class="column-text">DiscountCategory Name</span>
+                <th (click)="sort('FeeCategoryName')" class="sortable-column">
+                  <span class="column-text">Category Name</span>
                   <span class="arrows">
                     <mat-icon 
-                      [style.color]="sortColumn === 'Name' && sortDirection === 'asc' ? 'red' : 'inherit'">
+                      [style.color]="sortColumn === 'FeeCategoryName' && sortDirection === 'asc' ? 'red' : 'inherit'">
                       keyboard_arrow_up
                     </mat-icon>
                     <mat-icon 
-                      [style.color]="sortColumn === 'Name' && sortDirection === 'desc' ? 'red' : 'inherit'">
+                      [style.color]="sortColumn === 'FeeCategoryName' && sortDirection === 'desc' ? 'red' : 'inherit'">
                       keyboard_arrow_down
                     </mat-icon>
                   </span>
                 </th>
-                <th>DiscountType</th>
-                <th>MinAmountForDiscount</th>
-                <th>DiscountValuePerInstallment</th>
-                <th>FeeCategory</th>
+                <th>Fee Type</th>
+                <th>Collection Duration</th>
+                <th>Due Day</th>
                 <th *ngIf="isAdmin">School</th>
                 <th>Academic Year</th>
                 <th>Status</th>
@@ -71,11 +70,10 @@
               <tr *ngFor="let Class of ClassList,let i = index">
                 <td data-label="ID" class="visually-hidden">{{ Class.ID }}</td>
                 <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-                <td data-label="Name">{{ Class.Name }}</td>
-                <td data-label="DiscountType">{{ Class.DiscountType }}</td>
-                <td data-label="MinAmountForDiscount">{{ Class.MinAmountForDiscount }}</td>
-                <td data-label="DiscountValuePerInstallment">{{ Class.DiscountValuePerInstallment }}</td>
-                <td data-label="FeeCategory">{{ Class.FeeCategoryName }}</td>
+                <td data-label="FeeCategoryName">{{ Class.FeeCategoryName }}</td>
+                <td data-label="FeeType" *ngIf="isAdmin">{{ Class.FeeType }}</td>
+                <td data-label="FeeCollectionDuration">{{ Class.FeeCollectionDuration }}</td>
+                <td data-label="FeeDueDay ">{{ Class.FeeDueDay }}</td>
                 <td data-label="School" *ngIf="isAdmin">{{ Class.SchoolName }}</td>
                 <td data-label="AcademicYear">{{ Class.AcademicYearName }}</td>
                 <td data-label="Status">{{ Class.IsActive }}</td>
@@ -119,7 +117,7 @@
     <div class="AddForm">
       <div class="AddFormTop">
         <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
-        <p>Add Fee Discount Category</p>
+        <p>Add Fee Category</p>
       </div>
       <div class="AddFormConatiner">
         <form [formGroup]="ClassForm">
@@ -140,7 +138,7 @@
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="AcademicYear" placeholder="Select Start Date"(change)="onAdminAcademicyearChange($event)" >
+                  <select class="inputField" type="date" formControlName="AcademicYear" placeholder="Select Start Date" >
                     <option value="0">-- Select Academic Year --</option>
                     <option *ngFor="let school of academicYearList" value="{{school.ID}}">{{school.Name}}</option>
                   </select>
@@ -159,86 +157,186 @@
                     </div>
                   </div>
                 </div>
-              </div>    
-               
+              </div>
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <label class="inputLabel" for="email">Fee Type <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="Feetype" placeholder="Select Start Date">
+                    <option value="0" disabled>Select</option>
+                    <option value="Normal fee">Normal fee</option>
+                    <option value="Bus fee">Bus fee</option>
+                    <option value="Admission fee">Admission fee</option>
+                    <option value="Renewal fee">Renewal fee</option>
+                  </select>
+                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                  <div *ngIf="ClassForm.get('Feetype')?.hasError('min') && (ClassForm.get('Feetype')?.touched || ClassForm.get('Feetype')?.dirty)" class="text-danger">
+                    <small>Please Select Fee type.</small>
+                  </div>
+                </div>
+              </div>              
             </div>
-              
             <div class="InputRow">
-                <div class="InputFieldsContainer" *ngIf="isAdmin">
-                    <label class="inputLabel" for="email">Discount Type <span class="required">*</span></label>
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">Fee Type <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="Feetype" placeholder="Select Start Date">
+                    <option value="0" disabled>Select</option>
+                    <option value="Normal fee">Normal fee</option>
+                    <option value="Bus fee">Bus fee</option>
+                    <option value="Admission fee">Admission fee</option>
+                    <option value="Renewal fee">Renewal fee</option>
+                  </select>
+                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                  <div *ngIf="ClassForm.get('Feetype')?.hasError('min') && (ClassForm.get('Feetype')?.touched || ClassForm.get('Feetype')?.dirty)" class="text-danger">
+                    <small>Please Select Fee type.</small>
+                  </div>
+                </div>
+              </div>
+                <div class="InputFieldsContainer">
+                    <label class="inputLabel" for="email">Fee Collection Duration <span class="required">*</span></label>
                     <div class="input-with-error">
-                        <select class="inputField" type="date" formControlName="DiscountType" placeholder="Select DiscountType" >
+                    <select class="inputField" type="date" formControlName="FeeCollectionDuration" placeholder="Select Start Date">
+                        <option value="0" disabled>Select</option>
+                        <option value="Monthly">Monthly</option>
+                        <option value="Quarterly">Quarterly</option>
+                        <option value="Half Yearly">Half Yearly</option>
+                        <option value="One Time">One Time</option>
+                    </select>
+                    <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                    <div *ngIf="ClassForm.get('FeeCollectionDuration')?.hasError('min') && (ClassForm.get('FeeCollectionDuration')?.touched || ClassForm.get('FeeCollectionDuration')?.dirty)" class="text-danger">
+                        <small>Please Select Fee Collection Duration.</small>
+                    </div>
+                    </div>
+                </div>
+                <div class="InputFieldsContainer">
+                    <label class="inputLabel" for="email">Due Day <span class="required">*</span></label>
+                    <div class="input-with-error">
+                    <select class="inputField" type="date" formControlName="DueDay" placeholder="Select Start Date">
+                        <option value="0" disabled>Select</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                        <option value="16">16</option>
+                        <option value="17">17</option>
+                        <option value="18">18</option>
+                        <option value="19">19</option>
+                        <option value="20">20</option>
+                        <option value="21">21</option>
+                        <option value="22">22</option>
+                        <option value="23">23</option>
+                        <option value="24">24</option>
+                        <option value="25">25</option>
+                        <option value="26">26</option>
+                        <option value="27">27</option>
+                        <option value="28">28</option>
+                        <option value="29">29</option>
+                        <option value="30">30</option>
+                    </select>
+                    <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                    <div *ngIf="ClassForm.get('DueDay')?.hasError('min') && (ClassForm.get('DueDay')?.touched || ClassForm.get('DueDay')?.dirty)" class="text-danger">
+                        <small>Please Select Due Day.</small>
+                    </div>
+                    </div>
+                </div>
+                <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                    <label class="inputLabel" for="email">Fine Type <span class="required">*</span></label>
+                    <div class="input-with-error">
+                        <select class="inputField" type="date" formControlName="Finetype" placeholder="Select Start Date">
                             <option value="0" disabled>Select</option>
                             <option value="Amount">Amount</option>
                             <option value="Percentage">Percentage</option>
-                            <option value="Excemption">Excemption</option>
                         </select>
                         <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
-                        <div *ngIf="ClassForm.get('DiscountType')?.hasError('min') && (ClassForm.get('DiscountType')?.touched || ClassForm.get('DiscountType')?.dirty)" class="text-danger">
-                            <small>Please Select Discount Type.</small>
+                        <div *ngIf="ClassForm.get('Finetype')?.hasError('min') && (ClassForm.get('Finetype')?.touched || ClassForm.get('Finetype')?.dirty)" class="text-danger">
+                            <small>Please Select Fine Type.</small>
                         </div>
                     </div>
                 </div>
-                 <div class="InputFieldsContainer">
-                    <label class="inputLabel" for="email">MinAmountForDiscount</label>
-                    <div class="input-with-error">
-                        <textarea class="inputField" formControlName="MinAmountForDiscount" placeholder="Enter MinAmountForDiscount" rows="1"></textarea>
-                        <!-- <input class="inputField" id="email" formControlName="Name" placeholder="Enter Name" /> -->
-                        <div *ngIf="(ClassForm.get('MinAmountForDiscount' ) ?. touched && ClassForm.get('MinAmountForDiscount' ) ?. invalid)" class="text-danger">
-                            <div *ngIf="(ClassForm.get('MinAmountForDiscount' ) ?. errors ?. ['required' ]) ">
-                            <small>Please Enter MinAmountForDiscount.</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Start Date <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <input class="inputField" type="date" formControlName="StartDate" placeholder="Select Start Date" />
-                  <div *ngIf="(ClassForm.get('StartDate' ) ?. touched && ClassForm.get('StartDate' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('StartDate' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Select Start Date</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">End Date <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <input class="inputField" type="date" formControlName="EndDate" placeholder="Select End Date" />
-                  <div *ngIf="(ClassForm.get('EndDate' ) ?. touched && ClassForm.get('EndDate' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('EndDate' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Select End Date.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
             <div class="InputRow">
-                <div class="InputFieldsContainer">
-                    <label class="inputLabel" for="email">Discount Value per installemnt</label>
+                <div class="InputFieldsContainer" *ngIf="isAdmin">
+                    <label class="inputLabel" for="email">Fine Type <span class="required">*</span></label>
                     <div class="input-with-error">
-                        <textarea class="inputField" formControlName="DiscountValuePerInstallment" placeholder="Enter DiscountValuePerInstallment" rows="1"></textarea>
-                        <!-- <input class="inputField" id="email" formControlName="Name" placeholder="Enter Name" /> -->
-                        <div *ngIf="(ClassForm.get('DiscountValuePerInstallment' ) ?. touched && ClassForm.get('DiscountValuePerInstallment' ) ?. invalid)" class="text-danger">
-                            <div *ngIf="(ClassForm.get('DiscountValuePerInstallment' ) ?. errors ?. ['required' ]) ">
-                            <small>Please Enter Discount Value per installemnt.</small>
+                        <select class="inputField" type="date" formControlName="Finetype" placeholder="Select Start Date" >
+                            <option value="0" disabled>Select</option>
+                            <option value="Amount">Amount</option>
+                            <option value="Percentage">Percentage</option>
+                        </select>
+                        <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                        <div *ngIf="ClassForm.get('Finetype')?.hasError('min') && (ClassForm.get('Finetype')?.touched || ClassForm.get('Finetype')?.dirty)" class="text-danger">
+                            <small>Please Select Fine Type.</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="InputFieldsContainer">
+                    <label class="inputLabel" for="email">Fine value <span class="required">*</span></label>
+                    <div class="input-with-error">
+                        <input class="inputField" formControlName="FineValue" placeholder="Enter Fine Value" (keydown)="allowOnlyNumbers($event)" minlength="1" maxlength="6" />
+                        <div *ngIf="(ClassForm.get('FineValue' ) ?. touched && ClassForm.get('FineValue' ) ?. invalid)" class="text-danger">
+                            <div *ngIf="(ClassForm.get('FineValue' ) ?. errors ?. ['required' ]) ">
+                            <small>Please Enter Fine Value.</small>
+                            </div>
+                            <div *ngIf="(ClassForm.get('FineValue' ) ?. errors ?. ['pattern' ]) ">
+                            <small>max 6 digits allowed.</small>
                             </div>
                         </div>
                     </div>
                 </div>
-                   <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">FeeCategory <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="FeeCategory" placeholder="Select Start Date" >
-                    <option value="0">-- Select FeeCategory --</option>
-                    <option *ngFor="let school of feecategorylist" value="{{school.ID}}">{{school.Name}}</option>
-                  </select>
-                  <div *ngIf="ClassForm.get('FeeCategory')?.hasError('min') && (ClassForm.get('FeeCategory')?.touched || ClassForm.get('FeeCategory')?.dirty)" class="text-danger">
-                      <small>Please Select FeeCategory.</small>
-                  </div>
+                <div class="InputFieldsContainer">
+                    <label class="inputLabel" for="email">Fine Collection type <span class="required">*</span></label>
+                    <div class="input-with-error">
+                        <select class="inputField" type="date" formControlName="FinecollectionType" placeholder="Select Start Date" (change)="onFineTypeChange($event)" >
+                            <option value="0" disabled>Select</option>
+                            <option value="Fixed">Fixed</option>
+                            <option value="Percentage">Percentage</option>
+                        </select>
+                        <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                        <div *ngIf="ClassForm.get('FinecollectionType')?.hasError('min') && (ClassForm.get('FinecollectionType')?.touched || ClassForm.get('FinecollectionType')?.dirty)" class="text-danger">
+                            <small>Please Select Fine Collection Type.</small>
+                        </div>
+                    </div>
                 </div>
-              </div>   
+                <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                    <label class="inputLabel" for="email">Fine Increment In <span class="required" *ngIf="FineCollectionTypePercentage">*</span></label>
+                    <div class="input-with-error">
+                        <select class="inputField" type="date" formControlName="FineIncrementIn" placeholder="Select Start Date">
+                            <option value="0" disabled>Select</option>
+                            <option value="1">Daily</option>
+                            <option value="2">Monthly</option>
+                        </select>
+                        <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                        <div *ngIf="ClassForm.get('FineIncrementIn')?.hasError('min') && (ClassForm.get('FineIncrementIn')?.touched || ClassForm.get('FineIncrementIn')?.dirty)" class="text-danger">
+                            <small>Please Select Fine Increment In.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="InputRow">
+                <div class="InputFieldsContainer" *ngIf="isAdmin">
+                    <label class="inputLabel" for="email">Fine Increment In <span class="required" *ngIf="FineCollectionTypePercentage">*</span></label>
+                    <div class="input-with-error">
+                        <select class="inputField" type="date" formControlName="FineIncrementIn" placeholder="Select Start Date">
+                            <option value="0" disabled>Select</option>
+                            <option value="1">Daily</option>
+                            <option value="2">Monthly</option>
+                        </select>
+                        <div *ngIf="ClassForm.get('FineIncrementIn')?.hasError('min') && (ClassForm.get('FineIncrementIn')?.touched || ClassForm.get('FineIncrementIn')?.dirty)" class="text-danger">
+                          <small>Please Select Fine Increment In.</small>
+                        </div>
+                    </div>
+                </div>
                 <div class="InputFieldsContainer">
                     <label class="inputLabel" for="email">Description</label>
                     <div class="input-with-error">
@@ -251,7 +349,6 @@
                         </div>
                     </div>
                 </div>
-               
                 <div class="InputFieldsContainer">
                     <div class="toggle-container" (click)="$event.stopPropagation()">
                     <label class="switch">
@@ -317,14 +414,9 @@
           <div class="col-7 viewfontsize">{{ viewSyllabus?.Name }}</div>
         </div>
 
-        <div class="row mb-2" *ngIf="viewSyllabus?.StartDate">
-          <div class="col-5">Start Date</div>
-          <div class="col-7 viewfontsize">{{ viewSyllabus?.StartDate }}</div>
-        </div>
-
-        <div class="row mb-2" *ngIf="viewSyllabus?.EndDate">
-          <div class="col-5">End Date</div>
-          <div class="col-7 viewfontsize">{{ viewSyllabus?.EndDate }}</div>
+        <div class="row mb-2" *ngIf="viewSyllabus?.AvailableFrom">
+          <div class="col-5">Available From</div>
+          <div class="col-7 viewfontsize">{{ viewSyllabus?.AvailableFrom }}</div>
         </div>
 
         <div class="row mb-2" *ngIf="viewSyllabus?.FeeCategoryName">
@@ -332,24 +424,34 @@
           <div class="col-7 viewfontsize">{{ viewSyllabus?.FeeCategoryName }}</div>
         </div>
 
-        <div class="row mb-2" *ngIf="viewSyllabus?.DiscountType">
-          <div class="col-5">Discount Type</div>
-          <div class="col-7 viewfontsize">{{ viewSyllabus?.DiscountType }}</div>
+        <div class="row mb-2" *ngIf="viewSyllabus?.FeeType">
+          <div class="col-5">Fee Type</div>
+          <div class="col-7 viewfontsize">{{ viewSyllabus?.FeeType }}</div>
         </div>
 
-        <div class="row mb-2" *ngIf="viewSyllabus?.MinAmountForDiscount">
-          <div class="col-5">Min Amount For Discount</div>
-          <div class="col-7 viewfontsize">{{ viewSyllabus?.MinAmountForDiscount }}</div>
+        <div class="row mb-2" *ngIf="viewSyllabus?.FeeCollectionDuration">
+          <div class="col-5">Fee Collection Duration</div>
+          <div class="col-7 viewfontsize">{{ viewSyllabus?.FeeCollectionDuration }}</div>
         </div>
 
-        <div class="row mb-2" *ngIf="viewSyllabus?.DiscountValuePerInstallment">
-          <div class="col-5">Discount Value Per Installment</div>
-          <div class="col-7 viewfontsize">{{ viewSyllabus?.DiscountValuePerInstallment }}</div>
+        <div class="row mb-2" *ngIf="viewSyllabus?.FineType">
+          <div class="col-5">Fine Type</div>
+          <div class="col-7 viewfontsize">{{ viewSyllabus?.FineType }}</div>
         </div>
 
-        <div class="row mb-2" *ngIf="viewSyllabus?.Description">
-          <div class="col-5">Description</div>
-          <div class="col-7 viewfontsize">{{ viewSyllabus?.Description }}</div>
+        <div class="row mb-2" *ngIf="viewSyllabus?.FineValue">
+          <div class="col-5">Fine Value</div>
+          <div class="col-7 viewfontsize">{{ viewSyllabus?.FineValue }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.FineCollectionType">
+          <div class="col-5">Fine Collection Type</div>
+          <div class="col-7 viewfontsize">{{ viewSyllabus?.FineCollectionType }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.FineIncrementIn">
+          <div class="col-5">Fine Increment In</div>
+          <div class="col-7 viewfontsize">{{ viewSyllabus?.FineIncrementIn }}</div>
         </div>
 
         <div class="row mb-2" *ngIf="viewSyllabus?.SchoolName">
