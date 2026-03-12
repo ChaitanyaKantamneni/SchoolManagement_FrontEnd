@@ -679,6 +679,8 @@ export class TimeTableComponent extends BasePermissionComponent {
     AddNewClicked(){       
       if(this.IsAddNewClicked){
         this.ClassDivisionForm.get('NoOfPeriods').patchValue('0');
+        this.Workingdays=[];
+        this.timetableArray.clear();
         this.IsAddNewClicked=!this.IsAddNewClicked;
         this.ClassDivisionForm.reset();
         if (this.isAdmin) {
