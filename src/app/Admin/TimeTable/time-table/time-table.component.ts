@@ -639,6 +639,7 @@ export class TimeTableComponent extends BasePermissionComponent {
     };
 
     onAdminDivisionChange(event: Event) {
+      this.IsFliterClicked=false;
       this.StudentsList = [];  
       this.selectedStudents = [];
       const target = event.target as HTMLSelectElement;
@@ -679,6 +680,8 @@ export class TimeTableComponent extends BasePermissionComponent {
     AddNewClicked(){       
       if(this.IsAddNewClicked){
         this.ClassDivisionForm.get('NoOfPeriods').patchValue('0');
+        this.Workingdays=[];
+        this.timetableArray.clear();
         this.IsAddNewClicked=!this.IsAddNewClicked;
         this.ClassDivisionForm.reset();
         if (this.isAdmin) {

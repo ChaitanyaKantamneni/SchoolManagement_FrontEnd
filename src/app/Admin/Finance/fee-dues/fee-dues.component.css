@@ -1,0 +1,178 @@
+.fee-dues-filter-card {
+  background: #ffffff;
+  border-radius: 4px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+
+.fee-dues-filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.fee-dues-filters-row .InputFieldsContainer {
+  flex: 1 1 calc(50% - 8px);
+  min-width: 260px;
+}
+
+.fee-dues-filters-row .submit-field {
+  display: flex;
+  align-items: flex-end;
+}
+
+.fee-dues-filters-row-bottom {
+  margin-top: 8px;
+}
+
+.fee-dues-submit-row {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+}
+
+/* Match "Allot Fee Discount" submit button look */
+.fee-dues-submit-row .btnHover {
+  background-color: #536ff7;
+  border: 1px solid #536ff7;
+  color: #fff;
+  padding: 6px 18px;
+  border-radius: 6px;
+  font-size: 12px;
+  min-width: 90px;
+}
+
+.fee-dues-submit-row .btnHover:hover {
+  background-color: #3f5ff6;
+  border-color: #3f5ff6;
+}
+
+.fee-dues-filter-card .inputField {
+  height: 34px;
+  border-radius: 6px;
+  border: 1px solid #e3e3e3;
+  padding: 6px 10px;
+  font-size: 12px;
+  background: #fff;
+}
+
+.fee-dues-filter-card .inputField:disabled {
+  background: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.fee-dues-filter-card .inputLabel {
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.fee-dues-filter-card .required {
+  color: #dc3545;
+}
+
+.field-error {
+  color: #dc3545;
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.fee-dues-error {
+  background: #fff3f3;
+  border: 1px solid #ffd0d0;
+  color: #a10000;
+  padding: 8px 10px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+
+
+.fee-dues-table-card {
+  background: #ffffff;
+  border-radius: 4px;
+  padding: 16px 20px;
+}
+
+.fee-dues-table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+.fee-dues-toolbar-left .DownloadButtons .btnHover {
+  margin-left: 0;
+  margin-right: 6px;
+}
+
+.fee-dues-search-label {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.fee-dues-search-input {
+  width: 180px;
+  font-size: 12px;
+  padding: 4px 8px;
+  height: 28px;
+}
+
+.fee-dues-table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+.fee-dues-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fee-dues-page-link {
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  padding: 4px 10px;
+  border-radius: 2px;
+  font-size: 12px;
+}
+
+.fee-dues-page-link.active {
+  background: #1a73e8;
+  color: #fff;
+  border-color: #1a73e8;
+}
+
+.fee-dues-page-link:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.fee-dues-loader {
+  text-align: center;
+  padding: 24px 0;
+}
+
+/* (Removed) custom multiselect dropdown styles */
+
+.DownloadButtons .btnHover {
+  margin-left: 6px;
+}
+
+.reviewstable table th {
+  white-space: nowrap;
+}
+
+.reviewstable table td {
+  vertical-align: middle;
+  font-size: 12px;
+}
+

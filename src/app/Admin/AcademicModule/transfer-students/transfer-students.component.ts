@@ -15,12 +15,13 @@ import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-transfer-students',
+  standalone:true,
   imports: [NgIf,NgFor,NgClass,NgStyle,MatIconModule,DashboardTopNavComponent,ReactiveFormsModule,FormsModule],
   templateUrl: './transfer-students.component.html',
   styleUrl: './transfer-students.component.css'
 })
 export class TransferStudentsComponent extends BasePermissionComponent {
-   pageName = 'Class Transition';
+  pageName = 'Student Transfer';
   
     constructor(
       private http: HttpClient,
@@ -50,12 +51,6 @@ export class TransferStudentsComponent extends BasePermissionComponent {
       this.ClassDivisionForm.get('AcademicYear').patchValue('0');
       this.ClassDivisionForm.get('TransitionType').patchValue('0');
       this.ClassDivisionForm.get('Division').patchValue('0');
-      this.ClassDivisionForm.get('TransitionClass').patchValue('0');
-      this.ClassDivisionForm.get('TransitionDivision').patchValue('0');
-      this.ClassDivisionForm.get('TransferSchool').patchValue('0');
-      this.ClassDivisionForm.get('TransferDate').patchValue('');
-      this.ClassDivisionForm.get('Remarks').patchValue('');
-      this.updateTransitionValidators('');
       this.StudentsList=[];
       this.selectedStudents=[];
       this.FetchSchoolsList();
@@ -112,10 +107,8 @@ export class TransferStudentsComponent extends BasePermissionComponent {
       TransitionType: new FormControl(0, Validators.min(1)),
       School: new FormControl(),
       AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)]),
-      TransitionClass: new FormControl(0, Validators.min(1)),
-      TransitionDivision: new FormControl(0, Validators.min(1)),
-      TransferSchool: new FormControl(0, Validators.min(1)),
-      TransferDate: new FormControl(''),
+      // TransitionClass: new FormControl(0, Validators.min(1)),
+      // TransitionDivision: new FormControl(0, Validators.min(1)),
       Remarks: new FormControl()
     });
   
@@ -472,33 +465,8 @@ export class TransferStudentsComponent extends BasePermissionComponent {
         this.ClassDivisionForm.markAllAsTouched();
         return;
       }
-      // else if (formValues.Class === formValues.TransitionClass) {
-      //   this.AminityInsStatus = "Current class and transition class cannot be the same.";
-      //   this.isModalOpen = true;
-      //   return;
-      // }
-      else if (this.SelectedTransitionID !== 'Transfer' && formValues.Division === formValues.TransitionDivision) {
-        this.AminityInsStatus = "Current division and transition division cannot be the same.";
-        this.isModalOpen = true;
-        return;
-      }
       else if (!this.selectedStudents || this.selectedStudents.length === 0) {
         this.AminityInsStatus = "Please select students before submitting.";
-        this.isModalOpen = true;
-        return;
-      }
-      else if (this.SelectedTransitionID === 'Transfer' && formValues.TransferSchool === 0) {
-        this.AminityInsStatus = "Please select a transfer school.";
-        this.isModalOpen = true;
-        return;
-      }
-      else if (this.SelectedTransitionID === 'Transfer' && !formValues.TransferDate) {
-        this.AminityInsStatus = "Please select a transfer date.";
-        this.isModalOpen = true;
-        return;
-      }
-      else if (this.SelectedTransitionID === 'Transfer' && formValues.TransferSchool === this.AdminselectedSchoolID) {
-        this.AminityInsStatus = "Transfer school cannot be the same as the current school.";
         this.isModalOpen = true;
         return;
       }
@@ -507,33 +475,19 @@ export class TransferStudentsComponent extends BasePermissionComponent {
         const admissionList = this.selectedStudents
           .map(s => s.AdmissionNo)
           .join(', ');
-        const baseData = {
+        const data = {
+          SchoolID: this.ClassDivisionForm.get('School')?.value,
+          AcademicYear: this.ClassDivisionForm.get('AcademicYear')?.value,
+          Class: this.ClassDivisionForm.get('Class')?.value,
+          Division: this.ClassDivisionForm.get('Division')?.value,
+          TransferReason: this.ClassDivisionForm.get('Remarks')?.value || '',
           AdmissionNo: this.selectedStudents
                   .map(s => s.AdmissionNo)
                   .join(','),
-          Flag: '10'
+          Flag: '1'
         };
-        const data = this.SelectedTransitionID === 'Transfer'
-          ? {
-              ...baseData,
-              TransferSchoolID: this.ClassDivisionForm.get('TransferSchool')?.value,
-              TransferDate: this.ClassDivisionForm.get('TransferDate')?.value,
-              TransferRemarks: this.ClassDivisionForm.get('Remarks')?.value || '',
-              CurrentSchoolID: this.AdminselectedSchoolID,
-              CurrentAcademicYearID: this.AdminselectedAcademivYearID,
-              CurrentClassID: this.AdminselectedClassID,
-              CurrentDivisionID: this.AdminselectedClassDivisionID,
-              TransitionType: 'Transfer'
-            }
-          : {
-              ...baseData,
-              Class: this.ClassDivisionForm.get('TransitionClass')?.value,
-              Division: this.ClassDivisionForm.get('TransitionDivision')?.value,
-              DePromotionRemarks: this.ClassDivisionForm.get('Remarks')?.value || '',
-              TransitionType: this.SelectedTransitionID
-            };
   
-        this.apiurl.post("Tbl_StudentDetails_CRUD_Operations", data).subscribe({
+        this.apiurl.post("Tbl_StudentTransfer_CRUD_Operations", data).subscribe({
           next: (response: any) => {
             if (response.statusCode === 200) {
               this.IsAddNewClicked=!this.IsAddNewClicked;
@@ -550,12 +504,6 @@ export class TransferStudentsComponent extends BasePermissionComponent {
               this.ClassDivisionForm.get('AcademicYear').patchValue('0');
               this.ClassDivisionForm.get('TransitionType').patchValue('0');
               this.ClassDivisionForm.get('Division').patchValue('0');
-              this.ClassDivisionForm.get('TransitionClass').patchValue('0');
-              this.ClassDivisionForm.get('TransitionDivision').patchValue('0');
-              this.ClassDivisionForm.get('TransferSchool').patchValue('0');
-              this.ClassDivisionForm.get('TransferDate').patchValue('');
-              this.ClassDivisionForm.get('Remarks').patchValue('');
-              this.updateTransitionValidators('');
             }
           },
           error: (err:any) => {
@@ -980,69 +928,22 @@ export class TransferStudentsComponent extends BasePermissionComponent {
     };
 
     onTransitionChange(event: Event) {
-      this.ClassDivisionForm.get('TransitionClass').patchValue('0');
-      this.ClassDivisionForm.get('TransitionDivision').patchValue('0');
-      this.ClassDivisionForm.get('TransferSchool').patchValue('0');
-      this.ClassDivisionForm.get('TransferDate').patchValue('');
-      this.ClassDivisionForm.get('Remarks').patchValue('');
-      this.updateTransitionValidators('');
+      // this.ClassDivisionForm.get('TransitionClass').patchValue('0');
+      // this.ClassDivisionForm.get('TransitionDivision').patchValue('0');
       const target = event.target as HTMLSelectElement;
       const schoolID = target.value;
       if(schoolID=="1"){
-        this.SelectedTransitionID="Promotion";
-        this.updateTransitionValidators(this.SelectedTransitionID);
-      }
-      else if(schoolID=="2"){
-        this.SelectedTransitionID="De-Promotion";
-        this.updateTransitionValidators(this.SelectedTransitionID);
-      }
-      else if(schoolID=="3"){
         this.SelectedTransitionID="Transfer";
-        this.updateTransitionValidators(this.SelectedTransitionID);
+        if (schoolID=="1") {
+          this.ClassDivisionForm.get('Remarks')?.setValidators([Validators.required]);
+        } else {
+          this.ClassDivisionForm.get('Remarks')?.clearValidators();
+        }
       }
       else{
-        this.SelectedTransitionID = '';
-        this.updateTransitionValidators('');
+        this.SelectedTransitionID = schoolID;
       }  
     };
-
-    updateTransitionValidators(transition: string) {
-      const remarksControl = this.ClassDivisionForm.get('Remarks');
-      const transferSchoolControl = this.ClassDivisionForm.get('TransferSchool');
-      const transferDateControl = this.ClassDivisionForm.get('TransferDate');
-      const transitionClassControl = this.ClassDivisionForm.get('TransitionClass');
-      const transitionDivisionControl = this.ClassDivisionForm.get('TransitionDivision');
-
-      remarksControl?.clearValidators();
-      transferSchoolControl?.clearValidators();
-      transferDateControl?.clearValidators();
-      transitionClassControl?.clearValidators();
-      transitionDivisionControl?.clearValidators();
-
-      if (transition === 'De-Promotion') {
-        transitionClassControl?.setValidators([Validators.min(1)]);
-        transitionDivisionControl?.setValidators([Validators.min(1)]);
-        remarksControl?.setValidators([Validators.required]);
-      }
-
-      if (transition === 'Transfer') {
-        transferSchoolControl?.setValidators([Validators.required, Validators.min(1)]);
-        transferDateControl?.setValidators([Validators.required]);
-        remarksControl?.setValidators([Validators.required]);
-      } else if (transition === 'Promotion') {
-        transitionClassControl?.setValidators([Validators.min(1)]);
-        transitionDivisionControl?.setValidators([Validators.min(1)]);
-      } else if (transition === '') {
-        transitionClassControl?.setValidators([Validators.min(1)]);
-        transitionDivisionControl?.setValidators([Validators.min(1)]);
-      }
-
-      remarksControl?.updateValueAndValidity();
-      transferSchoolControl?.updateValueAndValidity();
-      transferDateControl?.updateValueAndValidity();
-      transitionClassControl?.updateValueAndValidity();
-      transitionDivisionControl?.updateValueAndValidity();
-    }
 
     submitSelection() {
       this.selectedStudents = this.StudentsList
@@ -1068,5 +969,4 @@ export class TransferStudentsComponent extends BasePermissionComponent {
         }
       }      
     }
-
 }

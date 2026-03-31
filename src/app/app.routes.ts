@@ -75,6 +75,9 @@ import { TeachersTimeTableComponent } from './Admin/TimeTable/teachers-time-tabl
 import { FeeDiscountCategoryComponent } from './Admin/Finance/fee-discount-category/fee-discount-category.component';
 import { FeeDiscountComponent } from './Admin/Finance/fee-discount/fee-discount.component';
 import { FeeCollectionComponent } from './Admin/Finance/fee-collection/fee-collection.component';
+// import { FeeDuesComponent } from './Admin/Finance/fee-dues/fee-dues.component';
+import { FeeDuesComponent } from './Admin/Finance/fee-dues/fee-dues.component';
+
 import { AttendanceSheetComponent } from './Admin/Attendance/attendance-sheet/attendance-sheet.component';
 import { ViewAttendanceComponent } from './Admin/Attendance/view-attendance/view-attendance.component';
 import { StaffattendanceComponent } from './Admin/Attendance/staffattendance/staffattendance.component';
@@ -117,6 +120,7 @@ export const routes: Routes = [
       { path: 'FeeDiscountCategory', component: FeeDiscountCategoryComponent },
       { path: 'FeeDiscount', component: FeeDiscountComponent },
       { path: 'FeeCollection', component: FeeCollectionComponent },
+      { path: 'FeeDues', component: FeeDuesComponent },
       { path: 'Fare', component: FareComponent },
       { path: 'ExamType', component: ExamTypeComponent },
       { path: 'SetExam', component: SetexamComponent },
@@ -166,6 +170,8 @@ export const routes: Routes = [
       { path: 'FeeAllocation', component: FeeAllocationComponent },
       { path: 'FeeDiscountCategory', component: FeeDiscountCategoryComponent },
       { path: 'FeeDiscount', component: FeeDiscountComponent },
+      { path: 'FeeCollection', component: FeeCollectionComponent },
+      { path: 'FeeDues', component: FeeDuesComponent },
       { path: 'Stops', component: StopsComponent },
       { path: 'ExamType', component: ExamTypeComponent },
       { path: 'SetExam', component: SetexamComponent },
@@ -222,6 +228,8 @@ export const routes: Routes = [
       { path: 'FeeAllocation', component: FeeAllocationComponent },
       { path: 'FeeDiscountCategory', component: FeeDiscountCategoryComponent },
       { path: 'FeeDiscount', component: FeeDiscountComponent },
+      { path: 'FeeCollection', component: FeeCollectionComponent },
+      { path: 'FeeDues', component: FeeDuesComponent },
       { path: 'Stops', component: StopsComponent },
       { path: 'ExamType', component: ExamTypeComponent },
       { path: 'ViewExams', component: ViewexamsComponent },

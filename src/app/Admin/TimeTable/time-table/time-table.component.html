@@ -97,7 +97,7 @@
               <!-- <h5></h5> -->
             </div>
             <div class="ComponentTopBottom">
-              <button *ngIf="canAdd()" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Time Table</button>
+              <button *ngIf="canAdd() && StudentsList.length === 0" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Time Table</button>
             </div>
           </div> 
           <table class="table table-bordered" *ngIf="StudentsList.length>0">

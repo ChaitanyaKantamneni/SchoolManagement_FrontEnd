@@ -1,1 +1,265 @@
-<p>teachers-time-table works!</p>
+<div class="DashboardTopNav">
+  <app-dashboard-top-nav></app-dashboard-top-nav>
+</div>
+<div class="MainContentDiv">
+  <div class="w-100">
+    <div class="ComponentTop" *ngIf="!IsAddNewClicked">
+        <div class="ComponentTopHeader">
+          <h5>Teacher Time Table Management</h5>
+        </div>
+    </div> 
+    <div>
+      <div class="AddForm">           
+        <div class="AddFormConatiner">
+          <form [formGroup]="ClassDivisionForm">
+            <div class="FormInputRowsContainer">
+              <div class="InputRow">
+                <div class="InputFieldsContainer" *ngIf="isAdmin">
+                  <label class="inputLabel" for="email">School <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" type="date" formControlName="School" placeholder="Select Start Date" (change)="onAdminSchoolChange($event)" >
+                      <option value="0">-- Select School --</option>
+                      <option *ngFor="let school of schoolList" value="{{school.ID}}">{{school.Name}}</option>
+                    </select>
+                    <div *ngIf="ClassDivisionForm.get('School')?.hasError('min') && (ClassDivisionForm.get('School')?.touched || ClassDivisionForm.get('School')?.dirty)" class="text-danger">
+                        <small>Please Select School.</small>
+                    </div>
+                  </div>
+                </div> 
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" type="date" formControlName="AcademicYear" placeholder="Select Start Date" (change)="onAdminAcademicYearChange($event)" >
+                      <option value="0">-- Select Academic Year --</option>
+                      <option *ngFor="let school of academicYearList" value="{{school.ID}}">{{school.Name}}</option>
+                    </select>
+                    <div *ngIf="ClassDivisionForm.get('AcademicYear')?.hasError('min') && (ClassDivisionForm.get('AcademicYear')?.touched || ClassDivisionForm.get('AcademicYear')?.dirty)" class="text-danger">
+                        <small>Please Select Academic Year.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                  <label class="inputLabel" for="email">Staff</label>
+                  <div class="input-with-error">
+                    <select class="inputField" type="date" formControlName="Class" placeholder="Select Class" (change)="onAdminClassChange($event)">
+                      <option value="0" disabled>Select Staff</option>
+                      <option value="1">All Staff</option>
+                      <option *ngFor="let Syllabus of StaffList" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option>
+                    </select>
+                    <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                    <div *ngIf="ClassDivisionForm.get('Class')?.hasError('min') && (ClassDivisionForm.get('Class')?.touched || ClassDivisionForm.get('Class')?.dirty)" class="text-danger">
+                        <small>Please Select Staff.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputRow">
+                <div class="InputFieldsContainer" *ngIf="isAdmin">
+                  <label class="inputLabel" for="email">Staff</label>
+                  <div class="input-with-error">
+                    <select class="inputField" type="date" formControlName="Class" placeholder="Select Class" (change)="onAdminClassChange($event)">
+                      <option value="0" disabled>Select Staff</option>
+                      <option value="1">All Staff</option>
+                      <option *ngFor="let Syllabus of StaffList" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option>
+                    </select>
+                    <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                    <div *ngIf="ClassDivisionForm.get('Class')?.hasError('min') && (ClassDivisionForm.get('Class')?.touched || ClassDivisionForm.get('Class')?.dirty)" class="text-danger">
+                        <small>Please Select Staff.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel" for="email">Working Day</label>
+                  <div class="input-with-error">
+                    <select class="inputField" type="date" formControlName="WorkingDay" placeholder="Select Class" (change)="onAdminWorkingDayChange($event)">
+                      <option value="0" disabled>Select Working Day</option>
+                      <option *ngFor="let Syllabus of Workingdays" value="{{Syllabus.ID}}">{{Syllabus.Day}}</option>
+                    </select>
+                    <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                    <div *ngIf="ClassDivisionForm.get('WorkingDay')?.hasError('min') && (ClassDivisionForm.get('WorkingDay')?.touched || ClassDivisionForm.get('WorkingDay')?.dirty)" class="text-danger">
+                        <small>Please Select Working Day.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                  <label class="inputLabel" for="email">Time Slot</label>
+                  <div class="input-with-error">
+                    <select class="inputField" type="date" formControlName="TimeSlot" placeholder="Select Class" (change)="onAdminTimeSlotChange($event)">
+                      <option value="0" disabled>Select Time Slot</option>
+                      <option value="1">All Staff</option>
+                      <option *ngFor="let Syllabus of TimeSlotList" [value]="Syllabus.StartTime + '|' + Syllabus.EndTime">{{Syllabus.TimeSlot}}</option>
+                    </select>
+                    <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                    <div *ngIf="ClassDivisionForm.get('TimeSlot')?.hasError('min') && (ClassDivisionForm.get('TimeSlot')?.touched || ClassDivisionForm.get('TimeSlot')?.dirty)" class="text-danger">
+                        <small>Please Select Time Slot.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputRow" *ngIf="isAdmin">
+                <div class="InputFieldsContainer" *ngIf="isAdmin">
+                  <label class="inputLabel" for="email">Time Slot</label>
+                  <div class="input-with-error">
+                    <select class="inputField" type="date" formControlName="TimeSlot" placeholder="Select Class" (change)="onAdminTimeSlotChange($event)">
+                      <option value="0" disabled>Select Time Slot</option>
+                      <option value="1">All Staff</option>
+                      <option *ngFor="let Syllabus of TimeSlotList" [value]="Syllabus.StartTime + '|' + Syllabus.EndTime">{{Syllabus.TimeSlot}}</option>
+                    </select>
+                    <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                    <div *ngIf="ClassDivisionForm.get('TimeSlot')?.hasError('min') && (ClassDivisionForm.get('TimeSlot')?.touched || ClassDivisionForm.get('TimeSlot')?.dirty)" class="text-danger">
+                        <small>Please Select Time Slot.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer" *ngIf="isAdmin">
+                  <span style="visibility: hidden;height: 3px;">hello adding new academic year</span>
+                </div> 
+              </div>
+            </div>
+            <div class="actionbuttons">
+              <button class="btnsubmit" (click)="SubmitFilterList()">Submit</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="AddForm" *ngIf="IsFliterClicked">
+        <div>          
+          <table class="table table-bordered" *ngIf="FreeStaffList.length>0">
+            <thead>
+              <tr>
+                <th class="visually-hidden">Academic Year ID</th>
+                <th>SI.No</th>
+                <th>Employee Name</th>
+                <th>Email</th>
+                <!-- <th>School Name</th>
+                <th>Academic Year</th> -->
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let student of FreeStaffList; let i = index">
+                <td data-label="ID" class="visually-hidden">{{ student.ID }}</td>
+                <td>{{ i + 1 }}</td>
+                <td>{{ student.Name }}</td>
+                <td>{{ student.Email }}</td>
+                <!-- <td>{{ student.SchoolName }}</td>
+                <td>{{ student.AcademicYearName }}</td> -->
+                <td data-label="Actions">
+                  <div class="d-flex justify-content-center align-items-center h-100">
+                    <button *ngIf="canView()" class="btn checkbtn" data-tooltip="View" (click)="viewReview(student.ID)">
+                      <mat-icon class="mat-edit-icon">visibility</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div *ngIf="FreeStaffList.length === 0" class="NoDataFound">
+            <div class="NoDataFoundImg">
+              <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
+            </div>
+            <p>No data found.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isModalOpen}" [style.display]="isModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Application Status</h5>
+        <button type="button" class="close" aria-label="Close" (click)="closeModal('status')">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>{{ AminityInsStatus }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="handleOk()">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal viewmodel" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Time Table Details</h5>
+        <button type="button" class="close" (click)="closeModal('view')">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="reviewstable" id="printTimetable">
+          <form [formGroup]="ClassDivisionForm">
+            <table class="timetable-table">
+
+  <thead>
+    <tr>
+      <th>Day</th>
+      <th *ngFor="let period of periodHeaders" style="white-space: pre-line;">
+        {{ period }}
+      </th>
+    </tr>
+  </thead>
+
+  <tbody formArrayName="Timetable">
+
+    <tr *ngFor="let dayGroup of timetableArray.controls; let i = index"
+        [formGroupName]="i">
+
+      <td class="day-cell">
+        <h5>{{ dayGroup.get('Day')?.value }}</h5>
+      </td>
+
+      <ng-container formArrayName="Periods">
+
+        <td *ngFor="let periodGroup of getPeriodsControls(dayGroup); let j = index"
+            [formGroupName]="j"
+            [ngClass]="{
+              'current-period': isCurrentPeriod(dayGroup.get('DayID')?.value, j + 1)
+            }">
+
+          <ng-container *ngIf="periodGroup.get('Subject')?.value && periodGroup.get('Subject')?.value != '0'; else emptyCell">
+
+            <div class="subject-name">
+              {{ getSubjectName(periodGroup.get('Subject')?.value) }}
+            </div>
+
+            <div class="time-range">
+              {{ periodGroup.get('StartTime')?.value }} -
+              {{ periodGroup.get('EndTime')?.value }}
+            </div>
+
+            <div class="staff-name">
+              {{ periodGroup.get('ClassName')?.value }} -
+              {{ periodGroup.get('DivisionName')?.value }}
+            </div>
+
+          </ng-container>
+
+          <ng-template #emptyCell>
+            <div class="empty-cell"></div>
+          </ng-template>
+
+        </td>
+
+      </ng-container>
+
+    </tr>
+
+  </tbody>
+
+</table>
+          </form>
+        </div>
+        <div class="actionbuttons">
+          <button class="print-btn" (click)="printTimetable()">Print</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
