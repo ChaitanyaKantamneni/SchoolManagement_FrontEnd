@@ -255,6 +255,10 @@
   font-size: medium;
 }
 
+.empty-cell{
+  height:50px;
+}
+
 /* Responsive table for smaller screens */
 @media (max-width: 768px) {
   .timetable-table th,

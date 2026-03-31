@@ -68,6 +68,7 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
     ClassDivisionCount: number = 0;
     SyllabusList: any[] =[];
     StudentsList: any[] =[];
+    StaffTimeTableListList: any[] =[];
     Workingdays: any[] =[];
     selectedStudents: any[] = [];
     SessionList: any[] =[];
@@ -96,15 +97,24 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
     TransitionDivisionsList:any[] = [];
     ClassTeachersList:any[] = [];
     StaffList:any[] = [];
+    FreeStaffList:any[] = [];
+    WorkingDaysList:any[] = [];
+    TimeSlotList:any[] = [];
+    FreeStaffListByTimeSlot:any[] = [];
     AdminselectedSchoolID:string = '';
     AdminselectedAcademivYearID:string = '';
+    AdminselectedWorkingDayID:string = '';
     AdminselectedClassID:string = '';
+    selectedStartTime: string = '';
+    selectedEndTime: string = '';
     AdminselectedClassDivisionID:string = '';
     SelectedTransitionID:string = '';
   
     ClassDivisionForm: any = new FormGroup({
       ID: new FormControl(),
       Class: new FormControl(0,[Validators.required,Validators.min(1)]),
+      WorkingDay: new FormControl(),
+      TimeSlot: new FormControl(),
       Division: new FormControl(0,[Validators.required,Validators.min(1)]),      
       School: new FormControl(),
       AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)]),
@@ -185,90 +195,6 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       return role === '1';
     } 
 
-    FetchClassList() {
-      const requestData = { 
-        SchoolID:this.AdminselectedSchoolID,
-        AcademicYear:this.AdminselectedAcademivYearID,
-        Flag: '9' };
-  
-      this.apiurl.post<any>('Tbl_ClassDivision_CRUD_Operations', requestData)
-        .subscribe(
-          (response: any) => {
-            if (response && Array.isArray(response.data)) {
-              this.SyllabusList = response.data.map((item: any) => {
-                const isActiveString = item.isActive === "1" ? "Active" : "InActive";
-                return {
-                  ID: item.sNo,
-                  Name: item.syllabusClassName
-                };
-              });
-            } else {
-              this.SyllabusList = [];
-            }
-          },
-          (error) => {
-            this.SyllabusList = [];
-          }
-        );
-    };
-  
-    FetchDivisionsList() {
-      if(this.SelectedTransitionID){
-        const requestData = { 
-        SchoolID:this.AdminselectedSchoolID,
-        AcademicYear:this.AdminselectedAcademivYearID,
-        Class:this.AdminselectedClassID,
-        Flag: '3' };
-  
-      this.apiurl.post<any>('Tbl_ClassDivision_CRUD_Operations', requestData)
-        .subscribe(
-          (response: any) => {
-            if (response && Array.isArray(response.data)) {
-              this.TransitionDivisionsList = response.data.map((item: any) => {
-                const isActiveString = item.isActive === "1" ? "Active" : "InActive";
-                return {
-                  ID: item.id,
-                  Name: item.name
-                };
-              });
-            } else {
-              this.TransitionDivisionsList = [];
-            }
-          },
-          (error) => {
-            this.TransitionDivisionsList = [];
-          }
-        );
-      }
-      else{
-        const requestData = { 
-        SchoolID:this.AdminselectedSchoolID,
-        AcademicYear:this.AdminselectedAcademivYearID,
-        Class:this.AdminselectedClassID,
-        Flag: '3' };
-  
-      this.apiurl.post<any>('Tbl_ClassDivision_CRUD_Operations', requestData)
-        .subscribe(
-          (response: any) => {
-            if (response && Array.isArray(response.data)) {
-              this.DivisionsList = response.data.map((item: any) => {
-                const isActiveString = item.isActive === "1" ? "Active" : "InActive";
-                return {
-                  ID: item.id,
-                  Name: item.name
-                };
-              });
-            } else {
-              this.DivisionsList = [];
-            }
-          },
-          (error) => {
-            this.DivisionsList = [];
-          }
-        );
-      }
-    };
-
     FetchWorkingdaysList() {
       const requestData = { 
         SchoolID:this.AdminselectedSchoolID,
@@ -328,153 +254,6 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
           }
         );
     };
-
-    FetchSubjectsList() {
-      const requestData = { 
-        SchoolID:this.AdminselectedSchoolID,
-        AcademicYear:this.AdminselectedAcademivYearID,
-        Class:this.AdminselectedClassID,
-        Flag: '3' };
-  
-      this.apiurl.post<any>('Tbl_Subject_CRUD_Operations', requestData)
-        .subscribe(
-          (response: any) => {
-            if (response && Array.isArray(response.data)) {
-              this.SubjectsList = response.data.map((item: any) => {
-                const isActiveString = item.isActive === "1" ? "Active" : "InActive";
-                return {
-                  ID: item.id,
-                  Class:item.class,
-                  Name: item.name,
-                  Description: item.description,
-                  Topics: item.topics,
-                  ClassName: item.className,
-                  SchoolName:item.schoolName,
-                  AcademicYearName:item.academicYearName,
-                  IsActive: isActiveString
-                };
-              });
-            } else {
-              this.SubjectsList = [];
-            }
-          },
-          (error) => {
-            this.SubjectsList = [];
-          }
-        );
-    };
-
-    // FetchStaffList(subjectID: string, classID: string) {
-    //   const requestData = { 
-    //     SchoolID:this.AdminselectedSchoolID,
-    //     AcademicYear:this.AdminselectedAcademivYearID,
-    //     SubjectID: subjectID,
-    //     ClassID: classID,
-    //     Flag: '12'};
-  
-    //   this.apiurl.post<any>('Tbl_Staff_CRUD_Operations', requestData)
-    //     .subscribe(
-    //       (response: any) => {
-    //         if (response && Array.isArray(response.data)) {
-    //           this.StaffLists = response.data.map((item: any) => {
-    //             const isActiveString = item.isActive === "1" ? "Active" : "InActive";
-    //             return {
-    //               ID: item.id,
-    //               Name: item.firstName,
-    //               MobileNumber: item.mobileNumber,
-    //               Email: item.email
-    //             };
-    //           });
-    //         } else {
-    //           this.StaffLists = [];
-    //         }
-    //       },
-    //       (error) => {
-    //         this.StaffLists = [];
-    //       }
-    //     );
-    // };
-  
-    previousPage() {
-      if (this.currentPage > 1) {
-        this.goToPage(this.currentPage - 1);
-      }
-    };
-  
-    nextPage() {
-      if (this.currentPage < this.totalPages()) {
-        this.goToPage(this.currentPage + 1);
-      }
-    };
-  
-    firstPage() {
-      this.goToPage(1);
-    };
-  
-    lastPage() {
-      this.goToPage(this.totalPages());
-    };
-  
-    goToPage(pageNumber: number) {
-      const total = this.totalPages();
-  
-      if (pageNumber < 1) pageNumber = 1;
-      if (pageNumber > total) pageNumber = total;
-  
-      this.currentPage = pageNumber;
-  
-      const isBoundaryPage =
-        pageNumber === 1 ||
-        pageNumber === total ||
-        !this.pageCursors[pageNumber - 2];
-  
-      if (isBoundaryPage) {
-        const offset = (pageNumber - 1) * this.pageSize;
-        this.FetchInitialData({ offset });
-      } else {
-        this.FetchInitialData();
-      }
-    };
-  
-    totalPages() {
-      return Math.ceil(this.ClassDivisionCount / this.pageSize);
-    };
-  
-    getVisiblePageNumbers() {
-      const totalPages = this.totalPages();
-      const pages = [];
-      let start = Math.max(this.currentPage - Math.floor(this.visiblePageCount/2), 1);
-      let end = Math.min(start + this.visiblePageCount - 1, totalPages);
-      if (end - start < this.visiblePageCount - 1) start = Math.max(end - this.visiblePageCount + 1, 1);
-      for (let i=start; i<=end; i++) pages.push(i);
-      return pages;
-    };
-  
-    onSearchChange() {
-      clearTimeout(this.searchTimer);
-  
-      this.searchTimer = setTimeout(() => {
-        const value = this.searchQuery?.trim() || '';
-  
-        if (value.length === 0) {
-          this.currentPage = 1;
-          this.pageSize=5;
-          this.visiblePageCount=3;
-          this.FetchInitialData();
-          return;
-        }
-  
-        if (value.length < this.SEARCH_MIN_LENGTH) {
-          return;
-        }
-        
-        this.currentPage = 1;
-        this.pageSize=5;
-        this.visiblePageCount=3;
-        this.FetchInitialData();
-  
-      }, this.SEARCH_DEBOUNCE);
-    };
   
     formatDateYYYYMMDD(dateStr: string | null) {
       if (!dateStr) return '';
@@ -500,19 +279,6 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       }
     };
 
-    // this.IsAddNewClicked=false;
-    //   this.ClassDivisionForm.reset();
-    //   if (this.isAdmin) {
-    //     this.ClassDivisionForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
-    //   } else {
-    //     this.ClassDivisionForm.get('School')?.clearValidators();
-    //   }
-    //   this.ClassDivisionForm.get('School').patchValue('0');
-    //   this.ClassDivisionForm.get('AcademicYear').patchValue('0');
-    //   this.ClassDivisionForm.get('Class').patchValue('0');
-    //   this.ClassDivisionForm.get('Division').patchValue('0');
-    //   this.IsFliterClicked=false;
-  
     handleOk() {
       if(this.AminityInsStatus=="TimeTable already exists for this Class & Division" || this.AminityInsStatus=="Staff already allocated for this time slot"){
         this.isModalOpen = false;
@@ -538,17 +304,6 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
         this.isViewModalOpen=false;
       }
             
-    };
-  
-    editreview(SyllabusID: string): void {
-      if (this.isAdmin) {
-        this.ClassDivisionForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
-      } else {
-        this.ClassDivisionForm.get('School')?.clearValidators();
-      }
-      this.editclicked=true;
-      this.FetchTimeTableByID(SyllabusID,'edit');
-      this.ViewClassDivisionClicked=true;
     };
   
     toggleChange(){
@@ -578,11 +333,7 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       this.SchoolSelectionChange = true;
       this.FetchInitialData();
     };
-  
-    viewReview(SyllabusID: string): void {
-      this.FetchTimeTableByID(SyllabusID,'view');
-    };
-  
+
     onAdminSchoolChange(event: Event) {
       this.academicYearList=[];
       this.SyllabusList = [];
@@ -600,11 +351,10 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
     };
   
     onAdminAcademicYearChange(event: Event) {
-      this.SyllabusList = [];   
-      this.Workingdays = []; 
-      this.SessionList=[];
+      this.StaffList=[];     
+      this.Workingdays=[];  
       this.ClassDivisionForm.get('Class').patchValue('0');
-      this.ClassDivisionForm.get('NoOfPeriods').patchValue('0');
+      this.ClassDivisionForm.get('WorkingDay').patchValue('0');
       const target = event.target as HTMLSelectElement;
       const schoolID = target.value;
       if(schoolID=="0"){
@@ -612,193 +362,145 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       }else{
         this.AdminselectedAcademivYearID = schoolID;
       }    
-      this.FetchClassList();
-      this.FetchWorkingdaysList();
-      this.FetchSessionsList();
+      this.FetchStaffBySchoolAcademicYearList(); 
+      this.FetchWorkingdaysList();     
     };
+
+    onAdminWorkingDayChange(event: Event) { 
+      this.TimeSlotList=[];
+      this.ClassDivisionForm.get('TimeSlot').patchValue('0');
+      const target = event.target as HTMLSelectElement;
+      const schoolID = target.value;
+      if(schoolID=="0"){
+        this.AdminselectedWorkingDayID="";
+      }else{
+        this.AdminselectedWorkingDayID = schoolID;
+      }    
+      this.FetchTimeSlotsBySchoolAcademicYearList();  
+    };
+
+    FetchStaffBySchoolAcademicYearList() {
+      const requestData = { 
+        SchoolID: this.AdminselectedSchoolID,
+        AcademicYear: this.AdminselectedAcademivYearID,
+        Flag: '9'
+      };
+
+      this.apiurl.post<any>('Tbl_Staff_CRUD_Operations', requestData)
+        .subscribe(
+          (response: any) => {
+            if (response && Array.isArray(response.data)) {
+              this.StaffList = response.data.map((item: any) => {
+                const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+                return {
+                  ID: item.id,
+                  Name: `${item.firstName} ${item.middleName ?? ''} ${item.lastName ?? ''} - ${item.email}`,
+                  Email:item.email,
+                  SchoolName:item.schoolName,
+                  AcademicYearName:item.academicYearName
+                };
+              });
+            } else {
+              this.StaffList = [];
+            }
+          },
+          (error) => {
+            this.StaffList = [];
+          }
+        );
+    }
+
+    FetchTimeSlotsBySchoolAcademicYearList() {
+      const requestData = { 
+        SchoolID: this.AdminselectedSchoolID,
+        AcademicYear: this.AdminselectedAcademivYearID,
+        DayID: this.AdminselectedWorkingDayID,
+        Flag: '10'
+      };
+
+      this.apiurl.post<any>('Tbl_TimeTable_CRUD_Operations', requestData)
+        .subscribe(
+          (response: any) => {
+            if (response && Array.isArray(response.data)) {
+              this.TimeSlotList = response.data.map((item: any) => {
+                const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+                return {
+                  StartTime: item.startTime,
+                  EndTime:item.endTime,
+                  TimeSlot:item.timeSlot
+                };
+              });
+            } else {
+              this.TimeSlotList = [];
+            }
+          },
+          (error) => {
+            this.TimeSlotList = [];
+          }
+        );
+    }    
   
-    onAdminClassChange(event: Event) {          
-      if(this.SelectedTransitionID){
-        this.TransitionDivisionsList=[];
-        this.ClassDivisionForm.get('TransitionDivision').patchValue('0');
-      }
-      else{
-        this.DivisionsList = [];
-        this.ClassDivisionForm.get('Division').patchValue('0');
-      }     
-      this.SubjectsList=[]; 
+    onAdminClassChange(event: Event) { 
       const target = event.target as HTMLSelectElement;
       const schoolID = target.value;
       if(schoolID=="0"){
         this.AdminselectedClassID="";
       }else{
         this.AdminselectedClassID = schoolID;
-      }    
-      this.FetchDivisionsList();
-      this.FetchSubjectsList();
-    };
-
-    onAdminDivisionChange(event: Event) {
-      this.StudentsList = [];  
-      this.selectedStudents = [];
-      const target = event.target as HTMLSelectElement;
-      const schoolID = target.value;
-      if(schoolID=="0"){
-        this.AdminselectedClassDivisionID="";
-      }else{
-        this.AdminselectedClassDivisionID = schoolID;
-      }    
-      // this.FetchInitialData();
-    };
-
-    submitSelection() {
-      this.selectedStudents = this.StudentsList
-        .filter(student => student.isSelected);
-      this.isViewModalOpen=false;
-    }
-
-    editSelection(){
-      this.isViewModalOpen=true;
-    }
-
-    cancelSelectedlist(){
-      if(this.isViewModalOpen){
-        this.isViewModalOpen=false;
-      }
-      else{
-        const confirmClear = confirm(
-          'Are you sure you want to clear the selected students list?'
-        );
-
-        if (confirmClear) {
-          this.selectedStudents = [];
-        }
       }      
-    }
-
-    AddNewClicked(){       
-      if(this.IsAddNewClicked){
-        this.ClassDivisionForm.get('NoOfPeriods').patchValue('0');
-        this.Workingdays=[];
-        this.timetableArray.clear();
-        this.IsAddNewClicked=!this.IsAddNewClicked;
-        this.ClassDivisionForm.reset();
-        if (this.isAdmin) {
-          this.ClassDivisionForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
-        } else {
-          this.ClassDivisionForm.get('School')?.clearValidators();
-        }
-        if(this.AdminselectedSchoolID==''){
-          this.FetchAcademicYearsList();
-        }
-        this.ClassDivisionForm.get('School').patchValue('0');
-        this.ClassDivisionForm.get('AcademicYear').patchValue('0');
-        this.ClassDivisionForm.get('Class').patchValue('0');
-        this.ClassDivisionForm.get('Division').patchValue('0');
-        this.IsFliterClicked=false;
-      }
-      else{
-        this.IsAddNewClicked=!this.IsAddNewClicked;
-      }
     };
 
-    // onNoOfPeriodsChange(event: Event) {
-    //   const target = event.target as HTMLSelectElement;
-    //   const periodCount = Number(target.value);
+    onAdminTimeSlotChange(event: Event) { 
+      const target = event.target as HTMLSelectElement;
+      const value = target.value;
 
-    //   if (periodCount > 0 && this.Workingdays.length > 0) {
-    //     this.generateTimetable(periodCount);
-    //   }
-    // };
+      if (value === 'ALL') {
+        this.selectedStartTime = '';
+        this.selectedEndTime = '';
+        return;
+      }
+
+      const parts = value.split('|');
+
+      this.selectedStartTime = parts[0];
+      this.selectedEndTime = parts[1];
+    };
+
+    FetchFreeStaff() {
+      const requestData = { 
+        SchoolID: this.AdminselectedSchoolID,
+        AcademicYear: this.AdminselectedAcademivYearID,
+        StartTime: this.selectedStartTime,
+        EndTime: this.selectedEndTime,
+        DayID: this.AdminselectedWorkingDayID,
+        Flag: '11'
+      };
+
+      this.apiurl.post<any>('Tbl_TimeTable_CRUD_Operations', requestData)
+        .subscribe(
+          (response: any) => {
+            if (response && Array.isArray(response.data)) {
+              this.FreeStaffList = response.data.map((item: any) => {
+                const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+                return {
+                  ID: item.staffID,
+                  Name:item.staffName,
+                  Email:item.staffEmail
+                };
+              });
+            } else {
+              this.FreeStaffList = [];
+            }
+          },
+          (error) => {
+            this.FreeStaffList = [];
+          }
+        );
+    }
 
     private originalPeriodsBackup: {
       [dayID: string]: any[]
     } = {};
-
-    onNoOfPeriodsChange(event: Event) {
-      const target = event.target as HTMLSelectElement;
-      const newCount = Number(target.value);
-
-      if (!newCount || newCount <= 0) return;
-
-      if (!this.ClassDivisionForm.get('ID')?.value) {
-        if (this.Workingdays.length > 0) {
-          this.generateTimetable(newCount);
-        }
-        return;
-      }
-
-      this.timetableArray.controls.forEach(control => {
-
-        const dayGroup = control as FormGroup;
-        const dayID = dayGroup.get('DayID')?.value;
-        const periodsArray = dayGroup.get('Periods') as FormArray;
-
-        const currentValues = periodsArray.value;
-        const classID = this.ClassDivisionForm.get('Class')?.value;
-
-        periodsArray.clear();
-
-        for (let i = 0; i < newCount; i++) {
-
-          const existing =
-            currentValues[i] ||
-            this.originalPeriodsBackup[dayID]?.[i];
-
-          if (existing) {
-
-            const periodGroup = new FormGroup({
-              Session: new FormControl(existing.Session || ''),
-              StartTime: new FormControl(existing.StartTime || ''),
-              EndTime: new FormControl(existing.EndTime || ''),
-              Subject: new FormControl(existing.Subject || '0'),
-              Staff: new FormControl(existing.Staff || '0'),
-              StaffList: new FormControl([])
-            });
-
-            periodsArray.push(periodGroup);
-
-            if (existing.Subject && existing.Subject !== '0') {
-
-              this.FetchStaffList(existing.Subject, classID)
-                .subscribe((response: any) => {
-
-                  const staffData = (response?.data || []).map((item: any) => ({
-                    id: item.id,
-                    name: item.staffName || item.firstName,
-                    mobileNumber: item.mobileNumber,
-                    email: item.email
-                  }));
-
-                  periodGroup.get('StaffList')?.setValue(staffData);
-
-                  periodGroup.patchValue({
-                    Staff: existing.Staff || '0'
-                  });
-
-                });
-
-            }
-
-          } else {
-
-            periodsArray.push(new FormGroup({
-              Session: new FormControl(''),
-              StartTime: new FormControl(''),
-              EndTime: new FormControl(''),
-              Subject: new FormControl('0'),
-              Staff: new FormControl('0'),
-              StaffList: new FormControl([])
-            }));
-
-          }
-
-        }
-
-      });
-
-      this.generatePeriodHeaders();
-    }
 
     generateTimetable(periodCount: number) {
 
@@ -842,83 +544,91 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
     }
 
     SubmitFilterList(){
-      const controlsToValidate = ['Class', 'Division', 'School', 'AcademicYear'];
-      let isInvalid = false;
+      this.IsFliterClicked=false;
+      if(this.AdminselectedClassID && this.AdminselectedClassID!="1" && !this.selectedStartTime && !this.selectedEndTime){
+        const controlsToValidate = ['Class', 'School', 'AcademicYear'];
+        let isInvalid = false;
 
-      controlsToValidate.forEach(ctrlName => {
-        const ctrl = this.ClassDivisionForm.get(ctrlName);
-        if (ctrl) {
-          ctrl.markAsTouched();
-          if (ctrl.invalid) isInvalid = true;
-        }
-      });
-
-      if (isInvalid) {
-        return;
-      }
-
-      this.IsFliterClicked=true;
-      this.StudentsList=[];
-      this.FetchInitialData();
-    }
-
-    SubmitTimeTable() {
-      if (this.ClassDivisionForm.invalid) {
-        this.ClassDivisionForm.markAllAsTouched();
-        return;
-      }
-
-      const timetableArray = this.ClassDivisionForm.value.Timetable;
-
-      const transformed = timetableArray.map((day: any) => ({
-        DayID: day.DayID,
-        Periods: day.Periods.map((p: any, index: number) => ({
-          DayID: day.DayID,
-          PeriodNo: index + 1,
-          Session: p.Session,
-          StartTime: p.StartTime,
-          EndTime: p.EndTime,
-          Subject: p.Subject,
-          Staff: p.Staff
-        }))
-      }));
-
-      const payload = {
-        ID: this.ClassDivisionForm.get('ID')?.value || null,
-        SchoolID: this.AdminselectedSchoolID,
-        AcademicYear: this.AdminselectedAcademivYearID,
-        ClassID: this.AdminselectedClassID,
-        DivisionID: this.AdminselectedClassDivisionID,
-        DateFrom: this.ClassDivisionForm.get('DateFrom')?.value,
-        DateTo: this.ClassDivisionForm.get('DateTo')?.value,
-        NoOfPeriods: this.ClassDivisionForm.get('NoOfPeriods')?.value,
-        IsActive: "1",
-        TimetableJSON: JSON.stringify(transformed),
-        Flag: this.ClassDivisionForm.get('ID')?.value ? '5' : '1'
-      };
-
-      this.apiurl.post('Tbl_TimeTable_CRUD_Operations', payload)
-        .subscribe({
-          next: (res: any) => {
-            this.IsAddNewClicked=!this.IsAddNewClicked;
-            this.ClassDivisionForm.reset();
-
-            this.AminityInsStatus = res.message;
-            this.isModalOpen = true;
-          },
-          error: (err:any) => {
-            if (err.status === 400 && err.error?.message) {
-              this.AminityInsStatus = err.error.message;  // School Name Already Exists!
-            } else if (err.status === 500 && err.error?.Message) {
-              this.AminityInsStatus = err.error.Message;  // Database or internal error
-            } else {
-              this.AminityInsStatus = "Unexpected error occurred.";
-            }
-            this.isModalOpen = true;
-          },
-          complete: () => {
+        controlsToValidate.forEach(ctrlName => {
+          const ctrl = this.ClassDivisionForm.get(ctrlName);
+          if (ctrl) {
+            ctrl.markAsTouched();
+            if (ctrl.invalid) isInvalid = true;
           }
         });
+
+        if (isInvalid) {
+          return;
+        }
+
+        this.StudentsList=[];
+        this.FetchInitialData();
+      }
+      else if(this.selectedStartTime && this.selectedEndTime){
+        if(this.AdminselectedClassID && this.AdminselectedClassID!="1"){
+          const controlsToValidate = ['Class', 'School', 'AcademicYear'];
+          let isInvalid = false;
+
+          controlsToValidate.forEach(ctrlName => {
+            const ctrl = this.ClassDivisionForm.get(ctrlName);
+            if (ctrl) {
+              ctrl.markAsTouched();
+              if (ctrl.invalid) isInvalid = true;
+            }
+          });
+
+          if (isInvalid) {
+            return;
+          }
+
+          this.StudentsList=[];
+          this.FetchStaffInitialData();
+        }
+        else{
+          const controlsToValidate = ['TimeSlot', 'School', 'AcademicYear'];
+          let isInvalid = false;
+
+          controlsToValidate.forEach(ctrlName => {
+            const ctrl = this.ClassDivisionForm.get(ctrlName);
+            if (ctrl) {
+              ctrl.markAsTouched();
+              if (ctrl.invalid) isInvalid = true;
+            }
+          });
+
+          if (isInvalid) {
+            return;
+          }
+
+          this.IsFliterClicked=true;
+          this.FreeStaffList=[];
+          this.FetchFreeStaff();
+        }         
+      }
+      else{
+        const controlsToValidate = ['School', 'AcademicYear'];
+        let isInvalid = false;
+
+        controlsToValidate.forEach(ctrlName => {
+          const ctrl = this.ClassDivisionForm.get(ctrlName);
+          if (ctrl) {
+            ctrl.markAsTouched();
+            if (ctrl.invalid) isInvalid = true;
+          }
+        });
+
+        if (isInvalid) {
+          return;
+        }
+
+        this.IsFliterClicked=true;
+        this.StaffList=[];
+        this.FetchStaffBySchoolAcademicYearList();
+      }
+    }
+
+    viewReview(ID: string): void {
+      this.FetchInitialData({ ID });
     }
 
     FetchAcademicYearCount(isSearch: boolean) {
@@ -937,7 +647,7 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
   
     FetchInitialData(extra: any = {}) {
       const isSearch = !!this.searchQuery?.trim();
-      const flag = isSearch ? '7' : '2';
+      const flag = isSearch ? '7' : '9';
   
       let SchoolIdSelected = '';
   
@@ -959,11 +669,13 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
           const payload: any = {
             SchoolID:this.AdminselectedSchoolID,
             AcademicYear:this.AdminselectedAcademivYearID,
-            ClassID:this.AdminselectedClassID,
-            DivisionID:this.AdminselectedClassDivisionID,
             Flag: flag,
             ...extra
           };
+
+          if (!extra.ID) {
+            payload.ID = this.AdminselectedClassID;
+          }
   
           if (isSearch) payload.Class = this.searchQuery.trim();
   
@@ -997,15 +709,225 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
     };
   
     mapAcademicYears(response: any) {
-      this.StudentsList = (response.data || []).map((item: any) => ({
-        ID: item.id,
-        DateFrom:this.formatDateDDMMYYYY(item.dateFrom),
-        DateTo:this.formatDateDDMMYYYY(item.dateTo),
-        SchoolName:item.schoolName,
-        AcademicYearName:item.academicYearName,
-        IsActive: item.isActive === '1' ? 'Active' : 'InActive' 
-      }));
+      // this.StudentsList = (response.data || []).map((item: any) => ({
+      //   ID: item.id,
+      //   SchoolID: item.schoolID,
+      //   AcademicYear: item.academicYear,
+      //   ClassID: item.classID,
+      //   DivisionID: item.divisionID,
+      //   DayID: item.dayID,
+      //   PeriodNo: item.periodNo,
+      //   SessionID: item.sessionID,
+      //   StartTime: item.startTime,
+      //   EndTime: item.endTime,
+      //   SubjectID: item.subjectID,
+      //   StaffID: item.staffID,
+      //   ClassName: item.className,
+      //   DivisionName: item.divisionName,
+      //   SubjectName: item.subjectName
+      // }));
+      // this.isViewModalOpen=true;
+      const data = response?.data || [];
+
+      this.StudentsList = data;
+
+      this.buildStaffTimetable(data);
+
+      this.generatePeriodHeaders();
+
+      this.isViewModalOpen = true;
+
+      console.log('this.StudentsList',this.StudentsList);
     };
+
+    FetchStaffInitialData(extra: any = {}) {
+      const isSearch = !!this.searchQuery?.trim();
+      const flag = isSearch ? '7' : '12';
+  
+      let SchoolIdSelected = '';
+  
+      if (this.SchoolSelectionChange) {
+        SchoolIdSelected = this.selectedSchoolID.trim();
+      }
+  
+      const cursor =
+        !extra.offset && this.currentPage > 1
+          ? this.pageCursors[this.currentPage - 2] || null
+          : null;
+  
+      this.loader.show();
+  
+      this.FetchAcademicYearCount(isSearch).subscribe({
+        next: (countResp: any) => {
+          this.ClassDivisionCount = countResp?.data?.[0]?.totalcount ?? 0;
+  
+          const payload: any = {
+            SchoolID:this.AdminselectedSchoolID,
+            AcademicYear:this.AdminselectedAcademivYearID,
+            StartTime: this.selectedStartTime,
+            EndTime: this.selectedEndTime,
+            DayID: this.AdminselectedWorkingDayID,
+            Flag: flag,
+            ...extra
+          };
+
+          if (!extra.ID) {
+            payload.ID = this.AdminselectedClassID;
+          }
+  
+          if (isSearch) payload.Class = this.searchQuery.trim();
+  
+          this.apiurl.post<any>('Tbl_TimeTable_CRUD_Operations', payload).subscribe({
+            next: (response: any) => {
+              const data = response?.data || [];
+              this.mapStaffAcademicYears(response);
+  
+              if (data.length > 0 && !this.pageCursors[this.currentPage - 1]) {
+                const lastRow = data[data.length - 1];
+                this.pageCursors[this.currentPage - 1] = {
+                  lastCreatedDate: lastRow.createdDate,
+                  lastID: Number(lastRow.id)
+                };
+              }
+  
+              this.loader.hide();
+            },
+            error: () => {
+              this.ClassDivisionList = [];
+              this.loader.hide();
+            }
+          });
+        },
+        error: () => {
+          this.ClassDivisionList = [];
+          this.ClassDivisionCount = 0;
+          this.loader.hide();
+        }
+      });
+    };
+  
+    mapStaffAcademicYears(response: any) {
+      const data = response?.data || [];
+
+      this.StudentsList = data;
+
+      this.buildStaffTimetable(data);
+
+      this.generatePeriodHeaders();
+
+      this.isViewModalOpen = true;
+
+      console.log('this.StudentsList',this.StudentsList);
+    };
+
+    generatePeriodHeaders() {
+      const timetableArray = this.timetableArray;
+
+      if (!timetableArray || timetableArray.length === 0) {
+        this.periodHeaders = [];
+        return;
+      }
+
+      const periodCount = (timetableArray.at(0).get('Periods') as FormArray).length;
+
+      this.periodHeaders = [];
+
+      for (let i = 0; i < periodCount; i++) {
+
+        let startTime = '';
+        let endTime = '';
+
+        // search all days for this period
+        for (let day = 0; day < timetableArray.length; day++) {
+
+          const periods = timetableArray.at(day).get('Periods') as FormArray;
+          const period = periods.at(i);
+
+          const start = period?.get('StartTime')?.value;
+          const end = period?.get('EndTime')?.value;
+
+          if (start && end) {
+            startTime = start;
+            endTime = end;
+            break;
+          }
+        }
+
+        if (startTime && endTime) {
+          this.periodHeaders.push(`Period ${i + 1}\n${startTime} - ${endTime}`);
+        } else {
+          this.periodHeaders.push(`Period ${i + 1}`);
+        }
+      }
+    };
+
+    buildStaffTimetable(details: any[]) {
+      const timetableArray = this.timetableArray;
+      timetableArray.clear();
+
+      if (!details || details.length === 0) return;
+
+      const grouped: any = {};
+
+      // get all unique periods
+      const periodSet = new Set<number>();
+
+      details.forEach(d => {
+
+        const dayId = d.dayID?.toString();
+
+        if (!grouped[dayId]) {
+          grouped[dayId] = {
+            dayName: d.day,
+            periods: []
+          };
+        }
+
+        grouped[dayId].periods.push(d);
+
+        periodSet.add(Number(d.periodNo));
+
+      });
+
+      const allPeriods = Array.from(periodSet).sort((a,b)=>a-b);
+
+      Object.keys(grouped)
+        .sort((a,b)=>Number(a)-Number(b))
+        .forEach(dayID => {
+
+          const dayData = grouped[dayID];
+
+          const dayGroup = new FormGroup({
+            DayID: new FormControl(dayID),
+            Day: new FormControl(dayData.dayName),
+            Periods: new FormArray([])
+          });
+
+          const periodsArray = dayGroup.get('Periods') as FormArray;
+
+          allPeriods.forEach(periodNo => {
+
+            const p = dayData.periods.find((x:any)=>x.periodNo == periodNo);
+
+            periodsArray.push(
+              new FormGroup({
+                Session: new FormControl(p?.sessionID || ''),
+                StartTime: new FormControl(p?.startTime?.substring(0,5) || ''),
+                EndTime: new FormControl(p?.endTime?.substring(0,5) || ''),
+                Subject: new FormControl(p?.subjectName || ''),
+                Staff: new FormControl(p?.staffID || ''),
+                ClassName: new FormControl(p?.className || ''),
+                DivisionName: new FormControl(p?.divisionName || ''),
+                StaffList: new FormControl([])
+              })
+            );
+
+          });
+
+          timetableArray.push(dayGroup);
+
+        });
+    }
   
     FetchTimeTableByID(id: string, mode: 'view' | 'edit') {
       const payload = {
@@ -1040,22 +962,6 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
 
           this.IsActiveStatus = data.isActive === 'True';
 
-          // this.loadAllDropdowns().then(() => {
-
-          //   this.buildTimetableFromDetails(data.timeTableDetails);
-
-          //   if (mode === 'view') {
-          //     this.generatePeriodHeaders();
-          //     this.isViewMode = true;
-          //     this.isViewModalOpen = true;
-          //   }
-
-          //   if (mode === 'edit') {
-          //     this.isViewMode = false;
-          //     this.IsAddNewClicked = true;
-          //   }
-
-          // });
 
           this.loadAllDropdowns().then(() => {
             this.buildTimetableFromDetails(data.timeTableDetails);
@@ -1078,38 +984,6 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
           console.error(error);
         });
     }
-
-    // loadAllDropdowns(): Promise<void> {
-    //   return new Promise((resolve) => {
-
-    //     this.FetchAcademicYearsList();
-    //     this.FetchClassList();
-    //     this.FetchDivisionsList();
-    //     this.FetchSubjectsList();
-
-    //     const requestData = { 
-    //       SchoolID: this.AdminselectedSchoolID,
-    //       AcademicYear: this.AdminselectedAcademivYearID,
-    //       Flag: '3'
-    //     };
-
-    //     this.apiurl.post<any>('Tbl_WorkingDays_CRUD_Operations', requestData)
-    //       .subscribe((response: any) => {
-
-    //         if (response && Array.isArray(response.data)) {
-    //           this.Workingdays = response.data.map((item: any) => ({
-    //             ID: item.id,
-    //             Day: item.day
-    //           }));
-    //         } else {
-    //           this.Workingdays = [];
-    //         }
-
-    //         resolve();
-
-    //       });
-    //   });
-    // }
 
     loadAllDropdowns(): Promise<void> {
       return new Promise((resolve) => {
@@ -1260,99 +1134,9 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       return this.apiurl.post<any>('Tbl_Staff_CRUD_Operations', requestData);
     }
 
-    onSubjectChange(subjectID: string, dayIndex: number, periodIndex: number) {
-
-      const periodsArray = this.getPeriods(dayIndex);
-      const periodGroup = periodsArray.at(periodIndex) as FormGroup;
-
-      if (!subjectID || subjectID == '0') {
-        periodGroup.patchValue({ Staff: 0 });
-        periodGroup.get('StaffList')?.setValue([]);
-        return;
-      }
-
-      const classID = this.ClassDivisionForm.get('Class')?.value;
-
-      this.FetchStaffList(subjectID, classID)
-        .subscribe((response: any) => {
-
-          const staffData = (response?.data || []).map((item: any) => ({
-            id: item.id,
-            name: item.staffName || item.firstName,
-            mobileNumber: item.mobileNumber,
-            email: item.email
-          }));
-
-          periodGroup.get('StaffList')?.setValue(staffData);
-          periodGroup.patchValue({ Staff: 0 });
-
-        });
-    }
-  
-    UpdateTimeTable(){
-      if (this.ClassDivisionForm.invalid) {
-        this.ClassDivisionForm.markAllAsTouched();
-        return;
-      }
-
-      const timetableArray = this.ClassDivisionForm.value.Timetable;
-
-      const transformed = timetableArray.map((day: any) => ({
-        DayID: day.DayID,
-        Periods: day.Periods.map((p: any, index: number) => ({
-          DayID: day.DayID,
-          PeriodNo: index + 1,
-          Session: p.Session,
-          StartTime: p.StartTime,
-          EndTime: p.EndTime,
-          Subject: p.Subject,
-          Staff: p.Staff
-        }))
-      }));
-
-      const payload = {
-        ID: this.ClassDivisionForm.get('ID')?.value || null,
-        SchoolID: this.AdminselectedSchoolID,
-        AcademicYear: this.AdminselectedAcademivYearID,
-        ClassID: this.AdminselectedClassID,
-        DivisionID: this.AdminselectedClassDivisionID,
-        DateFrom: this.ClassDivisionForm.get('DateFrom')?.value,
-        DateTo: this.ClassDivisionForm.get('DateTo')?.value,
-        NoOfPeriods: this.ClassDivisionForm.get('NoOfPeriods')?.value,
-        IsActive: "1",
-        TimetableJSON: JSON.stringify(transformed),
-        Flag: this.ClassDivisionForm.get('ID')?.value ? '5' : '1'
-      };
-
-      this.apiurl.post('Tbl_TimeTable_CRUD_Operations', payload)
-        .subscribe({
-          next: (res: any) => {
-            this.IsAddNewClicked=!this.IsAddNewClicked;
-            this.AminityInsStatus = res.message;
-            this.isModalOpen = true;
-            this.ClassDivisionForm.reset();
-          },
-          error: (err:any) => {
-            if (err.status === 400 && err.error?.message) {
-              this.AminityInsStatus = err.error.message;  // School Name Already Exists!
-            } else if (err.status === 500 && err.error?.Message) {
-              this.AminityInsStatus = err.error.Message;  // Database or internal error
-            } else {
-              this.AminityInsStatus = "Unexpected error occurred.";
-            }
-            this.isModalOpen = true;
-          },
-          complete: () => {
-          }
-        });
-    };
-
     periodHeaders: string[] = [];
 
-    generatePeriodHeaders() {
-      const noOfPeriods = Number(this.ClassDivisionForm.get('NoOfPeriods')?.value) || 6;
-      this.periodHeaders = Array.from({ length: noOfPeriods }, (_, i) => `Period ${i + 1}`);
-    }
+    
 
     getPeriodsControls(dayGroup: any): FormGroup[] {
       const periods = dayGroup.get('Periods') as FormArray;
@@ -1444,7 +1228,7 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       <html>
       <head>
 
-        <title>Time Table - Class ${className} (${divisionName})</title>
+        <title>Time Table</title>
 
         <style>
 
@@ -1503,7 +1287,6 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
 
         <div class="header">
           <h2>Time Table</h2>
-          <h4>Class: ${className} &nbsp;&nbsp; | &nbsp;&nbsp; Division: ${divisionName}</h4>
         </div>
 
         ${printContents}
