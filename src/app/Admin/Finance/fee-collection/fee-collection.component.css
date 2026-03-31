@@ -1,0 +1,247 @@
+.FormInputRowsContainer{
+    flex-direction: column;
+}
+
+.InputRow{
+    width: 100% !important;
+    flex-direction: row !important;
+}
+
+.searchreview.input-container .floating-input {
+    padding-left: 32px !important;
+}
+
+.searchreview.input-container .floating-input::placeholder {
+    color: #6c757d;
+    opacity: 1;
+}
+
+.student-summary-row {
+    display: flex;
+    gap: 40px;
+    margin: 15px 0 5px 0; 
+    align-items: center;
+    padding: 6px 8px;
+    background-color: #f5f5f5;
+}
+
+.student-summary-item {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.student-summary-label {
+    font-size: 12px;
+    color: #666;
+    margin-right: 4px;
+}
+
+.student-summary-value {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.payment-header-row {
+    display: flex;
+    gap: 60px;
+    margin: 12px 0 18px 0;
+    align-items: center;
+}
+
+.fee-payment-header {
+    margin-top: 10px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 12px;
+    font-weight: 400;
+    color: #444;
+}
+
+.summary-inline-row {
+    display: flex;
+    gap: 40px;
+    font-size: 13px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.summary-item {
+    display: flex;
+    flex-direction: column;
+    min-width: 180px;
+}
+
+.summary-text-item {
+    justify-content: center;
+}
+
+.payment-summary-row {
+    margin-top: 8px;
+}
+
+.PaymentSummary .InputRow {
+    align-items: flex-start;
+    gap: 40px;
+}
+
+.PaymentSummary .InputRow .InputFieldsContainer {
+    flex: 1;
+    min-width: 180px;
+}
+
+.PaymentSummary .payment-transaction-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.PaymentSummary .payment-transaction-column .input-with-error {
+    min-height: 30px;
+}
+
+.payment-transaction-placeholder {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.payment-total-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 6px;
+    font-size: 13px;
+}
+
+@media (max-width: 768px) {
+    .PaymentSummary .InputRow {
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .PaymentSummary .InputRow .InputFieldsContainer {
+        min-width: 100%;
+    }
+
+    .payment-total-row {
+        justify-content: flex-start;
+    }
+}
+
+/* Match "Allot Fee Discount" submit button look */
+.PaymentSummary .btnHover {
+    background-color: #536ff7;
+    border: 1px solid #536ff7;
+    color: #fff;
+    padding: 6px 18px;
+    border-radius: 6px;
+    font-size: 12px;
+    min-width: 90px;
+}
+
+.PaymentSummary .btnHover:hover {
+    background-color: #3f5ff6;
+    border-color: #3f5ff6;
+}
+
+.AddForm .actionbuttons{
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .AddForm .actionbuttons .btncancel{
+    background-color: gray;
+    color: white;
+    border: none;
+    font-size: smaller;
+    border-radius: 5px;
+    padding: 5px 10px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .AddForm .actionbuttons .btnsubmit{
+    background-color: #536ff7;
+    color: #fff;
+    border: none;
+    font-size: smaller;
+    border-radius: 5px;
+    padding: 5px 10px;
+    transition: background-color 0.3s ease;
+  }
+
+
+.receipt-container {
+  border: 2px solid #000;
+  padding: 20px;
+  width: 100%;
+  font-family: Arial, sans-serif;
+}
+
+.header {
+  margin-bottom: 15px;
+}
+
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+.receipt-row span:first-child {
+  font-weight: bold;
+}
+
+.signature {
+  margin-top: 40px;
+  text-align: right;
+  font-weight: bold;
+}
+
+
+.receipt-box {
+    border: 2px solid #000;
+    padding: 20px;
+    font-family: Arial;
+  }
+  
+  .receipt-top {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .section-title {
+    margin-top: 15px;
+    font-weight: bold;
+  }
+  
+  .receipt-row {
+    margin: 5px 0;
+  }
+  
+  .receipt-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  
+  .receipt-table th,
+  .receipt-table td {
+    border: 1px solid #000;
+    padding: 8px;
+  }
+  
+  .receipt-table th {
+    background-color: #f2f2f2;
+  }
+  
+  .note {
+    font-size: 12px;
+  }
+
+
+  .modal-dialog {
+    position: relative;
+    margin: 4% auto;
+    max-width: 900px;
+}
