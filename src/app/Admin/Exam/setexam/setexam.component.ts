@@ -37,6 +37,7 @@ export class SetexamComponent extends BasePermissionComponent{
   const local = new Date(now.getTime() - offset * 60000);
 
   this.today = local.toISOString().slice(0, 16); 
+  this.minDateTime = this.today; // Set minimum datetime for validation
 
     this.checkViewPermission();
     this.SchoolSelectionChange = false;
@@ -67,6 +68,7 @@ public testClick(): void {
   }
 
   today:string='';
+  minDateTime:string=''; // Minimum datetime for validation
   IsAddNewClicked: boolean = false;
   IsActiveStatus: boolean = false;
   ViewSyllabusClicked: boolean = false;
@@ -82,7 +84,7 @@ public testClick(): void {
   viewSyllabus: any = null;
   AminityInsStatus: any = '';
 
-  // isModalOpen = false;
+  isModalOpen = false;
   
   isStatusModalOpen = false;   // Application Status popup
   isTableModalOpen = false;    // Generate Table popup
@@ -563,11 +565,14 @@ onSubmit() {
     if(this.AdminselectedSchoolID==''){
       this.FetchAcademicYearsList();
     }
-    this.SyllabusForm.reset();
-    this.SyllabusForm.get('Class').patchValue([]);
     this.classLists=[];
-    this.SyllabusForm.get('School').patchValue('0');
-    this.SyllabusForm.get('AcademicYear').patchValue('0');
+    this.SyllabusForm.reset({
+    School: '0',
+    AcademicYear: 0,
+    ExamType: 0,
+    Class: 0
+    });
+    
     this.IsAddNewClicked = !this.IsAddNewClicked;
     this.IsActiveStatus = true;
     this.ViewSyllabusClicked = false;
@@ -828,8 +833,12 @@ onSubmit() {
     
     return names.join(', ');
   }
-
-  UpdateSyllabus() {
+  get isEditMode() {
+  return !!this.SyllabusForm.get('ID')?.value;
+}
+isInsertMode = true;
+UpdateSyllabus() {
+this.isInsertMode = false;
     if (this.SyllabusForm.invalid) {
       this.SyllabusForm.markAllAsTouched();
       return;
@@ -855,9 +864,32 @@ for (let row of this.tableRows) {
       this.isStatusModalOpen = true;
       return;
     }
+    
+    // ✅ Past Date validation
+    const examDateTime = new Date(row.examDateAndTime);
+    const now = new Date();
+    if (examDateTime < now) {
+      this.AminityInsStatus =
+        `Past date/time selected for subject: ${row.subjectName}. Please select a future date and time.`;
+      this.isStatusModalOpen = true;
+      return;
+    }
 
   }
 
+}
+
+// ✅ TIME CONFLICT VALIDATION with dynamic buffer
+const durationValue = this.SyllabusForm.get('Duration')?.value || '';
+const durationInMinutes = this.parseDurationToMinutes(durationValue);
+
+if (durationInMinutes > 0) {
+  const timeConflict = this.checkTimeConflicts(this.tableRows, durationInMinutes);
+  if (timeConflict.hasConflict) {
+    this.AminityInsStatus = `Schedule conflict: ${timeConflict.message.split('\n\n')[0]}. Please choose different times.`;
+    this.isStatusModalOpen = true;
+    return;
+  }
 }
     const selectedRows = this.tableRows
   .filter(row =>
@@ -1060,6 +1092,88 @@ selectedRows.forEach(row => {
     this.FetchInitialData();
   };
 
+  parseDurationToMinutes(duration: string): number {
+    if (!duration) return 0;
+    
+    // Handle formats like "90", "180", "2h 30m", "90 min", "2 hours", etc.
+    const cleanDuration = duration.toString().trim();
+    
+    // If it's just a number, treat it as minutes
+    if (/^\d+$/.test(cleanDuration)) {
+      return parseInt(cleanDuration);
+    }
+    
+    // Handle formats like "2h 30m", "180 min", "2 hours", etc.
+    const hoursMatch = cleanDuration.match(/(\d+)\s*h/);
+    const minutesMatch = cleanDuration.match(/(\d+)\s*m/);
+    
+    const hours = hoursMatch ? parseInt(hoursMatch[1]) : 0;
+    const minutes = minutesMatch ? parseInt(minutesMatch[1]) : 0;
+    
+    return (hours * 60) + minutes;
+  }
+
+  checkTimeConflicts(tableRows: any[], durationInMinutes: number): { hasConflict: boolean; message: string } {
+    const activeRows = tableRows.filter(row => row.isActive && row.examDateAndTime);
+    
+    if (activeRows.length < 2) {
+      return { hasConflict: false, message: '' };
+    }
+
+    const bufferTime = durationInMinutes; // Dynamic buffer = exam duration
+    const examSchedules: any[] = [];
+
+    // Create schedule objects for each active subject/division
+    activeRows.forEach(row => {
+      if (row.selectedDivisions && row.selectedDivisions.length > 0) {
+        const examStart = new Date(row.examDateAndTime);
+        const examEnd = new Date(examStart.getTime() + (durationInMinutes * 60 * 1000));
+        const bufferEnd = new Date(examStart.getTime() + ((durationInMinutes + bufferTime) * 60 * 1000));
+
+        row.selectedDivisions.forEach((divisionId: string) => {
+          examSchedules.push({
+            subjectName: row.subjectName,
+            subjectID: row.subjectID,
+            divisionId: divisionId,
+            examStart: examStart,
+            examEnd: examEnd,
+            bufferEnd: bufferEnd
+          });
+        });
+      }
+    });
+
+    // Check for conflicts - ONLY for same division
+    for (let i = 0; i < examSchedules.length; i++) {
+      for (let j = i + 1; j < examSchedules.length; j++) {
+        const schedule1 = examSchedules[i];
+        const schedule2 = examSchedules[j];
+
+        // ✅ Only check conflicts for SAME DIVISION
+        if (schedule1.divisionId === schedule2.divisionId) {
+          // Check if time ranges overlap (including buffer)
+          if (schedule1.examStart < schedule2.bufferEnd && schedule2.examStart < schedule1.bufferEnd) {
+            const conflictType = this.getConflictType(schedule1, schedule2, durationInMinutes, bufferTime);
+            return {
+              hasConflict: true,
+              message: conflictType
+            };
+          }
+        }
+      }
+    }
+
+    return { hasConflict: false, message: '' };
+  }
+
+  getConflictType(schedule1: any, schedule2: any, durationInMinutes: number, bufferTime: number): string {
+    const divisionName = this.getDivisionNameById(schedule1.divisionId);
+    const subject1Time = this.formatExamDateTimeForMessage(schedule1.examStart);
+    const subject2Time = this.formatExamDateTimeForMessage(schedule2.examStart);
+
+    return `Time conflict for Division ${divisionName}: "${schedule1.subjectName}" at ${subject1Time} conflicts with "${schedule2.subjectName}" at ${subject2Time}. Required gap is ${durationInMinutes} minutes.`;
+  }
+
   exportSyllabus(type: 'pdf' | 'excel' | 'print') {
     const isSearch = !!this.searchQuery?.trim();
     const flag = isSearch ? '7' : '2';
@@ -1116,11 +1230,15 @@ selectedRows.forEach(row => {
   };
   onAdminSchoolChange(event: Event) {
     this.academicYearList=[];
+    this.examLists =[];
     this.SyllabusForm.get('AcademicYear').patchValue('0');
+    this.SyllabusForm.get('ExamType').patchValue('0');
+    this.SyllabusForm.get('Class').patchValue('0');
     const target = event.target as HTMLSelectElement;
     const schoolID = target.value;
     this.classLists=[];
     this.isTableModalOpen = false;
+    this.timeConflictWarning = ''; // Reset warning
 
     this.tableRows = [];   
     if(schoolID=="0"){
@@ -1145,6 +1263,7 @@ selectedRows.forEach(row => {
     }
     this.classLists=[];
     this.isTableModalOpen = false;
+    this.timeConflictWarning = ''; // Reset warning
 
 
     this.tableRows = [];   
@@ -1155,6 +1274,8 @@ selectedRows.forEach(row => {
     onAdminClasschange(event: Event){
     this.subjectsLists =[];
     this.divisionsList =[];
+    this.tableRows = [];   
+
     this.SyllabusForm.get('Subjects').patchValue([]);
     this.SyllabusForm.get('Divisions').patchValue('0');
     const target = event.target as HTMLSelectElement;
@@ -1168,12 +1289,55 @@ selectedRows.forEach(row => {
   }
     this.FetchSubjectsList();
     this.FetchDivisionsList();
+    this.isTableModalOpen = false;
+    this.timeConflictWarning = ''; // Reset warning
+
 
     // this.FetchClassList();
   };
   
 
 tableRows: any[] = []; // Each object = 1 subject row
+timeConflictWarning: string = ''; // Real-time conflict warning message
+
+  getDivisionNameById(divisionId: string): string {
+    const division = this.divisionsList.find(
+      item => String(item.ID) === String(divisionId)
+    );
+
+    return division?.Name || `Division ${divisionId}`;
+  }
+
+  formatExamDateTimeForMessage(dateValue: string): string {
+    if (!dateValue) {
+      return '';
+    }
+
+    return new Date(dateValue).toLocaleString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  }
+
+  updateTimeConflictWarning() {
+    this.timeConflictWarning = '';
+
+    const durationValue = this.SyllabusForm.get('Duration')?.value || '';
+    const durationInMinutes = this.parseDurationToMinutes(durationValue);
+
+    if (durationInMinutes <= 0) {
+      return;
+    }
+
+    const timeConflict = this.checkTimeConflicts(this.tableRows, durationInMinutes);
+    if (timeConflict.hasConflict) {
+      this.timeConflictWarning = timeConflict.message;
+    }
+  }
 
   GenerateModalTable() {
   if (this.SyllabusForm.invalid) {
@@ -1202,6 +1366,7 @@ tableRows: any[] = []; // Each object = 1 subject row
   }));
 
   this.isTableModalOpen  = true;
+  this.updateTimeConflictWarning();
 }
 
 
@@ -1213,6 +1378,7 @@ onSubjectToggle(index: number) {
     row.selectedDivisions = [];
   }
 
+  this.updateTimeConflictWarning();
 }
 
 toggleDivisionDropdown(index: number) {
@@ -1230,39 +1396,110 @@ toggleDivisionSelection(rowIndex: number, divisionID: string) {
   } else {
     row.selectedDivisions.push(divisionID);
   }
+
+  this.updateTimeConflictWarning();
+}
+
+getDurationDisplay(): string {
+    const durationValue = this.SyllabusForm.get('Duration')?.value || '';
+    const durationInMinutes = this.parseDurationToMinutes(durationValue);
+    
+    if (durationInMinutes === 0) return '90min'; // Default example
+    
+    if (durationInMinutes < 60) {
+      return `${durationInMinutes}min`;
+    } else {
+      const hours = Math.floor(durationInMinutes / 60);
+      const minutes = durationInMinutes % 60;
+      return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+    }
+  }
+
+  getTotalTimeDisplay(): string {
+    const durationValue = this.SyllabusForm.get('Duration')?.value || '';
+    const durationInMinutes = this.parseDurationToMinutes(durationValue);
+    const totalMinutes = durationInMinutes * 2; // exam + same duration gap
+    
+    if (totalMinutes === 0) return '3 hours'; // Default example
+    
+    if (totalMinutes < 60) {
+      return `${totalMinutes} minutes`;
+    } else {
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      return minutes > 0 ? `${hours}h ${minutes}m` : `${hours} hours`;
+    }
+  }
+
+  onExamDateTimeChange(rowIndex: number) {
+  this.updateTimeConflictWarning();
 }
 
 saveExam() {
 
+  console.log('🔍 saveExam() called - checking time conflicts...');
+  
   if (!this.tableRows || this.tableRows.length === 0) {
     this.AminityInsStatus = "No data to save.";
     this.isStatusModalOpen = true;
     return;
   }
-// ✅ VALIDATION — every active subject must have division
-for (let row of this.tableRows) {
 
-  if (row.isActive === true) {
+  // ✅ VALIDATION — every active subject must have division
+  for (let row of this.tableRows) {
 
-    if (!row.selectedDivisions || row.selectedDivisions.length === 0) {
+    if (row.isActive === true) {
 
-      this.AminityInsStatus =
-        `Please select at least one division for subject: ${row.subjectName}`;
+      if (!row.selectedDivisions || row.selectedDivisions.length === 0) {
 
-      this.isStatusModalOpen = true;
-      return; // ❌ STOP SAVE
-    }
-     // ✅ Exam Date validation
-    if (!row.examDateAndTime || row.examDateAndTime.trim() === '') {
-      this.AminityInsStatus =
-        `Please select Exam Date & Time for subject: ${row.subjectName}`;
-      this.isStatusModalOpen = true;
-      return;
+        this.AminityInsStatus =
+          `Please select at least one division for subject: ${row.subjectName}`;
+
+        this.isStatusModalOpen = true;
+        return; // ❌ STOP SAVE
+      }
+      // ✅ Exam Date validation
+      if (!row.examDateAndTime || row.examDateAndTime.trim() === '') {
+        this.AminityInsStatus =
+          `Please select Exam Date & Time for subject: ${row.subjectName}`;
+        this.isStatusModalOpen = true;
+        return;
+      }
+      
+      // ✅ Past Date validation
+      const examDateTime = new Date(row.examDateAndTime);
+      const now = new Date();
+      if (examDateTime < now) {
+        this.AminityInsStatus =
+          `Past date/time selected for subject: ${row.subjectName}. Please select a future date and time.`;
+        this.isStatusModalOpen = true;
+        return;
+      }
+
     }
 
   }
 
-}
+  // ✅ TIME CONFLICT VALIDATION with dynamic buffer
+  const durationValue = this.SyllabusForm.get('Duration')?.value || '';
+  const durationInMinutes = this.parseDurationToMinutes(durationValue);
+  
+  console.log('📊 Duration value:', durationValue, 'Duration in minutes:', durationInMinutes);
+  console.log('📋 Table rows:', this.tableRows);
+  
+  if (durationInMinutes > 0) {
+    const timeConflict = this.checkTimeConflicts(this.tableRows, durationInMinutes);
+    console.log('⚠️ Time conflict result:', timeConflict);
+    
+    if (timeConflict.hasConflict) {
+      this.timeConflictWarning = timeConflict.message;
+      this.AminityInsStatus = timeConflict.message;
+      this.isStatusModalOpen = true;
+      console.log('🚫 Save blocked due to time conflict');
+      return;
+    }
+  }
+
   const selectedRows = this.tableRows
   .filter(row =>
     row.isActive === true &&
@@ -1278,20 +1515,20 @@ for (let row of this.tableRows) {
 
   const isEditMode = !!this.SyllabusForm.get('ID')?.value;
   const subjects: any[] = [];
-const divisions: any[] = [];
+  const divisions: any[] = [];
 
-selectedRows.forEach(row => {
+  selectedRows.forEach(row => {
 
-  subjects.push(row.subjectID);   // subject only once
+    subjects.push(row.subjectID);   // subject only once
 
-  if (row.selectedDivisions && row.selectedDivisions.length > 0) {
-    divisions.push(row.selectedDivisions.join(',')); 
-    // use separator inside subject
-  } else {
-    divisions.push('');
-  }
+    if (row.selectedDivisions && row.selectedDivisions.length > 0) {
+      divisions.push(row.selectedDivisions.join(',')); 
+      // use separator inside subject
+    } else {
+      divisions.push('');
+    }
 
-});
+  });
 
   const payload = {
     ID: isEditMode ? this.SyllabusForm.get('ID')?.value : '',
@@ -1314,28 +1551,36 @@ selectedRows.forEach(row => {
     Flag: isEditMode ? '5' : '1'
   };
 
-  this.apiurl.post("Tbl_SetExam_CRUD_Operations", payload)
-    .subscribe({
+  this.apiurl.post("Tbl_SetExam_CRUD_Operations", payload).subscribe({
       next: (response: any) => {
+        if (response.statusCode === 200) {
+          this.AminityInsStatus = isEditMode
+            ? "Exam Updated Successfully!"
+            : "Exam Created Successfully!";
 
-        this.AminityInsStatus = isEditMode
-          ? "Exam Updated Successfully!"
-          : "Exam Created Successfully!";
+          this.isStatusModalOpen = true;
+          this.isTableModalOpen = false;
+          this.IsAddNewClicked = false;
 
-        this.isStatusModalOpen = true;
-        this.isTableModalOpen = false;
-        this.IsAddNewClicked = false;
+          this.SyllabusForm.reset();
+          this.tableRows = [];
 
-        this.SyllabusForm.reset();
-        this.tableRows = [];
-
-        this.FetchInitialData();
+          this.FetchInitialData();
+        }                
       },
-      error: () => {
-        this.AminityInsStatus = "Error saving exam.";
-        this.isStatusModalOpen = true;
-      }
-    });
+      error: (err:any) => {
+            if (err.status === 400 && err.error?.message) {
+              this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+            } else if (err.status === 500 && err.error?.Message) {
+              this.AminityInsStatus = err.error.Message;  // Database or internal error
+            } else {
+              this.AminityInsStatus = "Unexpected error occurred.";
+            }
+            this.isStatusModalOpen = true;
+          },
+          complete: () => {
+          }
+  });
 }
 
 }

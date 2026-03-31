@@ -211,7 +211,7 @@
               <div class="InputFieldsContainer" *ngIf="!isAdmin">
                 <label class="inputLabel" for="email">Assistant Mobile No <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="AssistantMobNo" placeholder="Enter AssistantMobileNo" />
+                  <input class="inputField" formControlName="AssistantMobNo" placeholder="Enter AssistantMobileNo" maxlength="10" (keydown)="allowOnlyNumbers($event)" />
                   <div *ngIf="(SyllabusForm.get('AssistantMobNo' ) ?. touched && SyllabusForm.get('AssistantMobNo' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(SyllabusForm.get('AssistantMobNo' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter AssistantMobileNo.</small>
@@ -224,7 +224,7 @@
               <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <label class="inputLabel" for="email">Assistant Mobile No <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="AssistantMobNo" placeholder="Enter AssistantMobileNo" />
+                  <input class="inputField" formControlName="AssistantMobNo" placeholder="Enter AssistantMobileNo" maxlength="10" (keydown)="allowOnlyNumbers($event)" />
                   <div *ngIf="(SyllabusForm.get('AssistantMobNo' ) ?. touched && SyllabusForm.get('AssistantMobNo' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(SyllabusForm.get('AssistantMobNo' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter AssistantMobileNo.</small>
@@ -257,7 +257,7 @@
               <div class="InputFieldsContainer" *ngIf="!isAdmin">
                 <label class="inputLabel" for="email">Distance Cost Per KM <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="DistanceCostPerKM" placeholder="Enter DistanceCostPerKM" />
+                  <input class="inputField" formControlName="DistanceCostPerKM" placeholder="Enter DistanceCostPerKM" maxlength="4" (keydown)="allowOnlyNumbers($event)" />
                   <div *ngIf="(SyllabusForm.get('DistanceCostPerKM' ) ?. touched && SyllabusForm.get('DistanceCostPerKM' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(SyllabusForm.get('DistanceCostPerKM' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter DistanceCostPerKM.</small>
@@ -270,7 +270,7 @@
               <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <label class="inputLabel" for="email">Distance Cost Per KM <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="DistanceCostPerKM" placeholder="Enter DistanceCostPerKM" />
+                  <input class="inputField" formControlName="DistanceCostPerKM" placeholder="Enter DistanceCostPerKM" maxlength="4" (keydown)="allowOnlyNumbers($event)" />
                   <div *ngIf="(SyllabusForm.get('DistanceCostPerKM' ) ?. touched && SyllabusForm.get('DistanceCostPerKM' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(SyllabusForm.get('DistanceCostPerKM' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter DistanceCostPerKM.</small>
@@ -281,7 +281,7 @@
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Max Capacity <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="MaxCapacity" placeholder="Enter MaxCapacity" />
+                  <input class="inputField" formControlName="MaxCapacity" placeholder="Enter MaxCapacity" maxlength="2" (keydown)="allowOnlyNumbers($event)" />
                   <div *ngIf="(SyllabusForm.get('MaxCapacity' ) ?. touched && SyllabusForm.get('MaxCapacity' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(SyllabusForm.get('MaxCapacity' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter MaxCapacity.</small>

@@ -26,7 +26,7 @@
     <div class="AddForm">
       <div class="AddFormTop">
         <!-- <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>  -->
-         <p>View Exam</p>
+         <p>Exam Attendence</p>
       </div>
       <div class="AddFormConatiner">
         <form [formGroup]="SyllabusForm">
@@ -135,6 +135,7 @@
             <thead>
               <tr>
                 <th class="visually-hidden">Academic Year ID</th>
+                <th class="visually-hidden">ID</th>
                 <th class="visually-hidden">Subject ID</th>
                 <th class="visually-hidden">Exam Type ID</th>
                 <th>SI.No</th>
@@ -165,6 +166,7 @@
             <tbody>
               <tr *ngFor="let Syllabus of SyllabusList,let i = index">
                 <td data-label="ID" class="visually-hidden">{{ Syllabus.RowID }}</td>
+                <td data-label="ID" class="visually-hidden">{{ Syllabus.ID }}</td>
                 <td data-label="SubjectID" class="visually-hidden">{{ Syllabus.SubjectID }}</td>
                 <td data-label="ExamTypeID" class="visually-hidden">{{ Syllabus.ExamTypeID }}</td>
                 <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
@@ -178,23 +180,36 @@
                  <td data-label="ExamType" *ngIf="isAdmin">{{ Syllabus.SchoolName }}</td>
                 <td data-label="AcademicYearName" *ngIf="isAdmin">{{ Syllabus.AcademicYearName }}</td>
                 <td data-label="Status">{{ Syllabus.IsActive }}</td>
-                <td data-label="Actions">
-<div class="d-flex justify-content-center align-items-center">                    <!-- (click)="editreview(aminitie.propertyTypeID)" -->
-                   
-<button *ngIf="Syllabus.AttendanceMarked=='0'"
-  type="button" 
-  class="btn" 
-  (click)="openAttendance(Syllabus)">
-  Attendance
-</button>    
-<button *ngIf="Syllabus.AttendanceMarked=='1'"
-  type="button" 
-  class="btn" 
-  (click)="openViewAttendance(Syllabus)">
-  View Attendance
-</button>                
-</div>
-                </td>
+               <td data-label="Actions">
+  <div class="d-flex justify-content-center align-items-center">
+
+    <!-- Attendance Button -->
+    <button 
+      *ngIf="Syllabus.AttendanceMarked == '0' && Syllabus.ExamAttendancAndMarksMarked == '0'"
+      type="button" 
+      class="btn" 
+      (click)="openAttendance(Syllabus)">
+      Attendance
+    </button>    
+
+    <!-- View Attendance Button -->
+    <button 
+      *ngIf="Syllabus.AttendanceMarked == '1' && Syllabus.ExamAttendancAndMarksMarked == '0'"
+      type="button" 
+      class="btn" 
+      (click)="openViewAttendance(Syllabus)">
+      View Attendance
+    </button>  
+
+    <!-- Published Text -->
+    <span 
+      *ngIf="Syllabus.AttendanceMarked == '1' && Syllabus.ExamAttendancAndMarksMarked == '1'"
+      class="text-success fw-bold">
+      Published
+    </span>
+
+  </div>
+</td>
               </tr>
             </tbody>
           </table>
@@ -231,39 +246,61 @@
               <tr>
                 <th class="visually-hidden">Academic Year ID</th>
                 <th>SI.No</th>
-                <th>AdmissionNo</th>
-                <th>FirstName</th>
+                <th>Admission No</th>
+                <th>Student Name</th>
                 <th>Class</th>  
                 <th>Division</th>               
-                <th>Actions</th>
+                <th>Status</th>
+                <th *ngIf="attendanceMode === 'view'">Remark</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let Syllabus of studentsList,let i = index">
-                <td data-label="ID" class="visually-hidden">{{ Syllabus.ID }}</td>
-                <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-                <td data-label="AdmissionNo">{{ Syllabus.AdmissionNo }}</td>
-                <td data-label="FirstName">{{ Syllabus.FirstName }}</td>
-                <td data-label="Class">{{ Syllabus.Class }}</td>
-                <td data-label="Division">{{ Syllabus.Division }}</td>
-                <td data-label="Actions">
-                    
-                    <div class="InputFieldsContainer">
-                        <div class="toggle-container">
-                          <label class="switch">
-<input 
-  type="checkbox" 
-  [(ngModel)]="Syllabus.IsPresent"
-  [ngModelOptions]="{standalone: true}">                          
-  <span class="slider round">
-                              <span
-                                class="toggle-text">
-                              </span>
-                            </span>
-                          </label>
-                      </div>
-                      </div>
-                     
+              <tr *ngFor="let Syllabus of studentsList; let i = index"
+                [ngClass]="{'table-warning': attendanceMode === 'view' && Syllabus.IsPresent !== Syllabus.originalIsPresent}">
+                <td class="visually-hidden">{{ Syllabus.ID }}</td>
+                <td>{{ i + 1 }}</td>
+                <td>{{ Syllabus.AdmissionNo }}</td>
+                <td>{{ Syllabus.FirstName }}</td>
+                <td>{{ Syllabus.Class }}</td>
+                <td>{{ Syllabus.Division }}</td>
+                <td>
+                  <div class="toggle-container">
+                    <span class="status-label status-label-left">Absent</span>
+                    <label class="switch">
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="Syllabus.IsPresent"
+                        [ngModelOptions]="{standalone: true}"
+                        (ngModelChange)="attendanceMode === 'view' && onViewModeToggleChange(Syllabus)"
+                      />
+                      <span class="slider"></span>
+                    </label>
+                    <span class="status-label status-label-right">Present</span>
+                  </div>
+                </td>
+                <!-- Remark column: only in view mode -->
+                <td *ngIf="attendanceMode === 'view'">
+                  <!-- input: shown when any attendance change from original -->
+                  <input
+                    *ngIf="Syllabus.showRemark"
+                    type="text"
+                    class="inputField remark-input"
+                    [(ngModel)]="Syllabus.Remark"
+                    [ngModelOptions]="{standalone: true}"
+                    [placeholder]="Syllabus.IsPresent ? 'Remark: why marked Present *' : 'Remark: why marked Absent *'"
+                    maxlength="200"
+                  />
+                  <!-- read-only: show existing remark if already present and not being edited -->
+                  <span
+                    *ngIf="!Syllabus.showRemark && Syllabus.Remark"
+                    class="remark-badge bg-info text-dark"
+                    (click)="Syllabus.showFullRemark = !Syllabus.showFullRemark"
+                    style="cursor:pointer;"
+                  >
+                    <span *ngIf="!Syllabus.showFullRemark">{{ Syllabus.Remark | slice:0:30 }}{{ Syllabus.Remark.length > 30 ? '...' : '' }}</span>
+                    <span *ngIf="Syllabus.showFullRemark">{{ Syllabus.Remark }}</span>
+                  </span>
+                  <span *ngIf="!Syllabus.showRemark && !Syllabus.Remark" class="text-muted">-</span>
                 </td>
               </tr>
             </tbody>
@@ -290,10 +327,11 @@
         </div>
       </div>
        <div class="ActionButtons">
-<button type="button" class="btn" (click)="submitAttendance()">
+<button *ngIf="attendanceMode === 'add'" type="button" class="btn" [disabled]="isSubmittingAttendance"(click)="submitAttendance()">
   Submit Attendance
 </button>  
-<button type="button" class="btn" (click)="UpdateAttendance()">
+<button   *ngIf="attendanceMode === 'view'"
+type="button" class="btn" (click)="UpdateAttendance()">
   Update Attendance
 </button>      
 </div>

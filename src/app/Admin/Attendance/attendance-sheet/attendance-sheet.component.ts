@@ -10,14 +10,13 @@ import { BasePermissionComponent } from '../../../shared/base-crud.component';
 import { LoaderService } from '../../../Services/loader.service';
 import { HttpClient } from '@angular/common/http';
 @Component({
-  selector: 'app-exammarks',
-   standalone: true,
+  selector: 'app-attendance-sheet',
   imports: [NgIf, NgFor, NgClass, NgStyle, MatIconModule, DashboardTopNavComponent, ReactiveFormsModule, FormsModule],
-  templateUrl: './exammarks.component.html',
-  styleUrl: './exammarks.component.css'
+  templateUrl: './attendance-sheet.component.html',
+  styleUrl: './attendance-sheet.component.css'
 })
-export class ExammarksComponent extends BasePermissionComponent{
-   pageName = 'ExamMarks';
+export class AttendanceSheetComponent extends BasePermissionComponent{
+  pageName = 'AttendanceSheet';
 
   constructor(
     private http: HttpClient,
@@ -49,34 +48,44 @@ export class ExammarksComponent extends BasePermissionComponent{
       event.preventDefault();
     }
   }
+
+  onLateMinutesInput(row: any) {
+    if (!row?.IsPresent) {
+      row.LateInMinutes = '';
+      return;
+    }
+
+    row.LateInMinutes = (row.LateInMinutes ?? '')
+      .toString()
+      .replace(/\D/g, '')
+      .slice(0, 3);
+  }
   IsAddNewClicked: boolean = false;
   isAttendanceSubmitted: boolean = false;
   IsActiveStatus: boolean = false;
   ViewSyllabusClicked: boolean = false;
-  currentPage = 1;
-  pageSize = 5;
-  visiblePageCount: number = 3;
   searchQuery: string = '';
   private searchTimer: any;
   private readonly SEARCH_MIN_LENGTH = 3;
   private readonly SEARCH_DEBOUNCE = 300;
   SyllabusList: any[] = [];
+  SessionList:any[]=[];
   isModalOpen=false;
   isViewMode = false;
   viewSyllabus: any = null;
   AminityInsStatus: any = '';
+  statusModalTitle = 'Application Status';
   isViewModalOpen = false;
   Submitbuttonclicks = false;
   SyllabusCount: number = 0;
   ActiveUserId: string = localStorage.getItem('email')?.toString() || '';
   roleId = localStorage.getItem('RollID');
 
-  pageCursors: { lastCreatedDate: any; lastID: number }[] = [];
   lastCreatedDate: string | null = null;
   lastID: number | null = null;
   maxMarks: number = 0;
   passmarks: number = 0;
-  sortColumn: string = 'ExamTypeName';
+  sortColumn: string = 'AdmissionNo';
   sortDirection: 'asc' | 'desc' = 'desc';
   editclicked: boolean = false;
   schoolList: any[] = [];
@@ -93,6 +102,7 @@ export class ExammarksComponent extends BasePermissionComponent{
   AdminselectedAcademivYearID: string = '';
   AdminselectedClassID:string ='';
   AdminselectedDiviosnID:string = '';
+  AdminSelectedSessionID:string='';
   AdminselecteExamID:string = '';
   selectedExamIDForAttendance!: number;
   selectedSubjectID!: number;
@@ -103,11 +113,17 @@ export class ExammarksComponent extends BasePermissionComponent{
     SchoolID:new FormControl(''),
     AdmissionID: new FormControl(true), 
     Marks: new FormControl(true), 
+    Attendance: new FormControl(true), 
     Divisions: new FormControl(0,[Validators.required,Validators.min(1)]),
     Class: new FormControl(0,[Validators.required,Validators.min(1)]),
-    ExamType: new FormControl(0,[Validators.required,Validators.min(1)]),
+    ExamType: new FormControl(''),
     School: new FormControl(0,[Validators.required,Validators.min(1)]),
-    AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
+    AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)]),
+    AttendanceDateTime: new FormControl('', [Validators.required]),
+    Session:new FormControl(0,[Validators.required,Validators.min(1)]),
+    LateInMinutes: new FormControl(''),
+    StartTime: new FormControl(''),
+    EndTime: new FormControl(''),
   });
 
   FetchSchoolsList() {
@@ -199,45 +215,36 @@ FetchClassList() {
       }
     );
 }
-FetchExamsList() {
-  const requestData = {
-    SchoolID: this.AdminselectedSchoolID || '',
-    AcademicYear: this.AdminselectedAcademivYearID || '',
-    Flag: '3'
-  };
- 
-  this.apiurl.post<any>('Tbl_Examtype_CRUD_Operations', requestData)
-    .subscribe(
-      (response: any) => {
-        if (response && Array.isArray(response.data)) {
-          console.log(response);
-          this.examLists = response.data.map((item: any) => {
-                            console.log(this.examLists)
-            const isActiveString =
-              item.isActive === "1" || item.isActive === "True"
-                ? "Active"
-                : "InActive";
-
-            return {
-             ID: item.id,
-             Name: item.examType,
-             Priority:item.priority,
-             MaxMark :item.maxMark,
-             PassMarks:item.passMarks,
-             ExamDuration:item.examDuration,
-             NoofQuestion:item.noofQuestion,
-             Instructions:item.instructions
-            };
-
-          });
-        } else {
-          this.examLists = [];
-        }},
-      (error) => {
-        this.examLists = [];
-      }
-    );
-}
+ FetchSessionsList() {
+      const requestData = { 
+         SchoolID: this.AdminselectedSchoolID || '',
+         AcademicYear: this.AdminselectedAcademivYearID || '',
+         Flag: '2'
+       };
+  
+      this.apiurl.post<any>('Tbl_Session_CRUD_Operations', requestData)
+        .subscribe(
+          (response: any) => {
+            if (response && Array.isArray(response.data)) {
+              this.SessionList = response.data.map((item: any) => {
+                const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+                return {
+                  ID: item.id,
+                  Name: item.session,
+                  StartTime: item.startTime,
+                  EndTime: item.endTime, 
+                  SessionName: `${item.session}-${item.startTime.substring(0,5)}-${item.endTime.substring(0,5)}`                };
+              });
+              this.applySelectedSessionTimes();
+            } else {
+              this.SessionList = [];
+            }
+          },
+          (error) => {
+            this.SessionList = [];
+          }
+        );
+    };
 
 FetchDivisionsList() {
   const requestData = {
@@ -366,6 +373,14 @@ FetchExamsbyclassanddivisionList() {
 }
 checkAttendanceStatusForExams() {
 
+  const missingRemark = this.SyllabusList.find(s => !s.IsPresent && !s.Remarks?.trim());
+  if (missingRemark) {
+    this.AminityInsStatus = `⚠️ Please enter a remark for ${missingRemark.Name || missingRemark.FirstName} (Absent).`;
+    this.statusModalTitle = 'Validation Warning';
+    this.isModalOpen = true;
+    return;
+  }
+
   const body = {
     Flag: '2',
     SchoolID: this.AdminselectedSchoolID,
@@ -391,13 +406,14 @@ checkAttendanceStatusForExams() {
 }
   FetchClassStudentsList() {
     const requestData = { 
-      SchoolID:this.AdminselectedSchoolID || '',
+            SchoolID:this.AdminselectedSchoolID || '',
             AcademicYear:this.AdminselectedAcademivYearID || '',
             Class:this.AdminselectedClassID || '',
             Divisions:this.AdminselectedDiviosnID,
             ExamType:this.selectedExamIDForAttendance.toString(),    
             Subjects:this.selectedSubjectID.toString(),
-            Flag: '11' };
+            Flag: '11'
+           };
 
     this.apiurl.post<any>('Tbl_SetExam_CRUD_Operations', requestData)
       .subscribe(
@@ -491,68 +507,45 @@ checkAttendanceStatusForExams() {
       SchoolIdSelected = this.selectedSchoolID.trim();
     }
 
-    return this.apiurl.post<any>('Tbl_SetExam_CRUD_Operations', {
+    return this.apiurl.post<any>('Tbl_StudentDetails_CRUD_Operations', {
       Flag: isSearch ? '8' : '6',
-       SchoolID: this.AdminselectedSchoolID || '',
+      SchoolID: this.AdminselectedSchoolID || '',
       AcademicYear: this.AdminselectedAcademivYearID || '',
       Class: this.AdminselectedClassID || '',
       Divisions: this.AdminselectedDiviosnID || '',
-      ExamType: this.AdminselecteExamID || '',
-      ExamTypeName: isSearch ? this.searchQuery.trim() : null
+      AdmissionNo: isSearch ? this.searchQuery.trim() : null
     });
   }
 private resetPaginationAndFetch() {
- this.currentPage = 1;
-  this.pageCursors = [];        // ← Critical: clears old cursors
   this.SyllabusList = [];       // Clear old table immediately
   this.FetchInitialData();
 }
 
-  FetchInitialData(extra: any = {}) {
+  FetchInitialData() {
   const isSearch = !!this.searchQuery?.trim();
-  const flag = isSearch ? '7' : '10';
+  const flag = isSearch ? '7' : '3';
 
   this.loader.show();
 
-  this.FetchAcademicYearCount(isSearch).subscribe({
+    this.FetchAcademicYearCount(isSearch).subscribe({
     next: (countResp: any) => {
       this.SyllabusCount = countResp?.data?.[0]?.totalcount ?? 0;   // ← Now correct count!
 
-      const cursor = this.currentPage > 1 && !extra.offset 
-        ? this.pageCursors[this.currentPage - 2] || null 
-        : null;
-
       const payload: any = {
         Flag: flag,
-        Limit: this.pageSize,
         SortColumn: this.sortColumn,
         SortDirection: this.sortDirection,
-        LastCreatedDate: cursor?.lastCreatedDate ?? null,
-        LastID: cursor?.lastID ?? null,
-
-        // ALL 5 filters always sent
-        SchoolID: this.AdminselectedSchoolID || '',
-        AcademicYear: this.AdminselectedAcademivYearID || '',
-        Class: this.AdminselectedClassID || '',
-        Divisions: this.AdminselectedDiviosnID || '',
-        ExamType: this.AdminselecteExamID || '',
-
-        ...extra
+        SchoolID:this.AdminselectedSchoolID || '',
+        AcademicYear:this.AdminselectedAcademivYearID || '',
+        Class:this.AdminselectedClassID || '',
+        Division:this.AdminselectedDiviosnID
       };
 
-      if (isSearch) payload.ExamTypeName = this.searchQuery.trim();
+      if (isSearch) payload.AdmissionNo = this.searchQuery.trim();
 
-      this.apiurl.post<any>('Tbl_SetExam_CRUD_Operations', payload).subscribe({
+      this.apiurl.post<any>('Tbl_StudentDetails_CRUD_Operations', payload).subscribe({
         next: (response: any) => {
           this.mapAcademicYears(response);
-
-          if (response.data?.length > 0 && !this.pageCursors[this.currentPage - 1]) {
-            const lastRow = response.data[response.data.length - 1];
-            this.pageCursors[this.currentPage - 1] = {
-              lastCreatedDate: lastRow.createdDate,
-              lastID: Number(lastRow.id)
-            };
-          }
           this.loader.hide();
         },
         error: () => {
@@ -575,60 +568,34 @@ private resetPaginationAndFetch() {
       let displayExamType = item.examTypeName;
     
     
-    const formattedExamDate = item.examDateAndTime
-  ? item.examDateAndTime
-      .split(',')
-      .map((d: string) =>
-        new Date(d).toLocaleString('en-US', {
-          month: '2-digit',
-          day: '2-digit',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true
-        })
-      )
-      .join(' | ')
-  : '';
+    
 
-    const formattedSubjectExamDate = item.subjectExamDateAndTime
-  ? new Date(item.subjectExamDateAndTime).toLocaleString('en-US', {
-      month: '2-digit',
-      day: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    })
-  : '';
+       const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+       return {
+                ID: item.admissionNo,
+                School:item.schoolID,
+                AcademicYear: item.academicYear,
+                AdmissionNo:item.admissionNo,
+                Class: item.className,
+                Division: item.classDivisionName,
+                FirstName: item.firstName,
+                MiddleName: item.middleName,
+                LastName: item.lastName,
+                ClassName: item.className,
+                SchoolName:item.schoolName,
+                AcademicYearName:item.academicYearName,//${item.admissionNo ?? ''}
+                Name: `${item.firstName ?? ''} ${item.middleName ?? ''} ${item.lastName ?? ''}`.replace(/\s+/g, ' ').trim(),
+                ClassDivisionName:item.classDivisionName,
+                IsActive: isActiveString,
+                IsPresent: true,
+                Marks: '',
+                Remarks: '',
+                StartTime: '',
+                EndTime: ''
 
-    return {
-      ID: item.id,
-      SchoolID: item.schoolID,
-      Syllabus: item.syllabus,
-      Class: item.className,          // ← friendly for table
-      Divisions: item.divisionName,
-      ExamType: displayExamType,
-      ExamTypeID: item.examType,
-      Subjects: item.subjectName,
-      SchoolName: item.schoolName,
-      MaxMarks: item.maxMarks,
-      PassMarks: item.passMarks,
-      ExamDateAndTime: formattedExamDate,
-      Duration: item.duration,
-      NoOfQuestion: item.noOfQuestion,
-      Instructions: item.instructions,
-      IsActive: item.isActive === "True" || item.isActive === "1" ? 'Active' : 'InActive',
-      AcademicYearName: item.academicYearName,
-      RowID: item.rowID,
-      SubjectIndex: item.subjectIndex,
-      SubjectID: item.subjectID,
-      IndividualSubjectName:item.individualSubjectName,
-      SubjectExamDateAndTime: formattedSubjectExamDate,
-      AttendanceMarked:item.attendanceMarked,
-      ExamAttendancAndMarksMarked:item.examAttendancAndMarksMarked
-    };
+              };
   });
+  this.applySelectedSessionTimes();
   console.log('this.SyllabusList',this.SyllabusList)
 }
 
@@ -645,10 +612,47 @@ formatDateYYYYMMDD(dateStr: string | null) {
   }
 
   onSubmit() {
-    if (this.SyllabusForm.invalid) {
-      this.SyllabusForm.markAllAsTouched();
+    this.loadAttendanceTableIfReady();
+  }
+
+  cancelAttendanceTable() {
+    this.resetAttendanceTableState();
+  }
+
+  onAttendanceToggleChange(student: any) {
+    const studentName = student.Name || student.FirstName || student.AdmissionNo;
+    const status = student.IsPresent ? 'Present' : 'Absent';
+    if (!student.IsPresent) {
+      student.LateInMinutes = '';
+    } else {
+      student.Remarks = '';
+    }
+    this.statusModalTitle = 'Attendance Status';
+    this.AminityInsStatus = `${studentName} status is ${status}.`;
+    this.isModalOpen = true;
+  }
+
+  private isAttendanceFilterReady(): boolean {
+    const hasSchool = !this.isAdmin || !!this.AdminselectedSchoolID;
+    return hasSchool &&
+      !!this.AdminselectedAcademivYearID &&
+      !!this.AdminselectedClassID &&
+      !!this.AdminselectedDiviosnID;
+  }
+
+  private resetAttendanceTableState() {
+    this.isTableModalOpen = false;
+    this.SyllabusList = [];
+    this.SyllabusCount = 0;
+  }
+
+  private loadAttendanceTableIfReady() {
+    if (!this.isAttendanceFilterReady()) {
+      this.resetAttendanceTableState();
       return;
     }
+
+    this.isTableModalOpen = true;
     this.resetPaginationAndFetch();
   }
 
@@ -783,139 +787,140 @@ formatDateYYYYMMDD(dateStr: string | null) {
 
 
 submitAttendance() {
-  const body = {
-    Flag: '1',
-    SchoolID: this.AdminselectedSchoolID,
-    AcademicYear: this.AdminselectedAcademivYearID,
-    ExamID: this.selectedExamIDForAttendance.toString(),
-    SubjectID: this.selectedSubjectID.toString(),
-    Students: this.studentsList.map(student => ({
-      AdmissionID: student.AdmissionNo,
-      Marks: (student.Marks ?? '0').toString()
-    }))
-  };
+  const session = this.SyllabusForm.get('Session')?.value;
+  if (!session || session === 0 || session === '0') {
+    this.AminityInsStatus = '⚠️ Please select Session before submitting.';
+    this.statusModalTitle = 'Validation Warning';
+    this.isModalOpen = true;
+    return;
+  }
 
-  this.apiurl.post('Tbl_ExamMarks_CRUD_Operations', body).subscribe({
-    next: () => {
-      this.AminityInsStatus = 'Marks Saved Successfully';
-      this.isModalOpen = true;
-      this.isAttendanceSubmitted = true;
-      this.IsAddNewClicked = false;
-      this.resetPaginationAndFetch();
-    },
-    error: (err) => {
-      console.error(err);
-      this.AminityInsStatus = 'Error saving marks';
-      this.isModalOpen = true;
-    }
-  });
-}
+  const attendanceDate = this.SyllabusForm.get('AttendanceDateTime')?.value;
+  if (!attendanceDate) {
+    this.AminityInsStatus = '⚠️ Please select Attendance Date.';
+    this.statusModalTitle = 'Validation Warning';
+    this.isModalOpen = true;
+    return;
+  }
 
- UpdateAttendance() {
-  const invalidStudent = this.studentsList.find(student =>
-    student.AttendanceMarked === '1' && (
-      student.Marks === undefined ||
-      student.Marks === null ||
-      student.Marks === '' ||
-      Number(student.Marks) > this.maxMarks ||
-      Number(student.Marks) < 0
-    )
+  const invalidTimeStudent = this.SyllabusList.find(s => !s.StartTime || !s.EndTime);
+  if (invalidTimeStudent) {
+    this.AminityInsStatus = '⚠️ Start Time and End Time must be set. Please select Session.';
+    this.statusModalTitle = 'Validation Warning';
+    this.isModalOpen = true;
+    return;
+  }
+
+  const invalidLate = this.SyllabusList.find(
+    s => s.LateInMinutes !== null && Number(s.LateInMinutes) < 0
   );
-
-  if (invalidStudent) {
-    this.AminityInsStatus = "Please enter valid marks. Can't exceed (" + this.maxMarks + ").";
+  if (invalidLate) {
+    this.AminityInsStatus = '⚠️ Late minutes cannot be negative.';
+    this.statusModalTitle = 'Validation Warning';
     this.isModalOpen = true;
     return;
   }
 
   const body = {
-    Flag: '5',
+    Flag: '1',
     SchoolID: this.AdminselectedSchoolID,
     AcademicYear: this.AdminselectedAcademivYearID,
-    ExamID: this.selectedExamIDForAttendance.toString(),
-    SubjectID: this.selectedSubjectID.toString(),
-    Students: this.studentsList.map(student => ({
+    Class: this.AdminselectedClassID,
+    Division: this.AdminselectedDiviosnID,
+    AttendanceDate: attendanceDate,
+    Session: this.AdminSelectedSessionID,
+    Students: this.SyllabusList.map(student => ({
       AdmissionID: student.AdmissionNo,
-      Marks: (student.Marks ?? '0').toString()
+      Attendance: student.IsPresent ? '1' : '0',
+      LateInMinutes: (student.LateInMinutes ?? 0).toString(),
+      Remarks: student.IsPresent ? '' : (student.Remarks ?? '').trim()
     }))
   };
 
-  this.apiurl.post('Tbl_ExamMarks_CRUD_Operations', body).subscribe({
-    next: () => {
-      this.AminityInsStatus = 'Marks updated Successfully';
+  this.apiurl.post('Tbl_StudentAttendance_CRUD_Operations', body).subscribe({
+      next: () => {
+      this.AminityInsStatus = 'Attendance Saved Successfully';
+      this.statusModalTitle = 'Application Status';
       this.isModalOpen = true;
       this.isAttendanceSubmitted = true;
       this.IsAddNewClicked = false;
+      this.isTableModalOpen = false;
       this.resetPaginationAndFetch();
+      this.resetTable();
     },
     error: (err) => {
-      console.error(err);
-      this.AminityInsStatus = 'Error Updating marks';
+      if (err.status === 400) {
+        this.AminityInsStatus = err.error?.Message || 'Attendance already exists for this session.';
+        this.statusModalTitle = 'Duplicate Entry';
+      } else {
+        this.AminityInsStatus = 'Error saving Attendance';
+        this.statusModalTitle = 'Application Status';
+      }
       this.isModalOpen = true;
     }
   });
 }
+
+  UpdateAttendance() {
+   const invalidStudent = this.studentsList.find(student =>
+  student.AttendanceMarked === '1' && (
+    student.Marks === undefined ||
+    student.Marks === null ||
+    student.Marks === '' ||
+    Number(student.Marks) > this.maxMarks ||
+    Number(student.Marks) < 0
+  )
+);
+
+  if (invalidStudent) {
+    this.AminityInsStatus = "Please enter valid marks Can't exceed more than (" + this.maxMarks + ") for all students.";
+    this.statusModalTitle = 'Application Status';
+    this.isModalOpen = true;
+    return;
+  }
+  const requests: any[] = [];
+
+  this.studentsList.forEach(student => {
+
+    const body = {
+      Flag: '5',
+      SchoolID: this.AdminselectedSchoolID,   
+        AcademicYear: this.AdminselectedAcademivYearID, 
+        ExamID: this.selectedExamIDForAttendance.toString(), 
+        SubjectID: this.selectedSubjectID.toString(), 
+        AdmissionID: student.AdmissionNo,       
+        Marks: (student.Marks ?? '0').toString()
+    };
+
+    requests.push(this.apiurl.post('Tbl_ExamMarks_CRUD_Operations', body));
+  });
+
+  Promise.all(requests.map(req => req.toPromise()))
+    .then(() => {
+      
+      this.AminityInsStatus ='Marks updated Successfully';
+      this.statusModalTitle = 'Application Status';
+      this.isModalOpen=true;
+
+      this.isAttendanceSubmitted=true;
+      this.IsAddNewClicked = false;
+      this.resetPaginationAndFetch();
+    })
+    .catch(err => {
+      console.error(err);
+      this.AminityInsStatus ='Error Updating marks';
+      this.statusModalTitle = 'Application Status';
+      this.isModalOpen=true;
+
+    });
+
+  }
 
   AddNewClicked() {
      
     this.IsAddNewClicked = !this.IsAddNewClicked;
     this.IsActiveStatus = true;
     this.ViewSyllabusClicked = false;
-  };
-
-  previousPage() {
-    if (this.currentPage > 1) {
-      this.goToPage(this.currentPage - 1);
-    }
-  };
-
-  nextPage() {
-    if (this.currentPage < this.totalPages()) {
-      this.goToPage(this.currentPage + 1);
-    }
-  };
-
-  firstPage() {
-    this.goToPage(1);
-  };
-
-  lastPage() {
-    this.goToPage(this.totalPages());
-  };
-
-  goToPage(pageNumber: number) {
-    const total = this.totalPages();
-
-    if (pageNumber < 1) pageNumber = 1;
-    if (pageNumber > total) pageNumber = total;
-
-    this.currentPage = pageNumber;
-
-    const isBoundaryPage =
-      pageNumber === 1 ||
-      pageNumber === total ||
-      !this.pageCursors[pageNumber - 2];
-
-    if (isBoundaryPage) {
-      const offset = (pageNumber - 1) * this.pageSize;
-      this.FetchInitialData({ offset });
-    } else {
-      this.FetchInitialData();
-    }
-  };
-
-  totalPages() {
-    return Math.ceil(this.SyllabusCount / this.pageSize);
-  };
-
-  getVisiblePageNumbers() {
-    const totalPages = this.totalPages();
-    const pages = [];
-    let start = Math.max(this.currentPage - Math.floor(this.visiblePageCount / 2), 1);
-    let end = Math.min(start + this.visiblePageCount - 1, totalPages);
-    if (end - start < this.visiblePageCount - 1) start = Math.max(end - this.visiblePageCount + 1, 1);
-    for (let i = start; i <= end; i++) pages.push(i);
-    return pages;
   };
 
   onSearchChange() {
@@ -925,9 +930,6 @@ submitAttendance() {
       const value = this.searchQuery?.trim() || '';
 
       if (value.length === 0) {
-        this.currentPage = 1;
-        this.pageSize = 5;
-        this.visiblePageCount = 3;
         this.FetchInitialData();
         return;
       }
@@ -936,9 +938,6 @@ submitAttendance() {
         return;
       }
 
-      this.currentPage = 1;
-      this.pageSize = 5;
-      this.visiblePageCount = 3;
       this.FetchInitialData();
 
     }, this.SEARCH_DEBOUNCE);
@@ -952,12 +951,13 @@ submitAttendance() {
 
     if (type === 'status') {
       this.isModalOpen = false;
+      this.statusModalTitle = 'Application Status';
     }
   };
 
   handleOk() {
     this.isModalOpen = false;
-    this.FetchInitialData();
+    this.statusModalTitle = 'Application Status';
   };
 
   editreview(SyllabusID: string): void {
@@ -977,8 +977,6 @@ submitAttendance() {
       this.sortColumn = column;
       this.sortDirection = 'asc';
     }
-    this.currentPage = 1;
-    this.pageCursors = [];
     this.FetchInitialData();
   };
 
@@ -986,8 +984,18 @@ submitAttendance() {
     this.FetchSyllabusDetByID(SyllabusID, 'view');
     this.isViewModalOpen = true;
   };
+ 
+onSessionChange(event: any) {
+  const selectedSessionId = event.target.value;
+   if (selectedSessionId.length === 0) {
+      this.AdminSelectedSessionID = "";
+    } else {
+      this.AdminSelectedSessionID = selectedSessionId; 
+    }
 
-  onAdminSchoolChange(event: Event) {
+  this.applySelectedSessionTimes();
+}
+ onAdminSchoolChange(event: Event) {
   const schoolID = (event.target as HTMLSelectElement).value;
   this.AdminselectedSchoolID = schoolID === "0" ? "" : schoolID;
   this.resetFilters('school');  
@@ -998,8 +1006,8 @@ submitAttendance() {
   const academicyearId = (event.target as HTMLSelectElement).value;
   this.AdminselectedAcademivYearID = academicyearId === "0" ? "" : academicyearId;
   this.resetFilters('academic');  
-  this.FetchExamsList();
   this.FetchClassList();
+  this.FetchSessionsList();
  }
   
   onAdminClasschange(event: Event) {
@@ -1012,15 +1020,13 @@ submitAttendance() {
   onAdminDivisionsChange(event: Event) {
     const divisionId = (event.target as HTMLSelectElement).value;
     this.AdminselectedDiviosnID = divisionId === "0" ? "" : divisionId;
-    this.resetTable();  // only table reset needed
+    this.resetTable();
+    const today = new Date().toISOString().split('T')[0];
+    this.SyllabusForm.get('AttendanceDateTime')?.setValue(today);
   }
 
-  onAdminExamtypeChange(event: Event) {
-   const examId = (event.target as HTMLSelectElement).value;
-   this.AdminselecteExamID = examId === "0" ? "" : examId;
-   this.resetTable();  // only table reset 
-  }
-  resetFilters(level: 'school' | 'academic' | 'class') {
+
+  resetFilters(level: 'school' | 'academic' | 'class'|'submit') {
 
   if (level === 'school') {
     // Reset everything below school
@@ -1038,7 +1044,31 @@ submitAttendance() {
       AcademicYear: '0',
       Class: '0',
       Divisions: '0',
-      ExamType: '0'
+      Session:'0',
+      
+    });
+  }
+  if (level === 'submit') {
+    // Reset everything below school
+    this.AdminselectedAcademivYearID = '';
+    this.AdminselectedClassID = '';
+    this.AdminselectedDiviosnID = '';
+    this.AdminselecteExamID = '';
+    this.AdminselectedSchoolID='';
+
+    this.academicYearList = [];
+    this.classLists = [];
+    this.divisionsList = [];
+    this.examLists = [];
+    this.schoolList=[];
+
+    this.SyllabusForm.patchValue({
+      School:'0',
+      AcademicYear: '0',
+      Class: '0',
+      Divisions: '0',
+      Session:'0',
+      AttendanceDateTime:'0'
     });
   }
 
@@ -1055,7 +1085,8 @@ submitAttendance() {
     this.SyllabusForm.patchValue({
       Class: '0',
       Divisions: '0',
-      ExamType: '0'
+      Session:'0'
+
     });
   }
 
@@ -1067,15 +1098,33 @@ submitAttendance() {
       Divisions: '0'
     });
   }
-
-  // ✅ Always reset table (this is correct)
   this.resetTable();
 }
-resetTable() {
-  this.SyllabusList = [];
-  this.SyllabusCount = 0;
-  this.currentPage = 1;
-  this.pageCursors = [];
-  this.isTableModalOpen = false;
+  resetTable() {
+    this.SyllabusList = [];
+    this.SyllabusCount = 0;
+    this.isTableModalOpen = false;
+  }
+
+private getSelectedSessionTimes(): { start: string; end: string } {
+  const selectedSession = this.SessionList.find(
+    (s: any) => String(s.ID) === String(this.AdminSelectedSessionID)
+  );
+
+  return {
+    start: selectedSession?.StartTime ? selectedSession.StartTime.substring(0, 5) : '',
+    end: selectedSession?.EndTime ? selectedSession.EndTime.substring(0, 5) : ''
+  };
 }
+
+private applySelectedSessionTimes() {
+  const { start, end } = this.getSelectedSessionTimes();
+
+  this.SyllabusList.forEach((student: any) => {
+    student.StartTime = start;
+    student.EndTime = end;
+    student.LateInMinutes = null;
+  });
+}
+
 }

@@ -1,0 +1,89 @@
+.FormInputRowsContainer{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.InputRow{
+    width: 100% !important;
+    flex-direction: row !important;
+}
+
+.InputFieldsContainer {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.InputFieldsContainer select.inputField {
+  width: 100%;
+}
+/* default for paired fields */
+.InputFieldsContainer {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* ExamType – the lonely one */
+.InputRow:last-child .InputFieldsContainer {
+  flex-grow: 0;
+  flex-shrink: 1;
+  flex-basis: auto;
+  max-width: 523px;           /* ← tune this number */
+  margin-right: auto;         /* optional: align left if you want */
+}
+
+/* make sure select follows container width */
+.InputFieldsContainer select.inputField {
+  width: 100%;
+  box-sizing: border-box;
+}
+.marksheet {
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.marksheet h4 {
+  letter-spacing: 1px;
+}
+
+.marksheet table th,
+.marksheet table td {
+  vertical-align: middle;
+}
+
+.marksheet table {
+  border: 2px solid #000;
+}
+
+.marksheet thead {
+  font-size: 14px;
+}
+
+.marksheet tbody td {
+  font-size: 14px;
+}
+.exam-line {
+  position: relative;
+  text-align: center;
+  margin: 15px 0 20px;
+  font-weight: 600;
+}
+
+.exam-line::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: #000;
+  z-index: 0;
+}
+
+.exam-line span {
+  position: relative;
+  background: #fff;
+  padding: 0 15px;
+  z-index: 1;
+  font-size: 16px;
+}

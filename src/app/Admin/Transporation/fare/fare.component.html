@@ -162,22 +162,7 @@
                   </div>
                 </div>
               </div>
-              <div class="InputFieldsContainer" *ngIf="!isAdmin">
-                <label class="inputLabel" for="email">Stop <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="Stop" placeholder="Select Stop">
-                    <option value="0" disabled>Select Stop</option>
-                    <option *ngFor="let Stop of StopList" value="{{Stop.ID}}">{{Stop.Name}}</option>
-                  </select>
-                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
-                  <div *ngIf="SyllabusForm.get('Stop')?.hasError('min') && (SyllabusForm.get('Stop')?.touched || SyllabusForm.get('Stop')?.dirty)" class="text-danger">
-                      <small>Please Select Stop.</small>
-                  </div>
-                </div>
-              </div>    
-            </div>
-            <div class="InputRow">
-              <div class="InputFieldsContainer" *ngIf="isAdmin">
+              <div class="InputFieldsContainer" >
                 <label class="inputLabel" for="email">Stop <span class="required">*</span></label>
                 <div class="input-with-error">
                   <select class="inputField" type="date" formControlName="Stop" placeholder="Select Stop">
@@ -190,20 +175,7 @@
                   </div>
                 </div>
               </div>  
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Bus <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="Bus" placeholder="Select Bus">
-                    <option value="0" disabled>Select Bus</option>
-                    <option *ngFor="let Bus of BusList" value="{{Bus.ID}}">{{Bus.Name}}</option>
-                  </select>
-                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
-                  <div *ngIf="SyllabusForm.get('Bus')?.hasError('min') && (SyllabusForm.get('Bus')?.touched || SyllabusForm.get('Bus')?.dirty)" class="text-danger">
-                      <small>Please Select Bus.</small>
-                  </div>
-                </div>
-              </div> 
-              <div class="InputFieldsContainer">
+               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Amount <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" formControlName="Amount" placeholder="Enter Amount" maxlength="5" (keydown)="allowOnlyNumbers($event)" />
@@ -213,7 +185,9 @@
                     </div>
                   </div>
                 </div>
-              </div> 
+              </div>   
+            </div>
+            <div class="InputRow">
               <div class="InputFieldsContainer" *ngIf="!isAdmin">
                 <div class="toggle-container" (click)="$event.stopPropagation()">
                   <label class="switch">

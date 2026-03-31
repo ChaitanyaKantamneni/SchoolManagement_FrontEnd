@@ -1,3 +1,54 @@
+.card h4 {
+  font-weight: 700;
+}
+
+.summary-cards-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.last-date-label {
+  font-size: 10px;
+  color: #888;
+  display: block;
+}
+
+.summary-card-item {
+  min-width: 0;
+}
+
+.summary-card .card-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 96px;
+}
+
+.summary-card .summary-value {
+  font-size: 1.75rem;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+@media (max-width: 1199.98px) {
+  .summary-cards-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767.98px) {
+  .summary-cards-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 575.98px) {
+  .summary-cards-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 .FormInputRowsContainer{
   display: flex;
   justify-content: center;
@@ -17,6 +68,11 @@
 
 .InputFieldsContainer select.inputField {
   width: 100%;
+}
+
+.InputFieldsContainer input.inputField {
+  width: 100%;
+  box-sizing: border-box;
 }
 /* default for paired fields */
 .InputFieldsContainer {
@@ -39,11 +95,18 @@
   box-sizing: border-box;
 }
 
+.full-width-field {
+  flex: 1 1 100%;
+  max-width: 523px;
+}
+
 .ComponentRecords .ActionButtons{
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 20px;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .ComponentRecords .ActionButtons .btn{
@@ -67,18 +130,28 @@
   transition: background-color 0.3s ease;
 }
 
-.attendance-toggle-cell {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
+.table-action-buttons {
+  justify-content: flex-end;
+  padding: 16px 0 8px;
 }
 
-.reviewstable td {
-  vertical-align: middle;
+.status-column {
+  min-width: 170px;
+  width: 170px;
+  text-align: center;
 }
 
-/* Role-like toggle switch styling for exam attendance */
+.late-minutes-column {
+  min-width: 95px;
+  width: 95px;
+}
+
+.late-minutes-column .inputField {
+  width: 70px;
+  margin: 0 auto;
+  text-align: center;
+}
+
 .toggle-container {
   display: flex;
   align-items: center;
@@ -92,8 +165,9 @@
 .toggle-container .switch {
   position: relative;
   display: inline-block;
-  width: 50px;
+  width: 60px;
   height: 20px;
+  margin: 0;
 }
 
 .toggle-container .switch input {
@@ -122,6 +196,72 @@
   border-radius: 50%;
   left: 2px;
   bottom: 2px;
+  background-color: #fff;
+  transition: 0.4s;
+}
+
+.toggle-container .switch input:checked + .slider {
+  background-color: #4caf50;
+}
+
+.toggle-container .switch input:checked + .slider:before {
+  transform: translateX(40px);
+}
+
+.toggle-container .switch .toggle-text {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  color: #fff;
+  font-weight: bold;
+  line-height: 20px;
+  pointer-events: none;
+}
+
+.status-label {
+  font-size: 10px;
+  font-weight: 400;
+  color: #333;
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.toggle-container .switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 20px;
+}
+
+.toggle-container .switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-container .switch .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.toggle-container .switch .slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  left: 2px;
+  bottom: 2px;
   background-color: white;
   transition: 0.4s;
 }
@@ -134,26 +274,8 @@
   transform: translateX(29px);
 }
 
-.toggle-container .switch .toggle-text {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  color: white;
-  font-weight: bold;
-  line-height: 20px;
-  pointer-events: none;
-  font-size: 9px;
-}
-
-.status-label {
-  font-size: 10px;
-  font-weight: 400;
-  color: #333;
-}
-
 .remark-input {
-  width: 160px;
+  width: 150px;
   font-size: 11px;
   padding: 3px 6px;
   border: 1px solid #f0ad4e;
@@ -167,32 +289,20 @@
 }
 
 .remark-badge {
-  font-size: 10px;
-  max-width: 160px;
-  display: inline-block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  vertical-align: middle;
-  cursor: default;
-}
-
-.table-warning td {
-  background-color: #fff8e1 !important;
-}
-
-.remark-badge {
   font-size: 11px;
   display: inline-block;
-  max-width: 200px;
+  max-width: 180px;
   white-space: normal;
   word-break: break-word;
-  vertical-align: middle;
-  cursor: pointer;
   background-color: #cff4fc;
   color: #055160;
   border-radius: 4px;
   padding: 2px 6px;
   border: 1px solid #b6effb;
   line-height: 1.4;
+  cursor: pointer;
+}
+
+.table-warning td {
+  background-color: #fff8e1 !important;
 }
