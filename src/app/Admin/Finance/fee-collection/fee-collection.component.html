@@ -1,291 +1,524 @@
 <div>
   <app-dashboard-top-nav></app-dashboard-top-nav>
 </div>
-
 <div class="MainContentDiv">
-
   <div *ngIf="!IsAddNewClicked" class="w-100">
-
     <div class="ComponentTop">
       <div class="ComponentTopHeader">
-        <h5>Finance Collection</h5>
-        <p>Total {{ ClassDivisionCount }} Fee Discounts Allocated</p>
+        <h5>Finance Management</h5>
+        <p>Total {{ ClassDivisionCount }} Fee Collected</p>
       </div>
-
       <div class="ComponentTopBottom">
-        <button *ngIf="canAdd()" class="btnHover" (click)="AddNewClicked()">
-          <mat-icon>add_circle</mat-icon>
-          Collect Fees
-        </button>
+        <button *ngIf="canAdd()" class="btnHover" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Collect Fees</button>
       </div>
     </div>
-
-
     <div class="ComponentRecords">
       <div>
-
         <div class="ComponentRecordsTop">
-
           <div class="filterOptions">
-
-            <div class="searchreview input-container">
-
-              <input
-                type="text"
-                id="searchQuery"
-                class="form-control floating-input"
-                [(ngModel)]="searchQuery"
-                (ngModelChange)="onSearchChange()"
-                placeholder="Search..."
-              />
-
-              <mat-icon
-                style="position:absolute; left:10px; top:50%; transform:translateY(-50%); pointer-events:none;">
-                search
-              </mat-icon>
-
+            <div class="searchreview input-container" >
+              <input type="text" id="searchQuery" class="form-control floating-input"
+                [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search Admission No... "  />
+              <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
+              <!-- <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i> -->
             </div>
-
-
             <div class="searchreview" *ngIf="isAdmin">
-
-              <select
-                (change)="onSchoolChange($event)"
-                class="form-control"
-                style="font-size:11px;">
-
+              <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
                 <option value="">-- Select School --</option>
                 <option value="0">All Schools</option>
-
-                <option
-                  *ngFor="let school of schoolList"
-                  [value]="school.ID">
-
+                <option *ngFor="let school of schoolList" [value]="school.ID">
                   {{ school.Name }}
-
                 </option>
-
               </select>
-
             </div>
-
           </div>
-
+          <!-- <div class="DownloadButtons" *ngIf="ClassDivisionList.length != 0">
+            <button class="btnHover" (click)="exportSyllabus('pdf')"><mat-icon>picture_as_pdf</mat-icon></button>
+            <button class="btnHover" (click)="exportSyllabus('excel')"><mat-icon>description</mat-icon></button>
+            <button class="btnHover" (click)="exportSyllabus('print')"><mat-icon>print</mat-icon></button>
+          </div> -->
         </div>
-
         <div class="reviewstable">
-
-          <table
-            id="classTable"
-            *ngIf="ClassDivisionList.length != 0"
-            class="table table-bordered">
-
+          <table id="classTable" *ngIf="displayedClassDivisionList.length != 0" class="table table-bordered">
             <thead>
-
               <tr>
-
-                <th class="visually-hidden">ID</th>
-
-                <th>SI.No</th>
-
-                <th>Registration No</th>
-
+                <th class="visually-hidden">Academic Year ID</th>
+                <th>SI.No</th> 
+                <th>Receipt No</th>
                 <th>Student Name</th>
-
                 <th>Admission No</th>
-
-                <th>Class & Division</th>
-
-                <th>Academic Year</th>
-
+                <th>Class</th>
+                <th>Division</th>
                 <th>Fee Amount</th>
-
-                <th>Discount</th>
-
-                <th>Advance</th>
-
-                <th>Total Paid</th>
-
                 <th>Date</th>
-
-                <th>Staff</th>
-
-                <th *ngIf="isAdmin">School Name</th>
-
+                <th>Fee Category</th>
+                <th>Mode of Payment</th>                
+                <th *ngIf="isAdmin">School</th>
+                <th>Academic Year</th>
                 <th>Actions</th>
-
               </tr>
-
             </thead>
-
             <tbody>
-
-              <tr *ngFor="let Class of ClassDivisionList; let i = index">
-
-                <td class="visually-hidden">{{ Class.ID }}</td>
-
-                <td>
-                  {{ (currentPage - 1) * pageSize + i + 1 }}
-                </td>
-
-                <td>
-                  {{ Class.RegistrationNo }}
-                </td>
-
-                <td>
-                  {{ Class.StudentName }}
-                </td>
-
-                <td>
-                  {{ Class.AdmissionNo }}
-                </td>
-
-                <td>
-                  {{ Class.ClassName }} - {{ Class.DivisionName }}
-                </td>
-
-                <td>
-                  {{ Class.AcademicYearName }}
-                </td>
-
-                <td>
-                  {{ Class.FeeAmount }}
-                </td>
-
-                <td>
-                  {{ Class.Discount }}
-                </td>
-
-                <td>
-                  {{ Class.Advance }}
-                </td>
-
-                <td>
-                  {{ Class.TotalPaid }}
-                </td>
-
-                <td>
-                  {{ Class.Date }}
-                </td>
-
-                <td>
-                  {{ Class.Staff }}
-                </td>
-
-                <td *ngIf="isAdmin">
-                  {{ Class.SchoolName }}
-                </td>
-
-
+              <tr *ngFor="let Class of displayedClassDivisionList,let i = index"> 
+                <td data-label="ID" class="visually-hidden">{{ Class.ID }}</td>
+                <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td data-label="ReceiptNo">{{ Class.ReceiptNo }}</td>
+                <td data-label="StudentName">{{ Class.StudentName }}</td>
+                <td data-label="AdmissionNo">{{ Class.AdmissionNo }}</td>
+                <td data-label="Class">{{ Class.ClassName }}</td>
+                <!-- <td data-label="Division">{{ Class.Division }}</td> -->
+                <td data-label="DivisionName">{{ Class.DivisionName }}</td>
+                <td data-label="AmountPaid">{{ Class.AmountPaid }}</td>
+                <td data-label="PaymentDate">{{ Class.PaymentDate }}</td>
+                <td data-label="FeeCategoryName">{{ Class.FeeCategoryName }}</td>
+                <td data-label="PaymentMode">{{ Class.PaymentMode }}</td>
+                <td data-label="School" *ngIf="isAdmin">{{ Class.SchoolName }}</td>
+                <td data-label="PaymentMode">{{ Class.AcademicYearName }}</td>
                 <td data-label="Actions">
-
                   <div class="d-flex justify-content-center align-items-center h-100">
-
-                    <button
-                      *ngIf="canEdit()"
-                      class="btn checkbtn edit"
-                      data-tooltip="Edit"
-                      (click)="editreview(Class.ID)">
-
-                      <mat-icon class="mat-edit-icon">
-                        edit
-                      </mat-icon>
-
+                    <!-- (click)="editreview(aminitie.propertyTypeID)" -->
+                    <!-- <button *ngIf="canEdit()" class="btn checkbtn edit" data-tooltip="Edit" (click)="editreview(Class.ID)">
+                      <mat-icon class="mat-edit-icon">edit</mat-icon>
+                    </button> -->
+                    <button *ngIf="canView()" class="btn checkbtn" data-tooltip="View" (click)="viewReview(Class.ID)">
+                      <mat-icon class="mat-edit-icon">visibility</mat-icon>
                     </button>
-
-
-                    <button
-                      *ngIf="canView()"
-                      class="btn checkbtn"
-                      data-tooltip="View"
-                      (click)="viewReview(Class.ID)">
-
-                      <mat-icon class="mat-edit-icon">
-                        visibility
-                      </mat-icon>
-
-                    </button>
-
                   </div>
-
                 </td>
-
               </tr>
-
             </tbody>
-
           </table>
-
-
-          <div *ngIf="ClassDivisionList.length === 0" class="NoDataFound">
-
+          <div *ngIf="displayedClassDivisionList.length === 0" class="NoDataFound">
             <div class="NoDataFoundImg">
               <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
             </div>
-
             <p>No data found.</p>
-
           </div>
-
-
           <div *ngIf="ClassDivisionCount > pageSize" class="pagination-controls">
-
-            <button
-              *ngIf="totalPages() > 3"
-              (click)="goToPage(1)"
-              [disabled]="currentPage === 1"
-              class="arrow-btn FirstandLastButton">
-
-              First
-
-            </button>
-
-
-            <button
-              (click)="previousPage()"
-              [disabled]="currentPage === 1"
-              class="arrow-btn">
-
-              ←
-
-            </button>
-
-
-            <button
-              *ngFor="let page of getVisiblePageNumbers()"
-              class="page-btn"
-              [ngClass]="{'active': page === currentPage}"
-              (click)="goToPage(page)">
-
+            <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
+            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
+            <button *ngFor="let page of getVisiblePageNumbers()"
+                    class="page-btn"
+                    [ngClass]="{'active': page === currentPage}"
+                    (click)="goToPage(page)">
               {{ page }}
-
             </button>
-
-            <button
-              (click)="nextPage()"
-              [disabled]="currentPage === totalPages()"
-              class="arrow-btn">
-
-              →
-
-            </button>
-
-            <button
-              *ngIf="totalPages() > 3"
-              (click)="goToPage(totalPages())"
-              [disabled]="currentPage === totalPages()"
-              class="arrow-btn FirstandLastButton">
-
-              Last
-
-            </button>
-
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="IsAddNewClicked" class="w-100">
+    <div class="AddForm">
+      <div class="AddFormTop">
+        <button (click)="onCancelClick(); AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+        <p>Fee Collection</p>
+      </div>
+      <div class="AddFormConatiner">
+          <!-- Tbl_FeeDiscount_CRUD_Operations -->
+        <form [formGroup]="ClassDivisionForm">
+          <div class="FormInputRowsContainer">
+            <div class="InputRow">
+              <div class="InputFieldsContainer w-100">
+                <label class="inputLabel" for="email">Admission No</label>
+                <div class="input-with-error">
+                  <input type="text" class="inputField" formControlName="AdmissionNo" placeholder="Enter Admission No">
+                </div>
+              </div>
+            </div>
+            <div class="InputRow">
+              <label class="w-100 text-center" style="border-bottom: 1px dotted black; padding-bottom: 5px; border-top: 1px dotted black;">OR</label>
+            </div>
+          </div>
+          <div class="FormInputRowsContainer">
+            <div class="InputRow">
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">School</label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="School" (change)="onAdminSchoolChange($event)" [disabled]="isAdmissionLookupMode">
+                    <option value="0">-- Select School --</option>
+                    <option *ngFor="let school of schoolList" [value]="school.ID"> {{school.Name}} </option>
+                  </select>
+                </div>
+              </div> 
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Academic Year</label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="AcademicYear" (change)="onAdminAcademicYearChange($event)" [disabled]="isAdmissionLookupMode">
+                    <option value="0">-- Select Academic Year --</option>
+                    <option *ngFor="let school of academicYearList" [value]="school.ID">
+                      {{school.Name}}
+                    </option>
+                  </select>
+                </div>
+              </div>
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <label class="inputLabel" for="email">Class</label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="Class" (change)="onAdminClassChange($event)" [disabled]="isAdmissionLookupMode">
+                    <option value="0" disabled>Select Class</option>
+                    <option *ngFor="let Syllabus of SyllabusList" [value]="Syllabus.ID">
+                      {{Syllabus.Name}}
+                    </option>
+                  </select>
+                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                </div>
+              </div>
+            </div>
+            <div class="InputRow">
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">Class</label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="Class" (change)="onAdminClassChange($event)" [disabled]="isAdmissionLookupMode">
+                    <option value="0" disabled>Select Class</option>
+                    <option *ngFor="let Syllabus of SyllabusList" [value]="Syllabus.ID">{{Syllabus.Name}}</option>
+                  </select>
+                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Division</label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="Division" (change)="onAdminDivisionChange($event)" [disabled]="isAdmissionLookupMode">
+                    <option value="0" disabled>Select Division</option>
+                    <option *ngFor="let Syllabus of DivisionsList" [value]="Syllabus.ID">{{Syllabus.Name}}</option>
+                  </select>
+                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                </div>
+              </div>
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <label class="inputLabel" for="email">Student</label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="ClassTeacher" (change)="onStudentChange($event)" [disabled]="isAdmissionLookupMode">
+                    <option value="0" disabled>Select Student</option>
+                    <option *ngFor="let Syllabus of ClassTeachersList" [value]="Syllabus.AdmissionNo">{{Syllabus.NameWithAdmissionNo}}</option>
+                  </select>
+                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                </div>
+              </div>
+            </div>
+            <div class="InputRow" *ngIf="isAdmin">
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">Student</label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="ClassTeacher" (change)="onStudentChange($event)" [disabled]="isAdmissionLookupMode">
+                    <option value="0" disabled>Select Student</option>
+                    <option *ngFor="let Syllabus of ClassTeachersList" [value]="Syllabus.AdmissionNo">{{Syllabus.NameWithAdmissionNo}}</option>
+                  </select>
+                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                 </div>
+              </div>
+              
+              <!-- <div class="InputFieldsContainer" >
+                <div class="toggle-container" (click)="$event.stopPropagation()">
+                  <label class="switch">
+                    <input type="checkbox" [checked]="IsActiveStatus" (click)="toggleChange()">
+                    <span class="slider">
+                      <span
+                        class="toggle-text"
+                        [ngStyle]="{
+                          left: IsActiveStatus ? '42%' : '60%',
+                          fontSize: IsActiveStatus ? '9px' : '9px'
+                        }"
+                      >
+                        {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </div>  -->
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <span style="visibility: hidden;height: 3px;">hello adding new academic year</span>
+            </div>
+            </div>
           </div>
 
-        </div>
+          <div class="actionbuttons">
+            <button type="button" class="btnsubmit" (click)="onSubmit()">Submit</button>
+          </div>
 
+          <!-- Selected student details (single horizontal row) -->
+          <div *ngIf="showFeeTable" class="student-summary-row">
+            <div class="student-summary-item">
+              <span class="student-summary-label">Admission Number :</span>
+              <span class="student-summary-value">{{ selectedAdmissionNo || '-' }}</span>
+            </div>
+            <div class="student-summary-item">
+              <span class="student-summary-label">Student Name :</span>
+              <span class="student-summary-value">{{ selectedStudentName || '-' }}</span>
+            </div>
+            <div class="student-summary-item">
+              <span class="student-summary-label">Class :</span>
+              <span class="student-summary-value">{{ selectedClassInfo || '-' }}</span>
+            </div>
+          </div>
+
+          <!-- Fee payment title and underline -->
+          <div *ngIf="showFeeTable" class="fee-payment-header">
+            <span>Fee payment</span>
+          </div>
+
+          <!-- Fee payment inputs: Date | Receipt No -->
+          <div *ngIf="showFeeTable" class="payment-header-row FormInputRowsContainer">
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Date</label>
+                <input type="date" [(ngModel)]="paymentDate" [ngModelOptions]="{standalone: true}" class="inputField">
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Receipt No</label>
+                <input type="text" [(ngModel)]="receiptNo" [ngModelOptions]="{standalone: true}" class="inputField" readonly>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Fee Category <span class="required">*</span></label>
+                <select class="inputField" formControlName="FeeCategory" (change)="onFeeCategoryChange($event)">
+                  <option value="0" disabled>Select Fee Category</option>
+                  <option *ngFor="let feeCategory of feeCategoryList" [value]="feeCategory.ID">{{feeCategory.Name}}</option>
+                </select>
+              </div>
+            </div>            
+          </div>
+
+          <!-- Student Fees Table -->
+          <div class="FeeTable" *ngIf="showFeeTableAfterFeeCategory">
+            <table class="table table-bordered">
+
+            <thead>
+              <tr>
+                <th>Fee Category</th>
+                <th>Total Fee Amount</th>
+                <th>Total Discount Amount</th>
+                <th>Total Amount Paid</th>
+                <th>Pending Amount</th>
+                <!-- <th>Fine</th>
+                <th>Discount</th>
+                <th>Extra Discount</th>
+                <th>Due Date</th> -->
+              </tr>
+            </thead>
+
+            <tbody>
+              <!-- *ngFor="let fee of feesList" -->
+              <tr *ngFor="let fee of feesList">
+
+              <td>{{fee.FeeCategoryName}}</td>
+
+              <td>{{fee.TotalFee}}</td>
+
+              <td>{{fee.TotalDiscount}}</td>
+
+              <td>{{fee.TotalPaid}}</td>
+
+              <td>{{fee.RemainingAmount}}</td>
+
+              </tr>
+            </tbody>
+
+            </table>
+          </div>
+
+          <div class="PaymentSummary" *ngIf="showFeeTableAfterFeeCategory">
+            <div class="payment-summary-row FormInputRowsContainer">
+              <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Amount To Be Paid <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input 
+                  type="number"
+                  formControlName="AmountToBePaid"
+                  class="inputField"
+                  placeholder="Enter amount to be paid"
+                  (input)="updateTotal($event)"
+                  (keypress)="allowOnlyNumbers($event)"
+                  min="1"
+                  [max]="DueAmount">
+                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                  <div *ngIf="ClassDivisionForm.get('AmountToBePaid')?.hasError('required') && (ClassDivisionForm.get('AmountToBePaid')?.touched || ClassDivisionForm.get('AmountToBePaid')?.dirty)" class="text-danger">
+                      <small>Amount To Be Paid is required.</small>
+                  </div>
+                  <div *ngIf="ClassDivisionForm.get('AmountToBePaid')?.hasError('pattern') && (ClassDivisionForm.get('AmountToBePaid')?.touched || ClassDivisionForm.get('AmountToBePaid')?.dirty)" class="text-danger">
+                      <small>Amount To Be Paid must be a valid number.</small>
+                  </div>
+                  <div *ngIf="ClassDivisionForm.get('AmountToBePaid')?.hasError('min') && (ClassDivisionForm.get('AmountToBePaid')?.touched || ClassDivisionForm.get('AmountToBePaid')?.dirty)" class="text-danger">
+                      <small>Amount To Be Paid must be greater than 0.</small>
+                  </div>
+                  <div *ngIf="ClassDivisionForm.get('AmountToBePaid')?.hasError('exceedsDue') && (ClassDivisionForm.get('AmountToBePaid')?.touched || ClassDivisionForm.get('AmountToBePaid')?.dirty)" class="text-danger">
+                      <small>Amount cannot be greater than {{ DueAmount }}</small>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Payment Mode <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="PaymentMode" (change)="onPaymentModeChange($event)">
+                    <option value="0" disabled>Select Payment Mode</option>
+                    <option value="1">Cash</option>
+                    <option value="2">UPI</option>
+                    <option value="4">Card</option>
+                    <option value="3">Cheque</option>
+                  </select>
+                  <div *ngIf="ClassDivisionForm.get('PaymentMode')?.hasError('min') && (ClassDivisionForm.get('PaymentMode')?.touched || ClassDivisionForm.get('PaymentMode')?.dirty)" class="text-danger">
+                    <small>Please Select Payment Mode.</small>
+                </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer payment-transaction-column">
+                <ng-container *ngIf="isUpiModeSelected() || isCardModeSelected(); else chequeOrPlaceholder">
+                  <label class="inputLabel">Transaction ID <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <input type="text" class="inputField" formControlName="TransactionID" placeholder="Enter Transaction ID">
+                    <div *ngIf="ClassDivisionForm.get('TransactionID')?.hasError('required') && (ClassDivisionForm.get('TransactionID')?.touched || ClassDivisionForm.get('TransactionID')?.dirty)" class="text-danger">
+                      <small>Transaction ID is required.</small>
+                    </div>
+                  </div>
+                </ng-container>
+                <ng-template #chequeOrPlaceholder>
+                  <ng-container *ngIf="isChequeModeSelected(); else transactionPlaceholder">
+                    <label class="inputLabel">Cheque No <span class="required">*</span></label>
+                    <div class="input-with-error">
+                      <input type="text" class="inputField" formControlName="ChequeNo" placeholder="Enter Cheque No">
+                      <div *ngIf="ClassDivisionForm.get('ChequeNo')?.hasError('required') && (ClassDivisionForm.get('ChequeNo')?.touched || ClassDivisionForm.get('ChequeNo')?.dirty)" class="text-danger">
+                        <small>Cheque No is required.</small>
+                      </div>
+                    </div>
+                  </ng-container>
+                  <ng-template #transactionPlaceholder>
+                    <label class="inputLabel payment-transaction-placeholder">Transaction ID</label>
+                    <div class="input-with-error payment-transaction-placeholder">
+                      <input type="text" class="inputField" aria-hidden="true" tabindex="-1" readonly />
+                    </div>
+                  </ng-template>
+                </ng-template>
+              </div>
+              </div>
+            </div>
+            <div class="payment-total-row">
+              <span><b>Total Amount :</b> {{totalAmount}}</span>
+            </div>
+
+            <button class="btnHover" style="margin-top:10px;" (click)="CollectFee()">Collect Fee</button>
+
+          </div>          
+        </form>
       </div>
-
     </div>
-
   </div>
+</div>
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isModalOpen}" [style.display]="isModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Application Status</h5>
+        <button type="button" class="close" aria-label="Close" (click)="closeModal('status')">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>{{ AminityInsStatus }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="handleOk()">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Fee Receipt</h5>
+        <button type="button" class="close" (click)="closeModal('view')">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" id="receiptSection">
+
+        <div class="receipt-box">
+      
+          <!-- HEADER -->
+          <div class="text-center">
+            <h3>{{ viewSyllabus?.SchoolName }}</h3>
+            <h4>FEE RECEIPT</h4>
+          </div>
+      
+          <div class="receipt-top">
+            <div><b>Receipt No:</b> {{ viewSyllabus?.ReceiptNo }}</div>
+            <div><b>Date:</b> {{ viewSyllabus?.PaymentDate }}</div>
+          </div>
+      
+          <hr>
+      
+          <!-- STUDENT DETAILS -->
+          <h5 class="section-title">Student Details</h5>
+      
+          <div class="receipt-row"><b>Student Name:</b> {{ viewSyllabus?.StudentName }}</div>
+          <div class="receipt-row"><b>Class:</b> {{ viewSyllabus?.ClassName }}</div>
+          <div class="receipt-row"><b>Division:</b> {{ viewSyllabus?.DivisionName }}</div>
+      
+          <hr>
+      
+          <!-- PAYMENT SUMMARY -->
+          <h5 class="section-title">Payment Summary</h5>
+      
+          <table class="receipt-table">
+            <tr>
+              <th>Particulars</th>
+              <th>Amount</th>
+            </tr>
+            <tr>
+              <td>Total Fee</td>
+              <td>₹ {{ viewSyllabus?.TotalFee }}</td>
+            </tr>
+            <tr>
+              <td>Total Discount</td>
+              <td>₹ {{ viewSyllabus?.TotalDiscount }}</td>
+            </tr>
+            <tr>
+              <td>Total Fee Paid</td>
+              <td>₹ {{ viewSyllabus?.TotalFeePaid }}</td>
+            </tr>
+            <tr>
+              <td>Fee Paid (This Receipt)</td>
+              <td>₹ {{ viewSyllabus?.FeePaid }}</td>
+            </tr>
+            <tr>
+              <td><b>Remaining Amount</b></td>
+              <td><b>₹ {{ viewSyllabus?.RemainingAmount }}</b></td>
+            </tr>
+          </table>
+      
+          <hr>
+      
+          <!-- PAYMENT DETAILS -->
+          <h5 class="section-title">Payment Details</h5>
+      
+          <div class="receipt-row"><b>Payment Mode:</b> {{ getReceiptPaymentModeLabel() }}</div>
+          <div class="receipt-row" *ngIf="isReceiptUpiOrCardMode()"><b>Transaction ID:</b> {{ getReceiptPaymentReferenceValue() }}</div>
+          <div class="receipt-row" *ngIf="isReceiptChequeMode()"><b>Cheque No:</b> {{ getReceiptPaymentReferenceValue() }}</div>
+      
+          <hr>
+      
+          <!-- FOOTER -->
+          <div class="receipt-footer">
+            <p><b>Received By:</b> {{ viewSyllabus?.CreatedBy }}</p>
+            <p><b>School Name:</b> {{ viewSyllabus?.SchoolName }}</p>
+            <!-- <p><b>Address:</b> {{ viewSyllabus?.SchoolAddress }}</p> -->
+          </div>
+      
+          <hr>
+      
+          <p class="note">
+            <b>Note:</b> This is a system-generated receipt. No signature required.
+          </p>
+      
+        </div>
+      
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" (click)="printReceipt()">Print</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,211 @@
+<div>
+  <app-dashboard-top-nav></app-dashboard-top-nav>
+</div>
+
+<div class="MainContentDiv">
+  <div class="w-100">
+    <!-- Top header -->
+    <div class="ComponentTop">
+      <div class="ComponentTopHeader">
+        <h5>Fee Dues</h5>
+        <p>Total {{ totalCount }} Fee Dues</p>
+      </div>
+    </div>
+
+    <!-- Filter card -->
+    <div class="ComponentRecords">
+      <div class="fee-dues-filter-card">
+        <!-- Row 1: School, Academic Year -->
+        <div class="fee-dues-filters-row">
+          <div class="InputFieldsContainer">
+            <label class="inputLabel">School <span class="required">*</span></label>
+            <select
+              class="inputField"
+              [ngModel]="selectedSchool"
+              (ngModelChange)="onSchoolChange($event)"
+            >
+              <option value="">-- Select School --</option>
+              <option *ngFor="let s of schoolList" [value]="s.id">
+                {{ s.name }}
+              </option>
+            </select>
+            <div class="field-error" *ngIf="schoolError">Please select School.</div>
+          </div>
+
+          <div class="InputFieldsContainer">
+            <label class="inputLabel">Academic Year <span class="required">*</span></label>
+            <select
+              class="inputField"
+              [disabled]="!selectedSchool"
+              [ngModel]="selectedAcademicYear"
+              (ngModelChange)="onAcademicYearChange($event)"
+            >
+              <option value="">-- Select Academic Year --</option>
+              <option *ngFor="let ay of academicYearList" [value]="ay.id">
+                {{ ay.name }}
+              </option>
+            </select>
+            <div class="field-error" *ngIf="academicYearError">Please select Academic Year.</div>
+          </div>
+        </div>
+
+        <!-- Row 2: Class, Division -->
+        <div class="fee-dues-filters-row fee-dues-filters-row-bottom">
+          <div class="InputFieldsContainer">
+            <label class="inputLabel">Class</label>
+            <select
+              class="inputField"
+              [disabled]="!selectedSchool || !selectedAcademicYear"
+              [ngModel]="selectedClass"
+              (ngModelChange)="onClassChange($event)"
+            >
+              <option value="">-- Select Class --</option>
+              <option *ngFor="let c of classList" [value]="c.id">
+                {{ c.name }}
+              </option>
+            </select>
+            <div class="field-error" *ngIf="classError">Please select Class.</div>
+          </div>
+
+          <!-- Divisions -->
+          <div class="InputFieldsContainer">
+            <label class="inputLabel">Division</label>
+            <select
+              class="inputField"
+              [disabled]="!selectedClass"
+              [ngModel]="selectedDivision"
+              (ngModelChange)="onDivisionChange($event)"
+            >
+              <option value="">-- Select Division --</option>
+              <option *ngFor="let div of divisionList" [value]="div.id">
+                {{ div.name }}
+              </option>
+            </select>
+            <div class="field-error" *ngIf="divisionError">Please select Division.</div>
+          </div>
+        </div>
+
+        <!-- Row 3: Student, Fee Category -->
+        <div class="fee-dues-filters-row fee-dues-filters-row-bottom">
+          <div class="InputFieldsContainer">
+            <label class="inputLabel">Student</label>
+            <select
+              class="inputField"
+              [disabled]="!selectedDivision"
+              [ngModel]="selectedStudent"
+              (ngModelChange)="onStudentChange($event)"
+            >
+              <option value="">-- Select Student --</option>
+              <option *ngFor="let st of studentList" [value]="st.id">
+                {{ st.name }}
+              </option>
+            </select>
+            <div class="field-error" *ngIf="studentError">Please select Student.</div>
+          </div>
+
+          <!-- Fee Category -->
+          <div class="InputFieldsContainer">
+            <label class="inputLabel">Fee Category</label>
+            <select
+              class="inputField"
+              [disabled]="!selectedSchool || !selectedAcademicYear"
+              [ngModel]="selectedFeeCategory"
+              (ngModelChange)="onFeeCategoryChange($event)"
+            >
+              <option value="">-- Select Fee Category --</option>
+              <option *ngFor="let cat of feeCategoryList" [value]="cat.id">
+                {{ cat.name }}
+              </option>
+            </select>
+            <div class="field-error" *ngIf="feeCategoryError">Please select Fee Category.</div>
+          </div>
+        </div>
+
+        <!-- Submit button -->
+        <div class="fee-dues-submit-row">
+          <button type="button" class="btnHover" (click)="onSubmit()">Submit</button>
+        </div>
+      </div>
+
+      <!-- Table card (show only after Submit) -->
+      <div class="fee-dues-table-card" *ngIf="hasSubmitted">
+        <div class="fee-dues-table-toolbar">
+          <div class="fee-dues-toolbar-left">
+            <label class="fee-dues-search-label">
+              Search:
+              <input
+                type="text"
+                id="searchQuery"
+                class="form-control fee-dues-search-input"
+                [(ngModel)]="searchQuery"
+                (ngModelChange)="onSearchChange()"
+              />
+            </label>
+          </div>
+
+          <div class="fee-dues-toolbar-right">
+            <span></span>
+          </div>
+        </div>
+
+        <div class="reviewstable">
+          <!-- Loader -->
+          <div *ngIf="loading" class="fee-dues-loader">
+            <p>Loading fee dues...</p>
+          </div>
+
+          <!-- Table structure (always visible like demo) -->
+          <table class="table table-bordered" *ngIf="!loading">
+            <thead>
+              <tr>
+                <th>SI NO</th>
+                <th *ngFor="let col of displayedColumns" (click)="sortBy(col.key)">
+                  {{ col.label }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of pagedData; let i = index">
+                <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td *ngFor="let col of displayedColumns">
+                  {{ getColumnValue(row, col.key) }}
+                </td>
+              </tr>
+
+              <tr *ngIf="!pagedData.length">
+                <td class="text-center" [attr.colspan]="displayedColumns.length + 1">No data available in table</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Footer like DataTables -->
+          <div class="fee-dues-table-footer" *ngIf="!loading">
+            <div class="fee-dues-footer-left">
+              Showing {{ showingFrom }} to {{ showingTo }} of {{ filteredData.length }} entries
+            </div>
+            <div class="fee-dues-footer-right" *ngIf="filteredData.length > pageSize">
+              <button class="fee-dues-page-link" (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">
+                Previous
+              </button>
+              <button
+                *ngFor="let p of visiblePages"
+                class="fee-dues-page-link"
+                [ngClass]="{ active: p === currentPage }"
+                (click)="changePage(p)"
+              >
+                {{ p }}
+              </button>
+              <button
+                class="fee-dues-page-link"
+                (click)="changePage(currentPage + 1)"
+                [disabled]="currentPage === totalPages()"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
