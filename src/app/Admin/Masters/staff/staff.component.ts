@@ -766,7 +766,6 @@ export class StaffComponent extends BasePermissionComponent {
 
   FetchRoleList() {
     const requestData = { 
-      SchoolID:this.AdminselectedSchoolID || '',
       Flag: '2' };
     this.apiurl.post<any>('Tbl_Roles_CRUD_Operations', requestData)
       .subscribe(
@@ -792,7 +791,6 @@ export class StaffComponent extends BasePermissionComponent {
 
   FetchRoleListBySchoolID() {
     const requestData = { 
-      SchoolID:this.AdminselectedSchoolID || '',
       Flag: '2' };
     this.apiurl.post<any>('Tbl_Roles_CRUD_Operations', requestData)
       .subscribe(

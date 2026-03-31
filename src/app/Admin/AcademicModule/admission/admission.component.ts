@@ -898,7 +898,7 @@ export class AdmissionComponent extends BasePermissionComponent {
       formData.append('LastName', this.ModuleForm.get('LastName')?.value ?? '');
       formData.append('MobileNo', this.ModuleForm.get('MobileNo')?.value ?? '');
       formData.append('Email', this.ModuleForm.get('Email')?.value ?? '');
-      formData.append('RollId', '14');
+      formData.append('RollId', '8');
       formData.append('Password', 'Welcome@2025');
       formData.append('IsActive', IsActiveStatusNumeric);
       formData.append('Flag', '1');
@@ -931,7 +931,7 @@ export class AdmissionComponent extends BasePermissionComponent {
       formData.append('FirstName', this.ModuleForm.get('FatherName')?.value ?? '');
       formData.append('MobileNo', this.ModuleForm.get('FatherMobile')?.value ?? '');
       formData.append('Email', this.ModuleForm.get('FatherEmail')?.value ?? '');
-      formData.append('RollId', '15');
+      formData.append('RollId', '7');
       formData.append('Password', 'Welcome@2025');
       formData.append('IsActive', IsActiveStatusNumeric);
       formData.append('Flag', '1');
