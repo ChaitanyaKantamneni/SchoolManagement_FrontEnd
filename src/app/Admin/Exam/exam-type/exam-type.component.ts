@@ -90,13 +90,13 @@ export class ExamTypeComponent extends BasePermissionComponent {
   SyllabusForm :any= new FormGroup({
     ID: new FormControl(''),
     SchoolID:new FormControl(''),
-    ExamTypeName: new FormControl('', Validators.required),
-    Priority: new FormControl('', Validators.required),
-    ExamType: new FormControl('', Validators.required),
-    MaxMark: new FormControl('', [Validators.required, Validators.pattern('^[0-9]+$')]),
-    PassMarks: new FormControl('', [Validators.required, Validators.pattern('^[0-9]+$')]),
-    ExamDuration: new FormControl('', [Validators.required, Validators.pattern('^[0-9]+$')]),
-    NoofQuestion: new FormControl('', [Validators.required, Validators.pattern('^[0-9]+$')]),
+    ExamTypeName: new FormControl(null, [Validators.required]),
+    Priority: new FormControl(null, Validators.required),
+    ExamType: new FormControl(0,[Validators.required,Validators.min(1)]),
+    MaxMark: new FormControl('', [Validators.required, Validators.pattern('^[0-9]{1,3}$')]),
+    PassMarks: new FormControl('', [Validators.required, Validators.pattern('^[0-9]{1,3}$')]),
+    ExamDuration: new FormControl('', [Validators.required, Validators.pattern('^[0-9]{1,3}$')]),
+    NoofQuestion: new FormControl('', [Validators.required, Validators.pattern('^[0-9]{1,3}$')]),
     Instructions: new FormControl(''),
     School: new FormControl(),
     AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
@@ -308,11 +308,18 @@ FetchAcademicYearsList() {
           this.isModalOpen = true;
         }
       },
-      error: (error) => {
-        console.error('Error:', error);
-        this.AminityInsStatus = error?.error?.message || "Error Submitting Exam Type.";
-        this.isModalOpen = true;
-      }
+      error: (err:any) => {
+            if (err.status === 400 && err.error?.message) {
+              this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+            } else if (err.status === 500 && err.error?.Message) {
+              this.AminityInsStatus = err.error.Message;  // Database or internal error
+            } else {
+              this.AminityInsStatus = "Unexpected error occurred.";
+            }
+            this.isModalOpen = true;
+          },
+          complete: () => {
+          }
     });
   };
 
@@ -415,10 +422,18 @@ else{
           this.SyllabusForm.markAsPristine();
         }
       },
-      error: (error) => {
-        this.AminityInsStatus = "Error Updating Exam Type.";
-        this.isModalOpen = true;
-      }
+      error: (err:any) => {
+            if (err.status === 400 && err.error?.message) {
+              this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+            } else if (err.status === 500 && err.error?.Message) {
+              this.AminityInsStatus = err.error.Message;  // Database or internal error
+            } else {
+              this.AminityInsStatus = "Unexpected error occurred.";
+            }
+            this.isModalOpen = true;
+          },
+          complete: () => {
+          }
     });
   }
   };

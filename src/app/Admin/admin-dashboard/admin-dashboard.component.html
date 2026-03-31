@@ -441,18 +441,54 @@
                   <span class="submenu-text">Exam Attendece</span>
                 </a>
               </li>
+
+
                <li>
                 <a routerLink="/Admin/ExamMarks">
                   <mat-icon>trending_up</mat-icon>
                   <span class="submenu-text">Exam Marks</span>
                 </a>
               </li>
+
                <li>
                 <a routerLink="/Admin/ExamResults">
                   <mat-icon>trending_up</mat-icon>
                   <span class="submenu-text">Exam Results</span>
                 </a>
               </li>
+            </ul>
+          </li>
+            <li class="menu-item has-submenu">
+            <div class="parent-row" (click)="toggleSubmenu('Attendance')">
+              <mat-icon>school</mat-icon>
+              <span *ngIf="isExpanded" class="DashboardMenuLi">Attendance</span>
+            </div>
+
+            <ul *ngIf="isExpanded && openedSubmenu === 'Attendance'" class="submenu">
+              <li>
+                <a routerLink="/Admin/AttendanceSheet">
+                  <mat-icon>people</mat-icon>
+                  <span class="submenu-text">Student Attendance</span>
+                </a>
+              </li>
+                <li>
+                <a routerLink="/Admin/Staffattendance">
+                  <mat-icon>people</mat-icon>
+                  <span class="submenu-text">Staff Attendance</span>
+                </a>
+              </li> 
+            <li>
+                <a routerLink="/Admin/ViewAttedance">
+                  <mat-icon>people</mat-icon>
+                  <span class="submenu-text">View Student Attendance</span>
+                </a>
+            </li>
+              <li>
+                <a routerLink="/Admin/ViewStaffAttendance">
+                  <mat-icon>people</mat-icon>
+                  <span class="submenu-text">View Staff Attendance</span>
+                </a>
+            </li>
             </ul>
           </li>
         </ul>

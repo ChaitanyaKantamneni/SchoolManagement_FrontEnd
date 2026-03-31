@@ -19,6 +19,25 @@ import { HttpClient } from '@angular/common/http';
 export class ViewexamsComponent  extends BasePermissionComponent{
    pageName = 'ViewExams';
 
+  getExamWorkflowStatus(item: any): string {
+    const attendanceMarked = String(item?.attendanceMarked ?? item?.AttendanceMarked ?? '0');
+    const examAttendanceAndMarksMarked = String(item?.examAttendancAndMarksMarked ?? item?.ExamAttendancAndMarksMarked ?? '0');
+
+    if (attendanceMarked === '1' && examAttendanceAndMarksMarked === '1') {
+      return 'Published';
+    }
+
+    if (attendanceMarked === '1' && examAttendanceAndMarksMarked === '0') {
+      return 'Attendance Marked';
+    }
+
+    if (attendanceMarked === '0' && examAttendanceAndMarksMarked === '0') {
+      return 'Scheduled';
+    }
+
+    return item?.isActive === "True" || item?.isActive === "1" ? 'Active' : 'InActive';
+  }
+
   constructor(
     private http: HttpClient,
     router: Router,
@@ -361,8 +380,10 @@ FetchExamsbyclassanddivisionList() {
               Duration: item.duration,
               NoOfQuestion: item.noOfQuestion,
               Instructions: item.instructions,
-              IsActive: item.isActive === "True" || item.isActive === "1" ? 'Active' : 'InActive',
-              AcademicYearName: item.academicYearName
+              IsActive: this.getExamWorkflowStatus(item),
+              AcademicYearName: item.academicYearName,
+              AttendanceMarked: item.attendanceMarked,
+              ExamAttendancAndMarksMarked: item.examAttendancAndMarksMarked
             };
 
           });
@@ -513,13 +534,15 @@ private resetPaginationAndFetch() {
       Duration: item.duration,
       NoOfQuestion: item.noOfQuestion,
       Instructions: item.instructions,
-      IsActive: item.isActive === "True" || item.isActive === "1" ? 'Active' : 'InActive',
+      IsActive: this.getExamWorkflowStatus(item),
       AcademicYearName: item.academicYearName,
       RowID: item.rowID,
       SubjectIndex: item.subjectIndex,
       SubjectID: item.subjectID,
       IndividualSubjectName:item.individualSubjectName,
-      SubjectExamDateAndTime: formattedSubjectExamDate
+      SubjectExamDateAndTime: formattedSubjectExamDate,
+      AttendanceMarked: item.attendanceMarked,
+      ExamAttendancAndMarksMarked: item.examAttendancAndMarksMarked
     };
   });
 }

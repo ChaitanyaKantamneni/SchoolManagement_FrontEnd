@@ -5,18 +5,28 @@
   <div *ngIf="!IsAddNewClicked" class="w-100">
     <div class="ComponentTop">
       <div class="ComponentTopHeader">
-        <h5>Exam Management</h5>
-        <p>Total {{ SyllabusCount }} Exams Added</p>
+        <h5>Attendece Sheet</h5>
+        <p>Total {{ SyllabusCount }} Students</p>
       </div>
-     
     </div>
     
   </div>
-  <div  class="w-100">
+  <div *ngIf="IsAddNewClicked" class="w-100">
+    <div class="AddForm">
+      <div class="AddFormTop">
+        <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+        <p>Student Attendance Sheet</p>
+      </div>
+      <div class="AddFormConatiner">
+       
+      </div>
+    </div>
+  </div>
+  <div  *ngIf="!IsAddNewClicked" class="w-100">
     <div class="AddForm">
       <div class="AddFormTop">
         <!-- <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>  -->
-         <p>View Exam</p>
+        <p>Student Attendance Sheet</p>
       </div>
       <div class="AddFormConatiner">
         <form [formGroup]="SyllabusForm">
@@ -72,39 +82,55 @@
                   </div>
                 </div>
               </div> 
-            
-                 </div>
-                 <div class ="InputRow">
-                      <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Exam Type<span class="required">*</span></label>
+              
+            </div>
+            <div class="InputRow">
+                <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Session<span class="required">*</span></label>
                 <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="ExamType" placeholder="Select Start Date" (change)="onAdminExamtypeChange($event)"  >
-                    <option value="0">-- Select Exam --</option>
-                    <option *ngFor="let school of examLists" value="{{school.ID}}">{{school.Name}}</option>
+                  <select class="inputField" formControlName="Session" (change)="onSessionChange($event)">
+                    <option value="0">-- Select Session--</option>
+                    <option *ngFor="let session of SessionList" [value]="session.ID">
+                      {{session.SessionName}}
+                    </option>
                   </select>
-                  <div *ngIf="SyllabusForm.get('ExamType')?.hasError('min') && (SyllabusForm.get('ExamType')?.touched || SyllabusForm.get('ExamType')?.dirty)" class="text-danger">
-                      <small>Please Select ExamType.</small>
+                  <div *ngIf="SyllabusForm.get('Session')?.hasError('min') && (SyllabusForm.get('Session')?.touched || SyllabusForm.get('Session')?.dirty)" class="text-danger">
+                      <small>Please Session.</small>
                   </div>
                 </div>
               </div>
-                 </div>
-             </div>
-       <div class="ActionButtons">
-<button type="button" class="btn" (click)="onSubmit()">Submit</button>
-        </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="attendanceDateTime">Attendance Date <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input
+                    id="attendanceDateTime"
+                    type="date"
+                    class="inputField"
+                    formControlName="AttendanceDateTime"
+                  />
+                  <div *ngIf="SyllabusForm.get('AttendanceDateTime')?.invalid && (SyllabusForm.get('AttendanceDateTime')?.touched || SyllabusForm.get('AttendanceDateTime')?.dirty)" class="text-danger">
+                    <small>Please select attendance date and time.</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="ActionButtons">
+            <button type="button" class="btn" (click)="SyllabusForm.markAllAsTouched(); onSubmit()">Next</button>
+          </div>
         </form>
       </div>
     </div>
   </div>
-  <div class="ComponentRecords">
+  <div *ngIf="!IsAddNewClicked"class="ComponentRecords">
       <div>
         <div class="ComponentRecordsTop">
-          <div class="filterOptions">
-            <!-- <div class="searchreview input-container" >
+          <div class="filterOptions"   *ngIf="isTableModalOpen ">
+            <div class="searchreview input-container">
               <input type="text" id="searchQuery" class="form-control floating-input"
                 [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search... "  />
               <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
-            </div> -->
+            </div>
             <!-- <div class="searchreview" *ngIf="isAdmin && SyllabusList.length != 0">
               <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
                 <option value="">-- Select School --</option>
@@ -114,6 +140,7 @@
                 </option>
               </select>
             </div> -->
+            
           </div>
           <!-- <div class="DownloadButtons" *ngIf="SyllabusList.length != 0">
             <button class="btnHover" (click)="exportSyllabus('pdf')"><mat-icon>picture_as_pdf</mat-icon></button>
@@ -121,14 +148,17 @@
             <button class="btnHover" (click)="exportSyllabus('print')"><mat-icon>print</mat-icon></button>
           </div> -->
         </div>
-         <div class="reviewstable">
-          <table id="classTable" *ngIf="SyllabusList.length != 0" class="table table-bordered">
+         <div  class="reviewstable">
+          <table id="classTable" *ngIf="isTableModalOpen && SyllabusList.length != 0" class="table table-bordered">
             <thead>
               <tr>
                 <th class="visually-hidden">Academic Year ID</th>
+                <th class="visually-hidden">ID</th>
+                <th class="visually-hidden">Subject ID</th>
+                <th class="visually-hidden">Exam Type ID</th>
                 <th>SI.No</th>
                 <th (click)="sort('ExamTypeName')" class="sortable-column">
-                  <span class="column-text">Name</span>
+                  <span class="column-text">AdmissionNo</span>
                   <span class="arrows">
                     <mat-icon 
                       [style.color]="sortColumn === 'ExamTypeName' && sortDirection === 'asc' ? 'red' : 'inherit'">
@@ -140,81 +170,151 @@
                     </mat-icon>
                   </span>
                 </th>
-                <th>Subjects</th>
-                <th>Max Marks</th>
-                <th>Pass Marks</th>  
-                <th>Duration</th>
-                <th>ExamDateAndTime</th>               
+                <th>Name</th>
+                <!-- <th>Class</th>  
+                <th>Division</th>         -->
                 <th *ngIf="isAdmin">School Name</th>
                 <th *ngIf="isAdmin">Academic Year</th>               
-                <th>Status</th>               
-                <!-- <th>Actions</th> -->
+                <th class="status-column">Status</th>      
+                <th class="late-minutes-column">Start Time</th>
+                <th class="late-minutes-column">End Time</th>         
+                <th class="late-minutes-column">Late in Minutes</th>
+                <th class="late-minutes-column">Remarks</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let Syllabus of SyllabusList,let i = index">
-                <td data-label="ID" class="visually-hidden">{{ Syllabus.RowID }}</td>
-                <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-                <td data-label="ExamType">{{ Syllabus.ExamType }}</td>
-                <td data-label="Subjects">{{ Syllabus.IndividualSubjectName }}</td>
-               
-                <td data-label="MaxMark">{{ Syllabus.MaxMarks }}</td>
-                <td data-label="PassMarks">{{ Syllabus.PassMarks }}</td>
-                <td data-label="Duration">{{ Syllabus.Duration }}</td>
-                <td data-label="ExamDateAndTime">{{ Syllabus.SubjectExamDateAndTime }}</td>
-                 <td data-label="ExamType" *ngIf="isAdmin">{{ Syllabus.SchoolName }}</td>
-                <td data-label="AcademicYearName" *ngIf="isAdmin">{{ Syllabus.AcademicYearName }}</td>
-                <td data-label="Status">
-                  <span
-                    class="status-badge"
-                    [ngClass]="{
-                      'status-scheduled': Syllabus.IsActive === 'Scheduled',
-                      'status-attendance': Syllabus.IsActive === 'Attendance Marked',
-                      'status-published': Syllabus.IsActive === 'Published',
-                      'status-default': Syllabus.IsActive !== 'Scheduled' && Syllabus.IsActive !== 'Attendance Marked' && Syllabus.IsActive !== 'Published'
-                    }">
-                    {{ Syllabus.IsActive }}
-                  </span>
+            <tr *ngFor="let Syllabus of SyllabusList, let i = index">
+                <td data-label="RowID" class="visually-hidden">{{ Syllabus.RowID }}</td>
+                <td data-label="ID" class="visually-hidden">{{ Syllabus.ID }}</td>
+                <td data-label="SubjectID" class="visually-hidden">{{ Syllabus.SubjectID }}</td>
+                <td data-label="ExamTypeID" class="visually-hidden">{{ Syllabus.ExamTypeID }}</td>
+                <td data-label="SI.No">{{ i + 1 }}</td>
+                <td data-label="AdmissionNo">{{ Syllabus.AdmissionNo }}</td>
+                <td data-label="Name">{{ Syllabus.Name }}</td>
+                <!-- <td data-label="Class">{{ Syllabus.Class }}</td>
+                <td data-label="ClassDivisionName">{{ Syllabus.ClassDivisionName }}</td> -->
+                <td data-label="ExamType" *ngIf="isAdmin">{{ Syllabus.SchoolName }}</td>
+                <td data-label="AcademicYearName" *ngIf="isAdmin">{{ Syllabus.AcademicYearName }}{{Syllabus.ExamAttendancAndMarksMarked}}</td>
+                <!-- <td data-label="Status">{{ Syllabus.IsActive }}</td> -->
+                <td data-label="Actions" class="status-column">
+                    <div class="InputFieldsContainer">
+                        <div class="toggle-container">
+                          <span class="status-label status-label-left">Absent</span>
+                          <label class="switch">
+<input  type="checkbox"  [(ngModel)]="Syllabus.IsPresent" (ngModelChange)="onAttendanceToggleChange(Syllabus)" [ngModelOptions]="{standalone: true}">  <span class="slider round">
+                              <span
+                                class="toggle-text">
+                              </span>
+                            </span>
+                          </label>
+                          <span class="status-label status-label-right">Present</span>
+                      </div>
+                      </div>
+                     
                 </td>
-                <!-- <td data-label="Actions">
-                  <div class="d-flex justify-content-center align-items-center h-100">
-                   
-                    <!-- <button *ngIf="canView()" class="btn checkbtn" data-tooltip="View" (click)="viewReview(Syllabus.ID)">
-                      <mat-icon class="mat-edit-icon">visibility</mat-icon>
-                    </button> -
+            
+              <td data-label="StartTime" class="late-minutes-column">
+                <div class="InputFieldsContainer">
+                  <div class="input-with-error">
+                    <input
+                      type="time"
+                      class="inputField"
+                      [(ngModel)]="Syllabus.StartTime"
+                      name="startTime{{i}}"
+                      [ngModelOptions]="{standalone: true}"
+                      readOnly
+                    />
                   </div>
-                </td> -->
-              </tr>
+                </div>
+              </td>
+              <td data-label="EndTime" class="late-minutes-column">
+                <div class="InputFieldsContainer">
+                  <div class="input-with-error">
+                    <input
+                      type="time"
+                      class="inputField"
+                      [(ngModel)]="Syllabus.EndTime"
+                      name="endTime{{i}}"
+                      [ngModelOptions]="{standalone: true}"
+                      readOnly
+                    />
+                  </div>
+                </div>
+              </td>
+              <td data-label="Marks" class="late-minutes-column">
+
+           <div class="InputFieldsContainer">
+  <div class="input-with-error">
+                    <input
+                      type="text"
+                      class="inputField"
+                      [(ngModel)]="Syllabus.LateInMinutes"
+                      name="marks{{i}}"
+                      #marksCtrl="ngModel"
+                      placeholder="0"
+                      maxlength="3"
+                      pattern="^[0-9]{0,3}$"
+                      inputmode="numeric"
+                      required
+                      [disabled]="!Syllabus.IsPresent"
+                      (keypress)="allowOnlyNumbers($event)"
+                      (input)="onLateMinutesInput(Syllabus)"
+                    />
+                  </div>
+                </div>
+              </td>
+              <td data-label="Remarks" class="late-minutes-column">
+                <div class="InputFieldsContainer">
+                  <div class="input-with-error">
+                    <input
+                      type="text"
+                      class="inputField"
+                      [(ngModel)]="Syllabus.Remarks"
+                      name="remarks{{i}}"
+                      [ngModelOptions]="{standalone: true}"
+                      placeholder="Reason for absence"
+                      maxlength="255"
+                      [disabled]="Syllabus.IsPresent"
+                    />
+                  </div>
+                </div>
+              </td>
+              
+                            </tr>
             </tbody>
           </table>
+          <div *ngIf="isTableModalOpen && SyllabusList.length != 0" class="ActionButtons table-action-buttons">
+            <button type="button" class="btn btn-secondary" (click)="cancelAttendanceTable()">
+              Cancel
+            </button>
+           <button 
+  type="button" 
+  class="btn btn-primary"
+  [disabled]="SyllabusList.length === 0"
+  (click)="submitAttendance()"
+>
+  Submit
+</button>
+          </div>
+          
           <div *ngIf="SyllabusList.length === 0" class="NoDataFound">
             <div class="NoDataFoundImg">
               <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
             </div>
             <p>No data found.</p>
           </div>
-          <div *ngIf="SyllabusCount > pageSize" class="pagination-controls">
-            <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
-            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
-            <button *ngFor="let page of getVisiblePageNumbers()"
-                    class="page-btn"
-                    [ngClass]="{'active': page === currentPage}"
-                    (click)="goToPage(page)">
-              {{ page }}
-            </button>
-            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
-            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
-          </div>
         </div>
       </div>
     </div>
+    
+    
 
 </div>
 <div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isModalOpen}" [style.display]="isModalOpen ? 'block' : 'none'">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Application Status</h5>
+        <h5 class="modal-title">{{ statusModalTitle }}</h5>
         <button type="button" class="close" aria-label="Close" (click)="closeModal('status')">
           <span aria-hidden="true">&times;</span>
         </button>

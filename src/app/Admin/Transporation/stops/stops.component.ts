@@ -304,6 +304,7 @@ export class StopsComponent extends BasePermissionComponent {
     }
     this.FetchRoutesList();
     this.SyllabusForm.reset();
+    this.SyllabusForm.get('School').patchValue('0');
     this.SyllabusForm.get('Route').patchValue('0');
     this.SyllabusForm.get('AcademicYear').patchValue('0');
     this.IsAddNewClicked=!this.IsAddNewClicked;
