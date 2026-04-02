@@ -22,7 +22,7 @@
   width: 15px;
   height: 15px;
   border-radius: 50%;
-  background: #536ff7;
+  background: var(--primary);
   animation: bounce 0.6s infinite alternate;
 }
 
@@ -35,3 +35,4 @@
   50% { transform: translateY(-15px); opacity: 1; }
   100% { transform: translateY(0); opacity: 0.3; }
 }
+

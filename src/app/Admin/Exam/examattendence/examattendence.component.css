@@ -47,7 +47,7 @@
 }
 
 .ComponentRecords .ActionButtons .btn{
-  background-color: #536ff7;
+  background-color: var(--primary);
   color: #fff;
   border: none;
   font-size: smaller;
@@ -58,7 +58,7 @@
 }
 
 .table .btn{
-  background-color: #536ff7;
+  background-color: var(--primary);
   color: #fff;
   border: none;
   font-size: smaller;
@@ -66,6 +66,7 @@
   padding: 5px 10px;
   transition: background-color 0.3s ease;
 }
+<<<<<<< HEAD
 
 .attendance-toggle-cell {
   display: flex;
@@ -196,3 +197,5 @@
   border: 1px solid #b6effb;
   line-height: 1.4;
 }
+=======
+>>>>>>> 551e1e3 (Update UI)

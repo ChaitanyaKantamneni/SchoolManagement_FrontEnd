@@ -9,6 +9,7 @@
     width: 100% !important;
     flex-direction: row !important;
 }
+<<<<<<< HEAD
 
 .InputFieldsContainer {
   flex: 1 1 0;
@@ -38,3 +39,5 @@
   width: 100%;
   box-sizing: border-box;
 }
+=======
+>>>>>>> 551e1e3 (Update UI)

@@ -132,7 +132,7 @@
 }
 
 .ComponentTop .ComponentTopBottom button{
-  background-color: #536ff7;
+  background-color: var(--primary);
   border: none;
   display: flex;
   justify-content: center;
@@ -174,7 +174,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #536ff7;
+  background-color: var(--primary);
   padding: 3px;
   border-radius: 3px;
 }
@@ -200,7 +200,7 @@ table thead {
 table thead tr th {
   text-align: center;
   /* #7bbbff */
-  background-color: #536ff7;
+  background-color: var(--primary);
   color: #fff;
   font-size: 11px;
 }
@@ -430,7 +430,7 @@ table tbody tr td {
 }
 
 .AddForm .AddFormConatiner .ActionButtons .btn{
-  background-color: #536ff7;
+  background-color: var(--primary);
   color: #fff;
   border: none;
   font-size: smaller;
@@ -494,10 +494,10 @@ table tbody tr td {
 }
 
 .page-btn.active {
-  background-color: #536ff7 !important;
+  background-color: var(--primary) !important;
   color: white;
   font-weight: bold;
-  border-color: #536ff7 !important;
+  border-color: var(--primary) !important;
 }
 
 .arrow-btn {
@@ -515,7 +515,7 @@ table tbody tr td {
 }
 
 .arrow-btn:hover {
-  background-color: #536ff7 !important;
+  background-color: var(--primary) !important;
   color: white !important;
 }
 
@@ -523,3 +523,4 @@ table tbody tr td {
   background-color: #ccc;
   cursor: not-allowed;
 }
+

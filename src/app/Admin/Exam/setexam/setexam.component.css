@@ -47,6 +47,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+<<<<<<< HEAD
 }
 
 .subject-toggle-container {
@@ -105,3 +106,9 @@
   font-weight: 400;
   color: #333;
 }
+=======
+  gap: 10px;
+  flex-direction: row !important;
+  width: 100% !important;
+} */
+>>>>>>> 551e1e3 (Update UI)

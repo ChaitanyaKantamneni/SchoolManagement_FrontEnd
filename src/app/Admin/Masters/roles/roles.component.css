@@ -136,7 +136,7 @@ p{
 }
 
 .ComponentTop .ComponentTopBottom button{
-  background-color: #536ff7;
+  background-color: var(--primary);
   border: none;
   display: flex;
   justify-content: center;
@@ -163,7 +163,7 @@ table thead {
 table thead tr th {
   text-align: center;
   /* #7bbbff */
-  background-color: #536ff7;
+  background-color: var(--primary);
   color: #fff;
   font-size: 11px;
 }
@@ -401,7 +401,7 @@ table tbody tr td {
 }
 
 .AddForm .AddFormConatiner .ActionButtons .btn{
-  background-color: #536ff7;
+  background-color: var(--primary);
   color: #fff;
   border: none;
   font-size: smaller;
@@ -517,7 +517,7 @@ table tbody tr td {
 }
 
 .ModulesButtonsContainer button{
-  background-color: #536ff7;
+  background-color: var(--primary);
   border: none;
   color: white;
   padding: 5px 8px;
