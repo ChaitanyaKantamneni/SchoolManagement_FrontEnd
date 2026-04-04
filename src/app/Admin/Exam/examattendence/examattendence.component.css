@@ -47,7 +47,7 @@
 }
 
 .ComponentRecords .ActionButtons .btn{
-  background-color: #536ff7;
+  background-color: var(--primary);
   color: #fff;
   border: none;
   font-size: smaller;
@@ -58,141 +58,11 @@
 }
 
 .table .btn{
-  background-color: #536ff7;
+  background-color: var(--primary);
   color: #fff;
   border: none;
   font-size: smaller;
   border-radius: 5px;
   padding: 5px 10px;
   transition: background-color 0.3s ease;
-}
-
-.attendance-toggle-cell {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-}
-
-.reviewstable td {
-  vertical-align: middle;
-}
-
-/* Role-like toggle switch styling for exam attendance */
-.toggle-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-family: Arial, sans-serif;
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-.toggle-container .switch {
-  position: relative;
-  display: inline-block;
-  width: 50px;
-  height: 20px;
-}
-
-.toggle-container .switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.toggle-container .switch .slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  transition: 0.4s;
-  border-radius: 34px;
-}
-
-.toggle-container .switch .slider:before {
-  position: absolute;
-  content: "";
-  height: 16px;
-  width: 16px;
-  border-radius: 50%;
-  left: 2px;
-  bottom: 2px;
-  background-color: white;
-  transition: 0.4s;
-}
-
-.toggle-container .switch input:checked + .slider {
-  background-color: #4CAF50;
-}
-
-.toggle-container .switch input:checked + .slider:before {
-  transform: translateX(29px);
-}
-
-.toggle-container .switch .toggle-text {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  color: white;
-  font-weight: bold;
-  line-height: 20px;
-  pointer-events: none;
-  font-size: 9px;
-}
-
-.status-label {
-  font-size: 10px;
-  font-weight: 400;
-  color: #333;
-}
-
-.remark-input {
-  width: 160px;
-  font-size: 11px;
-  padding: 3px 6px;
-  border: 1px solid #f0ad4e;
-  border-radius: 4px;
-  outline: none;
-}
-
-.remark-input:focus {
-  border-color: #536ff7;
-  box-shadow: 0 0 0 2px rgba(83,111,247,0.15);
-}
-
-.remark-badge {
-  font-size: 10px;
-  max-width: 160px;
-  display: inline-block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  vertical-align: middle;
-  cursor: default;
-}
-
-.table-warning td {
-  background-color: #fff8e1 !important;
-}
-
-.remark-badge {
-  font-size: 11px;
-  display: inline-block;
-  max-width: 200px;
-  white-space: normal;
-  word-break: break-word;
-  vertical-align: middle;
-  cursor: pointer;
-  background-color: #cff4fc;
-  color: #055160;
-  border-radius: 4px;
-  padding: 2px 6px;
-  border: 1px solid #b6effb;
-  line-height: 1.4;
 }

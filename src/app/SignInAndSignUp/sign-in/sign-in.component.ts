@@ -235,9 +235,9 @@ export class SignInComponent {
   public color = { red: false, green: false };
 
   LoginForms: FormGroup = new FormGroup({
-    email: new FormControl('', Validators.required),
+    email: new FormControl('', [Validators.required, Validators.email]),
     password: new FormControl('', Validators.required),
-    captcha: new FormControl('', Validators.required)
+    Captcha: new FormControl('', Validators.required)
   });
 
   constructor(
@@ -291,8 +291,11 @@ export class SignInComponent {
   }
 
   validateCaptcha(): void {
-    const enteredCaptcha = this.LoginForms.get('captcha')?.value;
+    const enteredCaptcha = this.LoginForms.get('Captcha')?.value;
     this.captchaValid = enteredCaptcha === this.captchaText;
+    if (!this.captchaValid) {
+      this.color = { red: true, green: false };
+    }
   }
 
   refreshCaptcha(): void {
@@ -356,5 +359,18 @@ export class SignInComponent {
         this.isUpdateModalOpen = true;
       }
     });
+  }
+
+  /**
+   * Handle forgot password navigation
+   * Redirects to password reset page or opens modal
+   */
+  OnForgotpasswordClick() {
+    console.log('Forgot password clicked');
+    // Option 1: Navigate to forgot-password page (if it exists)
+    // this.router.navigate(['/forgot-password']);
+    
+    // Option 2: For now, show an alert or log for debugging
+    alert('Password reset feature coming soon. Please contact your administrator.');
   }
 }

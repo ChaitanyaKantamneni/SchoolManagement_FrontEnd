@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { MatIcon, MatIconModule } from '@angular/material/icon';
 import { DashboardTopNavComponent } from '../../../SignInAndSignUp/dashboard-top-nav/dashboard-top-nav.component';
-import { NgClass, NgFor, NgIf } from '@angular/common';
+import { NgFor } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiServiceService } from '../../../Services/api-service.service';
 import { LoaderService } from '../../../Services/loader.service';
@@ -11,9 +11,7 @@ import { NgxEchartsModule } from 'ngx-echarts';
 selector:'app-admin-main-dashboard',
 standalone:true,
 imports:[
-NgIf,
 NgFor,
-NgClass,
 MatIconModule,
 DashboardTopNavComponent,
 FormsModule,

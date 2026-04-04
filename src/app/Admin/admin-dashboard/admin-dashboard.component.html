@@ -1,6 +1,6 @@
 <div class="row justify-content-center align-items-center m-0 w-100 totalcard">
   <nav class="navbar navbar-expand-md navbar-light bg-light d-md-none col-12">
-    <a class="navbar-brand"><img class="h-100" src="Images/Logo1.jpg"></a>
+    <a class="navbar-brand"><img class="h-100" src="Images/Logo4.png"></a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -45,124 +45,14 @@
   <div class="sidenavbar col-12 col-md-3" [ngClass]="{'collapsed': !isExpanded}">
     <div class="logo">
       <a>
-        <img *ngIf="!isExpanded" src="Images/Logo1.jpg" alt="BUSERELE" />
-        <img *ngIf="isExpanded" src="Images/Logo1.jpg" alt="BUSERELE" />
+        <img src="Images/Logo4.png" alt="BUSERELE" />
       </a>
     </div>
     <div class="sidebar d-none d-md-block h-100">
-      <!-- <button class="toggle-btn" (click)="toggleSidebar()">
+      <button class="toggle-btn" (click)="toggleSidebar()">
         <mat-icon>{{ isExpanded ? 'chevron_left' : 'chevron_right' }}</mat-icon>
-        <!-- <i class="fa" [ngClass]="isExpanded ? 'fa-chevron-left' : 'fa-chevron-right'"></i> --
-      </button> -->
+      </button>
       <div class="d-flex flex-column">
-        <!-- <ul class="menu">
-          <li routerLink="/Admin/Dashboad">
-            <mat-icon>dashboard</mat-icon>
-            <span *ngIf="isExpanded" class="DashboardMenuLi">Dashboard</span>
-          </li>
-          <li class="menu-item has-submenu" (click)="toggleSubmenu('Masters')">
-            <div class="parent-row">
-              <mat-icon>widgets</mat-icon>
-              <span *ngIf="isExpanded" class="DashboardMenuLi">Masters</span>
-            </div>
-            <ul *ngIf="isExpanded && openedSubmenu === 'Masters'" class="submenu">
-              <li routerLink="/Admin/SchoolDetails">
-                <mat-icon>domain</mat-icon>
-                <span>School Details</span>
-              </li>
-              <li routerLink="/Admin/AcademicYear">
-                <mat-icon>calendar_month</mat-icon>
-                <span>Academic Year</span>
-              </li>
-              <li routerLink="/Admin/Syllabus">
-                <mat-icon>library_books</mat-icon>
-                <span>Syllabus</span>
-              </li>
-              <li routerLink="/Admin/Class">
-                <mat-icon>class</mat-icon>
-                <span>Class</span>
-              </li>
-              <li routerLink="/Admin/Division">
-                <mat-icon>account_tree</mat-icon>
-                <span>Division</span>
-              </li>
-              <li routerLink="/Admin/Subject">
-                <mat-icon>menu_book</mat-icon>
-                <span>Subject</span>
-              </li>
-              <li routerLink="/Admin/SubjectStaff">
-                <mat-icon>person</mat-icon>
-                <span>Subject Staff</span>
-              </li>
-              <li routerLink="/Admin/Modules">
-                <mat-icon>apps</mat-icon>
-                <span>Modules</span>
-              </li>
-              <li routerLink="/Admin/Pages">
-                <mat-icon>pageview</mat-icon>
-                <span>Pages</span>
-              </li>
-              <li routerLink="/Admin/Role">
-                <mat-icon>badge</mat-icon>
-                <span>Roles</span>
-              </li>
-              <li routerLink="/Admin/Staff">
-                <mat-icon>supervisor_account</mat-icon>
-                <span>Staff</span>
-              </li>
-            </ul>
-          </li>
-          <li class="menu-item has-submenu" (click)="toggleSubmenu('Academic')">
-            <div class="parent-row">
-              <mat-icon>school</mat-icon>
-              <span *ngIf="isExpanded" class="DashboardMenuLi">Academic</span>
-            </div>
-            <ul *ngIf="isExpanded && openedSubmenu === 'Academic'" class="submenu">
-              <li routerLink="/Admin/Admission">
-                <mat-icon>people</mat-icon>
-                <span>Admission</span>
-              </li>
-              <li routerLink="/Admin/AllotClassTeacher">
-                <mat-icon>assignment</mat-icon>
-                <span>Allot Class teacher</span>
-              </li>
-              <li routerLink="/Admin/Promotion">
-                <mat-icon>trending_up</mat-icon>
-                <span>Promotion</span>
-              </li>
-              <li routerLink="/Admin/DePromotion">
-                <mat-icon>trending_down</mat-icon>
-                <span>De-Promotion</span>
-              </li>
-              <li routerLink="/Admin/TransferStudents">
-                <mat-icon>swap_horiz</mat-icon>
-                <span>Transfer Student</span>
-              </li>
-            </ul>
-          </li>
-          <li class="menu-item has-submenu" (click)="toggleSubmenu('transportation')">
-            <div class="parent-row">
-              <mat-icon>school</mat-icon>
-              <span *ngIf="isExpanded" class="DashboardMenuLi">Transportation</span>
-            </div>
-            <ul *ngIf="isExpanded && openedSubmenu === 'transportation'" class="submenu">
-              <li routerLink="/Admin/Buses">
-                <mat-icon>people</mat-icon>
-                <span>Busses</span>
-              </li>
-              <li routerLink="/Admin/AllotClassTeacher">
-                <mat-icon>assignment</mat-icon>
-                <span>Routes</span>
-              </li>
-              <li routerLink="/Admin/Promotion">
-                <mat-icon>trending_up</mat-icon>
-                <span>Stops</span>
-              </li>
-            </ul>
-          </li>
-        </ul> -->
-
-
         <ul class="menu">
           <li>
             <a routerLink="/Admin/Dashboad" routerLinkActive="active">
@@ -170,7 +60,7 @@
               <span *ngIf="isExpanded" class="DashboardMenuLi">Dashboard</span>
             </a>
           </li>
-          <li class="menu-item has-submenu">
+          <li class="menu-item has-submenu" [class.open]="openedSubmenu === 'Masters'">
             <div class="parent-row" (click)="toggleSubmenu('Masters')">
               <mat-icon>widgets</mat-icon>
               <span *ngIf="isExpanded" class="DashboardMenuLi">Masters</span>
@@ -255,7 +145,7 @@
               </li>
             </ul>
           </li>
-          <li class="menu-item has-submenu">
+          <li class="menu-item has-submenu" [class.open]="openedSubmenu === 'Academic'">
             <div class="parent-row" (click)="toggleSubmenu('Academic')">
               <mat-icon>school</mat-icon>
               <span *ngIf="isExpanded" class="DashboardMenuLi">Academic</span>
@@ -291,7 +181,7 @@
               </li>
             </ul>
           </li>
-          <li class="menu-item has-submenu">
+          <li class="menu-item has-submenu" [class.open]="openedSubmenu === 'transportation'">
             <div class="parent-row" (click)="toggleSubmenu('transportation')">
               <mat-icon>school</mat-icon>
               <span *ngIf="isExpanded" class="DashboardMenuLi">Transportation</span>
@@ -327,7 +217,7 @@
               </li>
             </ul>
           </li>
-          <li class="menu-item has-submenu">
+          <li class="menu-item has-submenu" [class.open]="openedSubmenu === 'finance'">
             <div class="parent-row" (click)="toggleSubmenu('finance')">
               <mat-icon>school</mat-icon>
               <span *ngIf="isExpanded" class="DashboardMenuLi">Finance</span>
@@ -378,7 +268,7 @@
 
             </ul>
           </li>
-          <li class="menu-item has-submenu">
+          <li class="menu-item has-submenu" [class.open]="openedSubmenu === 'Timetable'">
             <div class="parent-row" (click)="toggleSubmenu('Timetable')">
               <mat-icon>school</mat-icon>
               <span *ngIf="isExpanded" class="DashboardMenuLi">Time Table</span>

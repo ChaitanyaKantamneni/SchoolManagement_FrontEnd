@@ -20,7 +20,7 @@
 }
 
 .viewmodel .ActionButtons .btn{
-  background-color: #536ff7;
+  background-color: var(--primary);
   color: #fff;
   border: none;
   font-size: 10px;

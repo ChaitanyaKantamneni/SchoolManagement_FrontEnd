@@ -9,32 +9,3 @@
     width: 100% !important;
     flex-direction: row !important;
 }
-
-.InputFieldsContainer {
-  flex: 1 1 0;
-  min-width: 0;
-}
-
-.InputFieldsContainer select.inputField {
-  width: 100%;
-}
-/* default for paired fields */
-.InputFieldsContainer {
-  flex: 1 1 0;
-  min-width: 0;
-}
-
-/* ExamType – the lonely one */
-.InputRow:last-child .InputFieldsContainer {
-  flex-grow: 0;
-  flex-shrink: 1;
-  flex-basis: auto;
-  max-width: 350px;           /* ← tune this number */
-  margin-right: auto;         /* optional: align left if you want */
-}
-
-/* make sure select follows container width */
-.InputFieldsContainer select.inputField {
-  width: 100%;
-  box-sizing: border-box;
-}
