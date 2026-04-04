@@ -218,6 +218,12 @@
   .receipt-row {
     margin: 5px 0;
   }
+
+  .receipt-left-line {
+    margin: 5px 0;
+    text-align: left;
+    white-space: normal;
+  }
   
   .receipt-table {
     width: 100%;

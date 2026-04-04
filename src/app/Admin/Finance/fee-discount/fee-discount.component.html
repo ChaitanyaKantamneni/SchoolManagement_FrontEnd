@@ -18,8 +18,10 @@
           <div class="filterOptions">
             <div class="searchreview input-container" >
               <input type="text" id="searchQuery" class="form-control floating-input"
-                [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search... "  />
-              <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
+                [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" (keyup.enter)="onSearchSubmit()" placeholder="Search Student Name / Discount Category... "  />
+              <button type="button" class="search-icon-btn" (click)="onSearchSubmit()" aria-label="Search">
+                <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%);">search</mat-icon>
+              </button>
               <!-- <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i> -->
             </div>
             <div class="searchreview" *ngIf="isAdmin">
@@ -179,7 +181,7 @@
                 <div class="input-with-error">
                   <select class="inputField" type="date" formControlName="ClassTeacher" placeholder="Select Class Teacher">
                     <option value="0" disabled>Select Student</option>
-                    <option *ngFor="let Syllabus of ClassTeachersList" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option>
+                    <option *ngFor="let Syllabus of ClassTeachersList" value="{{Syllabus.AdmissionNo}}">{{Syllabus.Name}}</option>
                   </select>
                   <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
                   <div *ngIf="ClassDivisionForm.get('ClassTeacher')?.hasError('min') && (ClassDivisionForm.get('ClassTeacher')?.touched || ClassDivisionForm.get('ClassTeacher')?.dirty)" class="text-danger">

@@ -351,16 +351,18 @@ export class ClassComponent extends BasePermissionComponent {
           this.isViewMode = false;
           this.ClassForm.patchValue({
             ID: item.id,
-            Name: item.name,
-            Syllabus:item.syllabus,
+            Name: item.name,            
             Description: item.description,
-            School:item.schoolID,
-            AcademicYear:item.academicYear
+            School:item.schoolID,            
           });
-          this.AdminselectedSchoolID=item.schoolID;
-          this.AdminselectedAcademivYearID=item.academicYear;
           this.FetchAcademicYearsList();
           this.FetchSyllabusList();
+          if(this.isAdmin){
+            this.AdminselectedSchoolID=item.schoolID;
+          }
+          this.ClassForm.get('AcademicYear').patchValue(item.academicYear);
+          this.ClassForm.get('Syllabus').patchValue(item.syllabus);
+          this.AdminselectedAcademivYearID=item.academicYear; 
           this.IsActiveStatus = isActive;
           this.IsAddNewClicked = true;
         }
@@ -529,10 +531,8 @@ export class ClassComponent extends BasePermissionComponent {
   editreview(SyllabusID: string): void {
     if (this.isAdmin) {
       this.ClassForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
-      this.ClassForm.get('AcademicYear')?.setValidators([Validators.required,Validators.min(1)]);
     } else {
       this.ClassForm.get('School')?.clearValidators();
-      this.ClassForm.get('AcademicYear')?.clearValidators();
     }
     this.editclicked=true;
     this.FetchSyllabusDetByID(SyllabusID,'edit');

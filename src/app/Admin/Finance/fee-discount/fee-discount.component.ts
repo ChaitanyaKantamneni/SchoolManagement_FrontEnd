@@ -21,7 +21,7 @@ import { HttpClient } from '@angular/common/http';
   styleUrls: ['./fee-discount.component.css']
 })
 export class FeeDiscountComponent extends BasePermissionComponent {
-  pageName = 'Fee Discount';
+  pageName = 'Fee Discounts';
 
 constructor(
     private http: HttpClient,
@@ -84,11 +84,12 @@ constructor(
 
   ClassDivisionForm: any = new FormGroup({
     ID: new FormControl(),
-    Class: new FormControl(0, Validators.min(1)),
-    Division: new FormControl(0, Validators.min(1)),
-    ClassTeacher: new FormControl(0, Validators.min(1)),
-    DiscountCategory: new FormControl(0, Validators.min(1)),
-    School: new FormControl(),
+    Class: new FormControl(0, [Validators.required, Validators.min(1)]),
+    Division: new FormControl(0, [Validators.required, Validators.min(1)]),
+    ClassTeacher: new FormControl(0, [Validators.required, Validators.min(1)]), // Student
+    DiscountCategory: new FormControl(0, [Validators.required, Validators.min(1)]),
+    
+    School: new FormControl(0, [Validators.required, Validators.min(1)]),
     AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
   });
 
@@ -173,7 +174,9 @@ constructor(
     return this.apiurl.post<any>('Tbl_FeeDiscount_CRUD_Operations', {
       Flag: isSearch ? '8' : '6',
       SchoolID:SchoolIdSelected,
-      Class: isSearch ? this.searchQuery.trim() : null
+      Class: isSearch ? this.searchQuery.trim() : null,
+      Student: isSearch ? this.searchQuery.trim() : null,
+      DiscountCategory: isSearch ? this.searchQuery.trim() : null
     });
   }
 
@@ -209,7 +212,12 @@ constructor(
           ...extra
         };
 
-        if (isSearch) payload.Class = this.searchQuery.trim();
+        if (isSearch) {
+          const searchValue = this.searchQuery.trim();
+          payload.Class = searchValue;
+          payload.Student = searchValue;
+          payload.DiscountCategory = searchValue;
+        }
 
         this.apiurl.post<any>('Tbl_FeeDiscount_CRUD_Operations', payload).subscribe({
           next: (response: any) => {
@@ -242,6 +250,8 @@ constructor(
 
   mapAcademicYears(response: any) {
     this.ClassDivisionList = (response.data || []).map((item: any) => ({
+      // Student name comes back with different keys depending on API/query
+      StudentFullName: this.resolveStudentDisplayName(item),
       ID: item.id,
       Class: item.class,
       Division: item.division,
@@ -252,7 +262,6 @@ constructor(
       DivisionName:item.classDivisionName,
       SchoolName:item.schoolName,
       AcademicYearName:item.academicYearName,
-      StudentFullName:item.studentFullName,
       IsActive: item.isActive === '1' ? 'Active' : 'InActive'
     }));
   };
@@ -464,7 +473,7 @@ constructor(
           this.isViewMode = true;
           this.viewSyllabus = {
             ID: item.id,
-            Name: item.studentFullName,
+            Name: this.resolveStudentDisplayName(item),
             Class: item.className,
             Division: item.classDivisionName,
             DiscountCategory: item.discountCategory,
@@ -616,26 +625,34 @@ constructor(
     clearTimeout(this.searchTimer);
 
     this.searchTimer = setTimeout(() => {
-      const value = this.searchQuery?.trim() || '';
+      this.applySearch();
+    }, this.SEARCH_DEBOUNCE);
+  };
 
-      if (value.length === 0) {
-        this.currentPage = 1;
-        this.pageSize=5;
-        this.visiblePageCount=3;
-        this.FetchInitialData();
-        return;
-      }
+  onSearchSubmit() {
+    clearTimeout(this.searchTimer);
+    this.applySearch();
+  };
 
-      if (value.length < this.SEARCH_MIN_LENGTH) {
-        return;
-      }
-      
+  private applySearch() {
+    const value = this.searchQuery?.trim() || '';
+
+    if (value.length === 0) {
       this.currentPage = 1;
       this.pageSize=5;
       this.visiblePageCount=3;
       this.FetchInitialData();
+      return;
+    }
 
-    }, this.SEARCH_DEBOUNCE);
+    if (value.length < this.SEARCH_MIN_LENGTH) {
+      return;
+    }
+    
+    this.currentPage = 1;
+    this.pageSize=5;
+    this.visiblePageCount=3;
+    this.FetchInitialData();
   };
 
   formatDateYYYYMMDD(dateStr: string | null) {
@@ -847,4 +864,41 @@ constructor(
       }    
       this.FetchClassStudentsList();
   };
+
+  private resolveStudentDisplayName(item: any): string {
+    const directName =
+      item?.studentFullName ??
+      item?.studentName ??
+      item?.name ??
+      item?.student_full_name ??
+      item?.student_fullName;
+
+    if (directName && String(directName).trim()) {
+      return String(directName).trim();
+    }
+
+    const first =
+      item?.firstName ??
+      item?.studentFirstName ??
+      item?.student_first_name ??
+      '';
+    const middle =
+      item?.middleName ??
+      item?.studentMiddleName ??
+      item?.student_middle_name ??
+      '';
+    const last =
+      item?.lastName ??
+      item?.studentLastName ??
+      item?.student_last_name ??
+      '';
+    const fullName = `${first} ${middle} ${last}`.replace(/\s+/g, ' ').trim();
+    if (fullName) {
+      return fullName;
+    }
+
+    const idLikeFallback = String(item?.student ?? item?.admissionNo ?? item?.studentID ?? item?.studentId ?? '').trim();
+    return /[a-zA-Z]/.test(idLikeFallback) ? idLikeFallback : '';
+  }
+
 }

@@ -46,6 +46,17 @@ constructor(
       const normalized = (value ?? '').toString().trim();
       if (!normalized) {
         this.clearAdmissionDrivenSelectionAndUnlock(false);
+        this.resetFeePreviewState(true);
+        this.admissionLookupNoData = false;
+        return;
+      }
+
+      // Any edit to Admission No that differs from last loaded student: reset hierarchy + fee UI.
+      // Submit will repopulate School / Year / Class / Division / Student and fee data.
+      const lastLoadedAdmission = (this.selectedAdmissionNo || '').toString().trim().toLowerCase();
+      if (normalized.toLowerCase() !== lastLoadedAdmission) {
+        this.resetHierarchyFieldsAfterAdmissionNoChange();
+        this.admissionLookupNoData = false;
       }
     });
   };
@@ -103,6 +114,7 @@ constructor(
   selectedAdmissionNo: string = '';
   selectedClassInfo: string = '';
   isAdmissionLookupMode: boolean = false;
+  admissionLookupNoData: boolean = false;
 
   AdminselectedSchoolID:string = '';
   AdminselectedSchoolFeeCategoryID:string = '';
@@ -112,6 +124,18 @@ constructor(
   private admissionLookupRequestToken = 0;
   private admissionNoSubscription?: Subscription;
   private suppressAdmissionNoWatcher = false;
+
+  private getResponseData(response: any): any[] {
+    if (Array.isArray(response?.data)) return response.data;
+    if (Array.isArray(response?.Data)) return response.Data;
+    return [];
+  }
+
+  private isApiSuccess(response: any): boolean {
+    const code = response?.statusCode ?? response?.StatusCode;
+    const success = response?.success ?? response?.Success;
+    return code === 200 || success === true;
+  }
 
   ClassDivisionForm: any = new FormGroup({
     ID: new FormControl(),
@@ -161,6 +185,7 @@ constructor(
     this.selectedStudentName = '';
     this.selectedAdmissionNo = '';
     this.selectedClassInfo = '';
+    this.admissionLookupNoData = false;
     this.receiptNo = '';
     this.feeCategoryList = [];
     this.feesList = [];
@@ -183,6 +208,62 @@ constructor(
 
     if (reloadSchools) {
       this.FetchSchoolsList();
+    }
+  }
+
+  /**
+   * Call when user edits Admission No so dropdowns and fee block do not show stale data.
+   * Does not clear the Admission No input or refetch school list.
+   */
+  private resetHierarchyFieldsAfterAdmissionNoChange(): void {
+    this.admissionLookupRequestToken++;
+    this.isAdmissionLookupMode = false;
+    this.unlockHierarchyFields();
+
+    this.AdminselectedSchoolID = '';
+    this.AdminselectedAcademivYearID = '';
+    this.AdminselectedClassID = '';
+    this.AdminselectedClassDivisionID = '';
+    this.AdminselectedSchoolFeeCategoryID = '';
+
+    this.academicYearList = [];
+    this.SyllabusList = [];
+    this.DivisionsList = [];
+    this.ClassTeachersList = [];
+
+    this.ClassDivisionForm.get('School')?.patchValue('0', { emitEvent: false });
+    this.ClassDivisionForm.get('AcademicYear')?.patchValue('0', { emitEvent: false });
+    this.ClassDivisionForm.get('Class')?.patchValue('0', { emitEvent: false });
+    this.ClassDivisionForm.get('Division')?.patchValue('0', { emitEvent: false });
+    this.ClassDivisionForm.get('ClassTeacher')?.patchValue('0', { emitEvent: false });
+
+    this.resetFeePreviewState(true);
+    this.admissionLookupNoData = false;
+  }
+
+  private resetFeePreviewState(clearStudentSelection: boolean): void {
+    this.showFeeTable = false;
+    this.showFeeTableAfterFeeCategory = false;
+    this.receiptNo = '';
+    this.feeCategoryList = [];
+    this.feesList = [];
+    this.DueAmount = 0;
+    this.totalAmount = 0;
+    this.paymentDate = '';
+    this.AdminselectedSchoolFeeCategoryID = '';
+    this.ClassDivisionForm.get('FeeCategory')?.patchValue('0', { emitEvent: false });
+    this.ClassDivisionForm.get('AmountToBePaid')?.patchValue('', { emitEvent: false });
+    this.ClassDivisionForm.get('PaymentMode')?.patchValue('0', { emitEvent: false });
+    this.ClassDivisionForm.get('TransactionID')?.patchValue('', { emitEvent: false });
+    this.ClassDivisionForm.get('ChequeNo')?.patchValue('', { emitEvent: false });
+    this.setTransactionValidatorsByPaymentMode('0');
+
+    if (clearStudentSelection) {
+      this.selectedStudentID = '';
+      this.selectedStudentName = '';
+      this.selectedAdmissionNo = '';
+      this.selectedClassInfo = '';
+      this.ClassDivisionForm.get('ClassTeacher')?.patchValue('0', { emitEvent: false });
     }
   }
 
@@ -285,15 +366,14 @@ constructor(
     }
 
     return this.apiurl.post<any>('Tbl_FeeCollection_CRUD_Operations', {
-      Flag: isSearch ? '8' : '5',
-      SchoolID:SchoolIdSelected,
-      Class: isSearch ? this.searchQuery.trim() : null
+      Flag: '5',
+      SchoolID:SchoolIdSelected
     });
   }
 
   FetchInitialData(extra: any = {}) {
     const isSearch = !!this.searchQuery?.trim();
-    const flag = isSearch ? '7' : '2';
+    const flag = '2';
 
     let SchoolIdSelected = '';
 
@@ -323,11 +403,9 @@ constructor(
           ...extra
         };
 
-        if (isSearch) payload.Class = this.searchQuery.trim();
-
         this.apiurl.post<any>('Tbl_FeeCollection_CRUD_Operations', payload).subscribe({
           next: (response: any) => {
-            const data = response?.data || [];
+            const data = this.getResponseData(response);
             this.mapAcademicYears(response);
 
             if (data.length > 0 && !this.pageCursors[this.currentPage - 1]) {
@@ -358,14 +436,14 @@ constructor(
 
   mapAcademicYears(response: any) {
 
-  this.ClassDivisionList = (response.data || []).map((item: any) => ({
+  this.ClassDivisionList = this.getResponseData(response).map((item: any) => ({
     ID: item.id,
     ReceiptNo: item.receiptNo,
     AdmissionNo: item.student,
     StudentName: item.studentName,
     AmountPaid: item.amountPaid,
     PaymentDate: this.formatDateDDMMYYYY(item.paymentDate),
-    PaymentMode: item.paymentMode,
+    PaymentMode: this.getPaymentModeDisplayValue(item.paymentMode),
     ClassName: item.className,
     DivisionName: item.divisionName,
     FeeCategoryName: item.feeCategoryName,
@@ -827,13 +905,15 @@ constructor(
 
   getReceiptPaymentModeLabel(): string {
     const rawMode = this.viewSyllabus?.PaymentMode;
-    const mode = (rawMode ?? '').toString().trim().toLowerCase();
+    return this.getPaymentModeDisplayValue(rawMode);
+  }
 
+  private getPaymentModeDisplayValue(rawMode: any): string {
+    const mode = (rawMode ?? '').toString().trim().toLowerCase();
     if (mode === '1' || mode === 'cash') return 'Cash';
     if (mode === '2' || mode === 'upi') return 'UPI';
     if (mode === '4' || mode === 'card') return 'Card';
     if (mode === '3' || mode === 'cheque') return 'Cheque';
-
     return rawMode || '-';
   }
 
@@ -977,9 +1057,13 @@ constructor(
     this.unlockHierarchyFields();
     this.ClassDivisionForm.get('AdmissionNo')?.patchValue('', { emitEvent: false });
     this.selectedAdmissionNo = '';
+    this.resetFeePreviewState(true);
     this.academicYearList=[];
     this.SyllabusList = [];
+    this.DivisionsList = [];
+    this.ClassTeachersList = [];
     this.ClassDivisionForm.get('Class').patchValue('0');
+    this.ClassDivisionForm.get('Division').patchValue('0');
     this.ClassDivisionForm.get('AcademicYear').patchValue('0');
     const target = event.target as HTMLSelectElement;
     const schoolID = target.value;
@@ -998,8 +1082,12 @@ constructor(
     this.unlockHierarchyFields();
     this.ClassDivisionForm.get('AdmissionNo')?.patchValue('', { emitEvent: false });
     this.selectedAdmissionNo = '';
+    this.resetFeePreviewState(true);
     this.SyllabusList = []; 
+    this.DivisionsList = [];
+    this.ClassTeachersList = [];
     this.ClassDivisionForm.get('Class').patchValue('0');
+    this.ClassDivisionForm.get('Division').patchValue('0');
     const target = event.target as HTMLSelectElement;
     const schoolID = target.value;
     if(schoolID=="0"){
@@ -1016,7 +1104,9 @@ constructor(
     this.unlockHierarchyFields();
     this.ClassDivisionForm.get('AdmissionNo')?.patchValue('', { emitEvent: false });
     this.selectedAdmissionNo = '';
+    this.resetFeePreviewState(true);
     this.DivisionsList = [];    
+    this.ClassTeachersList = [];
     this.ClassDivisionForm.get('Division').patchValue('0');
     const target = event.target as HTMLSelectElement;
     const schoolID = target.value;
@@ -1034,6 +1124,7 @@ constructor(
       this.unlockHierarchyFields();
       this.ClassDivisionForm.get('AdmissionNo')?.patchValue('', { emitEvent: false });
       this.selectedAdmissionNo = '';
+      this.resetFeePreviewState(true);
       this.ClassTeachersList = [];  
       const target = event.target as HTMLSelectElement;
       const schoolID = target.value;
@@ -1051,6 +1142,7 @@ constructor(
     this.unlockHierarchyFields();
     this.ClassDivisionForm.get('AdmissionNo')?.patchValue('', { emitEvent: false });
     this.selectedAdmissionNo = '';
+    this.resetFeePreviewState(false);
     const studentId = event.target.value;
     this.selectedStudentID = studentId;    
   }
@@ -1076,11 +1168,13 @@ constructor(
   private setTransactionValidatorsByPaymentMode(selectedMode: string) {
     const transactionControl = this.ClassDivisionForm.get('TransactionID');
     const chequeControl = this.ClassDivisionForm.get('ChequeNo');
+    const transactionIdPattern = /^[A-Za-z0-9_-]{8,30}$/;
+    const chequeNoPattern = /^\d{6}$/;
 
     if (!transactionControl || !chequeControl) return;
 
     if (selectedMode === '2' || selectedMode === '4') {
-      transactionControl.setValidators([Validators.required]);
+      transactionControl.setValidators([Validators.required, Validators.pattern(transactionIdPattern)]);
       chequeControl.clearValidators();
       chequeControl.patchValue('');
       chequeControl.setErrors(null);
@@ -1092,7 +1186,7 @@ constructor(
     }
 
     if (selectedMode === '3') {
-      chequeControl.setValidators([Validators.required]);
+      chequeControl.setValidators([Validators.required, Validators.pattern(chequeNoPattern)]);
       chequeControl.updateValueAndValidity();
     } else {
       chequeControl.clearValidators();
@@ -1139,19 +1233,27 @@ constructor(
 
     this.apiurl.post("Tbl_FeeCollection_CRUD_Operations", data).subscribe({
       next: (response: any) => {
-        if (response.statusCode === 200) {
+        if (this.isApiSuccess(response)) {
           this.IsAddNewClicked=!this.IsAddNewClicked;
           this.isModalOpen = true;
-          this.AminityInsStatus = "Fee Discount Allocation Submitted!";
+          this.AminityInsStatus = response?.message || response?.Message || "Fee collected successfully!";
           this.ClassDivisionForm.reset();
           this.ClassDivisionForm.markAsPristine();
+          this.showFeeTable = false;
+          this.showFeeTableAfterFeeCategory = false;
+          this.feesList = [];
+          this.totalAmount = 0;
+          this.DueAmount = 0;
+        } else {
+          this.AminityInsStatus = response?.message || response?.Message || "Unable to collect fee.";
+          this.isModalOpen = true;
         }
       },
       error: (err:any) => {
-        if (err.status === 400 && err.error?.message) {
-          this.AminityInsStatus = err.error.message;  // School Name Already Exists!
-        } else if (err.status === 500 && err.error?.Message) {
-          this.AminityInsStatus = err.error.Message;  // Database or internal error
+        if (err.status === 400 && (err.error?.message || err.error?.Message)) {
+          this.AminityInsStatus = err.error.message || err.error.Message;
+        } else if (err.status === 500 && (err.error?.message || err.error?.Message)) {
+          this.AminityInsStatus = err.error.message || err.error.Message;
         } else {
           this.AminityInsStatus = "Unexpected error occurred.";
         }
@@ -1188,14 +1290,29 @@ constructor(
     this.selectedStudentName = '';
     this.selectedAdmissionNo = '';
     this.selectedClassInfo = '';
+    this.admissionLookupNoData = false;
     this.previousAdvance = 0;
     this.currentAdvance = 0;
 
     const enteredAdmissionNo = (this.ClassDivisionForm.get('AdmissionNo')?.value || '').toString().trim();
-    const shouldSearchByAdmission = !!enteredAdmissionNo && (!this.selectedStudentID || this.selectedStudentID === enteredAdmissionNo);
+    const shouldSearchByAdmission = !!enteredAdmissionNo;
     this.isAdmissionLookupMode = false;
     this.unlockHierarchyFields();
     if (shouldSearchByAdmission) {
+      // For Admission No lookup, never reuse previous hierarchy context.
+      this.AdminselectedSchoolID = '';
+      this.AdminselectedAcademivYearID = '';
+      this.AdminselectedClassID = '';
+      this.AdminselectedClassDivisionID = '';
+      this.ClassDivisionForm.get('School')?.patchValue('0');
+      this.ClassDivisionForm.get('AcademicYear')?.patchValue('0');
+      this.ClassDivisionForm.get('Class')?.patchValue('0');
+      this.ClassDivisionForm.get('Division')?.patchValue('0');
+      this.ClassDivisionForm.get('ClassTeacher')?.patchValue('0');
+      this.academicYearList = [];
+      this.SyllabusList = [];
+      this.DivisionsList = [];
+      this.ClassTeachersList = [];
       this.selectedStudentID = enteredAdmissionNo;
     }
 
@@ -1216,6 +1333,14 @@ constructor(
     if (shouldSearchByAdmission) {
       studentFromAdmission = await this.fetchStudentByAdmissionNo(this.selectedStudentID);
       if (requestToken !== this.admissionLookupRequestToken) return;
+    }
+
+    // If Admission No mode is used, only proceed when student lookup succeeds.
+    if (shouldSearchByAdmission && !studentFromAdmission) {
+      this.resetFeePreviewState(true);
+      this.showFeeTable = false;
+      this.admissionLookupNoData = true;
+      return;
     }
 
     if (studentFromAdmission) {
@@ -1274,8 +1399,9 @@ constructor(
       const divisionName = divisionObj?.Name || '';
       this.selectedClassInfo = className && divisionName ? `${className} - ${divisionName}` : className || divisionName || '';
     }
+    // Load dependent data only after fresh student context is ready.
     this.FetchReciptNo();
-    this.FetchFeeCategoryList();    
+    this.FetchFeeCategoryList();
   }
 
   async onSubmit(): Promise<void> {
@@ -1294,6 +1420,11 @@ constructor(
     const schoolID = target.value;
     if(schoolID=="0"){
       this.AdminselectedSchoolFeeCategoryID="";
+      this.showFeeTableAfterFeeCategory = false;
+      this.feesList = [];
+      this.DueAmount = 0;
+      this.totalAmount = 0;
+      this.ClassDivisionForm.get('AmountToBePaid')?.patchValue('', { emitEvent: false });
     }else{
       this.AdminselectedSchoolFeeCategoryID = schoolID;
       this.showFeeTableAfterFeeCategory = true;
