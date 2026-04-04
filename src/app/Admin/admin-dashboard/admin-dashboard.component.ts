@@ -28,10 +28,10 @@ export class AdminDashboardComponent {
     }
   }
 
-  // isExpanded = true;
-  // toggleSidebar() {
-  //   this.isExpanded = !this.isExpanded;
-  // }
+  toggleSidebar() {
+    this.isExpanded = !this.isExpanded;
+    this.sidebarService.toggleSidebar();
+  }
 
   logout() {
     this.router.navigate(['/signin'])

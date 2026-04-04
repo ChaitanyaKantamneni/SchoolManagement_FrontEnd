@@ -1,239 +1,407 @@
-.Maincontainer{
+/* Professional Enterprise Login Theme - Production Grade */
+:root {
+  --primary-blue: #1E40AF;    
+  --primary-hover: #111827;
+  --bg-soft: #f1f5f9;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --border-subtle: #e2e8f0;
+  --shadow-elegant: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+  --input-focus-ring: rgba(30, 64, 175, 0.15);
+}
+
+/* Global Micro-Polish */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: rgba(30, 64, 175, 0.2);
+  color: var(--text-main);
+}
+
+/* Main Container */
+.Maincontainer {
   height: 100vh;
   width: 100%;
-  background: #7bbbff8a;
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(30, 64, 175, 0.08), transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(15, 23, 42, 0.06), transparent 40%),
+    linear-gradient(135deg, #f8fafc, #eef2ff);
   display: flex;
   justify-content: center;
   align-items: center;
+  font-family: 'Inter', -apple-system, sans-serif;
+  padding: 20px;
 }
 
+/* Content Wrapper */
 .contentwrapper {
   display: flex;
-  justify-content: stretch;
-  align-items: center;
-  max-width: 60%;
+  max-width: 960px; 
   width: 100%;
-  margin: 20px auto;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  min-height: 400px;
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  border-radius: 20px;
+  box-shadow: var(--shadow-elegant);
+  overflow: hidden;
+  min-height: 560px;
 }
 
+/* Left Section: Branding & Illustration */
 .loginIconDiv {
   width: 50%;
-  min-width: 50%;
-  max-width: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  height: 100%;
-  box-sizing: border-box;
-  border-right: 1px dotted #0067ff;
-  padding: 10px;
+  background-color: #f8fafc; /* Very light cool-gray */
+  border-right: 1px solid var(--border-subtle);
+  padding: 48px;
 }
 
 .loginIconLogo {
-  width: 60%;
-  height: 60px;
-  margin-bottom: 10px;
-  background-color: white;
-  padding: 5px;
-  border-radius: 4px;
-  flex-shrink: 0;
+  width: auto;
+  max-width: 160px;
+  height: auto;
+  margin-bottom: 40px;
+  opacity: 0.9;
 }
 
 .loginIconImg {
   width: 100%;
-  height: auto;
-  max-height: 300px;
-  margin-bottom: 10px;
-  padding: 5px;
-  border-radius: 4px;
   display: flex;
   justify-content: center;
-  align-items: center;
 }
 
 .loginIconImg img {
   width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
+  max-width: 340px;
+  height: auto;
+  animation: float 6s ease-in-out infinite;
+  will-change: transform;
 }
 
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Right Section: Form */
 .loginFormDiv {
   width: 50%;
-  min-width: 50%;
-  max-width: 50%;
-  padding: 20px;
+  padding: 48px;
   display: flex;
+  flex-direction: column;
   justify-content: center;
-  align-items: center;
-  height: 100%;
-  box-sizing: border-box;
+  animation: fadeInUp 0.5s ease;
 }
 
-
-.loginFormInputsDiv{
+.loginFormInputsDiv {
   width: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 20px;
 }
 
-.loginFormInputsDiv p{
-  font-size: x-small;
-}
-
-.InputFieldsContainer{
+.loginFormInputsDiv h2 {
+  color: var(--text-main);
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
   margin-bottom: 10px;
 }
 
-.inputField{
-  width: 93%;
+.loginFormInputsDiv p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 32px;
 }
 
-.Captcha{
+.InputFieldsContainer {
+  margin-bottom: 24px;
+}
+
+.inputField {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 15px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--text-main);
+  background: #fff;
+}
+
+.inputField:hover {
+  border-color: #cbd5f5;
+}
+
+.inputField:focus {
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 4px var(--input-focus-ring);
+  outline: none;
+}
+
+/* Captcha */
+.Captcha {
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: 10px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-top: 10px;
-  gap: 5px;
+  gap: 12px;
+  margin-top: 12px;
+  border: 1px solid var(--border-subtle);
 }
 
-.Captcha-canvas{
-  width: 90px !important;
+.Captcha-canvas {
+  border-radius: 6px;
+  filter: grayscale(1);
+  opacity: 0.8;
 }
 
-.loginFieldInputCaptcha{
+.loginFieldInputCaptcha {
   display: flex;
   flex-direction: column;
-  width: 180px;
+  flex: 1;
 }
 
-.CaptchainputField{
+.CaptchainputField {
+  flex: 1;
   border-radius: 8px;
-  padding: 7px 10px;
-  border: 0.5px solid #ccc;
-  font-size: 11px;
-  color: #111;
-  background: transparent;
-  outline: none;
-  transition: 0.2s;
-  width: 80%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border-subtle);
+  font-size: 14px;
+  transition: all 0.2s;
 }
 
-.CaptchainputField:focus{
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59,130,246,0.3);
+.CaptchainputField:focus {
+  border-color: var(--primary-blue);
+  background: white;
 }
 
-.passwordInputContainer{
+/* Password Input */
+.passwordInputContainer {
   width: 100%;
-  box-sizing:border-box;
+  box-sizing: border-box;
   position: relative;
 }
 
-.passwordInputContainer .passwordIcon{
+.passwordInputContainer .passwordIcon {
   position: absolute;
-  right: 25px;
+  right: 16px;
   top: 50%;
   transform: translateY(-50%);
+  color: var(--text-muted);
   cursor: pointer;
-  color: black;
-  font-size: medium;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  z-index: 10;
 }
 
-.input-with-error{
-position: relative;
+.passwordInputContainer .passwordIcon:hover {
+  color: var(--primary-blue);
 }
 
-.text-danger{
-position: absolute;
-font-size: 9px;
-color: red;
-margin-top: 1px;
-left: 0;
+.input-with-error {
+  position: relative;
 }
 
+.text-danger {
+  position: absolute;
+  font-size: 12px;
+  color: #EF4444;
+  margin-top: 4px;
+  left: 0;
+  font-weight: 500;
+}
+
+/* Buttons and Links */
 .loginFormButtons {
   display: flex;
-  justify-content: space-between;
-  gap: 15px;
-  margin-top: 20px;
-  flex-wrap: wrap;
-}
-
-.forgotPasswordBtn {
-  background: transparent;
-  border: none;
-  color: #0067ff;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 4px;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.forgotPasswordBtn:hover,
-.forgotPasswordBtn:focus {
-  background-color: #e6f0ff;
-  outline: none;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 28px;
 }
 
 .loginBtn {
-  background-color: #0067ff;
-  border: none;
+  background-color: var(--primary-blue);
   color: white;
-  font-weight: 700;
-  padding: 10px 20px;
-  border-radius: 6px;
+  padding: 14px 16px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 16px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  box-shadow: 0 3px 6px rgba(0, 103, 255, 0.4);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(30, 64, 175, 0.15);
 }
 
-.loginBtn:hover,
-.loginBtn:focus {
-  background-color: #004bb5;
-  outline: none;
+.loginBtn:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
-@media(max-width:768px){
-  .loginForm{
-    width: 90%;
-    flex-wrap: wrap;
+.loginBtn:active {
+  transform: translateY(0);
+}
+
+.forgotPasswordBtn {
+  color: var(--primary-blue);
+  font-size: 14px;
+  font-weight: 600;
+  background: none;
+  border: none;
+  cursor: pointer;
+  align-self: center;
+  transition: color 0.2s;
+}
+
+.forgotPasswordBtn:hover {
+  text-decoration: underline;
+  color: var(--primary-hover);
+}
+
+/* Large Tablets & Small Desktops */
+@media (max-width: 1024px) {
+  .contentwrapper {
+    max-width: 720px;
   }
 
-  .loginImg, .loginFields{
-    width: 100%;
+  .loginIconImg img {
+    max-width: 260px;
+  }
+}
+
+/* Tablets & Mobile Devices (Logo on top) */
+@media (max-width: 768px) {
+  .contentwrapper {
+    flex-direction: column;
+    max-width: 420px;
+    border-radius: 16px;
+    min-height: auto;
   }
 
-  .Captcha{
-    flex-wrap: wrap;
-  }
-
-  .loginFieldsInputsCaptcha{
-    width: 55%;
-  }
-
-  .loginFormButtons{
+  .loginIconDiv {
     display: flex;
-    justify-content: space-between;
+    width: 100%;
+    justify-content: center;
     align-items: center;
-    flex-wrap: wrap;
+    padding: 24px 0;
+    border-right: none;
+    border-bottom: 1px solid var(--border-subtle);
+    background-color: #f8fafc;
   }
 
-  .ModalDialogCustomCssClass{
-    width: 90%;
+  .loginIconImg img {
+    max-width: 180px;
+    margin-bottom: 16px;
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .loginFormDiv {
+    width: 100%;
+    padding: 32px 24px 24px 24px;
+  }
+
+  .loginFormInputsDiv h2 {
+    font-size: 1.5rem;
   }
 }
 
+/* Mobile Devices (iPhone, Android) */
+@media (max-width: 480px) {
+  .Maincontainer {
+    padding: 12px;
+  }
 
+  .contentwrapper {
+    max-width: 100%;
+    border-radius: 14px;
+  }
+
+  .loginFormDiv {
+    padding: 24px 18px 18px 18px;
+  }
+
+  .loginFormInputsDiv h2 {
+    font-size: 1.35rem;
+    margin-bottom: 8px;
+  }
+
+  .loginFormInputsDiv p {
+    font-size: 0.85rem;
+    margin-bottom: 24px;
+  }
+
+  .InputFieldsContainer {
+    margin-bottom: 18px;
+  }
+
+  .inputField {
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+
+  .loginBtn {
+    padding: 12px 14px;
+    font-size: 15px;
+  }
+
+  .Captcha {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 10px;
+  }
+
+  .Captcha canvas {
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  .loginFieldInputCaptcha {
+    margin-top: 8px;
+  }
+
+  .loginIconImg img {
+    max-width: 160px;
+  }
+}
+
+/* Extra Small Devices (iPhone SE, older phones) */
+@media (max-width: 360px) {
+  .loginFormDiv {
+    padding: 20px 14px;
+  }
+
+  .loginFormInputsDiv h2 {
+    font-size: 1.25rem;
+  }
+
+  .loginBtn {
+    font-size: 14px;
+    padding: 11px 12px;
+  }
+
+  .forgotPasswordBtn {
+    font-size: 13px;
+  }
+
+  .loginIconImg img {
+    max-width: 140px;
+  }
+}
