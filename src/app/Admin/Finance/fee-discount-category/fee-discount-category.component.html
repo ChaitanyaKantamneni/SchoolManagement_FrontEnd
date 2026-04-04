@@ -45,7 +45,7 @@
                 <th class="visually-hidden">Academic Year ID</th>
                 <th>SI.No</th>
                 <th (click)="sort('Name')" class="sortable-column">
-                  <span class="column-text">DiscountCategory Name</span>
+                  <span class="column-text">Discount Category Name</span>
                   <span class="arrows">
                     <mat-icon 
                       [style.color]="sortColumn === 'Name' && sortDirection === 'asc' ? 'red' : 'inherit'">
@@ -57,10 +57,10 @@
                     </mat-icon>
                   </span>
                 </th>
-                <th>DiscountType</th>
-                <th>MinAmountForDiscount</th>
-                <th>DiscountValuePerInstallment</th>
-                <th>FeeCategory</th>
+                <th>Discount Type</th>
+                <th>Min Amount For Discount</th>
+                <th>Discount Value Per Installment</th>
+                <th>Fee Category</th>
                 <th *ngIf="isAdmin">School</th>
                 <th>Academic Year</th>
                 <th>Status</th>
@@ -122,7 +122,7 @@
         <p>Add Fee Discount Category</p>
       </div>
       <div class="AddFormConatiner">
-        <form [formGroup]="ClassForm">
+        <form [formGroup]="ClassForm" (ngSubmit)="ViewClassClicked ? UpdateClass() : SubmitClass()">
           <div class="FormInputRowsContainer">
             <div class="InputRow">
               <div class="InputFieldsContainer" *ngIf="isAdmin">
@@ -164,17 +164,17 @@
             </div>
               
             <div class="InputRow">
-                <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <div class="InputFieldsContainer" >
                     <label class="inputLabel" for="email">Discount Type <span class="required">*</span></label>
                     <div class="input-with-error">
                         <select class="inputField" type="date" formControlName="DiscountType" placeholder="Select DiscountType" >
-                            <option value="0" disabled>Select</option>
+                            <option value="" disabled>Select</option>
                             <option value="Amount">Amount</option>
                             <option value="Percentage">Percentage</option>
                             <option value="Excemption">Excemption</option>
                         </select>
                         <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
-                        <div *ngIf="ClassForm.get('DiscountType')?.hasError('min') && (ClassForm.get('DiscountType')?.touched || ClassForm.get('DiscountType')?.dirty)" class="text-danger">
+                        <div *ngIf="ClassForm.get('DiscountType')?.hasError('required') && (ClassForm.get('DiscountType')?.touched || ClassForm.get('DiscountType')?.dirty)" class="text-danger">
                             <small>Please Select Discount Type.</small>
                         </div>
                     </div>
@@ -187,6 +187,20 @@
                         <div *ngIf="(ClassForm.get('MinAmountForDiscount' ) ?. touched && ClassForm.get('MinAmountForDiscount' ) ?. invalid)" class="text-danger">
                             <div *ngIf="(ClassForm.get('MinAmountForDiscount' ) ?. errors ?. ['required' ]) ">
                             <small>Please Enter Min Amount For Discount.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="InputFieldsContainer">
+                    <label class="inputLabel" for="email">Discount Value Per Installment <span class="required">*</span></label>
+                    <div class="input-with-error">
+                        <input class="inputField" formControlName="DiscountValuePerInstallment" placeholder="Enter Discount Value" (keypress)="allowOnlyNumbers($event)" />
+                        <div *ngIf="(ClassForm.get('DiscountValuePerInstallment')?.touched || ClassForm.get('DiscountValuePerInstallment')?.dirty) && ClassForm.get('DiscountValuePerInstallment')?.invalid" class="text-danger">
+                            <div *ngIf="ClassForm.get('DiscountValuePerInstallment')?.errors?.['required']">
+                                <small>Please Enter Discount Value.</small>
+                            </div>
+                            <div *ngIf="ClassForm.get('DiscountValuePerInstallment')?.errors?.['min']">
+                                <small>Discount Value must be greater than 0.</small>
                             </div>
                         </div>
                     </div>
@@ -265,8 +279,8 @@
             </div>
           </div>
           <div class="ActionButtons">
-            <button class="btn" *ngIf="ViewClassClicked && canEdit()" (click)="UpdateClass()">Update</button>
-            <button class="btn" *ngIf="!ViewClassClicked && canAdd()" (click)="SubmitClass()">Submit</button>
+            <button class="btn" type="submit" *ngIf="ViewClassClicked && canEdit()">Update</button>
+            <button class="btn" type="submit" *ngIf="!ViewClassClicked && canAdd()">Submit</button>
           </div>
         </form>
       </div>

@@ -22,6 +22,7 @@ import { HttpClient } from '@angular/common/http';
 })
 export class FeeDiscountCategoryComponent extends BasePermissionComponent {
   pageName = 'Fee Discount Category';
+  private readonly loggedInSchoolId = sessionStorage.getItem('schoolId') || '';
 
 constructor(
     private http: HttpClient,
@@ -37,6 +38,9 @@ constructor(
     this.checkViewPermission();
     this.SchoolSelectionChange=false;
     this.SyllabusList=[];
+    if (!this.isAdmin && this.loggedInSchoolId) {
+      this.AdminselectedSchoolID = this.loggedInSchoolId;
+    }
     this.FetchSchoolsList();
     this.FetchInitialData();
   };
@@ -87,7 +91,7 @@ constructor(
     FeeCategory: new FormControl(0,[Validators.required,Validators.min(1)]),
     DiscountType: new FormControl('',Validators.required),
     MinAmountForDiscount: new FormControl('',Validators.required),
-    DiscountValuePerInstallment:new FormControl(0, Validators.min(1)),
+    DiscountValuePerInstallment: new FormControl('', [Validators.required, Validators.min(1)]),
     Description: new FormControl(),
 
     School: new FormControl(),
@@ -296,21 +300,24 @@ constructor(
     } else {
       this.ClassForm.get('School')?.clearValidators();
     }
-    if(this.AdminselectedSchoolID==''){
-      this.FetchAcademicYearsList();
+    this.ClassForm.get('School')?.updateValueAndValidity();
+    if (!this.AdminselectedSchoolID && !this.isAdmin) {
+      this.AdminselectedSchoolID = this.loggedInSchoolId;
     }
+    this.FetchAcademicYearsList();
     this.ClassForm.reset();  
-    this.ClassForm.get('School').patchValue('0');
-    this.ClassForm.get('AcademicYear').patchValue('0');  
-    this.ClassForm.get('Name').patchValue('0');
-    this.ClassForm.get('StartDate').patchValue('0');
-    this.ClassForm.get('EndDate').patchValue('0');
-    this.ClassForm.get('FeeCategory').patchValue('0');
-    this.ClassForm.get('DiscountType').patchValue('0');
-    this.ClassForm.get('MinAmountForDiscount').patchValue('0');
-    this.ClassForm.get('DiscountValuePerInstallment').patchValue('0');
-    this.ClassForm.get('School').patchValue('0');
-    this.ClassForm.get('Description').patchValue('0');
+    this.ClassForm.patchValue({
+      School: this.isAdmin ? 0 : (this.AdminselectedSchoolID || 0),
+      AcademicYear: 0,
+      Name: '',
+      StartDate: '',
+      EndDate: '',
+      FeeCategory: 0,
+      DiscountType: '',
+      MinAmountForDiscount: '',
+      DiscountValuePerInstallment: 0,
+      Description: ''
+    });
     this.IsAddNewClicked=!this.IsAddNewClicked;
     this.IsActiveStatus=true;
     this.ViewClassClicked=false;
@@ -357,7 +364,7 @@ constructor(
         MinAmountForDiscount: this.ClassForm.get('MinAmountForDiscount')?.value,
         DiscountValuePerInstallment: this.ClassForm.get('DiscountValuePerInstallment')?.value,
         Description: this.ClassForm.get('Description')?.value,
-        SchoolID: this.ClassForm.get('School')?.value,
+        SchoolID: this.getEffectiveSchoolId(),
         AcademicYear: this.ClassForm.get('AcademicYear')?.value,
         IsActive:IsActiveStatusNumeric,
         Flag: '1'
@@ -483,7 +490,7 @@ constructor(
         MinAmountForDiscount: this.ClassForm.get('MinAmountForDiscount')?.value,
         DiscountValuePerInstallment: this.ClassForm.get('DiscountValuePerInstallment')?.value,
         Description: this.ClassForm.get('Description')?.value,
-        SchoolID: this.ClassForm.get('School')?.value,
+        SchoolID: this.getEffectiveSchoolId(),
         AcademicYear: this.ClassForm.get('AcademicYear')?.value,
         IsActive:IsActiveStatusNumeric,
         Flag: '5'
@@ -769,6 +776,13 @@ constructor(
       this.AdminselectedAcademivYearID = AcademicYearID;
     }   
     this.FetchFeeCategoryList();
+  }
+
+  private getEffectiveSchoolId(): string | number {
+    if (this.isAdmin) {
+      return this.ClassForm.get('School')?.value;
+    }
+    return this.AdminselectedSchoolID || this.loggedInSchoolId || this.ClassForm.get('School')?.value || '';
   }
 
 
