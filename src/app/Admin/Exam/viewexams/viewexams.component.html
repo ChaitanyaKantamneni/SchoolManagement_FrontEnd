@@ -76,7 +76,7 @@
                  </div>
                  <div class ="InputRow">
                       <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">ExamType<span class="required">*</span></label>
+                <label class="inputLabel" for="email">Exam Type<span class="required">*</span></label>
                 <div class="input-with-error">
                   <select class="inputField" type="date" formControlName="ExamType" placeholder="Select Start Date" (change)="onAdminExamtypeChange($event)"  >
                     <option value="0">-- Select Exam --</option>
@@ -164,7 +164,18 @@
                 <td data-label="ExamDateAndTime">{{ Syllabus.SubjectExamDateAndTime }}</td>
                  <td data-label="ExamType" *ngIf="isAdmin">{{ Syllabus.SchoolName }}</td>
                 <td data-label="AcademicYearName" *ngIf="isAdmin">{{ Syllabus.AcademicYearName }}</td>
-                <td data-label="Status">{{ Syllabus.IsActive }}</td>
+                <td data-label="Status">
+                  <span
+                    class="status-badge"
+                    [ngClass]="{
+                      'status-scheduled': Syllabus.IsActive === 'Scheduled',
+                      'status-attendance': Syllabus.IsActive === 'Attendance Marked',
+                      'status-published': Syllabus.IsActive === 'Published',
+                      'status-default': Syllabus.IsActive !== 'Scheduled' && Syllabus.IsActive !== 'Attendance Marked' && Syllabus.IsActive !== 'Published'
+                    }">
+                    {{ Syllabus.IsActive }}
+                  </span>
+                </td>
                 <!-- <td data-label="Actions">
                   <div class="d-flex justify-content-center align-items-center h-100">
                    

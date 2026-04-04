@@ -1,4 +1,4 @@
-import { NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
+import { NgClass, NgFor, NgIf, NgStyle, SlicePipe } from '@angular/common';
 import { Component } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { DashboardTopNavComponent } from '../../../SignInAndSignUp/dashboard-top-nav/dashboard-top-nav.component';
@@ -12,11 +12,11 @@ import { HttpClient } from '@angular/common/http';
 @Component({
   selector: 'app-examattendence',
  standalone: true,
-  imports: [NgIf, NgFor, NgClass, NgStyle, MatIconModule, DashboardTopNavComponent, ReactiveFormsModule, FormsModule],  templateUrl: './examattendence.component.html',
+  imports: [NgIf, NgFor, NgClass, NgStyle, SlicePipe, MatIconModule, DashboardTopNavComponent, ReactiveFormsModule, FormsModule],  templateUrl: './examattendence.component.html',
   styleUrl: './examattendence.component.css'
 })
 export class ExamattendenceComponent  extends BasePermissionComponent{
-   pageName = 'ViewExams';
+   pageName = 'ExamAttendence';
 
   constructor(
     private http: HttpClient,
@@ -284,7 +284,7 @@ FetchExamsbyclassanddivisionList() {
     SchoolID: this.AdminselectedSchoolID || '',
     AcademicYear: this.AdminselectedAcademivYearID || '',
     Class :this.AdminselectedClassID || '',
-    Divisions :this.AdminselectedDiviosnID || '',
+    Division :this.AdminselectedDiviosnID || '',
     ExamType :this.AdminselecteExamID || '',
     Flag: '3'
   };
@@ -299,7 +299,7 @@ FetchExamsbyclassanddivisionList() {
 
           this.examslist = response.data.map((item: any) => {
                             console.log(this.examslist)
-                            this.checkAttendanceStatusForExams();
+                            // this.checkAttendanceStatusForExams();
 
 
             const isActiveString =
@@ -328,6 +328,7 @@ FetchExamsbyclassanddivisionList() {
             return {
               ID: item.id,
               SchoolID: item.schoolID,
+              SubjectID: item.subjectID,
               Syllabus: item.syllabus,
               Class: item.className,          // ← friendly for table
               Divisions: item.divisionName,
@@ -365,7 +366,9 @@ checkAttendanceStatusForExams() {
   const body = {
     Flag: '2',
     SchoolID: this.AdminselectedSchoolID,
-    AcademicYear: this.AdminselectedAcademivYearID
+    AcademicYear: this.AdminselectedAcademivYearID,
+    Class: this.AdminselectedClassID,
+  Division: this.AdminselectedDiviosnID
   };
 
   this.apiurl.post('Tbl_ExamAttendence_CRUD_Operations', body)
@@ -375,9 +378,12 @@ checkAttendanceStatusForExams() {
 
       this.examslist.forEach(exam => {
 
-        const hasAttendance = response.data.some((x: any) =>
-          x.examType == exam.ID
-        );
+   const hasAttendance = response.data.some((x: any) =>
+  x.examID == exam.ID &&
+  x.subjectID == exam.SubjectID &&
+    x.division == this.AdminselectedDiviosnID   // ✅ ADD THIS
+
+);
 
         exam.isAttendanceSubmitted = hasAttendance;
 
@@ -460,8 +466,12 @@ checkAttendanceStatusForExams() {
                 SchoolName:item.schoolName,
                 AcademicYearName:item.academicYearName,
                 Division:item.divisionName,
-                IsPresent: item.attendance=== "1" 
-
+                IsPresent: item.attendance === "1",
+                originalIsPresent: item.attendance === "1",
+                Remark: item.remarks ?? '',
+                originalRemark: item.remarks ?? '',
+                showRemark: false,
+                showFullRemark: false
               };
             });
 
@@ -487,7 +497,7 @@ checkAttendanceStatusForExams() {
        SchoolID: this.AdminselectedSchoolID || '',
       AcademicYear: this.AdminselectedAcademivYearID || '',
       Class: this.AdminselectedClassID || '',
-      Divisions: this.AdminselectedDiviosnID || '',
+      Division: this.AdminselectedDiviosnID || '',
       ExamType: this.AdminselecteExamID || '',
       ExamTypeName: isSearch ? this.searchQuery.trim() : null
     });
@@ -525,7 +535,7 @@ private resetPaginationAndFetch() {
         SchoolID: this.AdminselectedSchoolID || '',
         AcademicYear: this.AdminselectedAcademivYearID || '',
         Class: this.AdminselectedClassID || '',
-        Divisions: this.AdminselectedDiviosnID || '',
+        Division: this.AdminselectedDiviosnID || '',
         ExamType: this.AdminselecteExamID || '',
 
         ...extra
@@ -616,7 +626,8 @@ private resetPaginationAndFetch() {
       SubjectID: item.subjectID,
       IndividualSubjectName:item.individualSubjectName,
       SubjectExamDateAndTime: formattedSubjectExamDate,
-      AttendanceMarked:item.attendanceMarked
+      AttendanceMarked:item.attendanceMarked,
+      ExamAttendancAndMarksMarked:item.examAttendancAndMarksMarked
     };
   });
   console.log('this.SyllabusList',this.SyllabusList)
@@ -645,9 +656,11 @@ formatDateYYYYMMDD(dateStr: string | null) {
 
   selectedExam: any;
   openAttendance(examRow: any) {
+    this.attendanceMode = 'add';   
+
 
     this.selectedExam = examRow;
-    this.selectedExamIDForAttendance = Number(examRow.ExamTypeID);
+    this.selectedExamIDForAttendance = Number(examRow.ID);
     this.selectedSubjectID=Number(examRow.SubjectID);
 
     this.FetchClassStudentsList();
@@ -655,8 +668,9 @@ formatDateYYYYMMDD(dateStr: string | null) {
   }
 
   openViewAttendance(examRow: any) {
+    this.attendanceMode = 'view';   
     this.selectedExam = examRow;
-    this.selectedExamIDForAttendance = Number(examRow.ExamTypeID);
+    this.selectedExamIDForAttendance = Number(examRow.ID);
     this.selectedSubjectID=Number(examRow.SubjectID);
     this.FetchClassStudentsListAfterAttendance();
     this.IsAddNewClicked = true;
@@ -746,73 +760,110 @@ formatDateYYYYMMDD(dateStr: string | null) {
     );
   };
 
+isSubmittingAttendance = false;
 
-  submitAttendance() {
-    const requests: any[] = [];
+submitAttendance() {
+  if (this.isSubmittingAttendance) return;
+  this.isSubmittingAttendance = true;
 
-    this.studentsList.forEach(student => {
-
-      const body = {
-        Flag: '1',
-        SchoolID: this.AdminselectedSchoolID,   
-        AcademicYear: this.AdminselectedAcademivYearID, 
-        ExamID: this.selectedExamIDForAttendance.toString(), 
-        SubjectID: this.selectedSubjectID.toString(), 
-        AdmissionID: student.AdmissionNo,        
-        Attendance: student.IsPresent ? '1' : '0',
-      };
-
-      requests.push(this.apiurl.post('Tbl_ExamAttendence_CRUD_Operations', body));
-    });
-
-    Promise.all(requests.map(req => req.toPromise()))
-      .then(() => {
-        
-        alert('Attendance Saved Successfully');
-        this.isAttendanceSubmitted=true;
-        this.IsAddNewClicked = false;
-        this.resetPaginationAndFetch();
-      })
-      .catch(err => {
-        console.error(err);
-        alert('Error saving attendance');
-      });
-
-  }
-
-  UpdateAttendance() {
-
-  const requests: any[] = [];
-
-  this.studentsList.forEach(student => {
-
-    const body = {
-      Flag: '5',
-      SchoolID: this.AdminselectedSchoolID,   
-        AcademicYear: this.AdminselectedAcademivYearID, 
-        ExamID: this.selectedExamIDForAttendance.toString(), 
-        SubjectID: this.selectedSubjectID.toString(), 
-        AdmissionID: student.AdmissionNo,       
+  const body = {
+    Flag: '1',
+    SchoolID: this.AdminselectedSchoolID,
+    AcademicYear: this.AdminselectedAcademivYearID,
+    ExamID: this.selectedExamIDForAttendance.toString(),
+    SubjectID: this.selectedSubjectID.toString(),
+    Class: this.AdminselectedClassID,
+    Division: this.AdminselectedDiviosnID,
+    Students: this.studentsList.map(student => ({
+      AdmissionID: student.AdmissionNo,
       Attendance: student.IsPresent ? '1' : '0',
-    };
+            Remarks: student.Remark ?? ''
 
-    requests.push(this.apiurl.post('Tbl_ExamAttendence_CRUD_Operations', body));
-  });
+    }))
+  };
 
-  Promise.all(requests.map(req => req.toPromise()))
-    .then(() => {
-      
-      alert('Attendance Saved Successfully');
-      this.isAttendanceSubmitted=true;
+  this.apiurl.post('Tbl_ExamAttendence_CRUD_Operations', body).subscribe({
+    next: () => {
+      this.AminityInsStatus = 'Attendance Saved Successfully';
+      this.isModalOpen = true;
+      this.isAttendanceSubmitted = true;
       this.IsAddNewClicked = false;
       this.resetPaginationAndFetch();
-    })
-    .catch(err => {
-      console.error(err);
-      alert('Error saving attendance');
-    });
+      this.isSubmittingAttendance = false;
+    },
+    error: () => {
+      this.AminityInsStatus = 'Error saving attendance';
+      this.isModalOpen = true;
+      this.isSubmittingAttendance = false;
+    }
+  });
+}
 
+  onViewModeToggleChange(student: any) {
+    const changed = student.IsPresent !== student.originalIsPresent;
+    if (changed) {
+      student.showRemark = true;
+      student.Remark = ''; // clear remark for fresh input
+    } else {
+      // toggled back to original — restore original remark, hide input
+      student.showRemark = false;
+      student.Remark = student.originalRemark ?? '';
+    }
   }
+
+ UpdateAttendance() {
+  const updatedStudents = this.studentsList.filter(student =>
+    student.IsPresent !== student.originalIsPresent ||
+    (student.Remark ?? '') !== (student.originalRemark ?? '')
+  );
+
+  if (updatedStudents.length === 0) {
+    this.AminityInsStatus = 'No changes detected';
+    this.isModalOpen = true;
+    return;
+  }
+
+  const missingRemark = updatedStudents.find(
+    s => s.IsPresent !== s.originalIsPresent && !s.Remark?.trim()
+  );
+
+  if (missingRemark) {
+    const direction = missingRemark.IsPresent ? 'Absent → Present' : 'Present → Absent';
+    this.AminityInsStatus = `⚠️ Please enter a remark for ${missingRemark.FirstName} (${direction}).`;
+    this.isModalOpen = true;
+    return;
+  }
+
+  // Build ONE payload with only changed students
+  const body = {
+    Flag: '5',
+    SchoolID: this.AdminselectedSchoolID,
+    AcademicYear: this.AdminselectedAcademivYearID,
+    ExamID: this.selectedExamIDForAttendance.toString(),
+    SubjectID: this.selectedSubjectID.toString(),
+    Class: this.AdminselectedClassID,
+    Division: this.AdminselectedDiviosnID,
+    Students: updatedStudents.map(s => ({
+      AdmissionID: s.AdmissionNo,
+      Attendance: s.IsPresent ? '1' : '0',
+      Remarks: s.Remark ?? ''
+    }))
+  };
+
+  this.apiurl.post('Tbl_ExamAttendence_CRUD_Operations', body).subscribe({
+    next: () => {
+      this.AminityInsStatus = 'Attendance Updated Successfully';
+      this.isModalOpen = true;
+      this.IsAddNewClicked = false;
+      this.resetPaginationAndFetch();
+    },
+    error: (err) => {
+      console.error(err);
+      this.AminityInsStatus = 'Error Updating attendance';
+      this.isModalOpen = true;
+    }
+  });
+}
 
   AddNewClicked() {
      
@@ -945,77 +996,95 @@ formatDateYYYYMMDD(dateStr: string | null) {
     this.isViewModalOpen = true;
   };
 
-  onAdminSchoolChange(event: Event) {
-    this.academicYearList=[];
-    this.SyllabusForm.get('AcademicYear').patchValue('0');
-    const target = event.target as HTMLSelectElement;
-    const schoolID = target.value;
-    this.classLists=[];
-    this.isTableModalOpen = false;
+ onAdminSchoolChange(event: Event) {
+  const schoolID = (event.target as HTMLSelectElement).value;
+  this.AdminselectedSchoolID = schoolID === "0" ? "" : schoolID;
+  this.resetFilters('school');  
+  this.FetchAcademicYearsList();
+ }
 
-    if(schoolID=="0"){
-      this.AdminselectedSchoolID="";
-    }else{
-      this.AdminselectedSchoolID = schoolID;
-    }   
-    this.FetchAcademicYearsList();
-  };
-
-  onAdminAcademicYearchange(event: Event){
-    this.examLists =[];
-    
-    this.SyllabusForm.get('ExamType').patchValue('0');
-    this.SyllabusForm.get('Class').patchValue('0');
-    this.SyllabusForm.get('Divisions').patchValue('0');
-
-    const target = event.target as HTMLSelectElement;
-    const academicyearId = target.value;
-    if(academicyearId=="0"){
-      this.AdminselectedAcademivYearID="";
-    }else{
-      this.AdminselectedAcademivYearID = academicyearId;
-    }
-    this.classLists=[];
-    this.isTableModalOpen = false;
-    this.FetchExamsList();
-    this.FetchClassList();
-  };
+ onAdminAcademicYearchange(event: Event) {
+  const academicyearId = (event.target as HTMLSelectElement).value;
+  this.AdminselectedAcademivYearID = academicyearId === "0" ? "" : academicyearId;
+  this.resetFilters('academic');  
+  this.FetchExamsList();
+  this.FetchClassList();
+ }
   
-  onAdminClasschange(event: Event){
-    this.divisionsList =[];
-    this.SyllabusForm.get('Divisions').patchValue('0');
-    const target = event.target as HTMLSelectElement;
+  onAdminClasschange(event: Event) {
+   const classId = (event.target as HTMLSelectElement).value;
+   this.AdminselectedClassID = classId === "0" ? "" : classId;
+   this.resetFilters('class');  
+   this.FetchDivisionsList();
+ }
 
-    const classId = target.value;
-
-    if (classId.length === 0) {
-      this.AdminselectedClassID = "";
-    } else {
-      this.AdminselectedClassID = classId; 
-    }
-    this.FetchDivisionsList();
-  };
-
-  onAdminDivisionsChange(event:Event){
-    const target = event.target as HTMLSelectElement;
-
-    const diviosnId = target.value;
-
-    if (diviosnId.length === 0) {
-      this.AdminselectedDiviosnID = "";
-    } else {
-      this.AdminselectedDiviosnID = diviosnId; 
-    }
-
+  onAdminDivisionsChange(event: Event) {
+    const divisionId = (event.target as HTMLSelectElement).value;
+    this.AdminselectedDiviosnID = divisionId === "0" ? "" : divisionId;
+    this.resetTable();  // only table reset needed
   }
 
-  onAdminExamtypeChange(event:Event){
-    const target = event.target as HTMLSelectElement;
-    const examId = target.value;
-    if (examId.length === 0) {
-      this.AdminselecteExamID = "";
-    } else {
-      this.AdminselecteExamID = examId; 
-    }
+  onAdminExamtypeChange(event: Event) {
+   const examId = (event.target as HTMLSelectElement).value;
+   this.AdminselecteExamID = examId === "0" ? "" : examId;
+   this.resetTable();  // only table reset 
   }
+ resetFilters(level: 'school' | 'academic' | 'class') {
+
+  if (level === 'school') {
+    // Reset everything below school
+    this.AdminselectedAcademivYearID = '';
+    this.AdminselectedClassID = '';
+    this.AdminselectedDiviosnID = '';
+    this.AdminselecteExamID = '';
+
+    this.academicYearList = [];
+    this.classLists = [];
+    this.divisionsList = [];
+    this.examLists = [];
+
+    this.SyllabusForm.patchValue({
+      AcademicYear: '0',
+      Class: '0',
+      Divisions: '0',
+      ExamType: '0'
+    });
+  }
+
+  if (level === 'academic') {
+    // Reset only below academic
+    this.AdminselectedClassID = '';
+    this.AdminselectedDiviosnID = '';
+    this.AdminselecteExamID = '';
+
+    this.classLists = [];
+    this.divisionsList = [];
+    this.examLists = [];
+
+    this.SyllabusForm.patchValue({
+      Class: '0',
+      Divisions: '0',
+      ExamType: '0'
+    });
+  }
+
+  if (level === 'class') {
+    // Reset only division
+    this.AdminselectedDiviosnID = '';
+    this.divisionsList = [];
+    this.SyllabusForm.patchValue({
+      Divisions: '0'
+    });
+  }
+
+  // ✅ Always reset table (this is correct)
+  this.resetTable();
+}
+resetTable() {
+  this.SyllabusList = [];
+  this.SyllabusCount = 0;
+  this.currentPage = 1;
+  this.pageCursors = [];
+  this.isTableModalOpen = false;
+}
 }

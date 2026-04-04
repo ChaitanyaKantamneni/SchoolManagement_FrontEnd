@@ -45,19 +45,20 @@
                 <th class="visually-hidden">Academic Year ID</th>
                 <th>SI.No</th>
                 <th>Exam Name</th>
-                <th (click)="sort('ExamTypeName')" class="sortable-column">
+                <th>Subjects</th>
+                <!-- <th (click)="sort('ExamTypeName')" class="sortable-column">
                   <span class="column-text">Subjects</span>
                   <span class="arrows">
-                    <!-- <mat-icon 
+                    <mat-icon 
                       [style.color]="sortColumn === 'ExamTypeName' && sortDirection === 'asc' ? 'red' : 'inherit'">
                       keyboard_arrow_up
                     </mat-icon>
                     <mat-icon 
                       [style.color]="sortColumn === 'ExamTypeName' && sortDirection === 'desc' ? 'red' : 'inherit'">
                       keyboard_arrow_down
-                    </mat-icon> -->
+                    </mat-icon>
                   </span>
-                </th>
+                </th> -->
                 <th>Max Marks</th>
                 <th>Pass Marks</th>  
                 <th>Duration</th>
@@ -141,21 +142,7 @@
                 </div>
               </div> 
              
-               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">ExamType<span class="required">*</span></label>
-                <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="ExamType" placeholder="Select Start Date"   >
-                    <option value="0">-- Select Exam --</option>
-                    <option *ngFor="let school of examLists" value="{{school.ID}}">{{school.Name}}</option>
-                  </select>
-                  <div *ngIf="SyllabusForm.get('ExamType')?.hasError('min') && (SyllabusForm.get('ExamType')?.touched || SyllabusForm.get('ExamType')?.dirty)" class="text-danger">
-                      <small>Please Select ExamType.</small>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-            <div class="InputRow">
+               
                <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
                 <div class="input-with-error">
@@ -165,6 +152,21 @@
                   </select>
                   <div *ngIf="SyllabusForm.get('AcademicYear')?.hasError('min') && (SyllabusForm.get('AcademicYear')?.touched || SyllabusForm.get('AcademicYear')?.dirty)" class="text-danger">
                       <small>Please Select Academic Year.</small>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+            <div class="InputRow">
+             <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Exam Type<span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="ExamType" placeholder="Select Start Date"   >
+                    <option value="0">-- Select Exam --</option>
+                    <option *ngFor="let school of examLists" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="SyllabusForm.get('ExamType')?.hasError('min') && (SyllabusForm.get('ExamType')?.touched || SyllabusForm.get('ExamType')?.dirty)" class="text-danger">
+                      <small>Please Select ExamType.</small>
                   </div>
                 </div>
               </div>
@@ -205,8 +207,8 @@
              </div>
      
        <div class="ActionButtons">
-<button type="button" class="btn" (click)="onSubmit()">Next</button>       
-        </div>
+        <button *ngIf="!isEditMode" class="btn" (click)="onSubmit()">Next</button>    
+       </div>
         </form>
       </div>
     </div>
@@ -222,6 +224,27 @@
     </div>
     
     <div class="AddFormConatiner">
+      <!-- User-friendly Tip Message -->
+      <div class="alert alert-info d-flex align-items-center mb-3" role="alert">
+        <mat-icon class="me-2" style="color: #0dcaf0;">info</mat-icon>
+        <div>
+          <strong>💡 Exam Scheduling Tip:</strong><br>
+          <small>• Different divisions can have exams at the same time<br>
+          • But, Same division needs gap of {{ getDurationDisplay() }} of duration between exams<br>
+          • Total time for an exam = {{ getDurationDisplay() }}<br>
+      </small>
+        </div>
+      </div>
+      
+      <!-- Time Conflict Warning Message -->
+      <div *ngIf="timeConflictWarning" class="alert alert-warning d-flex align-items-center mb-3" role="alert">
+        <mat-icon class="me-2" style="color: #ffc107;">warning</mat-icon>
+        <div>
+          <strong>Schedule Conflict!</strong><br>
+          <small style="white-space: normal;">{{ timeConflictWarning }}</small>
+        </div>
+      </div>
+      
       <div class="table-responsive">  <!-- makes table scrollable on small screens -->
         <table class="table table-bordered table-sm">
           <thead class="table-light">
@@ -239,29 +262,22 @@
           </thead>
           <tbody>
             <tr *ngFor="let row of tableRows; let i = index">
-           <td>
-  <div class="InputFieldsContainer">
-    <div class="toggle-container">
-      <label class="switch">
-        <input type="checkbox" [(ngModel)]="tableRows[i].isActive">
-        <!-- <input type="checkbox"
-       [(ngModel)]="tableRows[i].isActive"
-       (change)="onSubjectToggle(i)"> --> <!--for this function is in ts "onSubjectToggle"-->
-        <span class="slider round">
-          <span
-            class="toggle-text"
-            [ngStyle]="{
-              left: tableRows[i].isActive ? '42%' : '60%',
-              fontSize: '1px'
-            }"
-          >
-            {{ tableRows[i].isActive ? 'Active' : 'Inactive' }}
-          </span>
-        </span>
-      </label>
-    </div>
-  </div>
-</td>
+              <td class="subject-toggle-cell">
+                <div class="InputFieldsContainer">
+                  <div class="subject-toggle-container">
+                    <!-- <span class="subject-toggle-label">Inactive</span> -->
+                    <label class="switch">
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="tableRows[i].isActive"
+                        (ngModelChange)="onSubjectToggle(i)"
+                      >
+                      <span class="slider"></span>
+                    </label>
+                    <!-- <span class="subject-toggle-label">Active</span> -->
+                  </div>
+                </div>
+              </td>
               <td>{{ row.subjectName }}</td>
               <td>
                 <div class="custom-multiselect">
@@ -281,7 +297,7 @@
               </td>
               <td><input type="number" min="0" [(ngModel)]="tableRows[i].maxMarks" class="form-control form-control-sm" readonly  /></td>
               <td><input type="number" min="0" [(ngModel)]="tableRows[i].passMarks" class="form-control form-control-sm" readonly/></td>
-              <td><input type="datetime-local" [(ngModel)]="tableRows[i].examDateAndTime" class="form-control form-control-sm" /></td>
+              <td><input type="datetime-local" [(ngModel)]="tableRows[i].examDateAndTime" class="form-control form-control-sm" (ngModelChange)="onExamDateTimeChange(i)" [min]="minDateTime" /></td>
               <td><input type="text" [(ngModel)]="tableRows[i].duration" placeholder="e.g. 2h 30m" class="form-control form-control-sm" readonly/></td>
               <td><input type="number" min="1" [(ngModel)]="tableRows[i].noOfQuestions" class="form-control form-control-sm" readonly/></td>
               <td><input type="text" [(ngModel)]="tableRows[i].instructions" class="form-control form-control-sm" readonly/></td>

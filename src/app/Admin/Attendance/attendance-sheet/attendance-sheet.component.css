@@ -1,0 +1,174 @@
+.FormInputRowsContainer{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.InputRow{
+    width: 100% !important;
+    flex-direction: row !important;
+}
+
+.InputFieldsContainer {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.InputFieldsContainer select.inputField {
+  width: 100%;
+}
+
+.InputFieldsContainer input.inputField {
+  width: 100%;
+  box-sizing: border-box;
+}
+/* default for paired fields */
+.InputFieldsContainer {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* ExamType – the lonely one */
+.InputRow:last-child .InputFieldsContainer {
+  flex-grow: 0;
+  flex-shrink: 1;
+  flex-basis: auto;
+  max-width: 523px;           /* ← tune this number */
+  margin-right: auto;         /* optional: align left if you want */
+}
+
+/* make sure select follows container width */
+.InputFieldsContainer select.inputField {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.full-width-field {
+  flex: 1 1 100%;
+  max-width: 523px;
+}
+
+.ComponentRecords .ActionButtons{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ComponentRecords .ActionButtons .btn{
+  background-color: #536ff7;
+  color: #fff;
+  border: none;
+  font-size: smaller;
+  border-radius: 5px;
+  padding: 5px 10px;
+  margin-left: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.table .btn{
+  background-color: #536ff7;
+  color: #fff;
+  border: none;
+  font-size: smaller;
+  border-radius: 5px;
+  padding: 5px 10px;
+  transition: background-color 0.3s ease;
+}
+
+.table-action-buttons {
+  justify-content: flex-end;
+  padding: 16px 0 8px;
+}
+
+.status-column {
+  min-width: 170px;
+  width: 170px;
+  text-align: center;
+}
+
+.late-minutes-column {
+  min-width: 95px;
+  width: 95px;
+}
+
+.late-minutes-column .inputField {
+  width: 70px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.toggle-container .switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 20px;
+  margin: 0;
+}
+
+.toggle-container .switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-container .switch .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.toggle-container .switch .slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  left: 2px;
+  bottom: 2px;
+  background-color: #fff;
+  transition: 0.4s;
+}
+
+.toggle-container .switch input:checked + .slider {
+  background-color: #4caf50;
+}
+
+.toggle-container .switch input:checked + .slider:before {
+  transform: translateX(40px);
+}
+
+.toggle-container .switch .toggle-text {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  color: #fff;
+  font-weight: bold;
+  line-height: 20px;
+  pointer-events: none;
+}
+
+.status-label {
+  font-size: 10px;
+  font-weight: 400;
+  color: #333;
+}

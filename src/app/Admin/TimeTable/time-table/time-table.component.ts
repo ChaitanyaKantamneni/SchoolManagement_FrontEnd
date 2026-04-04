@@ -639,6 +639,7 @@ export class TimeTableComponent extends BasePermissionComponent {
     };
 
     onAdminDivisionChange(event: Event) {
+      this.IsFliterClicked=false;
       this.StudentsList = [];  
       this.selectedStudents = [];
       const target = event.target as HTMLSelectElement;

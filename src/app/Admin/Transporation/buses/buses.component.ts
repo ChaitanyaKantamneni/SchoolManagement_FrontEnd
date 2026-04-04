@@ -81,16 +81,32 @@ export class BusesComponent extends BasePermissionComponent {
     RegNo:new FormControl('', Validators.required),
     Driver: new FormControl('', Validators.required),
     AssistantName: new FormControl('', Validators.required),
-    AssistantMobNo: new FormControl('', Validators.required),
+    AssistantMobNo: new FormControl('', [Validators.required, Validators.pattern('^[0-9]$')]),
     OtherDetails: new FormControl(),
     MorningStartTime: new FormControl('', Validators.required),
     EveningStartTime: new FormControl('', Validators.required),
-    DistanceCostPerKM: new FormControl('', Validators.required),
-    MaxCapacity: new FormControl('', Validators.required),
+    DistanceCostPerKM: new FormControl('', [Validators.required, Validators.pattern('^[0-9]$')]),
+    MaxCapacity: new FormControl('', [Validators.required, Validators.pattern('^[0-9]$')]),
     Description: new FormControl(),
     School: new FormControl(),
     AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
   });
+  
+  allowOnlyNumbers(event: KeyboardEvent) {
+    if (
+      event.key === 'Backspace' ||
+      event.key === 'Tab' ||
+      event.key === 'ArrowLeft' ||
+      event.key === 'ArrowRight' ||
+      event.key === 'Delete'
+    ) {
+      return;
+    }
+
+    if (!/^[0-9]$/.test(event.key)) {
+      event.preventDefault();
+    }
+  }
 
   FetchSchoolsList() {
     const requestData = { Flag: '2' };

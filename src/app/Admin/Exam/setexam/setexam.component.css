@@ -1,4 +1,4 @@
-/* .FormInputRowsContainer{
+.FormInputRowsContainer{
   display: flex;
   justify-content: center;
   align-items: center;
@@ -6,6 +6,44 @@
 }
 
 .InputRow{
+    width: 100% !important;
+    flex-direction: row !important;
+}
+
+.InputFieldsContainer {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.InputFieldsContainer select.inputField {
+  width: 100%;
+}
+/* default for paired fields */
+.InputFieldsContainer {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* ExamType – the lonely one */
+.InputRow:last-child .InputFieldsContainer {
+  flex-grow: 0;
+  flex-shrink: 1;
+  flex-basis: auto;
+  max-width: 523px;           /* ← tune this number */
+  margin-right: auto;         /* optional: align left if you want */
+}
+
+/* make sure select follows container width */
+.InputFieldsContainer select.inputField {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.subject-toggle-cell {
+  vertical-align: middle;
+}
+
+.subject-toggle-cell .InputFieldsContainer {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -13,3 +51,62 @@
   flex-direction: row !important;
   width: 100% !important;
 } */
+
+}
+
+.subject-toggle-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.subject-toggle-container .switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 20px;
+}
+
+.subject-toggle-container .switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.subject-toggle-container .switch .slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.subject-toggle-container .switch .slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: #fff;
+  border-radius: 50%;
+  transition: 0.4s;
+}
+
+.subject-toggle-container .switch input:checked + .slider {
+  background-color: #4caf50;
+}
+
+.subject-toggle-container .switch input:checked + .slider:before {
+  transform: translateX(29px);
+}
+
+.subject-toggle-label {
+  font-size: 10px;
+  font-weight: 400;
+  color: #333;
+}
