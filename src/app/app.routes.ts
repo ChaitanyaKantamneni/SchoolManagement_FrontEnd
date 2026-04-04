@@ -81,7 +81,6 @@ import { FeeDuesComponent } from './Admin/Finance/fee-dues/fee-dues.component';
 import { AttendanceSheetComponent } from './Admin/Attendance/attendance-sheet/attendance-sheet.component';
 import { ViewAttendanceComponent } from './Admin/Attendance/view-attendance/view-attendance.component';
 import { StaffattendanceComponent } from './Admin/Attendance/staffattendance/staffattendance.component';
-import { AttendanceSettingsComponent } from './Admin/Attendance/attendance-settings/attendance-settings.component';
 import { ViewstaffattendanceComponent } from './Admin/Attendance/viewstaffattendance/viewstaffattendance.component';
 
 
@@ -124,7 +123,7 @@ export const routes: Routes = [
       { path: 'Fare', component: FareComponent },
       { path: 'ExamType', component: ExamTypeComponent },
       { path: 'SetExam', component: SetexamComponent },
-      { path: 'ExamAttendece', component: ExamattendenceComponent },
+      { path: 'ExamAttendance', component: ExamattendenceComponent },
       { path: 'ExamMarks', component: ExammarksComponent },
       { path: 'ExamResults', component: ExamresultsComponent },
       { path: 'ViewExams', component: ViewexamsComponent },
@@ -134,8 +133,7 @@ export const routes: Routes = [
       { path: 'TimeTable', component: TimeTableComponent },
       { path: 'TeachersTimetable', component: TeachersTimeTableComponent },
       { path: 'AttendanceSheet', component: AttendanceSheetComponent },
-      { path: 'ViewAttedance', component: ViewAttendanceComponent },
-      { path: 'AttendanceSettings', component: AttendanceSettingsComponent },
+      { path: 'ViewAttendance', component: ViewAttendanceComponent },
       { path: 'Staffattendance', component: StaffattendanceComponent },
       { path: 'view-staff-attendance', redirectTo: 'ViewStaffAttendance', pathMatch: 'full' },
       { path: 'ViewStaffAttendance', component: ViewstaffattendanceComponent }
@@ -175,7 +173,7 @@ export const routes: Routes = [
       { path: 'Stops', component: StopsComponent },
       { path: 'ExamType', component: ExamTypeComponent },
       { path: 'SetExam', component: SetexamComponent },
-      { path: 'ExamAttendece', component: ExamattendenceComponent },
+      { path: 'ExamAttendance', component: ExamattendenceComponent },
       { path: 'ExamMarks', component: ExammarksComponent },
       { path: 'ExamResults', component: ExamresultsComponent },
       { path: 'ViewExams', component: ViewexamsComponent },
@@ -185,8 +183,7 @@ export const routes: Routes = [
       { path: 'TimeTable', component: TimeTableComponent },
       { path: 'TeachersTimetable', component: TeachersTimeTableComponent },
       { path: 'AttendanceSheet', component: AttendanceSheetComponent },
-      { path: 'ViewAttedance', component: ViewAttendanceComponent },
-      { path: 'AttendanceSettings', component: AttendanceSettingsComponent },
+      { path: 'ViewAttendance', component: ViewAttendanceComponent },
       { path: 'Staffattendance', component: StaffattendanceComponent },
       { path: 'view-staff-attendance', redirectTo: 'ViewStaffAttendance', pathMatch: 'full' },
       { path: 'ViewStaffAttendance', component: ViewstaffattendanceComponent }
@@ -234,6 +231,9 @@ export const routes: Routes = [
       { path: 'ExamType', component: ExamTypeComponent },
       { path: 'ViewExams', component: ViewexamsComponent },
       { path: 'SetExam', component: SetexamComponent },
+      { path: 'ExamAttendance', component: ExamattendenceComponent },
+      { path: 'ExamMarks', component: ExammarksComponent },
+      { path: 'ExamResults', component: ExamresultsComponent },
 
 
       { path: 'Fares', component: FareComponent },
@@ -242,12 +242,10 @@ export const routes: Routes = [
       { path: 'TimeTable', component: TimeTableComponent },
       { path: 'TeachersTimetable', component: TeachersTimeTableComponent },
       { path: 'AttendanceSheet', component: AttendanceSheetComponent },
-      { path: 'ViewAttedance', component: ViewAttendanceComponent },
+      { path: 'ViewAttendance', component: ViewAttendanceComponent },
       { path: 'Staffattendance', component: StaffattendanceComponent },
-      { path: 'AttendanceSettings', component: AttendanceSettingsComponent },
       { path: 'view-staff-attendance', redirectTo: 'ViewStaffAttendance', pathMatch: 'full' },
       { path: 'ViewStaffAttendance', component: ViewstaffattendanceComponent }
-
     ]
   }
 ];

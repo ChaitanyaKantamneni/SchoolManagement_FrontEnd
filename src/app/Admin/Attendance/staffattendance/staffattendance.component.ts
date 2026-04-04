@@ -16,7 +16,7 @@ import { HttpClient } from '@angular/common/http';
   styleUrl: './staffattendance.component.css'
 })
 export class StaffattendanceComponent extends BasePermissionComponent {
-  pageName = 'AttendanceSheet';
+  pageName = 'Staffattendance';
 
   constructor(
     private http: HttpClient,
@@ -24,7 +24,7 @@ export class StaffattendanceComponent extends BasePermissionComponent {
     public loader: LoaderService,
     private apiurl: ApiServiceService,
     menuService: MenuServiceService
-  ) {
+  ){
     super(menuService, router);
   }
 
@@ -35,14 +35,17 @@ export class StaffattendanceComponent extends BasePermissionComponent {
     if (this.isAdmin) {
       this.FetchRoleList();
     } else {
-      this.AdminselectedSchoolID = sessionStorage.getItem('SchoolID')?.toString() || '';
+      this.AdminselectedSchoolID =
+        sessionStorage.getItem('SchoolID')?.toString() ||
+        sessionStorage.getItem('schoolId')?.toString() ||
+        '';
+      this.SyllabusForm.patchValue({ School: this.AdminselectedSchoolID || '0' });
       this.FetchAcademicYearsList();
-      this.FetchRoleListBySchoolID();
+      this.FetchRoleList();
     }
-
   };
 
-  allowOnlyNumbers(event: KeyboardEvent) {
+   allowOnlyNumbers(event: KeyboardEvent) {
     if (
       event.key === 'Backspace' ||
       event.key === 'Tab' ||
@@ -124,19 +127,15 @@ export class StaffattendanceComponent extends BasePermissionComponent {
   SyllabusForm: any = new FormGroup({
     ID: new FormControl(''),
     SchoolID: new FormControl(''),
-    AdmissionID: new FormControl(true),
-    Marks: new FormControl(true),
-    Divisions: new FormControl(0),
-    Class: new FormControl(0),
-    ExamType: new FormControl(''),
     StartTime: new FormControl(''),
     EndTime: new FormControl(''),
     Session: new FormControl(0, [Validators.required, Validators.min(1)]),
     leaveType: new FormControl(''),
-    School: new FormControl(0, [Validators.required, Validators.min(1)]),
+    School: new FormControl(0),
     AcademicYear: new FormControl(0, [Validators.required, Validators.min(1)]),
     AttendanceDateTime: new FormControl('', [Validators.required]),
     LateInMinutes: new FormControl(''),
+    // Remarks:new FormControl('')
   });
 
   FetchSchoolsList() {
@@ -173,73 +172,110 @@ export class StaffattendanceComponent extends BasePermissionComponent {
       return this.AdminselectedSchoolID || '';
     }
 
-    return this.AdminselectedSchoolID || sessionStorage.getItem('SchoolID')?.toString() || '';
+    return (
+      this.AdminselectedSchoolID ||
+      sessionStorage.getItem('SchoolID')?.toString() ||
+      sessionStorage.getItem('schoolId')?.toString() ||
+      ''
+    );
   }
 
   public getAvailableStaffTypes(): any[] {
     return this.StaffTypeListBySchoolId.length > 0 ? this.StaffTypeListBySchoolId : this.StaffTypeList;
   }
 
-  private getStaffTypeNames(staffTypeValue: string): string {
-    const staffTypes = staffTypeValue
-      ? staffTypeValue.split(',').map((id: string) => id.trim()).filter(Boolean)
-      : [];
+  private normalizeStaffTypeIds(staffTypeValue: any): string[] {
+    if (Array.isArray(staffTypeValue)) {
+      return staffTypeValue.map((value: any) => String(value).trim()).filter(Boolean);
+    }
 
-    const availableTypes = this.getAvailableStaffTypes();
+    if (staffTypeValue === null || staffTypeValue === undefined) {
+      return [];
+    }
+
+    return String(staffTypeValue)
+      .split(',')
+      .map((id: string) => id.trim())
+      .filter(Boolean);
+  }
+
+  private getStaffTypeNames(staffTypeValue: string, availableTypes: any[] = this.getAvailableStaffTypes()): string {
+    const staffTypes = this.normalizeStaffTypeIds(staffTypeValue);
 
     return staffTypes
-      .map((id: string) => availableTypes.find((type: any) => String(type.ID) === String(id))?.Name || id)
+      .map((id: string) => {
+        const token = String(id).trim();
+        const matchedType = availableTypes.find((type: any) => {
+          const typeId = String(type?.ID ?? '').trim();
+          const typeName = String(type?.Name ?? '').trim().toLowerCase();
+          const normalizedToken = token.toLowerCase();
+          return typeId === token || (typeName !== '' && typeName === normalizedToken);
+        });
+
+        return matchedType?.Name || token;
+      })
       .join(', ');
   }
 
-  FetchRoleList() {
-    const requestData = {
-      SchoolID: this.getCurrentSchoolId(),
-      Flag: '2'
-    };
+  getStaffTypeDisplay(staffTypeValue: string): string {
+    return this.getStaffTypeNames(staffTypeValue);
+  }
 
-    this.apiurl.post<any>('Tbl_Roles_CRUD_Operations', requestData)
+  FetchRoleList() {
+    this.apiurl.post<any>('Tbl_Roles_CRUD_Operations', { SchoolID: '', Flag: '2' })
       .subscribe(
         (response: any) => {
           if (response && Array.isArray(response.data)) {
-            this.StaffTypeList = response.data.map((item: any) => ({
-              ID: item.id,
-              Name: item.roleName,
-              IsActive: item.isActive === "1" ? "Active" : "InActive"
-            }));
+            this.StaffTypeList = response.data.map((item: any) => this.mapRoleItem(item));
+            this.refreshStaffTypeNames();
           } else {
             this.StaffTypeList = [];
           }
         },
-        () => {
-          this.StaffTypeList = [];
-        }
+        () => { this.StaffTypeList = []; }
       );
   }
 
-  FetchRoleListBySchoolID() {
-    const requestData = {
-      SchoolID: this.getCurrentSchoolId(),
-      Flag: '2'
-    };
-
-    this.apiurl.post<any>('Tbl_Roles_CRUD_Operations', requestData)
-      .subscribe(
-        (response: any) => {
-          if (response && Array.isArray(response.data)) {
-            this.StaffTypeListBySchoolId = response.data.map((item: any) => ({
-              ID: item.id,
-              Name: item.roleName,
-              IsActive: item.isActive === "1" ? "Active" : "InActive"
-            }));
-          } else {
+  FetchRoleListBySchoolID(): Promise<void> {
+    return new Promise((resolve) => {
+      this.apiurl.post<any>('Tbl_Roles_CRUD_Operations', { SchoolID: '', Flag: '2' })
+        .subscribe(
+          (response: any) => {
+            if (response && Array.isArray(response.data)) {
+              this.StaffTypeListBySchoolId = response.data.map((item: any) => this.mapRoleItem(item));
+            } else {
+              this.StaffTypeListBySchoolId = [];
+            }
+            resolve();
+          },
+          () => {
             this.StaffTypeListBySchoolId = [];
+            resolve();
           }
-        },
-        () => {
-          this.StaffTypeListBySchoolId = [];
-        }
-      );
+        );
+    });
+  }
+
+  private mapRoleItem(item: any) {
+    const rawId = item?.id ?? item?.ID ?? item?.roleId ?? item?.roleID ?? '';
+    const rawName =
+      item?.roleName ??
+      item?.RoleName ??
+      item?.name ??
+      item?.Name ??
+      item?.role ??
+      item?.Role ??
+      item?.staffTypeName ??
+      item?.title ??
+      item?.label ??
+      item?.description ??
+      rawId;
+
+    return {
+      ID: String(rawId),
+      Name: String(rawName).trim() || String(rawId),
+      IsActive: item?.isActive === '1' ? 'Active' : 'InActive'
+    };
   }
 
   FetchAcademicYearsList() {
@@ -599,7 +635,7 @@ export class StaffattendanceComponent extends BasePermissionComponent {
     return this.apiurl.post<any>('Tbl_Staff_CRUD_Operations', payload);
   }
   private resetPaginationAndFetch() {
-    this.SyllabusList = [];       // Clear old table immediately
+    this.SyllabusList = [];
     this.FetchInitialData();
   }
 
@@ -623,16 +659,32 @@ export class StaffattendanceComponent extends BasePermissionComponent {
 
         if (isSearch) payload.Name = this.searchQuery.trim();
 
-        this.apiurl.post<any>('Tbl_Staff_CRUD_Operations', payload).subscribe({
-          next: (response: any) => {
-            this.mapAcademicYears(response);
-            this.loader.hide();
-          },
-          error: () => {
-            this.SyllabusList = [];
-            this.loader.hide();
-          }
-        });
+        const fetchStaff = () => {
+          this.apiurl.post<any>('Tbl_Staff_CRUD_Operations', payload).subscribe({
+            next: (response: any) => {
+              this.mapAcademicYears(response);
+              this.loader.hide();
+            },
+            error: () => {
+              this.SyllabusList = [];
+              this.loader.hide();
+            }
+          });
+        };
+
+        if (!this.isAdmin && this.StaffTypeList.length === 0) {
+          this.apiurl.post<any>('Tbl_Roles_CRUD_Operations', { SchoolID: '', Flag: '2' }).subscribe({
+            next: (res: any) => {
+              if (Array.isArray(res?.data)) {
+                this.StaffTypeList = res.data.map((item: any) => this.mapRoleItem(item));
+              }
+              fetchStaff();
+            },
+            error: () => fetchStaff()
+          });
+        } else {
+          fetchStaff();
+        }
       },
       error: () => {
         this.SyllabusList = [];
@@ -643,15 +695,17 @@ export class StaffattendanceComponent extends BasePermissionComponent {
   }
 
   mapAcademicYears(response: any) {
-    // Store the complete dataset
     this.fullStaffList = (response.data || []).map((item: any) => {
       const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+      const rawStaffType = item.staffType ?? item.StaffType ?? item.roleName ?? item.RoleName ?? item.staffTypeName ?? item.staffTypeNames ?? item.role ?? '';
+      const staffTypeDisplay = this.getStaffTypeNames(rawStaffType);
       return {
         ID: item.id,
         School: item.schoolID,
         AcademicYear: item.academicYear,
-        StaffType: item.staffType,
-        StaffTypeNames: this.getStaffTypeNames(item.staffType),
+        StaffType: rawStaffType,
+        StaffTypeDisplay: staffTypeDisplay,
+        StaffTypeNames: staffTypeDisplay,
         FirstName: item.firstName,
         MiddleName: item.middleName,
         LastName: item.lastName,
@@ -669,13 +723,20 @@ export class StaffattendanceComponent extends BasePermissionComponent {
         Remarks: ''
       };
     });
-    
-    this.applySelectedSessionTimes();
 
-    // Apply staff type filter if any is selected
+    this.applySelectedSessionTimes();
+    this.refreshStaffTypeNames();
+  }
+
+  private refreshStaffTypeNames() {
+    const availableTypes = this.getAvailableStaffTypes();
+    if (!Array.isArray(this.fullStaffList) || this.fullStaffList.length === 0) return;
+    this.fullStaffList = this.fullStaffList.map((staff: any) => ({
+      ...staff,
+      StaffTypeDisplay: this.getStaffTypeNames(staff.StaffType, availableTypes),
+      StaffTypeNames: this.getStaffTypeNames(staff.StaffType, availableTypes)
+    }));
     this.applyStaffTypeFilter();
-    
-    console.log('this.SyllabusList', this.SyllabusList)
   }
 
   formatDateYYYYMMDD(dateStr: string | null) {
@@ -716,7 +777,10 @@ export class StaffattendanceComponent extends BasePermissionComponent {
   }
 
   private isAttendanceFilterReady(): boolean {
-    return !!this.getCurrentSchoolId() && !!this.AdminselectedAcademivYearID;
+    const schoolId = String(this.SyllabusForm.get('School')?.value ?? this.getCurrentSchoolId() ?? '').trim();
+    const academicYearId = String(this.SyllabusForm.get('AcademicYear')?.value ?? this.AdminselectedAcademivYearID ?? '').trim();
+
+    return schoolId !== '' && schoolId !== '0' && academicYearId !== '' && academicYearId !== '0';
   }
 
   private resetAttendanceTableState() {
@@ -728,9 +792,11 @@ export class StaffattendanceComponent extends BasePermissionComponent {
   private loadAttendanceTableIfReady() {
     if (!this.isAttendanceFilterReady()) {
       this.resetAttendanceTableState();
+      this.statusModalTitle = 'Validation Warning';
+      this.AminityInsStatus = 'Please select School and Academic Year before continuing.';
+      this.isModalOpen = true;
       return;
     }
-
     this.isTableModalOpen = true;
     this.resetPaginationAndFetch();
   }
@@ -1124,6 +1190,7 @@ export class StaffattendanceComponent extends BasePermissionComponent {
   onAdminSchoolChange(event: Event) {
     const schoolID = (event.target as HTMLSelectElement).value;
     this.AdminselectedSchoolID = schoolID === "0" ? "" : schoolID;
+    this.SyllabusForm.patchValue({ School: this.AdminselectedSchoolID || '0' });
     this.resetFilters('school');
     this.FetchAcademicYearsList();
   }
@@ -1278,8 +1345,8 @@ export class StaffattendanceComponent extends BasePermissionComponent {
     // Filter the full dataset based on selected staff types
     this.SyllabusList = this.fullStaffList.filter(staff => {
       if (!staff.StaffType) return false;
-      
-      const staffTypeArray = staff.StaffType.split(',').map((id: string) => id.trim());
+
+      const staffTypeArray = this.normalizeStaffTypeIds(staff.StaffType);
       
       // Check if any of the staff's types match the selected categories
       return staffTypeArray.some((staffTypeId: string) => 

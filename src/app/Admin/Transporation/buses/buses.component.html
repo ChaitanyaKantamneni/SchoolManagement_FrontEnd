@@ -216,9 +216,12 @@
                     <div *ngIf="(SyllabusForm.get('AssistantMobNo' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter AssistantMobileNo.</small>
                     </div>
+                    <div *ngIf="(SyllabusForm.get('AssistantMobNo' ) ?. errors ?. ['pattern' ]) ">
+                      <small>Please Enter a valid 10 digit mobile number.</small>
+                    </div>
                   </div>
                 </div>
-              </div>            
+              </div>             
             </div>
             <div class="InputRow">  
               <div class="InputFieldsContainer" *ngIf="isAdmin">
@@ -262,6 +265,9 @@
                     <div *ngIf="(SyllabusForm.get('DistanceCostPerKM' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter DistanceCostPerKM.</small>
                     </div>
+                    <div *ngIf="(SyllabusForm.get('DistanceCostPerKM' ) ?. errors ?. ['pattern' ]) ">
+                      <small>Please Enter a valid numeric cost.</small>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -275,6 +281,9 @@
                     <div *ngIf="(SyllabusForm.get('DistanceCostPerKM' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter DistanceCostPerKM.</small>
                     </div>
+                    <div *ngIf="(SyllabusForm.get('DistanceCostPerKM' ) ?. errors ?. ['pattern' ]) ">
+                      <small>Please Enter a valid numeric cost.</small>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -285,6 +294,9 @@
                   <div *ngIf="(SyllabusForm.get('MaxCapacity' ) ?. touched && SyllabusForm.get('MaxCapacity' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(SyllabusForm.get('MaxCapacity' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter MaxCapacity.</small>
+                    </div>
+                    <div *ngIf="(SyllabusForm.get('MaxCapacity' ) ?. errors ?. ['pattern' ]) ">
+                      <small>Please Enter a valid capacity number.</small>
                     </div>
                   </div>
                 </div>
@@ -351,8 +363,8 @@
             </div>
           </div>
           <div class="ActionButtons">
-            <button class="btn" *ngIf="ViewSyllabusClicked && canEdit()" (click)="UpdateSyllabus()">Update</button>
-            <button class="btn" *ngIf="!ViewSyllabusClicked && canAdd()" (click)="SubmitSyllabus()">Submit</button>
+            <button type="button" class="btn" *ngIf="ViewSyllabusClicked && canEdit()" (click)="UpdateSyllabus()">Update</button>
+            <button type="button" class="btn" *ngIf="!ViewSyllabusClicked && canAdd()" (click)="SubmitSyllabus()">Submit</button>
           </div>
         </form>
       </div>

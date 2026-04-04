@@ -108,125 +108,184 @@
       <div class="AddFormConatiner">
         <form [formGroup]="SyllabusForm">
           <div class="FormInputRowsContainer">
-            <div class="InputRow">
-               <div class="InputFieldsContainer" *ngIf="isAdmin">
-                <label class="inputLabel" for="email">School <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="School" placeholder="Select Start Date" (change)="onAdminSchoolChange($event)" >
-                    <option value="0">-- Select School --</option>
-                    <option *ngFor="let school of schoolList" value="{{school.ID}}">{{school.Name}}</option>
-                  </select>
-                  <div *ngIf="SyllabusForm.get('School')?.hasError('min') && (SyllabusForm.get('School')?.touched || SyllabusForm.get('School')?.dirty)" class="text-danger">
-                      <small>Please Select School.</small>
-                  </div>
-                </div>
-              </div> 
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="AcademicYear" placeholder="Select Start Date" >
-                    <option value="0">-- Select Academic Year --</option>
-                    <option *ngFor="let school of academicYearList" value="{{school.ID}}">{{school.Name}}</option>
-                  </select>
-                  <div *ngIf="SyllabusForm.get('AcademicYear')?.hasError('min') && (SyllabusForm.get('AcademicYear')?.touched || SyllabusForm.get('AcademicYear')?.dirty)" class="text-danger">
-                      <small>Please Select Academic Year.</small>
-                  </div>
-                </div>
-              </div>
-                 <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Bus <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="Bus" placeholder="Select Bus">
-                    <option value="0" disabled>Select Bus</option>
-                    <option *ngFor="let Bus of BusList" value="{{Bus.ID}}">{{Bus.Name}}</option>
-                  </select>
-                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
-                  <div *ngIf="SyllabusForm.get('Bus')?.hasError('min') && (SyllabusForm.get('Bus')?.touched || SyllabusForm.get('Bus')?.dirty)" class="text-danger">
-                      <small>Please Select Bus.</small>
-                  </div>
-                </div>
-              </div> 
-            
-            </div>
-            <div class="InputRow">
+            <ng-container *ngIf="isAdmin; else schoolWiseLayout">
+              <div class="InputRow">
                 <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Route <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="Route" placeholder="Select Class" (change)="RouteChange($any($event.target).value)">
-                    <option value="0" disabled>Select Route</option>
-                    <option *ngFor="let Route of RouteList" value="{{Route.ID}}">{{Route.Name}}</option>
-                  </select>
-                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
-                  <div *ngIf="SyllabusForm.get('Route')?.hasError('min') && (SyllabusForm.get('Route')?.touched || SyllabusForm.get('Route')?.dirty)" class="text-danger">
-                      <small>Please Select Bus Route.</small>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer" >
-                <label class="inputLabel" for="email">Stop <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="Stop" placeholder="Select Stop">
-                    <option value="0" disabled>Select Stop</option>
-                    <option *ngFor="let Stop of StopList" value="{{Stop.ID}}">{{Stop.Name}}</option>
-                  </select>
-                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
-                  <div *ngIf="SyllabusForm.get('Stop')?.hasError('min') && (SyllabusForm.get('Stop')?.touched || SyllabusForm.get('Stop')?.dirty)" class="text-danger">
-                      <small>Please Select Stop.</small>
-                  </div>
-                </div>
-              </div>  
-               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Amount <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Amount" placeholder="Enter Amount" maxlength="5" (keydown)="allowOnlyNumbers($event)" />
-                  <div *ngIf="(SyllabusForm.get('Amount' ) ?. touched && SyllabusForm.get('Amount' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(SyllabusForm.get('Amount' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Amount.</small>
+                  <label class="inputLabel" for="email">School <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" type="date" formControlName="School" (change)="onAdminSchoolChange($event)">
+                      <option value="0">-- Select School --</option>
+                      <option *ngFor="let school of schoolList" value="{{school.ID}}">{{school.Name}}</option>
+                    </select>
+                    <div *ngIf="SyllabusForm.get('School')?.hasError('min') && (SyllabusForm.get('School')?.touched || SyllabusForm.get('School')?.dirty)" class="text-danger">
+                      <small>Please Select School.</small>
                     </div>
                   </div>
                 </div>
-              </div>   
-            </div>
-            <div class="InputRow">
-              <div class="InputFieldsContainer" *ngIf="!isAdmin">
-                <div class="toggle-container" (click)="$event.stopPropagation()">
-                  <label class="switch">
-                    <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
-                    <span class="slider">
-                      <span
-                        class="toggle-text"
-                        [ngStyle]="{
-                          left: IsActiveStatus ? '42%' : '60%',
-                          fontSize: IsActiveStatus ? '9px' : '9px'
-                        }"
-                      >
-                        {{ IsActiveStatus ? 'Active' : 'Inactive' }}
-                      </span>
-                    </span>
-                  </label>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" type="date" formControlName="AcademicYear">
+                      <option value="0">-- Select Academic Year --</option>
+                      <option *ngFor="let school of academicYearList" value="{{school.ID}}">{{school.Name}}</option>
+                    </select>
+                    <div *ngIf="SyllabusForm.get('AcademicYear')?.hasError('min') && (SyllabusForm.get('AcademicYear')?.touched || SyllabusForm.get('AcademicYear')?.dirty)" class="text-danger">
+                      <small>Please Select Academic Year.</small>
+                    </div>
+                  </div>
                 </div>
-              </div>    
-            </div>
-            <div class="InputRow" *ngIf="isAdmin">
-              <div class="InputFieldsContainer" *ngIf="isAdmin">
-                <div class="toggle-container" (click)="$event.stopPropagation()">
-                  <label class="switch">
-                    <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
-                    <span class="slider">
-                      <span
-                        class="toggle-text"
-                        [ngStyle]="{
-                          left: IsActiveStatus ? '42%' : '60%',
-                          fontSize: IsActiveStatus ? '9px' : '9px'
-                        }"
-                      >
-                        {{ IsActiveStatus ? 'Active' : 'Inactive' }}
-                      </span>
-                    </span>
-                  </label>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel" for="email">Bus <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" type="date" formControlName="Bus">
+                      <option value="0">-- Select Bus --</option>
+                      <option *ngFor="let Bus of BusList" value="{{Bus.ID}}">{{Bus.Name}}</option>
+                    </select>
+                    <div *ngIf="SyllabusForm.get('Bus')?.hasError('min') && (SyllabusForm.get('Bus')?.touched || SyllabusForm.get('Bus')?.dirty)" class="text-danger">
+                      <small>Please Select Bus.</small>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel" for="email">Route <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" type="date" formControlName="Route" (change)="RouteChange($any($event.target).value)">
+                      <option value="0">-- Select Route --</option>
+                      <option *ngFor="let Route of RouteList" value="{{Route.ID}}">{{Route.Name}}</option>
+                    </select>
+                    <div *ngIf="SyllabusForm.get('Route')?.hasError('min') && (SyllabusForm.get('Route')?.touched || SyllabusForm.get('Route')?.dirty)" class="text-danger">
+                      <small>Please Select Bus Route.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel" for="email">Stop <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" type="date" formControlName="Stop">
+                      <option value="0">-- Select Stop --</option>
+                      <option *ngFor="let Stop of StopList" value="{{Stop.ID}}">{{Stop.Name}}</option>
+                    </select>
+                    <div *ngIf="SyllabusForm.get('Stop')?.hasError('min') && (SyllabusForm.get('Stop')?.touched || SyllabusForm.get('Stop')?.dirty)" class="text-danger">
+                      <small>Please Select Stop.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel" for="email">Amount <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="Amount" placeholder="Enter Amount" maxlength="5" (keydown)="allowOnlyNumbers($event)" />
+                    <div *ngIf="(SyllabusForm.get('Amount' ) ?. touched && SyllabusForm.get('Amount' ) ?. invalid)" class="text-danger">
+                      <div *ngIf="(SyllabusForm.get('Amount' ) ?. errors ?. ['required' ]) ">
+                        <small>Please Enter Amount.</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <div class="toggle-container" (click)="$event.stopPropagation()">
+                    <label class="switch">
+                      <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
+                      <span class="slider">
+                        <span class="toggle-text" [ngStyle]="{ left: IsActiveStatus ? '42%' : '60%', fontSize: IsActiveStatus ? '9px' : '9px' }">
+                          {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <ng-template #schoolWiseLayout>
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" type="date" formControlName="AcademicYear">
+                      <option value="0">-- Select Academic Year --</option>
+                      <option *ngFor="let school of academicYearList" value="{{school.ID}}">{{school.Name}}</option>
+                    </select>
+                    <div *ngIf="SyllabusForm.get('AcademicYear')?.hasError('min') && (SyllabusForm.get('AcademicYear')?.touched || SyllabusForm.get('AcademicYear')?.dirty)" class="text-danger">
+                      <small>Please Select Academic Year.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel" for="email">Bus <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" type="date" formControlName="Bus">
+                      <option value="0">-- Select Bus --</option>
+                      <option *ngFor="let Bus of BusList" value="{{Bus.ID}}">{{Bus.Name}}</option>
+                    </select>
+                    <div *ngIf="SyllabusForm.get('Bus')?.hasError('min') && (SyllabusForm.get('Bus')?.touched || SyllabusForm.get('Bus')?.dirty)" class="text-danger">
+                      <small>Please Select Bus.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel" for="email">Route <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" type="date" formControlName="Route" (change)="RouteChange($any($event.target).value)">
+                      <option value="0">-- Select Route --</option>
+                      <option *ngFor="let Route of RouteList" value="{{Route.ID}}">{{Route.Name}}</option>
+                    </select>
+                    <div *ngIf="SyllabusForm.get('Route')?.hasError('min') && (SyllabusForm.get('Route')?.touched || SyllabusForm.get('Route')?.dirty)" class="text-danger">
+                      <small>Please Select Bus Route.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel" for="email">Stop <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" type="date" formControlName="Stop">
+                      <option value="0">-- Select Stop --</option>
+                      <option *ngFor="let Stop of StopList" value="{{Stop.ID}}">{{Stop.Name}}</option>
+                    </select>
+                    <div *ngIf="SyllabusForm.get('Stop')?.hasError('min') && (SyllabusForm.get('Stop')?.touched || SyllabusForm.get('Stop')?.dirty)" class="text-danger">
+                      <small>Please Select Stop.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="InputRow">
+                <div class="InputFieldsContainer" style="flex: 1 1 100%;">
+                  <label class="inputLabel" for="email">Amount <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="Amount" placeholder="Enter Amount" maxlength="5" (keydown)="allowOnlyNumbers($event)" />
+                    <div *ngIf="(SyllabusForm.get('Amount' ) ?. touched && SyllabusForm.get('Amount' ) ?. invalid)" class="text-danger">
+                      <div *ngIf="(SyllabusForm.get('Amount' ) ?. errors ?. ['required' ]) ">
+                        <small>Please Enter Amount.</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <div class="toggle-container" (click)="$event.stopPropagation()">
+                    <label class="switch">
+                      <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
+                      <span class="slider">
+                        <span class="toggle-text" [ngStyle]="{ left: IsActiveStatus ? '42%' : '60%', fontSize: IsActiveStatus ? '9px' : '9px' }">
+                          {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </ng-template>
           </div>
           <div class="ActionButtons">
             <button class="btn" *ngIf="ViewSyllabusClicked && canEdit()" (click)="UpdateSyllabus()">Update</button>

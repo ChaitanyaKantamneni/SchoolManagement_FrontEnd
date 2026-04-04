@@ -17,7 +17,7 @@ import { HttpClient } from '@angular/common/http';
   styleUrl: './exammarks.component.css'
 })
 export class ExammarksComponent extends BasePermissionComponent{
-   pageName = 'ExamMarks';
+   pageName = 'Exam Marks';
 
   constructor(
     private http: HttpClient,
@@ -33,6 +33,8 @@ export class ExammarksComponent extends BasePermissionComponent{
     this.checkViewPermission();
     this.SchoolSelectionChange = false;
     this.FetchSchoolsList();
+    this.FetchAcademicYearsList();
+
   };
 
   allowOnlyNumbers(event: KeyboardEvent) {
@@ -106,7 +108,7 @@ export class ExammarksComponent extends BasePermissionComponent{
     Divisions: new FormControl(0,[Validators.required,Validators.min(1)]),
     Class: new FormControl(0,[Validators.required,Validators.min(1)]),
     ExamType: new FormControl(0,[Validators.required,Validators.min(1)]),
-    School: new FormControl(0,[Validators.required,Validators.min(1)]),
+    School: new FormControl(0),
     AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
   });
 

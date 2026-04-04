@@ -169,7 +169,11 @@ export class StopsComponent extends BasePermissionComponent {
       );
   };
   FetchRoutesList() {
-    const requestData = { Flag: '3' };
+    const requestData = { 
+      Flag: '3' ,
+      SchoolID:this.AdminselectedSchoolID||'',
+      AcademicYearID:this.AdminselectedAcademivYearID||''
+    };
 
     this.apiurl.post<any>('Tbl_Route_CRUD_Operations', requestData)
       .subscribe(
@@ -710,4 +714,15 @@ export class StopsComponent extends BasePermissionComponent {
     }   
     this.FetchAcademicYearsList();
   };
+  onAdminAcademicYearChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const AcademicYearID = target.value;
+    if(AcademicYearID=="0"){
+      this.AdminselectedAcademivYearID="";
+    }else{
+      this.AdminselectedAcademivYearID = AcademicYearID;
+    }
+    this.FetchRoutesList();
+  };
+  
 }

@@ -68,7 +68,14 @@ export class ViewstaffattendanceComponent extends BasePermissionComponent {
   ngOnInit(): void {
     this.checkViewPermission();
     if (!this.isAdmin) {
-      this.AdminselectedSchoolID = sessionStorage.getItem('SchoolID')?.toString() || '';
+      this.AdminselectedSchoolID =
+        sessionStorage.getItem('SchoolID')?.toString() ||
+        sessionStorage.getItem('schoolId')?.toString() ||
+        '';
+      this.SyllabusForm.patchValue({ School: this.AdminselectedSchoolID || '0' });
+      // fetch roles first, then academic years — no FetchAcademicYearsList duplicate
+      this.FetchRoleList();
+      this.FetchStaffRoleLookup();
       this.FetchAcademicYearsList();
     } else {
       this.FetchSchoolsList();
@@ -78,6 +85,8 @@ export class ViewstaffattendanceComponent extends BasePermissionComponent {
   schoolList: any[] = [];
   academicYearList: any[] = [];
   sessionList: any[] = [];
+  roleList: any[] = [];
+  private staffRoleLookup = new Map<string, string>();
   private paginationLoaderTimer: any;
 
   AdminselectedSchoolID = '';
@@ -125,6 +134,19 @@ export class ViewstaffattendanceComponent extends BasePermissionComponent {
     return role === '1';
   }
 
+  private getCurrentSchoolId(): string {
+    if (this.isAdmin) {
+      return this.AdminselectedSchoolID || '';
+    }
+
+    return (
+      this.AdminselectedSchoolID ||
+      sessionStorage.getItem('SchoolID')?.toString() ||
+      sessionStorage.getItem('schoolId')?.toString() ||
+      ''
+    );
+  }
+
   FetchSchoolsList() {
     this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', { Flag: '2' }).subscribe(
       (response: any) => {
@@ -137,7 +159,7 @@ export class ViewstaffattendanceComponent extends BasePermissionComponent {
   }
 
   FetchAcademicYearsList() {
-    this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', { SchoolID: this.AdminselectedSchoolID, Flag: '2' }).subscribe(
+    this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', { SchoolID: this.getCurrentSchoolId(), Flag: '2' }).subscribe(
       (response: any) => {
         this.academicYearList = Array.isArray(response?.data)
           ? response.data.map((item: any) => ({ ID: item.id, Name: item.name }))
@@ -147,9 +169,64 @@ export class ViewstaffattendanceComponent extends BasePermissionComponent {
     );
   }
 
+  FetchRoleList() {
+    this.apiurl.post<any>('Tbl_Roles_CRUD_Operations', {
+      SchoolID: this.getCurrentSchoolId(),
+      Flag: '2'
+    }).subscribe(
+      (response: any) => {
+        console.log('[VIEW] ROLES API RAW', JSON.stringify(response?.data?.[0]));
+        this.roleList = Array.isArray(response?.data)
+          ? response.data.map((item: any) => ({
+              ID: String(item.id ?? item.ID ?? ''),
+              Name: String(item.roleName ?? item.RoleName ?? item.name ?? item.Name ?? '').trim() || String(item.id ?? item.ID ?? '')
+            }))
+          : [];
+        console.log('[VIEW] ROLES MAPPED', this.roleList);
+
+        // re-process data now that roles are loaded (fixes school-wise login race condition)
+        if (this.isTableVisible && this.rawData.length > 0) {
+          this.processData(this.rawData);
+        }
+      },
+      () => { this.roleList = []; }
+    );
+  }
+
+  FetchStaffRoleLookup() {
+    this.apiurl.post<any>('Tbl_Staff_CRUD_Operations', {
+      SchoolID: this.getCurrentSchoolId(),
+      Flag: '2'
+    }).subscribe(
+      (response: any) => {
+        const lookup = new Map<string, string>();
+
+        if (Array.isArray(response?.data)) {
+          response.data.forEach((item: any) => {
+            const staffId = String(item.id ?? item.ID ?? '').trim();
+            if (!staffId) return;
+            // Store raw staffType value — resolve lazily in getResolvedRole once roleList is ready
+            const rawStaffType = String(item.staffType ?? item.StaffType ?? item.role ?? item.roleName ?? '').trim();
+            if (rawStaffType) lookup.set(staffId, rawStaffType);
+          });
+        }
+
+        this.staffRoleLookup = lookup;
+
+        // re-process data now that staff lookup is ready (fixes school-wise login race condition)
+        if (this.isTableVisible && this.rawData.length > 0) {
+          this.processData(this.rawData);
+        }
+      },
+      () => {
+        this.staffRoleLookup = new Map<string, string>();
+      }
+    );
+  }
+
   FetchSessionsList() {
     this.apiurl.post<any>('Tbl_Session_CRUD_Operations', {
-      SchoolID: this.AdminselectedSchoolID,
+      SchoolID: this.getCurrentSchoolId(),
       AcademicYear: this.AdminselectedAcademivYearID,
       Flag: '2'
     }).subscribe(
@@ -166,10 +243,14 @@ export class ViewstaffattendanceComponent extends BasePermissionComponent {
     const v = (event.target as HTMLSelectElement).value;
     this.AdminselectedSchoolID = v === '0' ? '' : v;
     this.academicYearList = []; this.sessionList = [];
+    this.roleList = [];
+    this.staffRoleLookup = new Map<string, string>();
     this.SyllabusForm.patchValue({ AcademicYear: 0, Session: 0 });
     this.AdminselectedAcademivYearID = ''; this.AdminSelectedSessionID = '';
     this.resetAttendanceView();
     if (this.AdminselectedSchoolID) this.FetchAcademicYearsList();
+    if (this.AdminselectedSchoolID) this.FetchRoleList();
+    if (this.AdminselectedSchoolID) this.FetchStaffRoleLookup();
   }
 
   onAdminAcademicYearchange(event: Event) {
@@ -179,7 +260,14 @@ export class ViewstaffattendanceComponent extends BasePermissionComponent {
     this.SyllabusForm.patchValue({ Session: 0 });
     this.AdminSelectedSessionID = '';
     this.resetAttendanceView();
-    if (this.AdminselectedAcademivYearID) this.FetchSessionsList();
+    if (this.AdminselectedAcademivYearID) {
+      this.FetchSessionsList();
+      // for school-wise login, refresh role lookup when academic year changes
+      if (!this.isAdmin) {
+        this.FetchRoleList();
+        this.FetchStaffRoleLookup();
+      }
+    }
   }
 
   onSessionChange(event: Event) {
@@ -239,6 +327,7 @@ export class ViewstaffattendanceComponent extends BasePermissionComponent {
     }
 
     this.isUpdating = true;
+    const schoolId = this.getCurrentSchoolId();
 
     const students = changedRows.map(s => {
       const rawDate = new Date(s.attendanceDateTime);
@@ -260,7 +349,7 @@ export class ViewstaffattendanceComponent extends BasePermissionComponent {
 
     this.apiurl.post('Tbl_StaffAttendance_CRUD_Operations', {
       Flag: '5',
-      SchoolID: this.AdminselectedSchoolID,
+      SchoolID: schoolId,
       AcademicYear: this.AdminselectedAcademivYearID,
       Students: students
     }).subscribe({
@@ -301,7 +390,7 @@ export class ViewstaffattendanceComponent extends BasePermissionComponent {
 
     const body: any = {
       Flag: '2',
-      SchoolID: this.AdminselectedSchoolID,
+      SchoolID: this.getCurrentSchoolId(),
       AcademicYear: this.AdminselectedAcademivYearID,
       // Limit: '100'
     };
@@ -352,6 +441,70 @@ export class ViewstaffattendanceComponent extends BasePermissionComponent {
     return this.sessionList.find((s: any) => s.ID == sessionId)?.Name ?? sessionId ?? '';
   }
 
+  private normalizeRoleIds(roleValue: any): string[] {
+    if (Array.isArray(roleValue)) {
+      return roleValue.map((value: any) => String(value).trim()).filter(Boolean);
+    }
+
+    if (roleValue === null || roleValue === undefined) {
+      return [];
+    }
+
+    return String(roleValue)
+      .split(',')
+      .map((id: string) => id.trim())
+      .filter(Boolean);
+  }
+
+  private getRoleDisplay(roleValue: any): string {
+    const roleTokens = this.normalizeRoleIds(roleValue);
+
+    if (roleTokens.length === 0) {
+      return '-';
+    }
+
+    return roleTokens
+      .map((token: string) => {
+        const match = this.roleList.find((role: any) => String(role.ID).trim() === token);
+        return match?.Name || token;
+      })
+      .join(', ');
+  }
+
+  private getRoleFromStaffLookup(staffId: any): string {
+    const key = String(staffId ?? '').trim();
+    const rawValue = this.staffRoleLookup.get(key);
+    if (!rawValue) return '-';
+    // Resolve lazily now that roleList should be populated
+    const resolved = this.getRoleDisplay(rawValue);
+    return (resolved && resolved !== '-') ? resolved : rawValue;
+  }
+
+  private getResolvedRole(row: any): string {
+    console.log('[VIEW] getResolvedRole row:', JSON.stringify({ role: row.role, roleName: row.roleName, staffType: row.staffType, staffID: row.staffID }));
+    console.log('[VIEW] roleList:', this.roleList);
+    // SP returns role name directly — use it if it's not a pure number
+    const directRoleValue = row.role ?? row.Role ?? row.roleName ?? row.RoleName ?? '';
+    if (directRoleValue && !/^\d+$/.test(String(directRoleValue).trim())) {
+      return String(directRoleValue).trim();
+    }
+
+    // If it's a numeric ID, resolve via roleList
+    if (directRoleValue) {
+      const resolved = this.getRoleDisplay(directRoleValue);
+      if (resolved && resolved !== '-') return resolved;
+    }
+
+    // Fallback: resolve via staffType from staffRoleLookup
+    const staffType = row.staffType ?? row.StaffType ?? '';
+    if (staffType) {
+      const resolved = this.getRoleDisplay(staffType);
+      if (resolved && resolved !== '-') return resolved;
+    }
+
+    return this.getRoleFromStaffLookup(row.staffID ?? row.staffId);
+  }
+
   private buildSummaries(data: any[], uniqueDates: string[]): StaffAttendanceSummary[] {
     const map = new Map<string, StaffAttendanceSummary>();
     const staffDateSessions = new Map<string, Map<string, StaffAttendanceDetail[]>>();
@@ -364,7 +517,7 @@ export class ViewstaffattendanceComponent extends BasePermissionComponent {
         map.set(key, {
           staffID: key,
           staffName: row.staffName ?? '',
-          role: row.role ?? '',
+          role: this.getResolvedRole(row),
           totalDays: uniqueDates.length,
           presentCount: 0,
           absentCount: 0,
@@ -381,7 +534,9 @@ export class ViewstaffattendanceComponent extends BasePermissionComponent {
 
       const summary = map.get(key)!;
       // update role/name if not yet set (in case first row had null)
-      if (!summary.role && row.role) summary.role = row.role;
+      if ((!summary.role || summary.role === '-') && (row.role || row.Role || row.roleName || row.RoleName || row.staffType || row.StaffType || row.staffID || row.staffId)) {
+        summary.role = this.getResolvedRole(row);
+      }
       if (!summary.staffName && row.staffName) summary.staffName = row.staffName;
       const dateSessionMap = staffDateSessions.get(key)!;
       const isPresent = row.attendance?.toString() === '1';

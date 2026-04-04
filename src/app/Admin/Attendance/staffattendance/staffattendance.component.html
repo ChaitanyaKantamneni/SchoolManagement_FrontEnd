@@ -6,7 +6,7 @@
   <div class="w-100">
     <div class="ComponentTop">
       <div class="ComponentTopHeader">
-        <h5>Attendance Sheet</h5>
+        <h5>Staff Attendance Sheet</h5>
         <p>Total {{ SyllabusCount }} Staff</p>
       </div>
     </div>
@@ -15,10 +15,11 @@
   <div class="w-100">
     <div class="AddForm">
       <div class="AddFormTop">
-        <p>Staff Attendance Sheet</p>
+        <!-- <p>Staff Attendance Sheet</p> -->
       </div>
       <div class="AddFormConatiner">
         <form [formGroup]="SyllabusForm">
+          <ng-container *ngIf="isAdmin; else schoolwiseLayout">
           <div class="FormInputRowsContainer">
             <div class="InputRow">
               <div class="InputFieldsContainer" *ngIf="isAdmin">
@@ -55,19 +56,7 @@
             </div>
 
             <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="attendanceDateTime">Attendance Date <span
-                    class="required">*</span></label>
-                <div class="input-with-error">
-                  <input id="attendanceDateTime" type="date" class="inputField" formControlName="AttendanceDateTime" />
-                  <div
-                    *ngIf="SyllabusForm.get('AttendanceDateTime')?.invalid && (SyllabusForm.get('AttendanceDateTime')?.touched || SyllabusForm.get('AttendanceDateTime')?.dirty)"
-                    class="text-danger">
-                    <small>Please select attendance date and time.</small>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
+               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Session<span class="required">*</span></label>
                 <div class="input-with-error">
                   <select class="inputField" formControlName="Session" (change)="onSessionChange($event)">
@@ -83,8 +72,73 @@
                   </div>
                 </div>
               </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="attendanceDateTime">Attendance Date <span
+                    class="required">*</span></label>
+                <div class="input-with-error">
+                  <input id="attendanceDateTime" type="date" class="inputField" formControlName="AttendanceDateTime" />
+                  <div
+                    *ngIf="SyllabusForm.get('AttendanceDateTime')?.invalid && (SyllabusForm.get('AttendanceDateTime')?.touched || SyllabusForm.get('AttendanceDateTime')?.dirty)"
+                    class="text-danger">
+                    <small>Please select attendance date and time.</small>
+                  </div>
+                </div>
+              </div>
+             
             </div>
           </div>
+          </ng-container>
+          <ng-template #schoolwiseLayout>
+            <div class="FormInputRowsContainer">
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel" for="academicYear">Academic Year <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select id="academicYear" class="inputField" formControlName="AcademicYear"
+                      (change)="onAdminAcademicYearchange($event)">
+                      <option value="0">-- Select Academic Year --</option>
+                      <option *ngFor="let school of academicYearList" [value]="school.ID">{{ school.Name }}</option>
+                    </select>
+                    <div
+                      *ngIf="SyllabusForm.get('AcademicYear')?.hasError('min') && (SyllabusForm.get('AcademicYear')?.touched || SyllabusForm.get('AcademicYear')?.dirty)"
+                      class="text-danger">
+                      <small>Please Select Academic Year.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel" for="email">Session<span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" formControlName="Session" (change)="onSessionChange($event)">
+                      <option value="0">-- Select Session--</option>
+                      <option *ngFor="let session of SessionList" [value]="session.ID">
+                        {{session.SessionName}}
+                      </option>
+                    </select>
+                    <div
+                      *ngIf="SyllabusForm.get('Session')?.hasError('min') && (SyllabusForm.get('Session')?.touched || SyllabusForm.get('Session')?.dirty)"
+                      class="text-danger">
+                      <small>Please Session.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputRow">
+                <div class="InputFieldsContainer compact-field">
+                  <label class="inputLabel" for="attendanceDateTime">Attendance Date <span
+                      class="required">*</span></label>
+                  <div class="input-with-error">
+                    <input id="attendanceDateTime" type="date" class="inputField" formControlName="AttendanceDateTime" />
+                    <div
+                      *ngIf="SyllabusForm.get('AttendanceDateTime')?.invalid && (SyllabusForm.get('AttendanceDateTime')?.touched || SyllabusForm.get('AttendanceDateTime')?.dirty)"
+                      class="text-danger">
+                      <small>Please select attendance date and time.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-template>
           <div class="ActionButtons">
             <button type="button" class="btn" (click)="SyllabusForm.markAllAsTouched(); onSubmit()">Next</button>
           </div>
@@ -153,7 +207,7 @@
             <tr *ngFor="let Syllabus of SyllabusList; let i = index">
               <td data-label="SI.No">{{ i + 1 }}</td>
               <td data-label="Name">{{ Syllabus.Name }}</td>
-              <td data-label="Role">{{ Syllabus.StaffTypeNames || '-' }}</td>
+              <td data-label="Role">{{ Syllabus.StaffTypeDisplay || Syllabus.StaffTypeNames || getStaffTypeDisplay(Syllabus.StaffType) || '-' }}</td>
               <td data-label="MobileNumber">{{ Syllabus.MobileNumber || '-' }}</td>
               <td data-label="SchoolName" *ngIf="isAdmin">{{ Syllabus.SchoolName }}</td>
               <td data-label="AcademicYearName" *ngIf="isAdmin">{{ Syllabus.AcademicYearName }}</td>
@@ -176,7 +230,7 @@
                 <div class="InputFieldsContainer">
                   <div class="input-with-error">
                     <input type="time" class="inputField" [(ngModel)]="Syllabus.StartTime" name="startTime{{i}}"
-                      [ngModelOptions]="{standalone: true}" />
+                      [ngModelOptions]="{standalone: true}" readOnly />
                   </div>
                 </div>
               </td>
@@ -184,7 +238,7 @@
                 <div class="InputFieldsContainer">
                   <div class="input-with-error">
                     <input type="time" class="inputField" [(ngModel)]="Syllabus.EndTime" name="endTime{{i}}"
-                      [ngModelOptions]="{standalone: true}" />
+                      [ngModelOptions]="{standalone: true}" readOnly />
                   </div>
                 </div>
               </td>

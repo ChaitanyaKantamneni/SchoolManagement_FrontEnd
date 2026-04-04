@@ -256,11 +256,11 @@ FetchSchoolsList() {
   };
 
   AddNewClicked() {
-if (this.isAdmin()) {
-      this.RoleForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
-    } else {
-      this.RoleForm.get('School')?.clearValidators();
-    }
+// if (this.isAdmin()) {
+//       this.RoleForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+//     } else {
+//       this.RoleForm.get('School')?.clearValidators();
+//     }
     if(this.AdminselectedSchoolID==''){
       this.FetchAcademicYearsList();
     }

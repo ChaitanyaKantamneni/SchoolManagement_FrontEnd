@@ -32,6 +32,7 @@ export class AttendanceSheetComponent extends BasePermissionComponent{
     this.checkViewPermission();
     this.SchoolSelectionChange = false;
     this.FetchSchoolsList();
+    this.FetchAcademicYearsList();
   };
 
   allowOnlyNumbers(event: KeyboardEvent) {
@@ -372,15 +373,6 @@ FetchExamsbyclassanddivisionList() {
     );
 }
 checkAttendanceStatusForExams() {
-
-  const missingRemark = this.SyllabusList.find(s => !s.IsPresent && !s.Remarks?.trim());
-  if (missingRemark) {
-    this.AminityInsStatus = `⚠️ Please enter a remark for ${missingRemark.Name || missingRemark.FirstName} (Absent).`;
-    this.statusModalTitle = 'Validation Warning';
-    this.isModalOpen = true;
-    return;
-  }
-
   const body = {
     Flag: '2',
     SchoolID: this.AdminselectedSchoolID,
@@ -507,15 +499,15 @@ checkAttendanceStatusForExams() {
       SchoolIdSelected = this.selectedSchoolID.trim();
     }
 
-    return this.apiurl.post<any>('Tbl_StudentDetails_CRUD_Operations', {
+  return this.apiurl.post<any>('Tbl_StudentDetails_CRUD_Operations', {
       Flag: isSearch ? '8' : '6',
       SchoolID: this.AdminselectedSchoolID || '',
       AcademicYear: this.AdminselectedAcademivYearID || '',
       Class: this.AdminselectedClassID || '',
-      Divisions: this.AdminselectedDiviosnID || '',
+      Division: this.AdminselectedDiviosnID || '',
       AdmissionNo: isSearch ? this.searchQuery.trim() : null
     });
-  }
+}
 private resetPaginationAndFetch() {
   this.SyllabusList = [];       // Clear old table immediately
   this.FetchInitialData();
@@ -538,7 +530,7 @@ private resetPaginationAndFetch() {
         SchoolID:this.AdminselectedSchoolID || '',
         AcademicYear:this.AdminselectedAcademivYearID || '',
         Class:this.AdminselectedClassID || '',
-        Division:this.AdminselectedDiviosnID
+        Division:this.AdminselectedDiviosnID || ''
       };
 
       if (isSearch) payload.AdmissionNo = this.searchQuery.trim();
@@ -630,6 +622,10 @@ formatDateYYYYMMDD(dateStr: string | null) {
     this.statusModalTitle = 'Attendance Status';
     this.AminityInsStatus = `${studentName} status is ${status}.`;
     this.isModalOpen = true;
+  }
+
+  private getMissingAbsentRemarkStudent() {
+    return this.SyllabusList.find(s => !s.IsPresent && !s.Remarks?.trim()) || null;
   }
 
   private isAttendanceFilterReady(): boolean {
@@ -816,6 +812,14 @@ submitAttendance() {
   );
   if (invalidLate) {
     this.AminityInsStatus = '⚠️ Late minutes cannot be negative.';
+    this.statusModalTitle = 'Validation Warning';
+    this.isModalOpen = true;
+    return;
+  }
+
+  const missingRemark = this.getMissingAbsentRemarkStudent();
+  if (missingRemark) {
+    this.AminityInsStatus = `⚠️ Please enter a reason for ${missingRemark.Name || missingRemark.FirstName} before submitting attendance.`;
     this.statusModalTitle = 'Validation Warning';
     this.isModalOpen = true;
     return;

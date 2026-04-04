@@ -136,7 +136,7 @@
                <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="AcademicYear" placeholder="Select Start Date" >
+                  <select class="inputField" type="date" formControlName="AcademicYear" placeholder="Select Start Date" (change)=onAdminAcademicYearChange($event)>
                     <option value="0">-- Select Academic Year --</option>
                     <option *ngFor="let school of academicYearList" value="{{school.ID}}">{{school.Name}}</option>
                   </select>
@@ -192,7 +192,7 @@
                 <label class="inputLabel" for="email">Stop Order <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" formControlName="StopOrder" placeholder="Enter Stop Order" (keydown)="allowOnlyNumbers($event)" minlength="1" maxlength="3" />
-                  <div *ngIf="(SyllabusForm.get('StopOrder' ) ?. touched && SyllabusForm.get('StopOrder' ) ?. invalid)" class="text-danger">
+                  <div *ngIf="(SyllabusForm.get('StopOrder' ) ?. touched &&  SyllabusForm.get('StopOrder' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(SyllabusForm.get('StopOrder' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter Stop Order.</small>
                     </div>
