@@ -24,3 +24,15 @@
     transform: translateY(-50%);
     gap: 0px;
 }
+
+.search-icon-btn{
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 34px;
+    height: 100%;
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+}

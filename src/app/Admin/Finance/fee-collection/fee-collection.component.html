@@ -239,6 +239,13 @@
             <button type="button" class="btnsubmit" (click)="onSubmit()">Submit</button>
           </div>
 
+          <div *ngIf="admissionLookupNoData" class="NoDataFound">
+            <div class="NoDataFoundImg">
+              <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
+            </div>
+            <p>No data found.</p>
+          </div>
+
           <!-- Selected student details (single horizontal row) -->
           <div *ngIf="showFeeTable" class="student-summary-row">
             <div class="student-summary-item">
@@ -372,6 +379,9 @@
                     <div *ngIf="ClassDivisionForm.get('TransactionID')?.hasError('required') && (ClassDivisionForm.get('TransactionID')?.touched || ClassDivisionForm.get('TransactionID')?.dirty)" class="text-danger">
                       <small>Transaction ID is required.</small>
                     </div>
+                    <div *ngIf="ClassDivisionForm.get('TransactionID')?.hasError('pattern') && (ClassDivisionForm.get('TransactionID')?.touched || ClassDivisionForm.get('TransactionID')?.dirty)" class="text-danger">
+                      <small>Transaction ID must be 8-30 characters and contain only letters, numbers, _ or -.</small>
+                    </div>
                   </div>
                 </ng-container>
                 <ng-template #chequeOrPlaceholder>
@@ -381,6 +391,9 @@
                       <input type="text" class="inputField" formControlName="ChequeNo" placeholder="Enter Cheque No">
                       <div *ngIf="ClassDivisionForm.get('ChequeNo')?.hasError('required') && (ClassDivisionForm.get('ChequeNo')?.touched || ClassDivisionForm.get('ChequeNo')?.dirty)" class="text-danger">
                         <small>Cheque No is required.</small>
+                      </div>
+                      <div *ngIf="ClassDivisionForm.get('ChequeNo')?.hasError('pattern') && (ClassDivisionForm.get('ChequeNo')?.touched || ClassDivisionForm.get('ChequeNo')?.dirty)" class="text-danger">
+                        <small>Cheque No must be exactly 6 digits.</small>
                       </div>
                     </div>
                   </ng-container>
@@ -453,9 +466,9 @@
           <!-- STUDENT DETAILS -->
           <h5 class="section-title">Student Details</h5>
       
-          <div class="receipt-row"><b>Student Name:</b> {{ viewSyllabus?.StudentName }}</div>
-          <div class="receipt-row"><b>Class:</b> {{ viewSyllabus?.ClassName }}</div>
-          <div class="receipt-row"><b>Division:</b> {{ viewSyllabus?.DivisionName }}</div>
+          <div class="receipt-left-line"><b>Student Name :</b> {{ viewSyllabus?.StudentName }}</div>
+          <div class="receipt-left-line"><b>Class :</b> {{ viewSyllabus?.ClassName }}</div>
+          <div class="receipt-left-line"><b>Division :</b> {{ viewSyllabus?.DivisionName }}</div>
       
           <hr>
       
@@ -494,16 +507,16 @@
           <!-- PAYMENT DETAILS -->
           <h5 class="section-title">Payment Details</h5>
       
-          <div class="receipt-row"><b>Payment Mode:</b> {{ getReceiptPaymentModeLabel() }}</div>
-          <div class="receipt-row" *ngIf="isReceiptUpiOrCardMode()"><b>Transaction ID:</b> {{ getReceiptPaymentReferenceValue() }}</div>
-          <div class="receipt-row" *ngIf="isReceiptChequeMode()"><b>Cheque No:</b> {{ getReceiptPaymentReferenceValue() }}</div>
+          <div class="receipt-left-line"><b>Payment Mode :</b> {{ getReceiptPaymentModeLabel() }}</div>
+          <div class="receipt-left-line" *ngIf="isReceiptUpiOrCardMode()"><b>Transaction ID :</b> {{ getReceiptPaymentReferenceValue() }}</div>
+          <div class="receipt-left-line" *ngIf="isReceiptChequeMode()"><b>Cheque No :</b> {{ getReceiptPaymentReferenceValue() }}</div>
       
           <hr>
       
           <!-- FOOTER -->
           <div class="receipt-footer">
-            <p><b>Received By:</b> {{ viewSyllabus?.CreatedBy }}</p>
-            <p><b>School Name:</b> {{ viewSyllabus?.SchoolName }}</p>
+            <div class="receipt-left-line"><b>Received By :</b> {{ viewSyllabus?.CreatedBy }}</div>
+            <div class="receipt-left-line"><b>School Name :</b> {{ viewSyllabus?.SchoolName }}</div>
             <!-- <p><b>Address:</b> {{ viewSyllabus?.SchoolAddress }}</p> -->
           </div>
       

@@ -95,7 +95,26 @@ export class SideBarComponentComponent implements OnInit {
   }
 
   formatRoute(name: string): string {
-    return name.replace(/\s+/g, '');
+    const compact = (name ?? '').replace(/\s+/g, '');
+    const normalized = compact.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    // Some schools/roles have slightly different page names coming from API
+    // (e.g. "Fee Discounts" vs route path "FeeDiscount").
+    const alias: Record<string, string> = {
+      feediscounts: 'FeeDiscount',
+      feediscount: 'FeeDiscount',
+      feediscountcategory: 'FeeDiscountCategory',
+      feecategories: 'FeeCategory',
+      feecategory: 'FeeCategory',
+      feecollections: 'FeeCollection',
+      feecollection: 'FeeCollection',
+      feedues: 'FeeDues',
+      fare: 'Fare',
+      fares: 'Fares',
+      dashboard: 'dashboard',
+    };
+
+    return alias[normalized] ?? compact;
   }
 
   // ✅ Logout function (best practice)

@@ -217,10 +217,12 @@ export class FeeAllocationComponent extends BasePermissionComponent{
     // }
     const SchoolIdSelected = this.selectedSchoolID?.trim() || '';
 
+    const searchText = isSearch ? this.searchQuery.trim() : null;
     return this.apiurl.post<any>('Tbl_FeeAllocation_CRUD_Operations', {
       Flag: isSearch ? '8' : '6',
       SchoolID:SchoolIdSelected,
-      FeeCategoryName: isSearch ? this.searchQuery.trim() : null
+      FeeCategoryName: searchText,
+      FeeCategory: searchText
     });
   }
 
@@ -258,7 +260,11 @@ export class FeeAllocationComponent extends BasePermissionComponent{
           ...extra
         };
 
-        if (isSearch) payload.FeeCategoryName = this.searchQuery.trim();
+        if (isSearch) {
+          const searchText = this.searchQuery.trim();
+          payload.FeeCategoryName = searchText;
+          payload.FeeCategory = searchText;
+        }
 
         this.apiurl.post<any>('Tbl_FeeAllocation_CRUD_Operations', payload).subscribe({
           next: (response: any) => {
@@ -709,26 +715,34 @@ export class FeeAllocationComponent extends BasePermissionComponent{
     clearTimeout(this.searchTimer);
 
     this.searchTimer = setTimeout(() => {
-      const value = this.searchQuery?.trim() || '';
+      this.applySearch();
+    }, this.SEARCH_DEBOUNCE);
+  };
 
-      if (value.length === 0) {
-        this.currentPage = 1;
-        this.pageSize=5;
-        this.visiblePageCount=3;
-        this.FetchInitialData();
-        return;
-      }
+  onSearchSubmit() {
+    clearTimeout(this.searchTimer);
+    this.applySearch();
+  };
 
-      if (value.length < this.SEARCH_MIN_LENGTH) {
-        return;
-      }
-      
+  private applySearch() {
+    const value = this.searchQuery?.trim() || '';
+
+    if (value.length === 0) {
       this.currentPage = 1;
       this.pageSize=5;
       this.visiblePageCount=3;
       this.FetchInitialData();
+      return;
+    }
 
-    }, this.SEARCH_DEBOUNCE);
+    if (value.length < this.SEARCH_MIN_LENGTH) {
+      return;
+    }
+    
+    this.currentPage = 1;
+    this.pageSize=5;
+    this.visiblePageCount=3;
+    this.FetchInitialData();
   };
 
   formatDateYYYYMMDD(dateStr: string | null) {

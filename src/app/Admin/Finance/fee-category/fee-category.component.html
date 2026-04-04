@@ -71,12 +71,12 @@
                 <td data-label="ID" class="visually-hidden">{{ Class.ID }}</td>
                 <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
                 <td data-label="FeeCategoryName">{{ Class.FeeCategoryName }}</td>
-                <td data-label="FeeType" *ngIf="isAdmin">{{ Class.FeeType }}</td>
+                <td data-label="FeeType">{{ Class.FeeType }}</td>
                 <td data-label="FeeCollectionDuration">{{ Class.FeeCollectionDuration }}</td>
                 <td data-label="FeeDueDay ">{{ Class.FeeDueDay }}</td>
                 <td data-label="School" *ngIf="isAdmin">{{ Class.SchoolName }}</td>
                 <td data-label="AcademicYear">{{ Class.AcademicYearName }}</td>
-                <td data-label="Status">{{ Class.IsActive }}</td>
+                <td data-label="Status">{{ Class.IsActive ? 'Active' : 'Inactive' }}</td>
                 <td data-label="Actions">
                   <div class="d-flex justify-content-center align-items-center h-100">
                     <!-- (click)="editreview(aminitie.propertyTypeID)" -->
