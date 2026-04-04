@@ -38,6 +38,10 @@ export class FareComponent extends BasePermissionComponent{
     this.checkViewPermission();
     this.SchoolSelectionChange=false;
     this.FetchSchoolsList();
+    if (!this.isAdmin) {
+      this.AdminselectedSchoolID = sessionStorage.getItem('SchoolID')?.toString() || '';
+      this.SyllabusForm.get('School')?.patchValue(this.AdminselectedSchoolID || 0);
+    }
     this.FetchInitialData();    
   };
 
@@ -180,7 +184,7 @@ export class FareComponent extends BasePermissionComponent{
     Route: new FormControl(0, Validators.min(1)),
     Stop: new FormControl(0, Validators.min(1)),
     Bus: new FormControl(0, Validators.min(1)),
-    School: new FormControl(),
+    School: new FormControl(0),
     Amount: new FormControl('', [Validators.required,Validators.pattern('^[0-9]+$')]),
     AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
 
@@ -211,7 +215,7 @@ export class FareComponent extends BasePermissionComponent{
       );
   };
    FetchAcademicYearsList() {
-    const requestData = { SchoolID:this.AdminselectedSchoolID||'',Flag: '2' };
+    const requestData = { SchoolID:this.getCurrentSchoolId(),Flag: '2' };
 
     this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)
       .subscribe(
@@ -245,6 +249,10 @@ export class FareComponent extends BasePermissionComponent{
     return role === '1';
   }
 
+  private getCurrentSchoolId(): string {
+    return this.AdminselectedSchoolID || sessionStorage.getItem('SchoolID')?.toString() || '';
+  }
+
   FetchAcademicYearCount(isSearch: boolean) {
     let SchoolIdSelected = '';
 
@@ -254,7 +262,7 @@ export class FareComponent extends BasePermissionComponent{
 
     return this.apiurl.post<any>('Tbl_Fare_CRUD_Operations', {
       Flag: isSearch ? '8' : '6',
-      SchoolID:SchoolIdSelected,
+      SchoolID: this.getCurrentSchoolId() || SchoolIdSelected,
       Amount: isSearch ? this.searchQuery.trim() : null
     });
   }
@@ -287,7 +295,7 @@ export class FareComponent extends BasePermissionComponent{
           SortDirection: this.sortDirection,
           LastCreatedDate: cursor?.lastCreatedDate ?? null,
           LastID: cursor?.lastID ?? null,
-          SchoolID:SchoolIdSelected,
+          SchoolID: this.getCurrentSchoolId() || SchoolIdSelected,
           ...extra
         };
 
@@ -353,7 +361,7 @@ export class FareComponent extends BasePermissionComponent{
     this.FetchBusList();
     this.SyllabusForm.reset();
 
-    this.SyllabusForm.get('School').patchValue('0');
+    this.SyllabusForm.get('School').patchValue(this.getCurrentSchoolId() || '0');
     this.SyllabusForm.get('AcademicYear').patchValue('0');
 
 
@@ -378,7 +386,7 @@ export class FareComponent extends BasePermissionComponent{
         StopID: this.SyllabusForm.get('Stop')?.value,
         BusID: this.SyllabusForm.get('Bus')?.value,
         Amount: this.SyllabusForm.get('Amount')?.value,
-        SchoolID: this.SyllabusForm.get('School')?.value,
+        SchoolID: this.SyllabusForm.get('School')?.value || this.getCurrentSchoolId(),
 
         AcademicYear: this.SyllabusForm.get('AcademicYear')?.value,
 
@@ -497,7 +505,7 @@ export class FareComponent extends BasePermissionComponent{
         StopID: this.SyllabusForm.get('Stop')?.value,
         BusID: this.SyllabusForm.get('Bus')?.value,
         Amount: this.SyllabusForm.get('Amount')?.value,
-        SchoolID: this.SyllabusForm.get('School')?.value,
+        SchoolID: this.SyllabusForm.get('School')?.value || this.getCurrentSchoolId(),
 
         IsActive:IsActiveStatusNumeric,
         AcademicYear: this.SyllabusForm.get('AcademicYear')?.value,

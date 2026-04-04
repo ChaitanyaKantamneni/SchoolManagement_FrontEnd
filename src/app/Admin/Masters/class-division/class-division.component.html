@@ -224,7 +224,7 @@
               <div class="InputFieldsContainer" *ngIf="!isAdmin">
                 <div class="toggle-container" (click)="$event.stopPropagation()">
                   <label class="switch">
-                    <input type="checkbox" [checked]="IsActiveStatus" (click)="toggleChange()">
+                    <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
                     <span class="slider">
                       <span
                         class="toggle-text"

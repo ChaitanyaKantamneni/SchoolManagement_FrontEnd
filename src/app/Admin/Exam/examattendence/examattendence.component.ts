@@ -16,7 +16,7 @@ import { HttpClient } from '@angular/common/http';
   styleUrl: './examattendence.component.css'
 })
 export class ExamattendenceComponent  extends BasePermissionComponent{
-   pageName = 'ExamAttendence';
+   pageName = 'Exam Attendance';
 
   constructor(
     private http: HttpClient,
@@ -32,7 +32,17 @@ export class ExamattendenceComponent  extends BasePermissionComponent{
     this.checkViewPermission();
     this.SchoolSelectionChange = false;
     this.FetchSchoolsList();
+    if (!this.isAdmin) {
+      this.AdminselectedSchoolID =
+        sessionStorage.getItem('SchoolID')?.toString() ||
+        sessionStorage.getItem('schoolId')?.toString() ||
+        '';
+      this.SyllabusForm.patchValue({ School: this.AdminselectedSchoolID });
+    }
+    this.FetchAcademicYearsList();
   };
+
+  
 
   allowOnlyNumbers(event: KeyboardEvent) {
     if (
@@ -135,10 +145,23 @@ export class ExamattendenceComponent  extends BasePermissionComponent{
     const role = sessionStorage.getItem('RollID') || localStorage.getItem('RollID');
     return role === '1';
   }
+
+  private getCurrentSchoolId(): string {
+    if (this.isAdmin) {
+      return this.AdminselectedSchoolID || '';
+    }
+
+    return (
+      this.AdminselectedSchoolID ||
+      sessionStorage.getItem('SchoolID')?.toString() ||
+      sessionStorage.getItem('schoolId')?.toString() ||
+      ''
+    );
+  }
   
   FetchAcademicYearsList() {
     const requestData = { 
-      SchoolID:this.AdminselectedSchoolID||'',
+      SchoolID:this.getCurrentSchoolId(),
       Flag: '2' 
     };
 
@@ -166,7 +189,7 @@ export class ExamattendenceComponent  extends BasePermissionComponent{
   
 FetchClassList() {
   const requestData = {
-    SchoolID: this.AdminselectedSchoolID || '',
+    SchoolID: this.getCurrentSchoolId(),
     AcademicYear: this.AdminselectedAcademivYearID || '',
     Flag: '9'
   };
@@ -198,7 +221,7 @@ FetchClassList() {
 }
 FetchExamsList() {
   const requestData = {
-    SchoolID: this.AdminselectedSchoolID || '',
+    SchoolID: this.getCurrentSchoolId(),
     AcademicYear: this.AdminselectedAcademivYearID || '',
     Flag: '3'
   };
@@ -238,7 +261,7 @@ FetchExamsList() {
 
 FetchDivisionsList() {
   const requestData = {
-    SchoolID: this.AdminselectedSchoolID || '',
+    SchoolID: this.getCurrentSchoolId(),
     AcademicYear: this.AdminselectedAcademivYearID || '',
     Class :this.AdminselectedClassID || '',
     Flag: '3'
@@ -281,7 +304,7 @@ FetchDivisionsList() {
 
 FetchExamsbyclassanddivisionList() {
   const requestData = {
-    SchoolID: this.AdminselectedSchoolID || '',
+    SchoolID: this.getCurrentSchoolId(),
     AcademicYear: this.AdminselectedAcademivYearID || '',
     Class :this.AdminselectedClassID || '',
     Division :this.AdminselectedDiviosnID || '',
@@ -365,7 +388,7 @@ checkAttendanceStatusForExams() {
 
   const body = {
     Flag: '2',
-    SchoolID: this.AdminselectedSchoolID,
+    SchoolID: this.getCurrentSchoolId(),
     AcademicYear: this.AdminselectedAcademivYearID,
     Class: this.AdminselectedClassID,
   Division: this.AdminselectedDiviosnID
@@ -393,7 +416,7 @@ checkAttendanceStatusForExams() {
 }
   FetchClassStudentsList() {
     const requestData = { 
-      SchoolID:this.AdminselectedSchoolID || '',
+            SchoolID:this.getCurrentSchoolId(),
             AcademicYear:this.AdminselectedAcademivYearID || '',
             Class:this.AdminselectedClassID || '',
             Division:this.AdminselectedDiviosnID,
@@ -441,7 +464,7 @@ checkAttendanceStatusForExams() {
 
   FetchClassStudentsListAfterAttendance(){
     const requestData = { 
-      SchoolID:this.AdminselectedSchoolID || '',
+      SchoolID:this.getCurrentSchoolId(),
             AcademicYear:this.AdminselectedAcademivYearID || '',            
             Class:this.AdminselectedClassID || '',
             Division:this.AdminselectedDiviosnID,
@@ -494,7 +517,7 @@ checkAttendanceStatusForExams() {
 
     return this.apiurl.post<any>('Tbl_SetExam_CRUD_Operations', {
       Flag: isSearch ? '8' : '6',
-       SchoolID: this.AdminselectedSchoolID || '',
+       SchoolID: this.getCurrentSchoolId(),
       AcademicYear: this.AdminselectedAcademivYearID || '',
       Class: this.AdminselectedClassID || '',
       Division: this.AdminselectedDiviosnID || '',
@@ -532,7 +555,7 @@ private resetPaginationAndFetch() {
         LastID: cursor?.lastID ?? null,
 
         // ALL 5 filters always sent
-        SchoolID: this.AdminselectedSchoolID || '',
+        SchoolID: this.getCurrentSchoolId(),
         AcademicYear: this.AdminselectedAcademivYearID || '',
         Class: this.AdminselectedClassID || '',
         Division: this.AdminselectedDiviosnID || '',
@@ -657,12 +680,11 @@ formatDateYYYYMMDD(dateStr: string | null) {
   selectedExam: any;
   openAttendance(examRow: any) {
     this.attendanceMode = 'add';   
-
-
     this.selectedExam = examRow;
+    this.AdminselectedSchoolID = examRow?.SchoolID?.toString() || this.getCurrentSchoolId();
+    this.SyllabusForm.patchValue({ School: this.AdminselectedSchoolID });
     this.selectedExamIDForAttendance = Number(examRow.ID);
     this.selectedSubjectID=Number(examRow.SubjectID);
-
     this.FetchClassStudentsList();
     this.IsAddNewClicked = true;
   }
@@ -670,6 +692,8 @@ formatDateYYYYMMDD(dateStr: string | null) {
   openViewAttendance(examRow: any) {
     this.attendanceMode = 'view';   
     this.selectedExam = examRow;
+    this.AdminselectedSchoolID = examRow?.SchoolID?.toString() || this.getCurrentSchoolId();
+    this.SyllabusForm.patchValue({ School: this.AdminselectedSchoolID });
     this.selectedExamIDForAttendance = Number(examRow.ID);
     this.selectedSubjectID=Number(examRow.SubjectID);
     this.FetchClassStudentsListAfterAttendance();
@@ -768,7 +792,7 @@ submitAttendance() {
 
   const body = {
     Flag: '1',
-    SchoolID: this.AdminselectedSchoolID,
+    SchoolID: this.getCurrentSchoolId(),
     AcademicYear: this.AdminselectedAcademivYearID,
     ExamID: this.selectedExamIDForAttendance.toString(),
     SubjectID: this.selectedSubjectID.toString(),
@@ -837,7 +861,7 @@ submitAttendance() {
   // Build ONE payload with only changed students
   const body = {
     Flag: '5',
-    SchoolID: this.AdminselectedSchoolID,
+    SchoolID: this.getCurrentSchoolId(),
     AcademicYear: this.AdminselectedAcademivYearID,
     ExamID: this.selectedExamIDForAttendance.toString(),
     SubjectID: this.selectedSubjectID.toString(),

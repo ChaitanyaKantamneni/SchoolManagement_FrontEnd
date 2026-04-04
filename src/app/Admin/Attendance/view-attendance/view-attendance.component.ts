@@ -67,7 +67,15 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
 
   ngOnInit(): void {
     this.checkViewPermission();
+    if (!this.isAdmin) {
+      this.AdminselectedSchoolID =
+        sessionStorage.getItem('SchoolID')?.toString() ||
+        sessionStorage.getItem('schoolId')?.toString() ||
+        '';
+      this.SyllabusForm.patchValue({ School: this.AdminselectedSchoolID || '0' });
+    }
     this.FetchSchoolsList();
+    this.FetchAcademicYearsList();
   }
 
   schoolList: any[] = [];
@@ -129,6 +137,19 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
     return role === '1';
   }
 
+  private getCurrentSchoolId(): string {
+    if (this.isAdmin) {
+      return this.AdminselectedSchoolID || '';
+    }
+
+    return (
+      this.AdminselectedSchoolID ||
+      sessionStorage.getItem('SchoolID')?.toString() ||
+      sessionStorage.getItem('schoolId')?.toString() ||
+      ''
+    );
+  }
+
   FetchSchoolsList() {
     this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', { Flag: '2' }).subscribe(
       (response: any) => {
@@ -141,7 +162,7 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
   }
 
   FetchAcademicYearsList() {
-    this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', { SchoolID: this.AdminselectedSchoolID, Flag: '2' }).subscribe(
+    this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', { SchoolID: this.getCurrentSchoolId(), Flag: '2' }).subscribe(
       (response: any) => {
         this.academicYearList = Array.isArray(response?.data)
           ? response.data.map((item: any) => ({ ID: item.id, Name: item.name }))
@@ -153,7 +174,7 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
 
   FetchClassList() {
     this.apiurl.post<any>('Tbl_ClassDivision_CRUD_Operations', {
-      SchoolID: this.AdminselectedSchoolID,
+      SchoolID: this.getCurrentSchoolId(),
       AcademicYear: this.AdminselectedAcademivYearID,
       Flag: '9'
     }).subscribe(
@@ -168,7 +189,7 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
 
   FetchDivisionsList() {
     this.apiurl.post<any>('Tbl_ClassDivision_CRUD_Operations', {
-      SchoolID: this.AdminselectedSchoolID,
+      SchoolID: this.getCurrentSchoolId(),
       AcademicYear: this.AdminselectedAcademivYearID,
       Class: this.AdminselectedClassID,
       Flag: '3'
@@ -184,7 +205,7 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
 
   FetchSessionsList() {
     this.apiurl.post<any>('Tbl_Session_CRUD_Operations', {
-      SchoolID: this.AdminselectedSchoolID,
+      SchoolID: this.getCurrentSchoolId(),
       AcademicYear: this.AdminselectedAcademivYearID,
       Flag: '2'
     }).subscribe(
@@ -309,14 +330,15 @@ updateStudentAttendance() {
     return;
   }
 
-  this.isUpdating = true;
+    this.isUpdating = true;
+    const schoolId = this.getCurrentSchoolId();
 
-  const body = {
-    Flag: '5',
-    SchoolID: this.AdminselectedSchoolID,
-    AcademicYear: this.AdminselectedAcademivYearID,
-    Class: this.AdminselectedClassID,
-    Division: this.AdminselectedDiviosnID,
+    const body = {
+      Flag: '5',
+      SchoolID: schoolId,
+      AcademicYear: this.AdminselectedAcademivYearID,
+      Class: this.AdminselectedClassID,
+      Division: this.AdminselectedDiviosnID,
     AdmissionID: this.selectedStudent.admissionNo,
     Students: changedRows.map(s => {
       return {
@@ -368,7 +390,7 @@ updateStudentAttendance() {
 
     const body: any = {
       Flag: '2',
-      SchoolID: this.AdminselectedSchoolID,
+      SchoolID: this.getCurrentSchoolId(),
       AcademicYear: this.AdminselectedAcademivYearID,
       Class: this.AdminselectedClassID,
       Division: this.AdminselectedDiviosnID,
