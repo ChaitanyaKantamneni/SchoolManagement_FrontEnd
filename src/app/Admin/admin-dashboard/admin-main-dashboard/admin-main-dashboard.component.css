@@ -148,21 +148,29 @@
 .filters{
   display:flex;
   gap:20px;
+  flex-wrap: wrap;
+  background: rgba(255,255,255,0.55);
+  border: 1px solid rgba(215, 224, 236, 0.85);
+  padding: 14px 16px;
+  border-radius: 16px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
 }
 
 .filters select{
   padding:10px 16px;
   border-radius:10px;
-  border:1px solid #e5e7eb;
+  border:1px solid #cfd9e6;
   font-size:14px;
-  background:white;
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
   min-width:200px;
-  box-shadow:0 3px 8px rgba(0,0,0,0.05);
+  box-shadow:0 3px 10px rgba(15,23,42,0.05);
   transition:.25s;
 }
 
 .filters select:hover{
-  border-color:#3b82f6;
+  border-color:#1d4ed8;
+  box-shadow:0 6px 14px rgba(29,78,216,0.10);
 }
 
 
@@ -471,10 +479,9 @@ border-top:1px solid #eee;
 font-weight:600;
 }
 
-
 /* RESPONSIVE */
 
-@media (max-width:1200px){
+@media (max-width:992px){
 
 .BlocksDiv{
   flex-wrap:wrap;
@@ -491,9 +498,21 @@ font-weight:600;
   grid-template-columns:1fr;
 }
 
+.dashboard-lists{
+  grid-template-columns: 1fr 1fr;
+}
+
+.small-kpis{
+  grid-template-columns: repeat(2, 1fr);
+}
+
 }
 
 @media (max-width:768px){
+
+.MainContentDiv{
+  padding: 16px 14px 20px;
+}
 
 .ClassBlock,
 .DivisionsBlock,
@@ -504,6 +523,22 @@ font-weight:600;
 
 .filters{
   flex-direction:column;
+  gap: 12px;
+}
+
+.filters select{
+  min-width: 100%;
+}
+
+.charts,
+.dashboard-lists,
+.small-kpis{
+  gap: 16px;
+}
+
+.dashboard-lists,
+.small-kpis{
+  grid-template-columns: 1fr;
 }
 
 }

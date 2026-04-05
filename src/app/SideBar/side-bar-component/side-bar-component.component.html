@@ -1,56 +1,101 @@
-<div class="row justify-content-center align-items-center m-0 w-100 totalcard">
+<app-dashboard-top-nav [shellMode]="true"></app-dashboard-top-nav>
 
-  <!-- Mobile Navbar -->
-  <nav class="navbar navbar-expand-md navbar-light bg-light d-md-none col-12">
-    <a class="navbar-brand"><img class="h-100" src="Images/Logo1.jpg"></a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
-      <span class="navbar-toggler-icon"></span>
+<div class="totalcard">
+<aside class="sidenavbar" [ngClass]="{'collapsed': !isExpanded, 'mobile-open': isMobileMenuOpen}">
+  <div class="sidebar-mobile-bar">
+    <span class="sidebar-title">Menu</span>
+    <button class="icon-btn close-btn" type="button" (click)="toggleSidebar()" aria-label="Close sidebar">
+      <mat-icon>close</mat-icon>
     </button>
-    <div class="collapse navbar-collapse" id="navbarContent">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item">
-          <a class="nav-link DashboardMenuLi" (click)="navigate({ id: '0', pageName: 'Dashboard', moduleID: '0', canView: '1', canAdd: '0', canEdit: '0', canDelete: '0' })">
-            <mat-icon>dashboard</mat-icon> Dashboard
-          </a>
-        </li>
-        <li class="nav-item" (click)="logout()">
-          <a class="nav-link DashboardMenuLi"><mat-icon>logout</mat-icon> Logout</a>
-        </li>
-      </ul>
-    </div>
-  </nav>
+  </div>
 
-  <!-- Sidebar -->
-  <div class="sidenavbar col-12 col-md-3" [ngClass]="{'collapsed': !isExpanded}">
     <div class="logo">
       <a>
-        <img src="Images/Logo1.jpg" alt="BUSERELE" />
+        <img src="Images/Logo1.jpg" alt="School ERP" />
       </a>
     </div>
-    <div class="sidebar d-none d-md-block h-100">
+
+    <div class="sidebar">
       <ul class="menu">
-        <li *ngFor="let module of menu" class="menu-item has-submenu">
-          <div class="parent-row" (click)="toggleSubmenu(module.id)">
-            <mat-icon>widgets</mat-icon>
-            <span *ngIf="isExpanded" class="DashboardMenuLi">{{ module.moduleName }}</span>
+        <li>
+          <a (click)="goToDashboard()" routerLinkActive="active">
+            <mat-icon>dashboard</mat-icon>
+            <span class="DashboardMenuLi">Dashboard</span>
+          </a>
+        </li>
+
+        <li
+          class="menu-item has-submenu"
+          *ngFor="let module of getVisibleModules()"
+          [ngClass]="{'is-open': openedSubmenu === module.id.toString()}"
+        >
+          <div class="parent-row" (click)="toggleSubmenu(module.id.toString())">
+            <mat-icon>{{ getModuleIcon(module.moduleName) }}</mat-icon>
+            <span class="DashboardMenuLi">{{ module.moduleName }}</span>
+            <mat-icon class="submenu-arrow">expand_more</mat-icon>
           </div>
 
-          <ul class="submenu" *ngIf="openedSubmenu === module.id.toString() && isExpanded">
-            <ng-container *ngFor="let page of module.pages">
-              <!-- *ngIf="menuService.canView(page)" -->
-              <li (click)="navigate(page, $event)">
+          <ul *ngIf="openedSubmenu === module.id.toString()" class="submenu">
+            <li *ngFor="let page of getVisiblePages(module)">
+              <a (click)="navigate(page, $event)" [ngClass]="{'active': isPageActive(page)}">
                 <mat-icon>{{ getPageIcon(page.pageName) }}</mat-icon>
-                <span>{{ page.pageName }}</span>
-              </li>
-            </ng-container>
+                <span class="submenu-text">{{ page.pageName }}</span>
+              </a>
+            </li>
           </ul>
         </li>
       </ul>
     </div>
-  </div>
+  </aside>
 
-  <!-- Main content -->
-  <div class="maincontent col-12 col-md-9">
+  <div class="sidebar-backdrop" [class.visible]="isMobileMenuOpen" (click)="toggleSidebar()" aria-hidden="true"></div>
+
+  <main class="maincontent">
     <router-outlet class="full-page-content"></router-outlet>
-  </div>
+  </main>
+
+  <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
+    <button type="button" class="mobile-nav-item" [class.active]="activeMobileSection === 'dashboard'" (click)="goToDashboard()">
+      <mat-icon>dashboard</mat-icon>
+      <span>Dashboard</span>
+    </button>
+
+    <button
+      *ngIf="hasVisibleModule('masters')"
+      type="button"
+      class="mobile-nav-item"
+      [class.active]="activeMobileSection === (findVisibleModule('masters')?.id?.toString() || '')"
+      (click)="openMobileSection((findVisibleModule('masters')?.id?.toString() || ''))"
+    >
+      <mat-icon>widgets</mat-icon>
+      <span>Masters</span>
+    </button>
+
+    <button
+      *ngIf="hasVisibleModule('academic')"
+      type="button"
+      class="mobile-nav-item"
+      [class.active]="activeMobileSection === (findVisibleModule('academic')?.id?.toString() || '')"
+      (click)="openMobileSection((findVisibleModule('academic')?.id?.toString() || ''))"
+    >
+      <mat-icon>school</mat-icon>
+      <span>Academics</span>
+    </button>
+
+    <button
+      *ngIf="findVisibleModuleByNames(['timetable', 'time table'])"
+      type="button"
+      class="mobile-nav-item"
+      [class.active]="activeMobileSection === (findVisibleModuleByNames(['timetable', 'time table'])?.id?.toString() || '')"
+      (click)="openMobileSection((findVisibleModuleByNames(['timetable', 'time table'])?.id?.toString() || ''))"
+    >
+      <mat-icon>schedule</mat-icon>
+      <span>Timetable</span>
+    </button>
+
+    <button type="button" class="mobile-nav-item" [class.active]="isMobileMenuOpen" (click)="toggleSidebar()">
+      <mat-icon>menu</mat-icon>
+      <span>Menu</span>
+    </button>
+  </nav>
 </div>

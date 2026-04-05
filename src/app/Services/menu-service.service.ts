@@ -109,6 +109,7 @@ export interface Module {
 })
 export class MenuServiceService {
   private menu: Module[] = [];
+  private loadedRoleId: string | null = null;
   private menuLoadedSource = new BehaviorSubject<boolean>(false);
   menuLoaded$ = this.menuLoadedSource.asObservable();
 
@@ -119,13 +120,17 @@ export class MenuServiceService {
   /** Load menu from sessionStorage if available */
   private loadMenuFromStorage() {
     const storedMenu = sessionStorage.getItem('menu');
+    const storedRoleId = sessionStorage.getItem('menuRoleId');
     if (storedMenu) {
       try {
         this.menu = JSON.parse(storedMenu);
+        this.loadedRoleId = storedRoleId;
         this.menuLoadedSource.next(true);
       } catch (err) {
         console.error('Error parsing stored menu', err);
         sessionStorage.removeItem('menu');
+        sessionStorage.removeItem('menuRoleId');
+        this.loadedRoleId = null;
         this.menuLoadedSource.next(false);
       }
     }
@@ -133,9 +138,12 @@ export class MenuServiceService {
 
   /** Fetch menu from API and store locally */
   loadMenu(roleId: string): Observable<Module[]> {
-    // If menu is already loaded, return it as Observable
-    if (this.menuLoadedSource.value) {
+    if (this.menuLoadedSource.value && this.loadedRoleId === roleId) {
       return of(this.menu);
+    }
+
+    if (this.loadedRoleId && this.loadedRoleId !== roleId) {
+      this.clearMenu();
     }
 
     const url = `${this.apiService.api_url}/Tbl_GetRoleMenuPermissions/${roleId}`;
@@ -148,10 +156,10 @@ export class MenuServiceService {
             id: page.id,
             pageName: page.pageName,
             moduleID: page.moduleID,
-            canView: page.canView === 'True' ? '1' : '0',
-            canAdd: page.canAdd === 'True' ? '1' : '0',
-            canEdit: page.canEdit === 'True' ? '1' : '0',
-            canDelete: page.canDelete === 'True' ? '1' : '0'
+            canView: this.toPermissionFlag(page.canView),
+            canAdd: this.toPermissionFlag(page.canAdd),
+            canEdit: this.toPermissionFlag(page.canEdit),
+            canDelete: this.toPermissionFlag(page.canDelete)
           }))
         }));
 
@@ -169,8 +177,14 @@ export class MenuServiceService {
   /** Save menu to sessionStorage and emit loaded state */
   setMenu(modules: Module[]) {
     this.menu = modules;
+    this.loadedRoleId = sessionStorage.getItem('RollID');
     try {
       sessionStorage.setItem('menu', JSON.stringify(modules));
+      if (this.loadedRoleId) {
+        sessionStorage.setItem('menuRoleId', this.loadedRoleId);
+      } else {
+        sessionStorage.removeItem('menuRoleId');
+      }
     } catch (err) {
       console.warn('Unable to save menu to sessionStorage', err);
     }
@@ -207,8 +221,15 @@ export class MenuServiceService {
 
   clearMenu() {
     this.menu = [];
+    this.loadedRoleId = null;
     sessionStorage.removeItem('menu');
+    sessionStorage.removeItem('menuRoleId');
     this.menuLoadedSource.next(false);
+  }
+
+  private toPermissionFlag(value: unknown): '1' | '0' {
+    const normalized = `${value ?? ''}`.trim().toLowerCase();
+    return ['true', '1', 'yes'].includes(normalized) ? '1' : '0';
   }
 }
 

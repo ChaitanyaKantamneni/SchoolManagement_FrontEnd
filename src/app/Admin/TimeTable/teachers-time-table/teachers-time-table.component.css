@@ -27,6 +27,11 @@
 
 .AddForm{
   margin-top: 10px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  border: 1px solid #d7e0ec;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(29, 78, 216, 0.04);
+  border-radius: 16px;
+  overflow: hidden;
 }
 
 .ComponentTop .ComponentTopHeader{
@@ -69,23 +74,23 @@
 }
 
 .viewmodel .actionbuttons .btncancel,.AddForm .actionbuttons .btncancel{
-  background-color: gray;
-  color: white;
-  border: none;
+  background-color: #f8fafc;
+  color: #153e90;
+  border: 1px solid #d7e0ec;
   font-size: smaller;
-  border-radius: 5px;
-  padding: 5px 10px;
-  transition: background-color 0.3s ease;
+  border-radius: 10px;
+  padding: 8px 14px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .viewmodel .actionbuttons .btnsubmit,.AddForm .actionbuttons .btnsubmit{
-  background-color: #536ff7;
+  background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
   color: #fff;
-  border: none;
+  border: 1px solid transparent;
   font-size: smaller;
-  border-radius: 5px;
-  padding: 5px 10px;
-  transition: background-color 0.3s ease;
+  border-radius: 10px;
+  padding: 8px 14px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .toggle-container {

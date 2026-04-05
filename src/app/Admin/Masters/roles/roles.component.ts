@@ -523,7 +523,7 @@ SchoolID: this.RoleForm.get('School')?.value,
       this.expandedModuleId = null;
       this.PagesList = [];
     } else {
-      if(this.selectedRoleId!='' || this.selectedRoleId!=null){
+      if (this.selectedRoleId !== '' && this.selectedRoleId != null) {
         this.FetchPermissionByRoleID(this.selectedRoleId,moduleId);
       }
       else{
@@ -586,6 +586,10 @@ updateUpdatedPermissionsList(
   const moduleIdStr = moduleId?.toString();
   const pageIdStr = pageId?.toString();
   const roleIdStr = this.selectedRoleId?.toString() || '1';
+  const hasExistingPermissionRow = this.permissionsList.some(
+    p => p.pageID?.toString() === pageIdStr && p.roleID?.toString() === roleIdStr
+  );
+  const permissionFlag = hasExistingPermissionRow ? "4" : "1";
 
   let existing = this.updatedPermissionsList.find(
     p => p.moduleId === moduleIdStr && p.pageId === pageIdStr && p.roleID === roleIdStr
@@ -593,7 +597,7 @@ updateUpdatedPermissionsList(
 
   if (existing) {
     existing[permKey] = stringValue;
-    existing.flag = "1";
+    existing.flag = permissionFlag;
   } else {
     const newPermission: Permission = {
       moduleId: moduleIdStr,
@@ -603,7 +607,7 @@ updateUpdatedPermissionsList(
       CanAdd: permKey === 'CanAdd' ? stringValue : (page.CanAdd ? "1" : "0"),
       CanEdit: permKey === 'CanEdit' ? stringValue : (page.CanEdit ? "1" : "0"),
       CanDelete: permKey === 'CanDelete' ? stringValue : (page.CanDelete ? "1" : "0"),
-      flag: "1",
+      flag: permissionFlag,
       status: "1"
     };
 
@@ -715,10 +719,10 @@ updateUpdatedPermissionsList(
         if (response.statusCode === 200) {
           this.permissionsList = response.data.map((permission: any) => ({
             ...permission,
-            canView: permission.canView === "True",
-            canAdd: permission.canAdd === "True",
-            canEdit: permission.canEdit === "True",
-            canDelete: permission.canDelete === "True"
+            canView: this.toPermissionBoolean(permission.canView),
+            canAdd: this.toPermissionBoolean(permission.canAdd),
+            canEdit: this.toPermissionBoolean(permission.canEdit),
+            canDelete: this.toPermissionBoolean(permission.canDelete)
           }));
           this.fetchPagesByModule(modueID);
           this.expandedModuleId = modueID;
@@ -902,4 +906,9 @@ previousPage() {
     }   
     this.FetchAcademicYearsList();
   };
+
+  private toPermissionBoolean(value: unknown): boolean {
+    const normalized = `${value ?? ''}`.trim().toLowerCase();
+    return ['true', '1', 'yes'].includes(normalized);
+  }
 }

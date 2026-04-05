@@ -72,7 +72,15 @@
                 <td data-label="SchoolName" *ngIf="isAdmin">{{ Module.SchoolName }}</td>
                 <td data-label="AcademicYearName">{{ Module.AcademicYearName }}</td>
                 <td data-label="ClassName">{{ Module.ClassName }}</td>
-                <td data-label="Status">{{ Module.IsActive }}</td>
+                <td data-label="Status">
+                  <span
+                    class="status-pill"
+                    [style.background]="(Module.IsActive === true || Module.IsActive === 'true' || Module.IsActive === 'Active' || Module.IsActive === 1) ? 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)' : 'linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%)'"
+                    [style.color]="(Module.IsActive === true || Module.IsActive === 'true' || Module.IsActive === 'Active' || Module.IsActive === 1) ? '#166534' : '#9f1239'"
+                    [style.borderColor]="(Module.IsActive === true || Module.IsActive === 'true' || Module.IsActive === 'Active' || Module.IsActive === 1) ? '#86efac' : '#fda4af'">
+                    {{ (Module.IsActive === true || Module.IsActive === 'true' || Module.IsActive === 'Active' || Module.IsActive === 1) ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
                 <td data-label="Actions">
                   <div class="d-flex justify-content-center align-items-center h-100">
                     <!-- (click)="editreview(aminitie.propertyTypeID)" -->

@@ -55,7 +55,13 @@
                 <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
                 <td data-label="Class">{{ getSyllabusName(Class.Class) }}</td>
                 <td data-label="Name">{{ Class.Name }}</td>
-                <td data-label="Status">{{ Class.IsActive }}</td>
+                <td data-label="Status">
+                  <span
+                    class="status-pill"
+                    [ngClass]="(Class.IsActive === true || Class.IsActive === 'true' || Class.IsActive === 'Active' || Class.IsActive === 1) ? 'status-active' : 'status-inactive'">
+                    {{ (Class.IsActive === true || Class.IsActive === 'true' || Class.IsActive === 'Active' || Class.IsActive === 1) ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
                 <td data-label="Actions">
                   <div class="d-flex justify-content-center align-items-center h-100">
                     <button *ngIf="canEdit()" class="btn checkbtn edit" data-tooltip="Edit" (click)="editreview(Class.ID)">

@@ -1,113 +1,207 @@
-<div class="Maincontainer">
-  <div class="contentwrapper">
-    <div class="loginIconDiv">
-      <div class="loginIconImg">
-        <img  src="Images/Logo1.jpg" alt="loginIcon">
+<div class="login-page">
+
+  <!-- Animated background blobs -->
+  <div class="bg-blob blob-1"></div>
+  <div class="bg-blob blob-2"></div>
+  <div class="bg-blob blob-3"></div>
+
+  <div class="login-card">
+
+    <!-- ===== LEFT PANEL ===== -->
+    <div class="login-left">
+
+      <!-- LOGO — top priority -->
+      <div class="brand-area">
+        <div class="brand-logo-wrap">
+          <img src="Images/Logo1.jpg" alt="SmartSchools ERP Logo" class="brand-logo-img" />
+        </div>
+        <h1 class="brand-name">SmartSchools <span>ERP</span></h1>
+        <p class="brand-headline">Transforming education through smart technology.</p>
+        <p class="brand-sub">Login to explore your personalized dashboard.</p>
       </div>
+
+      <!-- Feature list with SVGs -->
+      <div class="features-list">
+
+        <div class="feature-item">
+          <span class="feat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3.33 1.67 8.67 1.67 12 0v-5"/>
+            </svg>
+          </span>
+          <div>
+            <strong>Academics</strong>
+            <span>Admissions, classes &amp; syllabus</span>
+          </div>
+        </div>
+
+        <div class="feature-item">
+          <span class="feat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </span>
+          <div>
+            <strong>Attendance &amp; Exams</strong>
+            <span>Track, mark &amp; analyse results</span>
+          </div>
+        </div>
+
+        <div class="feature-item">
+          <span class="feat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+          </span>
+          <div>
+            <strong>Fee &amp; Finance</strong>
+            <span>Collections, dues &amp; discounts</span>
+          </div>
+        </div>
+
+        <div class="feature-item">
+          <span class="feat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+            </svg>
+          </span>
+          <div>
+            <strong>Transport</strong>
+            <span>Routes, buses &amp; stops</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Stats -->
+      <!-- <div class="left-footer">
+        <div class="stat-chip"><strong>500+</strong><span>Schools</span></div>
+        <div class="stat-chip"><strong>50K+</strong><span>Students</span></div>
+        <div class="stat-chip"><strong>99.9%</strong><span>Uptime</span></div>
+      </div> -->
+
     </div>
-    <div class="loginFormDiv">
-      <div class="loginFormInputsDiv">
-        <h3>Welcome Back!</h3>
-        <p>Enter your login credentials to access your account</p>
-        <form [formGroup]="LoginForms">
-          <div class="InputFieldsContainer">
-            <label class="inputLabel" for="email">Email</label>
-            <div class="input-with-error">
-              <input class="inputField" type="email" id="email" formControlName="email" placeholder="Enter E-Mail" />
-              <div *ngIf="(LoginForms.get('UserID' ) ?. touched && LoginForms.get('UserID' ) ?. invalid)" class="text-danger">
-                <div *ngIf="(LoginForms.get('UserID' ) ?. errors ?. ['required' ]) ">
-                  <small>Please Enter E-mail .</small>
-                </div>
+
+    <!-- ===== RIGHT PANEL ===== -->
+    <div class="login-right">
+      <div class="login-form-wrapper">
+
+        <!-- Form header -->
+        <div class="form-header">
+          <div class="form-logo-mini">
+            <img src="Images/Logo1.jpg" alt="Logo" />
+          </div>
+          <h2>Welcome to SmartSchools ERP</h2>
+          <p>Please login using your credentials to continue.</p>
+        </div>
+
+        <form [formGroup]="LoginForms" autocomplete="off">
+
+          <!-- Email -->
+          <div class="form-group" [class.has-error]="LoginForms.get('email')?.touched && LoginForms.get('email')?.invalid">
+            <label for="email">
+              <svg class="lbl-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+              </svg>
+              Email Address
+            </label>
+            <div class="input-wrap">
+              <input id="email" type="email" formControlName="email" placeholder="Enter your email address" autocomplete="username" />
+              <span class="input-focus-bar"></span>
+            </div>
+            <small class="error-msg" *ngIf="LoginForms.get('email')?.touched && LoginForms.get('email')?.hasError('required')">
+              Email is required.
+            </small>
+          </div>
+
+          <!-- Password -->
+          <div class="form-group" [class.has-error]="LoginForms.get('password')?.touched && LoginForms.get('password')?.invalid">
+            <label for="password">
+              <svg class="lbl-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              Password
+            </label>
+            <div class="input-wrap password-wrap">
+              <input id="password" [type]="IsPasswordVisible ? 'text' : 'password'" formControlName="password" placeholder="Enter your password" autocomplete="current-password" />
+              <button type="button" class="toggle-pw" (click)="togglePasswordVisibility()" tabindex="-1" [attr.aria-label]="IsPasswordVisible ? 'Hide password' : 'Show password'">
+                <!-- Eye open -->
+                <svg *ngIf="!IsPasswordVisible" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+                <!-- Eye off -->
+                <svg *ngIf="IsPasswordVisible" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              </button>
+              <span class="input-focus-bar"></span>
+            </div>
+            <small class="error-msg" *ngIf="LoginForms.get('password')?.touched && LoginForms.get('password')?.hasError('required')">
+              Password is required.
+            </small>
+          </div>
+
+          <!-- Captcha -->
+          <div class="form-group captcha-group">
+            <label>
+              <svg class="lbl-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              Captcha Verification
+            </label>
+            <div class="captcha-row">
+              <canvas id="captchaCanvas" class="captcha-canvas"></canvas>
+              <button type="button" class="captcha-refresh" (click)="generateCaptcha()" title="Refresh Captcha">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                </svg>
+              </button>
+              <div class="input-wrap captcha-input-wrap">
+                <input type="text" formControlName="captcha" placeholder="Type captcha here" />
+                <span class="input-focus-bar"></span>
               </div>
             </div>
           </div>
-          <div class="InputFieldsContainer">
-            <label class="inputLabel" for="password">Password</label>
-            <div class="input-with-error">
-              <div class="passwordInputContainer">
-                <input [type]="IsPasswordVisible ? 'text' : 'password'" class="inputField" type="password" id="password" formControlName="password" placeholder="Enter Password" />
-                <mat-icon class="passwordIcon" (click)="togglePasswordVisibility()">{{IsPasswordVisible ? 'visibility' : 'visibility_off'}}</mat-icon>
-              </div>
-              <div *ngIf="(LoginForms.get('Password' ) ?. touched && LoginForms.get('Password' ) ?. invalid) " class="text-danger">
-                <div *ngIf="LoginForms.get('Password' ) ?. errors ?. ['required' ]">
-                  <small>Please Enter Password. </small>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="Captcha">
-            <canvas id="captchaCanvas" class="captcha-canvas"></canvas>
-            <button mat-icon-button (click)="generateCaptcha()" type="button">
-              <mat-icon>refresh</mat-icon>
+
+          <!-- Actions -->
+          <div class="form-actions">
+            <!-- <button type="button" class="btn-forgot">Forgot Password?</button> -->
+            <button type="button" class="btn-login" (click)="OnSubmitSignIn()">
+              <span>Sign In</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+              </svg>
             </button>
-            <div class="loginFieldsInputsCaptcha">
-              <input class="CaptchainputField" formControlName="Captcha" placeholder="Enter Captcha"/>
-            </div>
           </div>
-          <div class="loginFormButtons">
-            <!-- (click)="OnForgotpasswordClick()" -->
-            <button class="forgotPasswordBtn">Forgot Password</button>
-            <!-- (click)="onSubmit()" -->
-            <button class="loginBtn" (click)="OnSubmitSignIn()">Log In</button>
-          </div>
+
         </form>
+
+        <!-- Add-ons -->
+        <!-- <div class="form-addons">
+          <span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+            New user? <a href="#">Contact admin</a>
+          </span>
+          <span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            Best viewed in Chrome / Edge
+          </span>
+        </div> -->
+
+        <!-- Footer -->
+        <div class="form-footer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          Secured by <strong>SmartSchools ERP</strong> &copy; {{ currentYear }}
+        </div>
+
       </div>
     </div>
+
   </div>
 </div>
-
-
-
-
-<!-- <div class="loginFieldsInputsEmail">
-<label class="inputLabel">E-mail</label>
-<div class="input-with-error">
-<input class="inputField" formControlName="UserID" placeholder="Enter e-mail"/>
-<div *ngIf="(LoginForm.get('UserID' ) ?. touched && LoginForm.get('UserID' ) ?. invalid) | | formEmailInvalid" class="text-danger">
-<div *ngIf="(LoginForm.get('UserID' ) ?. errors ?. ['required' ]) | | formEmailInvalid">
-<small>Please Enter E-mail .< /small>
-</div>
-</div>
-</div>
-</div>
-<div class="loginFieldsInputsPassword">
-<label class="inputLabel">Password</label>
-<div class="input-with-error">
-<div class="passwordInputContainer">
-<input [type]="IsPasswordVisible ? 'text' : 'password'" class="inputField" formControlName="Password" placeholder="Enter password"/>
-<i class="fas" [ngClass]="IsPasswordVisible ? 'fa-eye' : 'fa-eye-slash'" (click)="togglePasswordVisibility()"></i> -- >
-<mat-icon class="passwordIcon" (click)="togglePasswordVisibility()">{{IsPasswordVisible ? 'visibility' : 'visibility_off'}}</mat-icon>
-</div>
-<div *ngIf="(LoginForm.get('Password' ) ?. touched && LoginForm.get('Password' ) ?. invalid) | | formPasswordInvalid" class="text-danger">
-<div *ngIf="LoginForm.get('Password' ) ?. errors ?. ['required' ]">
-<small>Please Enter Password. </small>
-</div>
-</div>
-</div>
-</div>
-<div class="Captcha">
-<canvas id="captchaCanvas" class="captcha-canvas"></canvas>
-<button mat-icon-button (click)="generateCaptcha()" type="button">
-<mat-icon>refresh</mat-icon>
-</button>
-<div class="loginFieldsInputsCaptcha">
-<input class="inputField" formControlName="Captcha" placeholder="Enter Captcha"/>
-</div>
-</div>
-<div class="loginFormButtons">
-<button class="forgotPasswordBtn" (click)="OnForgotpasswordClick()">Forgot Password</button>
-<button class="loginBtn" (click)="onSubmit()">Log In</button>
-</div>
-
-IsPasswordVisible:boolean=false;
-IsConfirmPasswordVisible:boolean=false;
-IsConfirmNewPasswordVisible:boolean=false;
-togglePasswordVisibility(){
-this. IsPasswordVisible =! this. IsPasswordVisible;
-
-toggleConfirmNewPasswordVisibility(){
-this. IsConfirmNewPasswordVisible =! this. IsConfirmNewPasswordVisible;
-
-toggleConfirmPasswordVisibility(){
-this. IsConfirmPasswordVisible =! this. IsConfirmPasswordVisible;
--->

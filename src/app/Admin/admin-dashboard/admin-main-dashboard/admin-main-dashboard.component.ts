@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { MatIcon, MatIconModule } from '@angular/material/icon';
-import { DashboardTopNavComponent } from '../../../SignInAndSignUp/dashboard-top-nav/dashboard-top-nav.component';
-import { NgClass, NgFor, NgIf } from '@angular/common';
+import { NgClass, NgFor, NgIf, SlicePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiServiceService } from '../../../Services/api-service.service';
 import { LoaderService } from '../../../Services/loader.service';
@@ -14,8 +13,8 @@ imports:[
 NgIf,
 NgFor,
 NgClass,
+SlicePipe,
 MatIconModule,
-DashboardTopNavComponent,
 FormsModule,
 NgxEchartsModule
 ],
@@ -26,7 +25,7 @@ export class AdminMainDashboardComponent{
 
 constructor(
 private apiurl:ApiServiceService,
-public loader:LoaderService
+public loader:LoaderService,
 ){}
 
 /* ================= FILTER DATA ================= */
@@ -369,6 +368,16 @@ this.selectedDivision = this.divisionIds[index]
 
 this.loadDashboard()
 
+}
+
+get selectedSchoolName(): string {
+  if (!this.selectedSchool) return 'All Schools';
+  return this.schoolList.find((s: any) => String(s.ID) === String(this.selectedSchool))?.Name ?? 'All Schools';
+}
+
+get selectedAcademicYearName(): string {
+  if (!this.selectedAcademicYear) return 'All Years';
+  return this.academicYearList.find((a: any) => String(a.ID) === String(this.selectedAcademicYear))?.Name ?? 'All Years';
 }
 
 }

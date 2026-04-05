@@ -1,289 +1,206 @@
-<div class="DashboardTopNav">
-  <app-dashboard-top-nav></app-dashboard-top-nav>
-</div>
-
-<div class="MainContentDiv">
-
-<!-- ================= FILTERS ================= -->
-
-<div class="filters">
-
-<select (change)="onSchoolChange($event)">
-<option value="">Select School</option>
-<option *ngFor="let s of schoolList" [value]="s.ID">
-{{s.Name}}
-</option>
-</select>
-
-<select (change)="onAcademicYearChange($event)">
-<option value="">Academic Year</option>
-<option *ngFor="let a of academicYearList" [value]="a.ID">
-{{a.Name}}
-</option>
-</select>
-
-</div>
-
-
-<!-- ================= KPI BLOCKS ================= -->
-
-<div class="BlocksDiv">
-
-<div class="ClassBlock">
-<div class="icon-section"><mat-icon>school</mat-icon></div>
-<div class="info-section">
-<label>Classes</label>
-<p>{{dashboard?.counts?.classCount}}</p>
-</div>
-</div>
-
-<div class="DivisionsBlock">
-<div class="icon-section"><mat-icon>account_tree</mat-icon></div>
-<div class="info-section">
-<label>Divisions</label>
-<p>{{dashboard?.counts?.divisionsCount}}</p>
-</div>
-</div>
-
-<div class="StaffBlock">
-<div class="icon-section"><mat-icon>people</mat-icon></div>
-<div class="info-section">
-<label>Staff</label>
-<p>{{dashboard?.counts?.staffCount}}</p>
-</div>
-</div>
-
-<div class="StudentsBlock">
-<div class="icon-section"><mat-icon>groups</mat-icon></div>
-<div class="info-section">
-<label>Students</label>
-<p>{{dashboard?.counts?.studentsCount}}</p>
-</div>
-</div>
-
-</div>
-
-
-
-<!-- ================= CHARTS ================= -->
-
-<div class="charts">
-
-<div class="chart-box">
-
-<h3>{{chartTitle}}</h3>
-
-<div echarts
-[options]="studentsChart"
-(chartClick)="onChartClick($event)"
-class="chart">
-</div>
-
-</div>
-
-
-<div class="chart-box staff-card">
-
-<h3>Staff Department Distribution</h3>
-
-<div class="staff-layout">
-
-<div class="staff-chart">
-
-<div echarts
-[options]="staffChart"
-class="chart">
-</div>
-
-<div class="center-text">
-
-<h2>{{staffPercent}}%</h2>
-
-<p>Teach</p>
-
-</div>
-
-</div>
-
-<div class="staff-legend">
-
-<div class="legend-row"
-*ngFor="let s of staffLegend">
-
-<span class="dot"></span>
-
-<span class="name">{{s.name}}</span>
-
-<span class="percent">{{s.percent}}%</span>
-
-</div>
-
-<div class="legend-total">
-
-<span>Total</span>
-
-<span>{{staffTotal}}</span>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-
-
-<!-- ================= SECOND CHART ROW ================= -->
-
-<!-- <div class="charts">
-
-<div class="chart-box">
-
-<h3>Attendance Trend</h3>
-
-<div echarts
-[options]="attendanceChart"
-class="chart">
-</div>
-
-</div>
-
-
-<div class="chart-box">
-
-<h3>Fee Collection</h3>
-
-<div echarts
-[options]="feeChart"
-class="chart">
-</div>
-
-</div>
-
-</div> -->
-
-
-
-<!-- ================= ACTIVITY WIDGETS ================= -->
-
-<div class="dashboard-lists">
-
-<div class="chart-box">
-
-<h3>Recent Admissions</h3>
-
-<div class="list-item" *ngFor="let a of dashboard?.recentAdmissions">
-
-<div class="d-flex align-items-center gap-2">
-<mat-icon>person</mat-icon>
-<div>
-  <p class="name">{{a.name}}</p>
-  <p class="meta">Class {{a.class}}</p>
-</div>
-</div>
-<div>
-  <p class="meta">{{a.joinDate}}</p>
-</div>
-
-</div>
-
-</div>
-
-
-<div class="chart-box">
-
-<h3>Recent Staff Joined</h3>
-
-<div class="list-item" *ngFor="let s of dashboard?.recentStaff">
-
-<div class="d-flex align-items-center gap-2">
-<mat-icon>badge</mat-icon>
-<div>
-  <p class="name">{{s.name}}</p>
-  <p class="meta">{{s.staffTypeName}}</p>
-</div>
-</div>
-<div>
-  <p class="meta">{{s.createdDate}}</p>
-</div>
-
-</div>
-
-</div>
-
-
-<div class="chart-box">
-
-<h3>Latest Notices</h3>
-
-<div class="notice-item" *ngFor="let n of dashboard?.notices">
-
-<mat-icon>campaign</mat-icon>
-
-<span>{{n.notice}}</span>
-
-</div>
-
-</div>
-
-</div>
-
-
-
-<!-- ================= MINI KPI ================= -->
-
-<div class="small-kpis">
-
-<div class="mini-card">
-
-<mat-icon>fact_check</mat-icon>
-
-<div>
-<label>Attendance</label>
-<h2>{{dashboard?.attendancePercent || 0}}%</h2>
-</div>
-
-</div>
-
-
-<div class="mini-card">
-
-<mat-icon>people</mat-icon>
-
-<div>
-<label>Active Users</label>
-<h2>{{dashboard?.activeUsers || 0}}</h2>
-</div>
-
-</div>
-
-
-<div class="mini-card">
-
-<mat-icon>payments</mat-icon>
-
-<div>
-<label>Pending Fees</label>
-<h2>{{dashboard?.pendingFees || 0}}</h2>
-</div>
-
-</div>
-
-
-<div class="mini-card">
-
-<mat-icon>event</mat-icon>
-
-<div>
-<label>Upcoming Exams</label>
-<h2>{{dashboard?.upcomingExams || 0}}</h2>
-</div>
-
-</div>
-
-</div>
-
+<div class="MainContentShell">
+  <section class="MainContentDiv">
+
+    <!-- ================= FILTERS ================= -->
+
+    <div class="filters">
+      <select (change)="onSchoolChange($event)">
+        <option value="">Select School</option>
+        <option *ngFor="let s of schoolList" [value]="s.ID">
+          {{s.Name}}
+        </option>
+      </select>
+
+      <select (change)="onAcademicYearChange($event)">
+        <option value="">Academic Year</option>
+        <option *ngFor="let a of academicYearList" [value]="a.ID">
+          {{a.Name}}
+        </option>
+      </select>
+    </div>
+
+    <!-- ================= KPI BLOCKS ================= -->
+
+    <div class="BlocksDiv">
+      <div class="ClassBlock">
+        <div class="icon-section"><mat-icon>school</mat-icon></div>
+        <div class="info-section">
+          <label>Classes</label>
+          <p>{{dashboard?.counts?.classCount}}</p>
+        </div>
+      </div>
+
+      <div class="DivisionsBlock">
+        <div class="icon-section"><mat-icon>account_tree</mat-icon></div>
+        <div class="info-section">
+          <label>Divisions</label>
+          <p>{{dashboard?.counts?.divisionsCount}}</p>
+        </div>
+      </div>
+
+      <div class="StaffBlock">
+        <div class="icon-section"><mat-icon>people</mat-icon></div>
+        <div class="info-section">
+          <label>Staff</label>
+          <p>{{dashboard?.counts?.staffCount}}</p>
+        </div>
+      </div>
+
+      <div class="StudentsBlock">
+        <div class="icon-section"><mat-icon>groups</mat-icon></div>
+        <div class="info-section">
+          <label>Students</label>
+          <p>{{dashboard?.counts?.studentsCount}}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= CHARTS ================= -->
+
+    <div class="charts">
+      <div class="chart-box">
+        <h3>{{chartTitle}}</h3>
+        <div echarts [options]="studentsChart" (chartClick)="onChartClick($event)" class="chart"></div>
+      </div>
+
+      <div class="chart-box staff-card">
+        <h3>Staff Department Distribution</h3>
+        <div class="staff-layout">
+          <div class="staff-chart">
+            <div echarts [options]="staffChart" class="chart"></div>
+            <div class="center-text">
+              <h2>{{staffPercent}}%</h2>
+              <p>Teach</p>
+            </div>
+          </div>
+
+          <div class="staff-legend">
+            <div class="legend-row" *ngFor="let s of staffLegend">
+              <span class="dot"></span>
+              <span class="name">{{s.name}}</span>
+              <span class="percent">{{s.percent}}%</span>
+            </div>
+
+            <div class="legend-total">
+              <span>Total</span>
+              <span>{{staffTotal}}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= SECOND CHART ROW ================= -->
+
+    <!-- <div class="charts">
+
+    <div class="chart-box">
+
+    <h3>Attendance Trend</h3>
+
+    <div echarts
+    [options]="attendanceChart"
+    class="chart">
+    </div>
+
+    </div>
+
+
+    <div class="chart-box">
+
+    <h3>Fee Collection</h3>
+
+    <div echarts
+    [options]="feeChart"
+    class="chart">
+    </div>
+
+    </div>
+
+    </div> -->
+
+    <!-- ================= ACTIVITY WIDGETS ================= -->
+
+    <div class="dashboard-lists">
+      <div class="chart-box">
+        <h3>Recent Admissions</h3>
+
+        <div class="list-item" *ngFor="let a of dashboard?.recentAdmissions">
+          <div class="d-flex align-items-center gap-2">
+            <mat-icon>person</mat-icon>
+            <div>
+              <p class="name">{{a.name}}</p>
+              <p class="meta">Class {{a.class}}</p>
+            </div>
+          </div>
+          <div>
+            <p class="meta">{{a.joinDate}}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-box">
+        <h3>Recent Staff Joined</h3>
+
+        <div class="list-item" *ngFor="let s of dashboard?.recentStaff">
+          <div class="d-flex align-items-center gap-2">
+            <mat-icon>badge</mat-icon>
+            <div>
+              <p class="name">{{s.name}}</p>
+              <p class="meta">{{s.staffTypeName}}</p>
+            </div>
+          </div>
+          <div>
+            <p class="meta">{{s.createdDate}}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-box">
+        <h3>Latest Notices</h3>
+
+        <div class="notice-item" *ngFor="let n of dashboard?.notices">
+          <mat-icon>campaign</mat-icon>
+          <span>{{n.notice}}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= MINI KPI ================= -->
+
+    <div class="small-kpis">
+      <div class="mini-card">
+        <mat-icon>fact_check</mat-icon>
+        <div>
+          <label>Attendance</label>
+          <h2>{{dashboard?.attendancePercent || 0}}%</h2>
+        </div>
+      </div>
+
+      <div class="mini-card">
+        <mat-icon>people</mat-icon>
+        <div>
+          <label>Active Users</label>
+          <h2>{{dashboard?.activeUsers || 0}}</h2>
+        </div>
+      </div>
+
+      <div class="mini-card">
+        <mat-icon>payments</mat-icon>
+        <div>
+          <label>Pending Fees</label>
+          <h2>{{dashboard?.pendingFees || 0}}</h2>
+        </div>
+      </div>
+
+      <div class="mini-card">
+        <mat-icon>event</mat-icon>
+        <div>
+          <label>Upcoming Exams</label>
+          <h2>{{dashboard?.upcomingExams || 0}}</h2>
+        </div>
+      </div>
+    </div>
+
+  </section>
 </div>
