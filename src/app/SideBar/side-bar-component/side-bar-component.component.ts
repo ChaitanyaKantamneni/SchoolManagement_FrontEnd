@@ -1,11 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MenuServiceService, Module, Page } from '../../Services/menu-service.service';
-import { Router, RouterOutlet, ActivatedRoute, NavigationEnd } from '@angular/router';
+import { Router, RouterOutlet, ActivatedRoute, NavigationEnd, RouterLinkActive } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NgIf, NgFor, NgClass } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { SideBarServiceService } from '../../Services/side-bar-service.service';
-import { filter } from 'rxjs/operators';
+import { DashboardTopNavComponent } from '../../SignInAndSignUp/dashboard-top-nav/dashboard-top-nav.component';
+import { Subscription, filter } from 'rxjs';
 
 @Component({
   selector: 'app-side-bar-component',
@@ -14,22 +15,30 @@ import { filter } from 'rxjs/operators';
   standalone: true,
   imports: [
     RouterOutlet,
+    RouterLinkActive,
     NgIf,
     NgFor,
     NgClass,
     ReactiveFormsModule,
-    MatIconModule
+    MatIconModule,
+    DashboardTopNavComponent
   ]
 })
-export class SideBarComponentComponent implements OnInit {
+export class SideBarComponentComponent implements OnInit, OnDestroy {
 
   menu: Module[] = [];
   isExpanded = false;
+  isMobileMenuOpen = false;
   openedSubmenu: string | null = null;
+  activeMobileSection: string | null = null;
+  currentPath = '';
 
   schoolName: string | null = null;
   roleRoot!: string;
   private roleId!: string;
+  private sidebarSub?: Subscription;
+  private mobileSidebarSub?: Subscription;
+  private routeSub?: Subscription;
 
   constructor(
     public menuService: MenuServiceService,
@@ -40,7 +49,13 @@ export class SideBarComponentComponent implements OnInit {
 
   ngOnInit(): void {
     // Sidebar toggle subscription
-    this.sidebarService.isExpanded$.subscribe(value => this.isExpanded = value);
+    this.sidebarSub = this.sidebarService.isExpanded$.subscribe(value => this.isExpanded = value);
+    this.mobileSidebarSub = this.sidebarService.isMobileMenuOpen$.subscribe(value => {
+      this.isMobileMenuOpen = value;
+      if (typeof document !== 'undefined') {
+        document.body.style.overflow = value ? 'hidden' : '';
+      }
+    });
 
     // Get user info from sessionStorage
     const email = sessionStorage.getItem('email');
@@ -62,9 +77,11 @@ export class SideBarComponentComponent implements OnInit {
     }
 
     // Listen to route changes to prevent manual URL tampering
-    this.router.events.pipe(
+    this.routeSub = this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
+      this.currentPath = this.router.url;
+
       if (this.roleId !== '1') {
         const routeSchool = this.route.snapshot.paramMap.get('schoolName');
         // If user manually changes schoolName in URL, redirect to correct one
@@ -73,12 +90,56 @@ export class SideBarComponentComponent implements OnInit {
         }
       }
 
-      // Always reload menu for current role
-      this.loadMenu(this.roleId);
+      if (this.isMobileViewport()) {
+        this.sidebarService.setMobileMenuOpen(false);
+      }
     });
 
     // Initial menu load
+    this.currentPath = this.router.url;
     this.loadMenu(this.roleId);
+  }
+
+  ngOnDestroy(): void {
+    this.sidebarSub?.unsubscribe();
+    this.mobileSidebarSub?.unsubscribe();
+    this.routeSub?.unsubscribe();
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = '';
+    }
+  }
+
+  toggleSidebar(): void {
+    if (this.isMobileViewport()) {
+      this.sidebarService.toggleMobileMenu();
+      return;
+    }
+
+    this.sidebarService.toggleSidebar();
+  }
+
+  openMobileSection(menuName: string): void {
+    this.activeMobileSection = menuName;
+    this.openedSubmenu = menuName;
+    this.sidebarService.setSidebarExpanded(true);
+
+    if (!this.isMobileMenuOpen) {
+      this.sidebarService.setMobileMenuOpen(true);
+    }
+  }
+
+  goToDashboard(): void {
+    this.activeMobileSection = 'dashboard';
+    this.openedSubmenu = null;
+    const path = this.roleId === '1'
+      ? '/Admin/Dashboad'
+      : `/${this.roleRoot}/dashboard`;
+
+    this.router.navigate([path]);
+
+    if (this.isMobileViewport()) {
+      this.sidebarService.setMobileMenuOpen(false);
+    }
   }
 
   // Load menu for role
@@ -86,11 +147,25 @@ export class SideBarComponentComponent implements OnInit {
     this.menuService.loadMenu(roleId).subscribe(menu => {
       this.menu = menu;
       this.menuService.setMenu(menu);
+
+      const activeModule = this.getVisibleModules().find(module => this.isModuleActive(module));
+      if (activeModule) {
+        this.openedSubmenu = activeModule.id?.toString() ?? null;
+        this.activeMobileSection = activeModule.id?.toString() ?? null;
+        return;
+      }
+
+      if (this.openedSubmenu && !this.getVisibleModules().some(module => module.id?.toString() === this.openedSubmenu)) {
+        this.openedSubmenu = null;
+      }
     });
   }
 
   toggleSubmenu(moduleId: number | string) {
     const id = moduleId.toString();
+    if (!this.isExpanded) {
+      this.sidebarService.setSidebarExpanded(true);
+    }
     this.openedSubmenu = this.openedSubmenu === id ? null : id;
   }
 
@@ -117,6 +192,43 @@ export class SideBarComponentComponent implements OnInit {
     return alias[normalized] ?? compact;
   }
 
+  getVisibleModules(): Module[] {
+    return (this.menu || []).filter(module => this.getVisiblePages(module).length > 0);
+  }
+
+  getVisiblePages(module: Module): Page[] {
+    return (module.pages || []).filter(page => page.canView === '1');
+  }
+
+  hasVisibleModule(moduleName: string): boolean {
+    return !!this.findVisibleModule(moduleName);
+  }
+
+  findVisibleModule(moduleName: string): Module | undefined {
+    const normalizedTarget = (moduleName || '').trim().toLowerCase();
+    return this.getVisibleModules().find(module => {
+      const normalizedModule = (module.moduleName || '').trim().toLowerCase();
+      return normalizedModule === normalizedTarget;
+    });
+  }
+
+  findVisibleModuleByNames(moduleNames: string[]): Module | undefined {
+    const normalizedNames = moduleNames.map(name => (name || '').trim().toLowerCase());
+    return this.getVisibleModules().find(module => {
+      const normalizedModule = (module.moduleName || '').trim().toLowerCase();
+      return normalizedNames.includes(normalizedModule);
+    });
+  }
+
+  isPageActive(page: Page): boolean {
+    const expectedPath = `/${this.roleRoot}/${this.formatRoute(page.pageName)}`.toLowerCase();
+    return this.currentPath.toLowerCase() === expectedPath;
+  }
+
+  isModuleActive(module: Module): boolean {
+    return this.getVisiblePages(module).some(page => this.isPageActive(page));
+  }
+
   // ✅ Logout function (best practice)
   logout() {
     // Clear all sessionStorage
@@ -132,19 +244,75 @@ export class SideBarComponentComponent implements OnInit {
   }
 
   getPageIcon(pageName: string): string {
-    const map: { [key: string]: string } = {
-      Dashboard: 'dashboard',
-      Staff: 'supervisor_account',
-      'Academic Year': 'calendar_month',
-      Syllabus: 'library_books',
-      Class: 'class',
-      Division: 'account_tree',
-      Modules: 'apps',
-      Pages: 'pageview',
-      Roles: 'badge',
-      'School Details': 'domain'
+    const key = (pageName || '').trim().toLowerCase();
+    const map: Record<string, string> = {
+      'school details': 'domain',
+      'academic year': 'calendar_month',
+      syllabus: 'library_books',
+      class: 'class',
+      division: 'account_tree',
+      subject: 'menu_book',
+      'subject staff': 'person',
+      modules: 'apps',
+      pages: 'pageview',
+      roles: 'badge',
+      role: 'badge',
+      staff: 'supervisor_account',
+      admission: 'people',
+      'allot class teacher': 'assignment',
+      'class transition': 'autorenew',
+      'transfer student': 'swap_horiz',
+      'transfer students': 'swap_horiz',
+      bus: 'directions_bus',
+      routes: 'route',
+      stops: 'place',
+      fares: 'payments',
+      fare: 'payments',
+      'fee category': 'category',
+      'fee allocation': 'assignment_ind',
+      'fee discount category': 'sell',
+      'fee discounts': 'local_offer',
+      'fee discount': 'local_offer',
+      'fee collection': 'paid',
+      'fee dues': 'receipt_long',
+      'working days': 'event_available',
+      sessions: 'timer',
+      timetable: 'view_timeline',
+      'time table': 'view_timeline',
+      teacherstimetable: 'groups',
+      'teachers timetable': 'groups',
+      'exam type': 'military_tech',
+      'set exam': 'event_note',
+      'view exams': 'visibility',
+      'exam attendance': 'fact_check',
+      'exam marks': 'grading',
+      'exam results': 'insights',
+      attendancesheet: 'today',
+      'attendance sheet': 'today',
+      staffattendance: 'badge',
+      'staff attendance': 'badge',
+      viewattendance: 'groups',
+      'view attendance': 'groups',
+      viewstaffattendance: 'groups',
+      'view staff attendance': 'groups'
     };
-    return map[pageName] || 'menu';
+    return map[key] || 'menu';
+  }
+
+  getModuleIcon(moduleName: string): string {
+    const key = (moduleName || '').trim().toLowerCase();
+    const map: Record<string, string> = {
+      masters: 'widgets',
+      academic: 'school',
+      transportation: 'commute',
+      finance: 'account_balance_wallet',
+      timetable: 'schedule',
+      'time table': 'schedule',
+      exam: 'quiz',
+      attendance: 'how_to_reg'
+    };
+
+    return map[key] || 'folder';
   }
 
   // Navigation for admin or school users
@@ -152,8 +320,17 @@ export class SideBarComponentComponent implements OnInit {
     if (event) event.stopPropagation();
     const path = `/${this.roleRoot}/${this.formatRoute(page.pageName)}`;
     this.router.navigate([path]).then(success => {
+      this.currentPath = path;
+      this.openedSubmenu = page.moduleID?.toString() || this.openedSubmenu;
+      if (this.isMobileViewport()) {
+        this.sidebarService.setMobileMenuOpen(false);
+      }
       if (!success) console.error('Navigation failed:', path);
     });
+  }
+
+  private isMobileViewport(): boolean {
+    return typeof window !== 'undefined' && window.innerWidth <= 768;
   }
 }
 

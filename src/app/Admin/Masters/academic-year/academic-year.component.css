@@ -1,3 +1,23 @@
+.MainContentDiv {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 18px;
+    min-height: auto;
+    background: transparent;
+    min-width: 0;
+}
+
+.w-100 {
+    width: 100%;
+}
+
+.ComponentTop,
+.ComponentRecords,
+.AddForm {
+    width: 100%;
+}
+
 .FormInputRowsContainer{
     flex-direction: column;
 }
@@ -9,4 +29,10 @@
 
 .inputrowdescription{
     align-items: start !important;
+}
+
+@media (max-width: 768px) {
+    .MainContentDiv {
+        gap: 14px;
+    }
 }

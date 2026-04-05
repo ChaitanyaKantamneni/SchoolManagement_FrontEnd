@@ -74,7 +74,13 @@
                 <td data-label="SchoolName" *ngIf="isAdmin">{{ Class.SchoolName }}</td>
                 <td data-label="AcademicYearName">{{ Class.AcademicYearName }}</td>
                 <td data-label="strength">{{ Class.Strength }}</td>
-                <td data-label="Status">{{ Class.IsActive }}</td>
+                <td data-label="Status">
+                  <span
+                    class="status-pill"
+                    [ngClass]="(Class.IsActive === true || Class.IsActive === 'true' || Class.IsActive === 'Active' || Class.IsActive === 1) ? 'status-active' : 'status-inactive'">
+                    {{ (Class.IsActive === true || Class.IsActive === 'true' || Class.IsActive === 'Active' || Class.IsActive === 1) ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
                 <td data-label="Actions">
                   <div class="d-flex justify-content-center align-items-center h-100">
                     <!-- (click)="editreview(aminitie.propertyTypeID)" -->

@@ -232,6 +232,7 @@ export class SignInComponent {
   captchaText = '';
   IsPasswordVisible = false;
   isUpdateModalOpen = false;
+  currentYear = new Date().getFullYear();
   public color = { red: false, green: false };
 
   LoginForms: FormGroup = new FormGroup({
@@ -332,6 +333,7 @@ export class SignInComponent {
         sessionStorage.setItem('schoolName', result.schoolName || '');
 
         // 🔹 Load menu before redirecting
+        this.menuService.clearMenu();
         this.menuService.loadMenu(result.role).subscribe({
           next: () => {
             if (result.role === '1') {

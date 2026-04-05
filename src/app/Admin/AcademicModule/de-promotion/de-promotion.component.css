@@ -115,7 +115,7 @@
 }
 
 .ComponentTop .ComponentTopHeader{
-  border-bottom: 1px dotted black;
+  border-bottom: 1px solid #d9e3ef;
 }
 
 .ComponentTop .ComponentTopHeader h5{
@@ -251,18 +251,22 @@ table tbody tr td {
 }
 
 .AddForm{
-  background-color: #fff;
-  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  border: 1px solid #d7e0ec;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(29, 78, 216, 0.04);
   width: 100%;
   padding: 10px;
+  border-radius: 16px;
+  overflow: hidden;
 }
 
 .AddForm .AddFormTop{
   display: flex;
   align-items: center;
   gap: 5px;
-  border-bottom: 1px dotted black;;
-  padding-bottom: 5px;
+  border-bottom: 1px solid #d9e3ef;
+  padding: 10px 14px 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
 }
 
 .AddForm .AddFormTop button{
@@ -279,7 +283,8 @@ table tbody tr td {
 
 .AddForm .AddFormConatiner{
   margin-top: 10px;
-  padding: 0px 20px;
+  padding: 14px 20px 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #f9fbfe 100%);
 }
 
 .AddForm .AddFormConatiner .FormInputRowsContainer{
@@ -296,6 +301,11 @@ table tbody tr td {
   margin: 10px 0px;
   flex-direction: column;
   width: 50%;
+  padding: 10px 12px;
+  border: 1px solid #dbe5ef;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 0 0 1px rgba(29, 78, 216, 0.02);
 }
 
 .AddForm .AddFormConatiner .FormInputRowsContainer .InputRow .InputFieldsContainer{
@@ -334,9 +344,11 @@ table tbody tr td {
 }
 
 .modal-content {
-  background: #fff;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
   padding: 20px;
-  border-radius: 5px;
+  border-radius: 16px;
+  border: 1px solid #d7e0ec;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.1);
 }
 
 .modal-footer {
@@ -355,8 +367,8 @@ table tbody tr td {
 }
 
 .modal-content {
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.1);
   z-index: 1050;
 }
 
@@ -474,9 +486,11 @@ table tbody tr td {
 
 .pagination-controls {
   display: flex;
-  justify-content: end;
+  justify-content: flex-end;
   align-items: center;
   margin-top: 20px;
+  flex-wrap: wrap;
+  gap: 2px;
 }
 
 .pagination-controls button {
@@ -484,13 +498,25 @@ table tbody tr td {
   border: 1px solid #ddd;
   padding: 4px 8px;
   cursor: pointer;
-  margin: 0 5px;
+  margin: 0 2px;
   font-size: 12px;
 }
 
 .pagination-controls button[disabled] {
   cursor: not-allowed;
   background-color: #ccc;
+}
+
+@media (max-width: 992px) {
+  .pagination-controls {
+    width: 100%;
+    justify-content: center;
+    margin-top: 14px;
+  }
+
+  .pagination-controls button {
+    margin: 0 1px;
+  }
 }
 
 .page-btn.active {

@@ -1,12 +1,75 @@
-<div class="TopNav">
-  <div>
-    <button class="toggle-btn" (click)="toggleSidebar()">
+<header *ngIf="shouldRenderHeader" class="top-nav" [class.sidebar-collapsed]="!isSidebarExpanded">
+  <div class="brand-block">
+    <button class="icon-btn menu-btn" type="button" (click)="toggleSidebar()" aria-label="Toggle sidebar">
       <mat-icon>menu</mat-icon>
     </button>
+
+    <div class="brand-copy">
+      <span class="workspace-label">{{ workspaceLabel }}</span>
+      <h1>{{ pageTitle }}</h1>
+      <p>{{ pageSubtitle }}</p>
+    </div>
+
+    <!-- Mobile only: avatar + logout -->
+    <div class="mobile-actions">
+      <div class="mobile-avatar" [title]="userLabel">{{ userInitial }}</div>
+      <button class="mobile-logout-btn" type="button" (click)="logout()" aria-label="Logout">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </div>
   </div>
-  <div>
-    <button class="toggle-btn" (click)="logout()">
-      <mat-icon>logout</mat-icon>
-    </button>
+
+  <div class="header-main">
+    <div class="search-block">
+      <mat-icon>search</mat-icon>
+      <input
+        type="search"
+        [placeholder]="searchPlaceholder"
+        aria-label="Search"
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="onSearchChange($event)"
+        (focus)="openSearchResults()"
+        (click)="openSearchResults()"
+        (blur)="closeSearchResults()"
+      />
+      <button *ngIf="searchTerm" class="clear-search-btn" type="button" aria-label="Clear search" (mousedown)="$event.preventDefault()" (click)="clearSearch()">
+        <mat-icon>close</mat-icon>
+      </button>
+
+      <div class="search-results" *ngIf="showSearchResults && searchTerm.trim()">
+        <div class="search-state" *ngIf="isSearching">Searching...</div>
+        <ng-container *ngIf="!isSearching">
+          <button
+            type="button"
+            class="search-result-item"
+            *ngFor="let result of searchResults"
+            (mousedown)="$event.preventDefault()"
+            (click)="selectSearchResult(result.route)"
+          >
+            <mat-icon>open_in_new</mat-icon>
+            <div class="search-result-copy">
+              <span>{{ result.pageName }}</span>
+              <small>{{ result.moduleName }}</small>
+            </div>
+          </button>
+          <div class="search-state" *ngIf="searchResults.length === 0">No matching pages found.</div>
+        </ng-container>
+      </div>
+    </div>
+
+    <div class="actions-block">
+      <div class="profile-chip">
+        <div class="avatar">{{ userInitial }}</div>
+        <div class="profile-copy">
+          <span>{{ userLabel }}</span>
+          <small>{{ workspaceLabel }}</small>
+        </div>
+      </div>
+
+      <button class="pill-btn logout-btn" type="button" (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        <span>Logout</span>
+      </button>
+    </div>
   </div>
-</div>
+</header>

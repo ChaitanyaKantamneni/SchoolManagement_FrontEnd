@@ -72,7 +72,13 @@
                 <td data-label="PhoneNumber">{{ School.Phonenumber }}</td>
                 <td data-label="Email">{{ School.Email }}</td>
                 <td data-label="Website">{{ School.WebsiteUrl }}</td>
-                <td data-label="Status" *ngIf="isAdmin">{{ School.IsActive }}</td>
+                <td data-label="Status" *ngIf="isAdmin">
+                  <span
+                    class="status-pill"
+                    [ngClass]="(School.IsActive === true || School.IsActive === 'true' || School.IsActive === 'Active' || School.IsActive === 1) ? 'status-active' : 'status-inactive'">
+                    {{ (School.IsActive === true || School.IsActive === 'true' || School.IsActive === 'Active' || School.IsActive === 1) ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
                 <td data-label="Actions">
                   <div class="d-flex justify-content-center align-items-center h-100">
                     <button *ngIf="canEdit()" class="btn checkbtn edit" data-tooltip="Edit" (click)="editreview(School.ID)">

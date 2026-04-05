@@ -53,7 +53,13 @@
                 <td data-label="ID" class="visually-hidden">{{ Module.ID }}</td>
                 <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
                 <td data-label="Name">{{ Module.Name }}</td>
-                <td data-label="Status">{{ Module.IsActive }}</td>
+                <td data-label="Status">
+                  <span
+                    class="status-pill"
+                    [ngClass]="(Module.IsActive === true || Module.IsActive === 'true' || Module.IsActive === 'Active' || Module.IsActive === 1) ? 'status-active' : 'status-inactive'">
+                    {{ (Module.IsActive === true || Module.IsActive === 'true' || Module.IsActive === 'Active' || Module.IsActive === 1) ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
                 <td data-label="Actions">
                   <div class="d-flex justify-content-center align-items-center h-100">
                     <button *ngIf="canEdit()" class="btn checkbtn edit" data-tooltip="Edit" (click)="editreview(Module.ID)">

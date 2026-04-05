@@ -517,6 +517,7 @@ export class AcademicYearComponent extends BasePermissionComponent {
     this.FetchAcademicYearDetByID(SyllabusID,'view');
     this.isViewModalOpen=true;
   };
+
 }
 
 

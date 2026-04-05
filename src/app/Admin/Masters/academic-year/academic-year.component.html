@@ -66,7 +66,16 @@
                 <td *ngIf="isAdmin">{{ AcademicYear.SchoolName }}</td>
                 <td>{{ AcademicYear.StartDate }}</td>
                 <td>{{ AcademicYear.EndDate }}</td>
-                <td>{{ AcademicYear.IsActive }}</td>
+                <td data-label="Status">
+                  <span
+                    class="status-pill"
+                    [style.background]="(AcademicYear.IsActive === true || AcademicYear.IsActive === 'true' || AcademicYear.IsActive === 'Active' || AcademicYear.IsActive === 1) ? 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)' : 'linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%)'"
+                    [style.color]="(AcademicYear.IsActive === true || AcademicYear.IsActive === 'true' || AcademicYear.IsActive === 'Active' || AcademicYear.IsActive === 1) ? '#166534' : '#9f1239'"
+                    [style.borderColor]="(AcademicYear.IsActive === true || AcademicYear.IsActive === 'true' || AcademicYear.IsActive === 'Active' || AcademicYear.IsActive === 1) ? '#86efac' : '#fda4af'"
+                    [ngClass]="(AcademicYear.IsActive === true || AcademicYear.IsActive === 'true' || AcademicYear.IsActive === 'Active' || AcademicYear.IsActive === 1) ? 'status-active' : 'status-inactive'">
+                    {{ (AcademicYear.IsActive === true || AcademicYear.IsActive === 'true' || AcademicYear.IsActive === 'Active' || AcademicYear.IsActive === 1) ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
                 <td>
                   <div class="d-flex justify-content-center align-items-center h-100">
                     <button *ngIf="canEdit()" class="btn checkbtn edit" data-tooltip="Edit" (click)="editreview(AcademicYear.ID)">

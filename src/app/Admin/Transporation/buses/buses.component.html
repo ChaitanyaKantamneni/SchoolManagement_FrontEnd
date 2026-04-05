@@ -80,7 +80,15 @@
                 <td data-label="MorningStartTime">{{ Syllabus.MorningStartTime }}</td>
                 <td data-label="EveningStartTime">{{ Syllabus.EveningStartTime }}</td>
                 
-                <td data-label="Status">{{ Syllabus.IsActive }}</td>
+                <td data-label="Status">
+                  <span
+                    class="status-pill"
+                    [style.background]="(Syllabus.IsActive === true || Syllabus.IsActive === 'true' || Syllabus.IsActive === 'Active' || Syllabus.IsActive === 1) ? 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)' : 'linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%)'"
+                    [style.color]="(Syllabus.IsActive === true || Syllabus.IsActive === 'true' || Syllabus.IsActive === 'Active' || Syllabus.IsActive === 1) ? '#166534' : '#9f1239'"
+                    [style.borderColor]="(Syllabus.IsActive === true || Syllabus.IsActive === 'true' || Syllabus.IsActive === 'Active' || Syllabus.IsActive === 1) ? '#86efac' : '#fda4af'">
+                    {{ (Syllabus.IsActive === true || Syllabus.IsActive === 'true' || Syllabus.IsActive === 'Active' || Syllabus.IsActive === 1) ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
                 <td data-label="Actions">
                   <div class="d-flex justify-content-center align-items-center h-100">
                     <!-- (click)="editreview(aminitie.propertyTypeID)" -->

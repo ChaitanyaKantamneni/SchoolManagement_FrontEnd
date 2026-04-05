@@ -72,7 +72,13 @@
                 <td data-label="Name">{{ Module.Name }}</td>
 <td data-label="SchoolName" *ngIf="isAdmin">{{ Module.SchoolName }}</td>
                 <td data-label="AcademicYearName">{{ Module.AcademicYearName }}</td>
-                <td data-label="Status">{{ Module.IsActive }}</td>
+                <td data-label="Status">
+                  <span
+                    class="status-pill"
+                    [ngClass]="(Module.IsActive === true || Module.IsActive === 'true' || Module.IsActive === 'Active' || Module.IsActive === 1) ? 'status-active' : 'status-inactive'">
+                    {{ (Module.IsActive === true || Module.IsActive === 'true' || Module.IsActive === 'Active' || Module.IsActive === 1) ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
                 <td data-label="Actions">
                   <div class="d-flex justify-content-center align-items-center h-100">
                     <!-- (click)="editreview(aminitie.propertyTypeID)" -->

@@ -2,54 +2,77 @@ body,h5,h4,h3,h2,h1{
   margin: 0px;
 }
 
+:root {
+  --erp-header-height: 64px;
+  --erp-sidebar-width: 270px;
+  --erp-sidebar-collapsed-width: 84px;
+  --erp-mobile-sidebar-width: min(88vw, 320px);
+}
+
 .InputFieldsContainer{
   display: flex;
   flex-direction: column;
   justify-content: center;
+  gap: 6px;
 }
 
 .inputField{
   resize: none;
-  border-radius: 8px;
-  padding: 7px 10px;
-  border: 0.5px solid #ccc;
-  font-size: 11px;
-  color: #111;
-  background: transparent;
+  border-radius: 11px;
+  padding: 9px 12px;
+  border: 1px solid #cfd9e6;
+  font-size: 12px;
+  color: #0f172a;
+  background: linear-gradient(180deg, #ffffff 0%, #f9fbfe 100%);
   outline: none;
-  transition: 0.2s;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  min-height: 40px;
 }
 
 .inputField:focus{
   border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59,130,246,0.3);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+  background: #fff;
 }
 
 .inputLabel{
-  font-size: small;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
 }
 
 
 
 html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+body { margin: 0; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; }
+body { overflow-x: hidden; }
+
+@media (max-width: 640px) {
+  :root {
+    --erp-header-height: 64px;
+  }
+}
 
 
 
 /* Common Css For all Components */
 .pagination-controls {
   display: flex;
-  justify-content: end;
+  justify-content: flex-end;
   align-items: center;
   margin-top: 20px;
+  flex-wrap: wrap;
+  gap: 0;
 }
 
 .pagination-controls button {
   background-color: transparent;
   border: 1px solid #ddd;
-  padding: 4px 8px;
+  padding: 4px 7px;
   cursor: pointer;
-  margin: 0 5px;
+  margin: 0;
   font-size: 12px;
 }
 
@@ -135,10 +158,8 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 
 /* global css */
-.DashboardTopNav{
-  position: fixed;
-  width: 81%;
-  top: 0px;
+.DashboardTopNav {
+  display: none;
 }
 
 .MainContentDiv{
@@ -251,14 +272,16 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 }
 
 .ComponentTop{
-  background-color: #fff;
-  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+  background: #ffffff;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.10), 0 0 0 1px rgba(203, 213, 225, 0.12);
   width: 100%;
   padding: 10px;
+  border: 1px solid rgba(203, 213, 225, 0.88);
+  border-radius: 18px;
 }
 
 .ComponentTop .ComponentTopHeader{
-  border-bottom: 1px dotted black;
+  border-bottom: 1px solid #d9e3ef;
 }
 
 .ComponentTop .ComponentTopHeader h5{
@@ -292,11 +315,25 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 }
 
 .ComponentRecords{
-  background-color: #fff;
-  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+  background: #ffffff;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.10), 0 0 0 1px rgba(203, 213, 225, 0.12);
   width: 100%;
   padding: 10px;
   margin-top: 20px;
+  border: 1px solid rgba(203, 213, 225, 0.88);
+  border-radius: 18px;
+}
+
+.reviewstable{
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+.reviewstable table{
+  width: 100%;
 }
 
 .ComponentRecordsTop{
@@ -336,20 +373,23 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 }
 
 .table thead {
-  font-family: 'Roboto', sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   font-size: 12px;
 }
 
 .table thead tr th {
   text-align: center;
-  /* #7bbbff */
-  background-color: #536ff7;
-  color: #fff;
+  background: #dcecff;
+  color: #0f3b7a;
   font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.25px;
+  border-bottom: 1px solid #a9c7e6;
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .table tbody {
-  font-family: 'Roboto', sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   font-size: 10px;
 }
 
@@ -360,9 +400,184 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 .table tbody tr td {
   text-align: center;
-  padding: 4px 8px;
+  padding: 6px 8px;
   vertical-align: middle;
   white-space: break-spaces;
+  background: #ffffff;
+  border-color: #dbe3ee;
+}
+
+@media (max-width: 768px) {
+  .AddForm {
+    overflow: visible;
+  }
+
+  .MainContentDiv{
+    margin: 10px 14px;
+  }
+
+  .ComponentRecordsTop{
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .DownloadButtons{
+    flex-wrap: wrap;
+  }
+
+  .FormInputRowsContainer{
+    width: 100%;
+  }
+
+  .FormInputRowsContainer .InputRow{
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    align-items: start !important;
+    gap: 12px !important;
+  }
+
+  .FormInputRowsContainer .InputFieldsContainer,
+  .FormInputRowsContainer .full-width-field,
+  .FormInputRowsContainer .compact-field{
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+
+  .AddForm .AddFormConatiner{
+    padding: 10px 14px 16px;
+  }
+
+  .AddForm .AddFormConatiner .FormInputRowsContainer{
+    align-items: stretch;
+  }
+
+  .AddForm .AddFormConatiner .FormInputRowsContainer .InputRow{
+    width: 100%;
+    padding: 12px;
+  }
+
+  .AddForm .AddFormConatiner .FormInputRowsContainer .InputRow .InputFieldsContainer{
+    width: 100%;
+    min-width: 0;
+  }
+
+  .AddForm .AddFormConatiner .ActionButtons{
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    margin-top: 12px;
+    padding: 14px 0 calc(14px + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(248,251,255,0.98) 100%);
+    border-top: 1px solid #dbe4f0;
+    backdrop-filter: blur(10px);
+  }
+
+  .AddForm .AddFormConatiner .ActionButtons .btn{
+    width: min(260px, 100%);
+    margin-left: 0;
+  }
+
+  .pagination-controls{
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+  }
+}
+
+.table tbody tr td[data-label="Status"] {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 4px 8px;
+  color: inherit;
+  white-space: nowrap;
+}
+
+.table tbody tr td[data-label="Status"]:has(.badge),
+.table tbody tr td[data-label="Status"]:has(.status-badge),
+.table tbody tr td[data-label="Status"]:has(.status-pill) {
+  background: transparent;
+}
+
+.table tbody tr td[data-label="Status"] > .badge,
+.table tbody tr td[data-label="Status"] > .status-badge,
+.table tbody tr td[data-label="Status"] > .status-pill {
+  margin: 0 auto;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-width: 72px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.06);
+}
+
+.status-active {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  color: #166534;
+  border-color: #86efac;
+}
+
+.status-inactive {
+  background: linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%);
+  color: #9f1239;
+  border-color: #fda4af;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 82px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid #c7d2fe;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  color: #0f3b7a;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: 0 6px 14px rgba(59, 130, 246, 0.10);
+}
+
+.status-scheduled {
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+  color: #4338ca;
+  border-color: #c7d2fe;
+}
+
+.status-attendance {
+  background: linear-gradient(135deg, #ecfeff 0%, #cffafe 100%);
+  color: #0e7490;
+  border-color: #a5f3fc;
+}
+
+.status-published {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  color: #166534;
+  border-color: #86efac;
+}
+
+.status-default {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  color: #0f3b7a;
+  border-color: #bfdbfe;
 }
 
 .mat-edit-icon {
@@ -381,6 +596,10 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   line-height: 1;
 }
 
+td:last-child .d-flex.justify-content-center.align-items-center.h-100 {
+  gap: 4px;
+}
+
 .NoDataFound{
   display: flex;
   justify-content: center;
@@ -394,59 +613,122 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 }
 
 .AddForm{
-  background-color: #fff;
-  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(248,251,255,0.98) 100%),
+    linear-gradient(135deg, rgba(29, 78, 216, 0.06) 0%, rgba(14, 165, 233, 0.03) 100%);
+  border: 1px solid rgba(203, 213, 225, 0.95);
+  box-shadow:
+    0 24px 60px rgba(15, 23, 42, 0.09),
+    0 0 0 1px rgba(255, 255, 255, 0.75) inset;
   width: 100%;
-  padding: 10px;
+  padding: 12px;
+  border-radius: 22px;
+  overflow: hidden;
+}
+
+.AddForm::before{
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 5px;
+  background: linear-gradient(90deg, #1d4ed8 0%, #0ea5e9 50%, #2563eb 100%);
 }
 
 .AddForm .AddFormTop{
   display: flex;
   align-items: center;
-  gap: 5px;
-  border-bottom: 1px dotted black;;
-  padding-bottom: 5px;
+  gap: 12px;
+  border-bottom: 1px solid rgba(203, 213, 225, 0.9);
+  padding: 16px 18px 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(250,253,255,0.98) 100%);
+  border-radius: 18px 18px 14px 14px;
 }
 
 .AddForm .AddFormTop button{
   border: none;
-  background-color: transparent;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  color: #1d4ed8;
   display: flex;
   justify-content: center;
   align-items: center;
+  box-shadow: 0 8px 18px rgba(29, 78, 216, 0.12);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.AddForm .AddFormTop button:hover{
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  box-shadow: 0 12px 22px rgba(29, 78, 216, 0.16);
 }
 
 .AddForm .AddFormTop p{
   margin: 0px;
+  color: #0f172a;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .AddForm .AddFormConatiner{
-  margin-top: 10px;
-  padding: 0px 20px;
+  margin-top: 12px;
+  padding: 16px 22px 20px;
+  background: transparent;
 }
 
 .AddForm .AddFormConatiner .FormInputRowsContainer{
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 14px;
 }
 
 .AddForm .AddFormConatiner .FormInputRowsContainer .InputRow{
   display: flex;
   justify-content: center;
   align-items: center;
-  gap:10px;
-  margin: 10px 0px;
+  gap: 12px;
+  margin: 0;
   flex-direction: column;
   width: 50%;
+  padding: 16px 18px;
+  border: 1px solid rgba(219, 228, 240, 0.95);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(249,251,254,0.98) 100%);
+  box-shadow:
+    0 12px 26px rgba(15, 23, 42, 0.05),
+    0 0 0 1px rgba(255, 255, 255, 0.8) inset;
 }
 
 .AddForm .AddFormConatiner .FormInputRowsContainer .InputRow .InputFieldsContainer{
   width: 85%;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.AddForm .AddFormConatiner .FormInputRowsContainer .InputRow .InputFieldsContainer .inputLabel{
+  color: #334155;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .AddForm .AddFormConatiner .FormInputRowsContainer .InputRow .InputFieldsContainer .inputField{
   width: 100%;
+  min-height: 40px;
+  font-size: 13px;
+  border: 1px solid #d7e0ec;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.03);
+}
+
+.AddForm .AddFormConatiner .FormInputRowsContainer .InputRow .InputFieldsContainer .inputField:focus{
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
 }
 
 .modal {
@@ -467,23 +749,38 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 }
 
 .modal.show {
-  display: block;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
 }
 
 .modal-dialog {
   position: relative;
-  margin: 10% auto;
-  max-width: 500px;
+  margin: 0 auto;
+  max-width: 520px;
+  width: calc(100% - 32px);
+}
+
+.modal.viewmodel.show .modal-dialog,
+.viewmodel.modal.show .modal-dialog {
+  margin: 0 auto !important;
 }
 
 .modal-content {
-  background: #fff;
-  padding: 20px;
-  border-radius: 5px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  padding: 0;
+  border-radius: 18px;
+  border: 1px solid rgba(147, 197, 253, 0.95);
+  box-shadow: 0 26px 64px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(255, 255, 255, 0.85) inset;
+  overflow: hidden;
 }
 
 .modal-footer {
   text-align: center;
+  padding: 16px 20px 20px;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fbff;
 }
 
 .modal-overlay {
@@ -498,23 +795,69 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 }
 
 .modal-content {
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 18px;
+  box-shadow: 0 26px 64px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(255, 255, 255, 0.85) inset;
   z-index: 1050;
 }
+
+.modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+}
+
+.modal-body {
+  padding: 20px;
+  background: #ffffff;
+}
+
+.modal-body .row {
+  align-items: stretch;
+  padding: 10px 12px;
+  margin-bottom: 12px !important;
+  border: 1px solid #c7d6ea;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.07);
+}
+
+.modal-body .row > div:first-child {
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.modal-body .row > div:last-child {
+  color: #0f172a;
+}
+
+.modal-body .row .viewfontsize {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.modal-body .row .badge,
+.modal-body .row .badge-success,
+.modal-body .row .badge-danger {
+  margin: 0;
+}
+
 
 .AddForm .AddFormConatiner .FormInputRowsContainer .InputRow .InputFieldsContainer .toggle-container {
   display: flex;
   align-items: center;
-  font-family: Arial, sans-serif;
-  font-size: 18px;
+  justify-content: flex-start;
+  gap: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  color: #334155;
 }
 
 .AddForm .AddFormConatiner .FormInputRowsContainer .InputRow .InputFieldsContainer .toggle-container .switch {
   position: relative;
   display: inline-block;
   width: 60px;
-  height: 20px;
+  height: 22px;
 }
 
 .AddForm .AddFormConatiner .FormInputRowsContainer .InputRow .InputFieldsContainer .toggle-container .switch input {
@@ -530,9 +873,10 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
+  background: linear-gradient(180deg, #dbe5ef 0%, #cbd5e1 100%);
   transition: 0.4s;
-  border-radius: 34px;
+  border-radius: 999px;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.08);
 }
 
 .AddForm .AddFormConatiner .FormInputRowsContainer .InputRow .InputFieldsContainer .toggle-container .switch .slider:before {
@@ -542,13 +886,14 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   width: 16px;
   border-radius: 50%;
   left: 2px;
-  bottom: 2px;
+  bottom: 3px;
   background-color: white;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
   transition: 0.4s;
 }
 
 .AddForm .AddFormConatiner .FormInputRowsContainer .InputRow .InputFieldsContainer .toggle-container .switch input:checked + .slider {
-  background-color: #4CAF50;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
 }
 
 .AddForm .AddFormConatiner .FormInputRowsContainer .InputRow .InputFieldsContainer .toggle-container .switch input:checked + .slider:before {
@@ -560,8 +905,8 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   top: 0;
   transform: translateX(-50%);
   color: white;
-  font-weight: bold;
-  line-height: 20px;
+  font-weight: 700;
+  line-height: 22px;
   pointer-events: none;
 }
 
@@ -569,18 +914,30 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: 22px 20px 8px;
+  gap: 12px;
+  border-top: 1px solid rgba(226, 232, 240, 0.9);
+  margin-top: 10px;
 }
 
 .AddForm .AddFormConatiner .ActionButtons .btn{
-  background-color: #536ff7;
+  min-width: 140px;
+  min-height: 42px;
+  background: linear-gradient(135deg, #1d4ed8 0%, #0ea5e9 100%);
   color: #fff;
   border: none;
-  font-size: smaller;
-  border-radius: 5px;
-  padding: 5px 10px;
-  margin-left: 10px;
-  transition: background-color 0.3s ease;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 12px;
+  padding: 10px 18px;
+  margin-left: 0;
+  letter-spacing: 0.01em;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.AddForm .AddFormConatiner .ActionButtons .btn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 14px 26px rgba(29, 78, 216, 0.18);
 }
 
 .searchreview {
@@ -617,9 +974,11 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 .pagination-controls {
   display: flex;
-  justify-content: end;
+  justify-content: flex-end;
   align-items: center;
   margin-top: 20px;
+  flex-wrap: wrap;
+  gap: 2px;
 }
 
 .pagination-controls button {
@@ -727,19 +1086,26 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 .badge {
   display: inline-block;
-  padding: 6px 10px;
+  padding: 5px 11px;
   font-size: 10px;
-  font-weight: 500;
-  border-radius: 4px;
-  color: #fff;
+  font-weight: 700;
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+  border: 1px solid transparent;
 }
 
 .badge-success {
-  background-color: #28a745;
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  color: #166534;
+  border-color: #86efac;
 }
 
 .badge-danger {
-  background-color: #dc3545; 
+  background: linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%);
+  color: #9f1239;
+  border-color: #fda4af;
 }
 
 .modal-title{
@@ -784,6 +1150,42 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 }
 
 /* ===============================
+   DARK MODE – GLOBAL
+   =============================== */
+body.dark-mode {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+body.dark-mode .ComponentTop,
+body.dark-mode .ComponentRecords,
+body.dark-mode .AddForm {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+body.dark-mode .inputField {
+  background: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+body.dark-mode .inputField:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 2px rgba(96,165,250,0.2);
+}
+
+body.dark-mode .inputLabel {
+  color: #94a3b8;
+}
+
+body.dark-mode select.inputField option {
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+/* ===============================
    RESPONSIVE FIXES – ADD ONLY
    =============================== */
 
@@ -802,18 +1204,54 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
    TABLETS
    =============================== */
 @media (max-width: 992px) {
+  .AddForm .AddFormConatiner {
+    padding: 14px 16px 18px;
+  }
 
+  .AddForm .AddFormConatiner .FormInputRowsContainer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .AddForm .AddFormConatiner .FormInputRowsContainer .InputRow {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 12px 14px;
+    width: 100%;
+    padding: 14px;
+  }
+
+  .AddForm .AddFormConatiner .FormInputRowsContainer .InputRow .InputFieldsContainer,
+  .AddForm .AddFormConatiner .FormInputRowsContainer .InputRow .full-width-field,
+  .AddForm .AddFormConatiner .FormInputRowsContainer .InputRow .compact-field {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .AddForm .AddFormConatiner .FormInputRowsContainer .InputRow .InputFieldsContainer .inputLabel {
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .AddForm .AddFormConatiner .FormInputRowsContainer .InputRow .InputFieldsContainer .inputField {
+    min-width: 0;
+  }
 }
 
 /* ===============================
    MOBILE DEVICES
    =============================== */
 @media (max-width: 768px) {
-  .table thead tr th {
-    text-align: center;
-    background-color: #536ff7;
-    color: #fff;
-    font-size: 8px;
+  .pagination-controls {
+    width: 100%;
+    justify-content: center;
+    margin-top: 14px;
+  }
+
+  .pagination-controls button {
+    margin: 0 1px;
   }
 
   .arrows mat-icon {
@@ -821,28 +1259,6 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
     height: auto !important;
     width: auto !important;
     line-height: 18px;
-  }
-
-  .reviewstable{
-    overflow: scroll;
-  }
-
-  .AddForm .AddFormConatiner .FormInputRowsContainer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-direction: column;
-  }
-
-  .AddForm .AddFormConatiner .FormInputRowsContainer .InputRow {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    margin: 10px 0px;
-    flex-direction: row;
-    width: 100%;
-    flex-wrap: wrap;
   }
 }
 
@@ -850,11 +1266,8 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
    SMALL MOBILE DEVICES
    =============================== */
 @media (max-width: 480px) {
-  .table thead tr th {
-    text-align: center;
-    background-color: #536ff7;
-    color: #fff;
-    font-size: 8px;
+  .pagination-controls {
+    gap: 4px;
   }
 
   .arrows mat-icon {
@@ -862,28 +1275,6 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
     height: auto !important;
     width: auto !important;
     line-height: 18px;
-  }
-
-  .reviewstable{
-    overflow: scroll;
-  }
-
-  .AddForm .AddFormConatiner .FormInputRowsContainer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-direction: column;
-  }
-
-  .AddForm .AddFormConatiner .FormInputRowsContainer .InputRow {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    margin: 10px 0px;
-    flex-direction: row;
-    width: 100%;
-    flex-wrap: wrap;
   }
 }
 
@@ -891,11 +1282,8 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
    EXTRA SMALL DEVICES
    =============================== */
 @media (max-width: 360px) {
-  .table thead tr th {
-    text-align: center;
-    background-color: #536ff7;
-    color: #fff;
-    font-size: 8px;
+  .pagination-controls {
+    gap: 4px;
   }
 
   .arrows mat-icon {
@@ -904,26 +1292,240 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
     width: auto !important;
     line-height: 18px;
   }
+}
 
-  .reviewstable{
-    overflow: scroll;
-  }
+/* ===============================
+   GLOBAL THEME REFRESH
+   Clean blue + slate system
+   =============================== */
+:root {
+  --theme-bg: #f4f7fb;
+  --theme-bg-alt: #eef4fb;
+  --theme-surface: #ffffff;
+  --theme-surface-soft: #f8fbff;
+  --theme-border: #dbe4f0;
+  --theme-border-strong: #c7d4e6;
+  --theme-text: #0f172a;
+  --theme-text-soft: #475569;
+  --theme-muted: #64748b;
+  --theme-primary: #1d4ed8;
+  --theme-primary-strong: #153e90;
+  --theme-primary-soft: #dbeafe;
+  --theme-accent: #0ea5e9;
+  --theme-success: #16a34a;
+  --theme-warning: #d97706;
+  --theme-danger: #dc2626;
+  --theme-shadow-sm: 0 6px 18px rgba(15, 23, 42, 0.06);
+  --theme-shadow: 0 16px 36px rgba(15, 23, 42, 0.09);
+  --theme-shadow-strong: 0 24px 48px rgba(15, 23, 42, 0.14);
+  --theme-radius-sm: 10px;
+  --theme-radius-md: 14px;
+  --theme-radius-lg: 18px;
+}
 
-  .AddForm .AddFormConatiner .FormInputRowsContainer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-direction: column;
-  }
+html,
+body {
+  background:
+    radial-gradient(circle at top left, rgba(29, 78, 216, 0.12), transparent 26%),
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.10), transparent 24%),
+    linear-gradient(180deg, #ffffff 0%, #f3f8ff 44%, #eaf3ff 100%);
+  color: var(--theme-text);
+  min-height: 100%;
+}
 
-  .AddForm .AddFormConatiner .FormInputRowsContainer .InputRow {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    margin: 10px 0px;
-    flex-direction: row;
+body {
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background-attachment: fixed;
+}
+
+app-root {
+  display: block;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(29, 78, 216, 0.14), transparent 28%),
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.12), transparent 22%),
+    linear-gradient(180deg, #f8fbff 0%, #eef6ff 55%, #e6f0ff 100%);
+}
+
+/* Shell */
+.totalcard,
+.maincontent {
+  background:
+    radial-gradient(circle at top left, rgba(29, 78, 216, 0.05), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #f3f8ff 52%, #eaf3ff 100%) !important;
+}
+
+.sidenavbar {
+  background: linear-gradient(180deg, #0f172a 0%, #111c3a 100%) !important;
+  color: #e2e8f0 !important;
+  box-shadow: 10px 0 32px rgba(15, 23, 42, 0.16) !important;
+}
+
+.logo {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18) !important;
+}
+
+.menu li mat-icon,
+.menu li span,
+.submenu li mat-icon,
+.submenu-text {
+  color: #ffffff !important;
+}
+
+.menu li:hover,
+.submenu li:hover {
+  background: linear-gradient(135deg, rgba(29, 78, 216, 0.95), rgba(14, 165, 233, 0.92)) !important;
+  border-radius: var(--theme-radius-md) !important;
+}
+
+.menu li:hover mat-icon,
+.menu li:hover span,
+.submenu li:hover a mat-icon,
+.submenu li:hover a .submenu-text {
+  color: #ffffff !important;
+}
+
+.submenu li:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+.TopNav {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(245, 249, 255, 0.96)) !important;
+  color: var(--theme-text) !important;
+  border-bottom: 1px solid rgba(199, 212, 230, 0.95) !important;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08) !important;
+  backdrop-filter: blur(14px);
+}
+
+.navbar.navbar-light.bg-light {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(245, 249, 255, 0.96)) !important;
+  border-bottom: 1px solid rgba(199, 212, 230, 0.9) !important;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08) !important;
+  backdrop-filter: blur(14px);
+}
+
+.toggle-btn:hover {
+  background: linear-gradient(135deg, var(--theme-primary), var(--theme-accent)) !important;
+  color: #ffffff !important;
+}
+
+/* Cards and surfaces */
+.ComponentTop,
+.ComponentRecords,
+.AddForm,
+.modal-content,
+.chart-box,
+.mini-card,
+.options,
+.loader-overlay {
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%) !important;
+  color: var(--theme-text) !important;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.10), 0 0 0 1px rgba(29, 78, 216, 0.04) !important;
+}
+
+.ComponentTop,
+.ComponentRecords,
+.AddForm,
+.modal-content,
+.chart-box,
+.mini-card {
+  border: 1px solid rgba(215, 224, 236, 0.96) !important;
+  border-radius: 20px !important;
+}
+
+.ComponentTop .ComponentTopHeader,
+.AddForm .AddFormTop {
+  border-bottom-color: var(--theme-border) !important;
+}
+
+.ComponentTop .ComponentTopBottom button,
+.DownloadButtons button,
+.AddForm .ActionButtons .btn,
+.AddForm .actionbuttons .btnsubmit,
+.btnHover,
+.btnsubmit,
+.PaymentSummary .btnHover,
+.btn-login,
+.btn-primary,
+.btn.checkbtn,
+.page-btn.active,
+.arrow-btn:hover,
+.captcha-refresh {
+  background: linear-gradient(135deg, var(--theme-primary), var(--theme-accent)) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  border-radius: var(--theme-radius-sm) !important;
+  box-shadow: 0 10px 24px rgba(29, 78, 216, 0.18) !important;
+}
+
+.AddForm .actionbuttons .btncancel,
+.btncancel,
+.btn-forgot,
+.btn-link {
+  background: transparent !important;
+  color: var(--theme-primary) !important;
+  border-color: var(--theme-border) !important;
+}
+
+.ComponentTop .ComponentTopBottom button:hover,
+.DownloadButtons button:hover,
+.AddForm .ActionButtons .btn:hover,
+.AddForm .actionbuttons .btnsubmit:hover,
+.btnHover:hover,
+.btnsubmit:hover,
+.PaymentSummary .btnHover:hover,
+.btn-login:hover,
+.btn-primary:hover,
+.btn.checkbtn:hover {
+  background: linear-gradient(135deg, var(--theme-primary-strong), var(--theme-primary)) !important;
+  color: #ffffff !important;
+  box-shadow: 0 14px 28px rgba(21, 62, 144, 0.22) !important;
+}
+
+.badge {
+  border-radius: 999px !important;
+  box-shadow: var(--theme-shadow-sm) !important;
+  padding: 5px 11px !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  line-height: 1 !important;
+  border: 1px solid transparent !important;
+}
+
+.badge-success {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%) !important;
+  color: #166534 !important;
+  border-color: #86efac !important;
+}
+
+.badge-danger {
+  background: linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%) !important;
+  color: #9f1239 !important;
+  border-color: #fda4af !important;
+}
+
+@media (max-width: 992px) {
+  .pagination-controls {
     width: 100%;
-    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 14px;
+  }
+
+  .pagination-controls button {
+    margin: 0 3px;
   }
 }
+
+@media (max-width: 576px) {
+  .pagination-controls {
+    gap: 4px;
+  }
+}
+
+/* ===============================
+   GLOBAL TABLE SKIN
+   Zoho-inspired, size-safe
+   =============================== */

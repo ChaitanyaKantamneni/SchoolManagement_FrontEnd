@@ -150,23 +150,23 @@
   }
   
   .AddForm .actionbuttons .btncancel{
-    background-color: gray;
-    color: white;
-    border: none;
+    background-color: #f8fafc;
+    color: #153e90;
+    border: 1px solid #d7e0ec;
     font-size: smaller;
-    border-radius: 5px;
-    padding: 5px 10px;
-    transition: background-color 0.3s ease;
+    border-radius: 10px;
+    padding: 8px 14px;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
   }
   
   .AddForm .actionbuttons .btnsubmit{
-    background-color: #536ff7;
+    background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
     color: #fff;
-    border: none;
+    border: 1px solid transparent;
     font-size: smaller;
-    border-radius: 5px;
-    padding: 5px 10px;
-    transition: background-color 0.3s ease;
+    border-radius: 10px;
+    padding: 8px 14px;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
   }
 
 
