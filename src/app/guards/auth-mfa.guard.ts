@@ -7,15 +7,25 @@ import { CanActivate, Router } from '@angular/router';
 export class AuthMfaGuard implements CanActivate {
   constructor(private router: Router) {}
 
-  canActivate(): boolean {
-    const accessToken = sessionStorage.getItem('accessToken');
-    const mfaVerified = sessionStorage.getItem('mfaVerified');
+canActivate(): boolean {
 
-    if (accessToken && mfaVerified === 'true') {
-      return true;
-    }
+  const token = sessionStorage.getItem('accessToken');
+  const pending = sessionStorage.getItem('pendingLogin');
 
-    this.router.navigate(['/signin'], { replaceUrl: true });
+  console.log('GUARD CHECK:', { token, pending });
+
+  // ❌ Not logged in
+  if (!token) {
+    this.router.navigate(['/signin']);
     return false;
   }
+
+  // ❌ OTP still pending
+  if (pending) {
+    this.router.navigate(['/signin']);
+    return false;
+  }
+
+  return true;
+}
 }
