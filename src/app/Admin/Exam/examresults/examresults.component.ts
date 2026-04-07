@@ -94,6 +94,7 @@ export class ExamresultsComponent extends BasePermissionComponent{
     examslist:any[] =[];
     studentsList:any[]=[];
     studentReport:any[]=[];
+    hasSubmittedSearch: boolean = false;
   
   
     AdminselectedSchoolID: string = '';
@@ -651,6 +652,7 @@ export class ExamresultsComponent extends BasePermissionComponent{
       this.SyllabusForm.markAllAsTouched();
       return;
     }
+    this.hasSubmittedSearch = true;
     this.currentPage = 1;
     // Sync AdminselectedStudentID from form before fetching
     const formStudentVal = this.SyllabusForm.get('Student')?.value;
@@ -1091,6 +1093,7 @@ export class ExamresultsComponent extends BasePermissionComponent{
         this.AdminselectedSchoolID = schoolID;
       }   
       this.FetchAcademicYearsList();
+      this.resetResultView();
       // this.resetPaginationAndFetch();
     };
   
@@ -1118,6 +1121,7 @@ export class ExamresultsComponent extends BasePermissionComponent{
       // this.tableRows = [];   
       this.FetchExamsList();
       this.FetchClassList();
+      this.resetResultView();
       // this.resetPaginationAndFetch();
     };
     
@@ -1138,6 +1142,7 @@ export class ExamresultsComponent extends BasePermissionComponent{
         this.AdminselectedClassID = classId; // if API expects comma separated
       }
       this.FetchDivisionsList();
+      this.resetResultView();
       // this.resetPaginationAndFetch();
     };
   
@@ -1156,12 +1161,14 @@ export class ExamresultsComponent extends BasePermissionComponent{
       }
       this.examResultsList = [];
       this.FetchClassStudentsList();
+      this.resetResultView();
     }
 
     onAdminStudentChange(event:Event){
       const target = event.target as HTMLSelectElement;
       const admissionId = target.value;
       this.AdminselectedStudentID = admissionId;
+      this.resetResultView();
     }
 
     onAdminExamtypeChange(event:Event){
@@ -1169,7 +1176,15 @@ export class ExamresultsComponent extends BasePermissionComponent{
       const examId = target.value;
       this.AdminselecteExamID = examId === '0' ? '' : examId;
       this.examResultsList = [];
+      this.resetResultView();
     }
+
+private resetResultView() {
+  this.hasSubmittedSearch = false;
+  this.examResultsList = [];
+  this.SyllabusCount = 0;
+  this.currentPage = 1;
+}
 
 getFinalResultForRecords(records: any[]): string {
   return this.calculateFinalResult(records);

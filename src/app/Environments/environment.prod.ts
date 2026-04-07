@@ -5,5 +5,9 @@ export const environment = {
 
     production:true,
     baseUrl : 'https://smartschoolserp.com/api/SchoolManagement',
-    imgUrl:'https://smartschoolserp.com'
+    imgUrl:'https://smartschoolserp.com',
+
+    requireLoginOtp: true,
+    loginOtpSkipApi: false,
+    loginDevDummyOtp: null as string | null,
 };

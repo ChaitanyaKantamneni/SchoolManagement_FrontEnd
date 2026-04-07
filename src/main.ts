@@ -22,6 +22,8 @@ import { authInterceptor } from './app/Services/Interceptor/auth.interceptor';
 
 import { provideEchartsCore } from 'ngx-echarts';
 import * as echarts from 'echarts';
+import { isDevMode } from '@angular/core';
+import { provideServiceWorker } from '@angular/service-worker';
 
 bootstrapApplication(AppComponent, {
   ...appConfig,
@@ -30,7 +32,11 @@ bootstrapApplication(AppComponent, {
 
     provideHttpClient(withInterceptors([authInterceptor])),
 
-    provideEchartsCore({ echarts })
+    provideEchartsCore({ echarts }),
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000',
+    }),
 
   ]
 })

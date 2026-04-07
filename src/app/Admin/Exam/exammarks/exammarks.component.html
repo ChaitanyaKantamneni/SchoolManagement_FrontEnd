@@ -86,14 +86,14 @@
               </div>
               <div class="InputRow">
                 <div class="InputFieldsContainer">
-                  <label class="inputLabel" for="email">ExamType<span class="required">*</span></label>
+                  <label class="inputLabel" for="email">Exam Type <span class="required">*</span></label>
                   <div class="input-with-error">
                     <select class="inputField" type="date" formControlName="ExamType" (change)="onAdminExamtypeChange($event)">
                       <option value="0">-- Select Exam --</option>
                       <option *ngFor="let school of examLists" value="{{school.ID}}">{{school.Name}}</option>
                     </select>
                     <div *ngIf="SyllabusForm.get('ExamType')?.hasError('min') && (SyllabusForm.get('ExamType')?.touched || SyllabusForm.get('ExamType')?.dirty)" class="text-danger">
-                      <small>Please Select ExamType.</small>
+                      <small>Please Select Exam Type.</small>
                     </div>
                   </div>
                 </div>
@@ -141,14 +141,14 @@
                   </div>
                 </div>
                 <div class="InputFieldsContainer">
-                  <label class="inputLabel" for="email">ExamType<span class="required">*</span></label>
+                  <label class="inputLabel" for="email">Exam Type <span class="required">*</span></label>
                   <div class="input-with-error">
                     <select class="inputField" type="date" formControlName="ExamType" (change)="onAdminExamtypeChange($event)">
                       <option value="0">-- Select Exam --</option>
                       <option *ngFor="let school of examLists" value="{{school.ID}}">{{school.Name}}</option>
                     </select>
                     <div *ngIf="SyllabusForm.get('ExamType')?.hasError('min') && (SyllabusForm.get('ExamType')?.touched || SyllabusForm.get('ExamType')?.dirty)" class="text-danger">
-                      <small>Please Select ExamType.</small>
+                      <small>Please Select Exam Type.</small>
                     </div>
                   </div>
                 </div>
@@ -156,7 +156,7 @@
             </ng-template>
           </div>
           <div class="ActionButtons">
-            <button type="button" class="btn" (click)="onSubmit()">Next</button>
+            <button type="button" (click)="onSubmit()">Next</button>
           </div>
         </form>
       </div>
@@ -396,7 +396,6 @@
 <button
   *ngIf="attendanceMode === 'view'"
   type="button"
-  class="btn"
   (click)="UpdateAttendance()">
   Update Marks
 </button>      

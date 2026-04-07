@@ -251,3 +251,128 @@
     margin: 4% auto;
     max-width: 900px;
 }
+
+/* Enhanced view modal layout for fee receipt only */
+.modal.viewmodel .modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.modal.viewmodel .close {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid #dbe4f0;
+  background: #f8fbff;
+  color: #1d4ed8;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.viewmodel .close:hover {
+  background: #1d4ed8;
+  color: #fff;
+  border-color: #1d4ed8;
+}
+
+.modal.viewmodel .receipt-box {
+  border: 1px solid #dbe4f0;
+  border-radius: 14px;
+  padding: 16px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.modal.viewmodel .header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e2e8f0;
+  min-height: 64px;
+}
+
+.modal.viewmodel .logo img {
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+  border-radius: 10px;
+  border: 1px solid #dbe4f0;
+  background: #fff;
+  padding: 4px;
+}
+
+.modal.viewmodel .header-center {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  pointer-events: none;
+}
+
+.modal.viewmodel .header-center h2 {
+  font-size: 18px;
+  margin: 0;
+  color: #0f172a;
+}
+
+.modal.viewmodel .header-center h3 {
+  margin: 2px 0 0;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: #64748b;
+}
+
+.modal.viewmodel .receipt-top {
+  background: #f8fbff;
+  border: 1px solid #dbe4f0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+}
+
+.modal.viewmodel .section-title {
+  margin-top: 14px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #1e3a8a;
+}
+
+.modal.viewmodel .receipt-left-line {
+  margin: 6px 0;
+  font-size: 13px;
+  color: #0f172a;
+}
+
+.modal.viewmodel .receipt-table th,
+.modal.viewmodel .receipt-table td {
+  border: 1px solid #d7e0ec;
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.modal.viewmodel .receipt-table th {
+  background: #eef5ff;
+  color: #1e3a8a;
+  font-weight: 700;
+}
+
+.modal.viewmodel .receipt-footer {
+  display: grid;
+  gap: 4px;
+}
+
+.modal.viewmodel .note {
+  font-size: 12px;
+  color: #475569;
+  background: #f8fbff;
+  border: 1px solid #dbe4f0;
+  border-radius: 10px;
+  padding: 8px 10px;
+}

@@ -210,7 +210,7 @@
 
 // }
 
-import { Component, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, Inject, OnDestroy, PLATFORM_ID } from '@angular/core';
 import { NgIf } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -219,6 +219,34 @@ import { HttpClientModule } from '@angular/common/http';
 import { ApiServiceService } from '../../Services/api-service.service';
 import { MenuServiceService } from '../../Services/menu-service.service';
 import { isPlatformBrowser } from '@angular/common';
+import { environment } from '../../Environments/environment';
+
+interface LoginResponse {
+  success?: boolean;
+  accessToken?: string;
+  refreshToken?: string;
+  email?: string;
+  role?: string;
+  schoolId?: string;
+  schoolName?: string;
+  message?: string;
+}
+
+interface OtpApiResponse {
+  success: boolean;
+  message?: string;
+  accessToken?: string;
+  refreshToken?: string;
+}
+
+interface PendingLoginState {
+  accessToken: string;
+  refreshToken: string;
+  email: string;
+  role: string;
+  schoolId: string;
+  schoolName: string;
+}
 
 @Component({
   selector: 'app-sign-in',
@@ -227,7 +255,7 @@ import { isPlatformBrowser } from '@angular/common';
   templateUrl: './sign-in.component.html',
   styleUrls: ['./sign-in.component.css']
 })
-export class SignInComponent {
+export class SignInComponent implements OnDestroy {
   captchaValid = false;
   captchaText = '';
   IsPasswordVisible = false;
@@ -235,10 +263,25 @@ export class SignInComponent {
   currentYear = new Date().getFullYear();
   public color = { red: false, green: false };
 
+  authMessage = '';
+  authError = false;
+  isOtpStep = false;
+  isLoginLoading = false;
+  isSendingOtp = false;
+  isVerifyingOtp = false;
+  resendCooldown = 0;
+  /** Shown only when using a fixed dev dummy OTP (see environment.loginDevDummyOtp). */
+  loginOtpDevHint = '';
+  private resendTimerId: ReturnType<typeof setInterval> | null = null;
+  private pendingLoginData: PendingLoginState | null = null;
+  /** When loginOtpSkipApi: last OTP issued (must match user input to complete login). */
+  private lastIssuedLoginOtp: string | null = null;
+
   LoginForms: FormGroup = new FormGroup({
     email: new FormControl('', Validators.required),
     password: new FormControl('', Validators.required),
-    captcha: new FormControl('', Validators.required)
+    captcha: new FormControl('', Validators.required),
+    otp: new FormControl('', [Validators.required, Validators.pattern(/^\d{6}$/)])
   });
 
   constructor(
@@ -253,6 +296,10 @@ export class SignInComponent {
       sessionStorage.clear();
       this.generateCaptcha();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.clearResendTimer();
   }
 
   togglePasswordVisibility() {
@@ -300,13 +347,11 @@ export class SignInComponent {
     this.generateCaptcha();
   }
 
-  OnSubmitSignIn() {
-    // this.validateCaptcha();
-    // if (!this.captchaValid) {
-    //   this.color = { red: true, green: false };
-    //   this.isUpdateModalOpen = true;
-    //   return;
-    // }
+  OnSubmitSignIn(): void {
+    if (this.isLoginLoading || this.isSendingOtp) return;
+    this.authMessage = '';
+    this.authError = false;
+    this.isLoginLoading = true;
 
     const data = {
       Email: this.LoginForms.get('email')?.value,
@@ -317,46 +362,267 @@ export class SignInComponent {
     const formData = new FormData();
     Object.keys(data).forEach(key => formData.append(key, (data as any)[key]));
 
-    this.apiurl.post('Tbl_Users_CRUD_Operations', formData).subscribe({
-      next: (result: any) => {
-        if (!result?.email || !result?.role) {
+    this.apiurl.post<LoginResponse>('Tbl_Users_CRUD_Operations', formData).subscribe({
+      next: (result: LoginResponse) => {
+        const accessToken = result?.accessToken || '';
+        const refreshToken = result?.refreshToken || '';
+        const email = result?.email || '';
+        const role = result?.role || '';
+        const schoolId = result?.schoolId || '';
+        const schoolName = result?.schoolName || '';
+
+        if (!accessToken || !refreshToken || !email || !role) {
           this.color = { red: true, green: false };
           this.isUpdateModalOpen = true;
+          this.authError = true;
+          this.authMessage = result?.message || 'Invalid credentials. Please try again.';
+          this.isLoginLoading = false;
           return;
         }
 
-        sessionStorage.setItem('accessToken', result.accessToken || '');
-        sessionStorage.setItem('refreshToken', result.refreshToken || '');
-        sessionStorage.setItem('email', result.email);
-        sessionStorage.setItem('RollID', result.role);
-        sessionStorage.setItem('schoolId', result.schoolId || '');
-        sessionStorage.setItem('schoolName', result.schoolName || '');
+        const pending: PendingLoginState = {
+          accessToken,
+          refreshToken,
+          email,
+          role,
+          schoolId,
+          schoolName
+        };
+        this.authError = false;
+        this.authMessage = '';
 
-        // 🔹 Load menu before redirecting
-        this.menuService.clearMenu();
-        this.menuService.loadMenu(result.role).subscribe({
-          next: () => {
-            if (result.role === '1') {
-              this.router.navigate(['/Admin']);
-            } else if (result.role !== '1' && result.schoolId) {
-              this.router.navigate([`/${result.schoolName}/dashboard`]);
-            } else {
-              this.color = { red: true, green: false };
-              this.isUpdateModalOpen = true;
-              this.router.navigate(['/signin']);
-            }
-          },
-          error: (err) => {
-            console.error('Failed to load menu', err);
-            this.color = { red: true, green: false };
-            this.isUpdateModalOpen = true;
-          }
-        });
+        if (environment.requireLoginOtp) {
+          this.pendingLoginData = pending;
+          this.sendOtp(email);
+          return;
+        }
+
+        this.persistSessionAndEnterApp(pending, accessToken, refreshToken);
       },
-      error: (err) => {
+      error: () => {
         this.color = { red: true, green: false };
         this.isUpdateModalOpen = true;
+        this.authError = true;
+        this.authMessage = 'Login failed due to server error.';
+        this.isLoginLoading = false;
       }
     });
+  }
+
+  /**
+   * Backend: POST auth/send-otp
+   * Body: { email: string, otp: string } — otp is 6 digits, generated here so the API can email it.
+   * Server should: validate email, persist otp (e.g. cache/db with TTL), send mail with that otp, return { success }.
+   * Resend generates a new otp and repeats (invalidate previous server-side).
+   */
+  sendOtp(email: string): void {
+    this.isSendingOtp = true;
+    const otp = this.generateLoginOtpForBackend();
+    this.lastIssuedLoginOtp = otp;
+    if (!environment.production || environment.loginOtpSkipApi) {
+      console.log('[Login MFA] Generated OTP (enter this to continue):', otp, '| email:', email);
+    }
+    this.loginOtpDevHint =
+      !environment.production && environment.loginDevDummyOtp
+        ? `Dev: OTP is ${environment.loginDevDummyOtp} (also printed in console).`
+        : '';
+
+    if (environment.loginOtpSkipApi) {
+      this.isOtpStep = true;
+      this.authError = false;
+      this.authMessage =
+        'Backend OTP API skipped (dev). Enter the OTP printed in the browser console, then verify.';
+      this.startResendCooldown(30);
+      this.LoginForms.get('otp')?.reset('');
+      this.isSendingOtp = false;
+      this.isLoginLoading = false;
+      return;
+    }
+
+    this.apiurl.post<OtpApiResponse>('auth/send-otp', { email, otp }).subscribe({
+      next: (response: OtpApiResponse) => {
+        if (!response?.success) {
+          this.authError = true;
+          this.authMessage = response?.message || 'Failed to send OTP. Please retry.';
+          this.isSendingOtp = false;
+          this.isLoginLoading = false;
+          return;
+        }
+
+        this.isOtpStep = true;
+        this.authError = false;
+        this.authMessage = response?.message || 'OTP sent to your registered email. Check console for the code during development.';
+        this.startResendCooldown(30);
+        this.LoginForms.get('otp')?.reset('');
+        this.isSendingOtp = false;
+        this.isLoginLoading = false;
+      },
+      error: () => {
+        this.authError = true;
+        this.authMessage = 'OTP send failed. Please try again.';
+        this.isSendingOtp = false;
+        this.isLoginLoading = false;
+      }
+    });
+  }
+
+  /** 6-digit OTP for auth/send-otp; uses environment.loginDevDummyOtp when set (local testing). */
+  private generateLoginOtpForBackend(): string {
+    const fixed = environment.loginDevDummyOtp?.trim();
+    if (fixed && /^\d{6}$/.test(fixed)) {
+      return fixed;
+    }
+    return String(Math.floor(100000 + Math.random() * 900000));
+  }
+
+  verifyOtpAndLogin(): void {
+    if (this.isVerifyingOtp || !this.pendingLoginData) return;
+    const pendingLogin = this.pendingLoginData;
+
+    const otpControl = this.LoginForms.get('otp');
+    otpControl?.markAsTouched();
+    if (!otpControl || otpControl.invalid) {
+      this.authError = true;
+      this.authMessage = 'Enter a valid 6-digit OTP.';
+      return;
+    }
+
+    this.isVerifyingOtp = true;
+    this.authError = false;
+    this.authMessage = '';
+
+    const enteredOtp = String(otpControl.value).trim();
+
+    if (environment.loginOtpSkipApi) {
+      if (!this.lastIssuedLoginOtp || enteredOtp !== this.lastIssuedLoginOtp) {
+        this.authError = true;
+        this.authMessage = 'Invalid OTP. Use the code from the console, or click Resend OTP.';
+        this.isVerifyingOtp = false;
+        return;
+      }
+      this.lastIssuedLoginOtp = null;
+      this.persistSessionAndEnterApp(
+        pendingLogin,
+        pendingLogin.accessToken,
+        pendingLogin.refreshToken
+      );
+      return;
+    }
+
+    /** Backend: POST auth/verify-otp — body { email, otp }; must match value stored in send-otp. */
+    this.apiurl.post<OtpApiResponse>('auth/verify-otp', {
+      email: pendingLogin.email,
+      otp: enteredOtp
+    }).subscribe({
+      next: (response: OtpApiResponse) => {
+        if (!response?.success) {
+          this.authError = true;
+          this.authMessage = response?.message || 'Invalid or expired OTP.';
+          this.isVerifyingOtp = false;
+          return;
+        }
+
+        // Use tokens from username/password login, not from verify-otp response.
+        this.persistSessionAndEnterApp(
+          pendingLogin,
+          pendingLogin.accessToken,
+          pendingLogin.refreshToken
+        );
+      },
+      error: () => {
+        this.authError = true;
+        this.authMessage = 'OTP verification failed. Please try again.';
+        this.isVerifyingOtp = false;
+      }
+    });
+  }
+
+  resendOtp(): void {
+    if (this.resendCooldown > 0 || !this.pendingLoginData || this.isSendingOtp) return;
+    this.authError = false;
+    this.authMessage = '';
+    this.sendOtp(this.pendingLoginData.email);
+  }
+
+  backToLogin(): void {
+    this.isOtpStep = false;
+    this.pendingLoginData = null;
+    this.lastIssuedLoginOtp = null;
+    this.LoginForms.get('otp')?.reset('');
+    this.authMessage = '';
+    this.authError = false;
+    this.loginOtpDevHint = '';
+    this.clearResendTimer();
+    this.resendCooldown = 0;
+  }
+
+  getMaskedEmail(): string {
+    const email = this.pendingLoginData?.email || '';
+    const [name, domain] = email.split('@');
+    if (!name || !domain) return '';
+    return `${name.slice(0, 1)}${'*'.repeat(Math.max(name.length - 1, 3))}@${domain}`;
+  }
+
+  private startResendCooldown(seconds: number): void {
+    this.clearResendTimer();
+    this.resendCooldown = seconds;
+    this.resendTimerId = setInterval(() => {
+      if (this.resendCooldown > 0) this.resendCooldown -= 1;
+      if (this.resendCooldown <= 0) this.clearResendTimer();
+    }, 1000);
+  }
+
+  private clearResendTimer(): void {
+    if (!this.resendTimerId) return;
+    clearInterval(this.resendTimerId);
+    this.resendTimerId = null;
+  }
+
+  private persistSessionAndEnterApp(
+    pending: PendingLoginState,
+    accessToken: string,
+    refreshToken: string
+  ): void {
+    sessionStorage.setItem('accessToken', accessToken);
+    sessionStorage.setItem('refreshToken', refreshToken);
+    sessionStorage.setItem('email', pending.email);
+    sessionStorage.setItem('RollID', pending.role);
+    sessionStorage.setItem('schoolId', pending.schoolId);
+    sessionStorage.setItem('schoolName', pending.schoolName);
+    sessionStorage.setItem('mfaVerified', 'true');
+
+    this.menuService.clearMenu();
+    this.menuService.loadMenu(pending.role).subscribe({
+      next: () => this.navigateAfterLogin(pending),
+      error: () => {
+        this.authError = true;
+        this.authMessage = 'Failed to load menu after login.';
+        this.isLoginLoading = false;
+        this.isVerifyingOtp = false;
+      }
+    });
+  }
+
+  private navigateAfterLogin(p: PendingLoginState): void {
+    this.isLoginLoading = false;
+    this.isVerifyingOtp = false;
+    this.pendingLoginData = null;
+    this.isOtpStep = false;
+
+    if (p.role === '1') {
+      this.router.navigate(['/Admin']);
+      return;
+    }
+
+    if (p.role !== '1' && p.schoolId) {
+      this.router.navigate([`/${p.schoolName}/dashboard`]);
+      return;
+    }
+
+    this.authError = true;
+    this.authMessage = 'Login failed! Invalid role or school mapping.';
+    this.color = { red: true, green: false };
+    this.isUpdateModalOpen = true;
+    this.router.navigate(['/signin']);
   }
 }

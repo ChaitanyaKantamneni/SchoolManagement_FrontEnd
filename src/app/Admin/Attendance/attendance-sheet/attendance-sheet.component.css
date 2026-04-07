@@ -29,13 +29,11 @@
   min-width: 0;
 }
 
-/* ExamType – the lonely one */
+/* Keep single-field rows same width as normal half-row fields */
 .InputRow:last-child .InputFieldsContainer {
-  flex-grow: 0;
-  flex-shrink: 1;
-  flex-basis: auto;
-  max-width: 523px;           /* ← tune this number */
-  margin-right: auto;         /* optional: align left if you want */
+  flex: 0 0 calc(50% - 8px);
+  max-width: calc(50% - 8px);
+  margin-right: auto;
 }
 
 /* make sure select follows container width */
@@ -50,8 +48,8 @@
 }
 
 .compact-field {
-  flex: 0 1 320px;
-  max-width: 320px;
+  flex: 0 0 calc(50% - 8px);
+  max-width: calc(50% - 8px);
 }
 
 @media (max-width: 767.98px) {
@@ -183,4 +181,38 @@
   font-size: 10px;
   font-weight: 400;
   color: #333;
+}
+
+/* Keep AttendanceSheet page compact: no extra blank scroll area under table */
+:host {
+  display: block;
+}
+
+.MainContentDiv {
+  justify-content: flex-start !important;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.MainContentDiv > .ComponentRecords {
+  margin-bottom: 0 !important;
+  padding-bottom: 8px !important;
+}
+
+.MainContentDiv > .ComponentRecords > div {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.MainContentDiv > .ComponentRecords .reviewstable {
+  overflow-y: visible !important;
+}
+
+.MainContentDiv > .ComponentRecords .table {
+  margin-bottom: 0 !important;
+}
+
+.MainContentDiv > .ComponentRecords .table-action-buttons {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
 }

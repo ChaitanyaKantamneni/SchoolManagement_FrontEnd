@@ -444,8 +444,8 @@
               </div>             
             </div>
             <div class="ActionButtons">
-              <button class="btn" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
-              <button class="btn" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitPersonalDetails()">Save & Next</button>
+              <button type="button" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
+              <button type="button" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitPersonalDetails()">Save & Next</button>
             </div>
           </div>
           <div class="FormInputRowsContainer" *ngIf="activeTab === 'parents'">
@@ -608,8 +608,8 @@
               </div>
             </div>
             <div class="ActionButtons">
-              <button class="btn" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
-              <button class="btn" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitPersonalDetails()">Save & Next</button>
+              <button type="button" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
+              <button type="button" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitPersonalDetails()">Save & Next</button>
             </div>
           </div>
           <div class="FormInputRowsContainer" *ngIf="activeTab === 'permanent'">
@@ -716,8 +716,8 @@
               </div>           
             </div>
             <div class="ActionButtons">
-              <button class="btn" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
-              <button class="btn" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitPersonalDetails()">Save & Next</button>
+              <button type="button" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
+              <button type="button" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitPersonalDetails()">Save & Next</button>
             </div>
           </div>
           <div class="FormInputRowsContainer" *ngIf="activeTab === 'temporary'">
@@ -824,9 +824,9 @@
               </div>            
             </div>
             <div class="ActionButtons">
-              <button class="btn" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
-              <button class="btn" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitPersonalDetails()">Save & Next</button>
-              <button class="btn" (click)="SkipButtonClick()">Skip</button>
+              <button type="button" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
+              <button type="button" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitPersonalDetails()">Save & Next</button>
+              <button type="button" (click)="SkipButtonClick()">Skip</button>
             </div>
           </div>
           <div class="FormInputRowsContainer" *ngIf="activeTab === 'bus'">            
@@ -897,14 +897,14 @@
               </div>            
             </div>
             <div class="ActionButtons">
-              <button class="btn" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
-              <button class="btn" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitPersonalDetails()">Save & Next</button>
-              <button class="btn" (click)="CancelButtonClick()">Cancel</button>
+              <button type="button" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
+              <button type="button" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitPersonalDetails()">Save & Next</button>
+              <button type="button" (click)="CancelButtonClick()">Cancel</button>
             </div>
           </div>
           <!-- <div class="ActionButtons">
-            <button class="btn" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update</button>
-            <button class="btn" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitModule()">Submit</button>
+            <button type="button" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update</button>
+            <button type="button" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitModule()">Submit</button>
           </div> -->
         </form>
       </div>

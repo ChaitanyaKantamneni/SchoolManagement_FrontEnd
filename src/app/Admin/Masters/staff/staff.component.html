@@ -349,8 +349,8 @@
             </div>
           </div>
           <div class="ActionButtons">
-            <button class="btn" *ngIf="ViewStaffClicked && canEdit()" (click)="UpdateStaff()">Update</button>
-            <button class="btn" *ngIf="!ViewStaffClicked && canAdd()" (click)="SubmitStaff()">Submit</button>
+            <button type="button" *ngIf="ViewStaffClicked && canEdit()" (click)="UpdateStaff()">Update</button>
+            <button type="button" *ngIf="!ViewStaffClicked && canAdd()" (click)="SubmitStaff()">Submit</button>
           </div>
         </form>
       </div>

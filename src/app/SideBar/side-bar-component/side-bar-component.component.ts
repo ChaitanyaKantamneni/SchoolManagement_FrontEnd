@@ -193,7 +193,16 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
   }
 
   getVisibleModules(): Module[] {
-    return (this.menu || []).filter(module => this.getVisiblePages(module).length > 0);
+    const visibleModules = (this.menu || []).filter(module => this.getVisiblePages(module).length > 0);
+    const hasHrPayroll = visibleModules.some(
+      module => (module.moduleName || '').trim().toLowerCase() === 'hr & payroll'
+    );
+
+    if (hasHrPayroll) {
+      return visibleModules;
+    }
+
+    return [...visibleModules, this.getFallbackHrPayrollModule()];
   }
 
   getVisiblePages(module: Module): Page[] {
@@ -294,7 +303,13 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
       viewattendance: 'groups',
       'view attendance': 'groups',
       viewstaffattendance: 'groups',
-      'view staff attendance': 'groups'
+      'view staff attendance': 'groups',
+      'payroll head': 'account_tree',
+      'payment mode': 'payments',
+      'salary settings': 'tune',
+      'advance salary': 'request_quote',
+      'salary pay': 'paid',
+      'salary issued': 'receipt_long'
     };
     return map[key] || 'menu';
   }
@@ -309,10 +324,38 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
       timetable: 'schedule',
       'time table': 'schedule',
       exam: 'quiz',
-      attendance: 'how_to_reg'
+      attendance: 'how_to_reg',
+      'hr & payroll': 'account_balance'
     };
 
     return map[key] || 'folder';
+  }
+
+  private getFallbackHrPayrollModule(): Module {
+    return {
+      id: '999999',
+      moduleName: 'HR & Payroll',
+      pages: [
+        this.createFallbackPage('900001', 'Payroll Head'),
+        this.createFallbackPage('900002', 'Payment Mode'),
+        this.createFallbackPage('900003', 'Salary Settings'),
+        this.createFallbackPage('900004', 'Advance Salary'),
+        this.createFallbackPage('900005', 'Salary Pay'),
+        this.createFallbackPage('900006', 'Salary Issued')
+      ]
+    };
+  }
+
+  private createFallbackPage(id: string, pageName: string): Page {
+    return {
+      id,
+      pageName,
+      moduleID: '999999',
+      canView: '1',
+      canAdd: '1',
+      canEdit: '1',
+      canDelete: '1'
+    };
   }
 
   // Navigation for admin or school users

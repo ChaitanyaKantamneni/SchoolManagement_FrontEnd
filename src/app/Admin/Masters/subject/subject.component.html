@@ -265,8 +265,8 @@
             </div>
           </div>
           <div class="ActionButtons">
-            <button class="btn" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update</button>
-            <button class="btn" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitModule()">Submit</button>
+            <button type="button" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update</button>
+            <button type="button" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitModule()">Submit</button>
           </div>
         </form>
       </div>
