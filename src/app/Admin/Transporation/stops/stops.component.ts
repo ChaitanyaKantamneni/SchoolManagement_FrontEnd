@@ -172,7 +172,7 @@ export class StopsComponent extends BasePermissionComponent {
     const requestData = { 
       Flag: '3' ,
       SchoolID:this.AdminselectedSchoolID||'',
-      AcademicYearID:this.AdminselectedAcademivYearID||''
+      AcademicYear:this.AdminselectedAcademivYearID||''
     };
 
     this.apiurl.post<any>('Tbl_Route_CRUD_Operations', requestData)
@@ -702,6 +702,7 @@ export class StopsComponent extends BasePermissionComponent {
     this.FetchSyllabusDetByID(SyllabusID,'view');
     this.isViewModalOpen=true;
   };
+
   onAdminSchoolChange(event: Event) {
     this.academicYearList=[];
     this.SyllabusForm.get('AcademicYear').patchValue('0');
@@ -714,7 +715,10 @@ export class StopsComponent extends BasePermissionComponent {
     }   
     this.FetchAcademicYearsList();
   };
+
   onAdminAcademicYearChange(event: Event) {
+    this.RouteList=[];
+    this.SyllabusForm.get('Route').patchValue('0');
     const target = event.target as HTMLSelectElement;
     const AcademicYearID = target.value;
     if(AcademicYearID=="0"){

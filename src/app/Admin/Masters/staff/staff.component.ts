@@ -311,6 +311,7 @@ export class StaffComponent extends BasePermissionComponent {
     this.StaffForm.get('School')?.patchValue('0');
     this.StaffForm.get('AcademicYear')?.patchValue('0');
     this.StaffForm.get('StaffType')?.setValue([]);
+    this.selectedSchoolID="";
     this.IsAddNewClicked=!this.IsAddNewClicked;
     this.IsActiveStatus=true;
     this.ViewStaffClicked=false;
@@ -346,6 +347,7 @@ export class StaffComponent extends BasePermissionComponent {
             // this.AminityInsStatus = response.status;
             this.isModalOpen = true;
             this.AminityInsStatus = "Staff Details Submitted!";
+            this.currentPage=1;
             this.StaffForm.reset();
             this.StaffForm.markAsPristine();
           }
@@ -468,6 +470,7 @@ export class StaffComponent extends BasePermissionComponent {
             // this.AminityInsStatus = response.status;
             this.isModalOpen = true;
             this.AminityInsStatus = "Staff Details Updated!";
+            this.currentPage=1;
             this.StaffForm.reset();
             this.StaffForm.markAsPristine();
           }
@@ -796,7 +799,13 @@ export class StaffComponent extends BasePermissionComponent {
       .subscribe(
         (response: any) => {
           if (response && Array.isArray(response.data)) {
-            this.StaffTypeListBySchoolId = response.data.map((item: any) => {
+            let roles = response.data;
+
+            if (!this.isAdmin) {
+              roles = roles.filter((item: any) => item.id != "1"); 
+            }
+
+            this.StaffTypeListBySchoolId = roles.map((item: any) => {
               const isActiveString = item.isActive === "1" ? "Active" : "InActive";
               return {
                 ID: item.id,

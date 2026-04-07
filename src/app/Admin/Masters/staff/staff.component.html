@@ -22,7 +22,7 @@
               <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
               <!-- <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i> -->
             </div>
-            <div class="searchreview" *ngIf="isAdmin && StaffList.length != 0">
+            <div class="searchreview" *ngIf="isAdmin">
               <select (change)="onSchoolChange($event)" class="form-control selectFormControl" >
                 <option value="">-- Select School --</option>
                 <option value="0">All Schools</option>
@@ -165,16 +165,11 @@
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Staff Type <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <!-- <select class="inputField" type="date" formControlName="StaffType" placeholder="Select Class">
-                    <option value="0" disabled>Select Staff Type</option>
-                    <option *ngFor="let Syllabus of SyllabusList" value="{{Syllabus.id}}">{{Syllabus.name}}</option>
-                  </select> -->
                   <div class="custom-multiselect">
                     <div class="select-box" (click)="dropdownOpen = !dropdownOpen">
                       {{ selectedCategories.length ? selectedCategories.length + ' selected' : 'Select Category' }}
                       <span class="arrow">{{ dropdownOpen ? '▲' : '▼' }}</span>
                     </div>
-
 
                     <div class="options" *ngIf="dropdownOpen">
                       <label *ngFor="let cat of StaffTypeListBySchoolId">
@@ -185,7 +180,7 @@
                       </label>
                     </div>
                   </div>
-                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+
                   <div *ngIf="(StaffForm.get('StaffType' ) ?. touched && StaffForm.get('StaffType' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(StaffForm.get('StaffType' ) ?. errors ?. ['required' ]) ">
                       <small>Please Select StaffType.</small>
@@ -319,14 +314,35 @@
                 </div>
               </div>              
               <div class="InputFieldsContainer" *ngIf="isAdmin">
-                <span style="visibility: hidden;height: 3px;">hello adding new academic year</span>
+                <div class="ToggleFormInputRowsContainer">
+                  <div class="ToggleInputRow">
+                    <div class="InputFieldsContainer">
+                      <div class="toggle-container" (click)="$event.stopPropagation()">
+                        <label class="switch">
+                          <input type="checkbox" [checked]="IsActiveStatus" (click)="toggleChange()">
+                          <span class="slider">
+                            <span
+                              class="toggle-text"
+                              [ngStyle]="{
+                                left: IsActiveStatus ? '42%' : '60%',
+                                fontSize: IsActiveStatus ? '9px' : '9px'
+                              }"
+                            >
+                              {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                            </span>
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <span style="visibility: hidden;height: 3px;">hello adding new academic year</span>
               </div>
             </div>
           </div>
-          <div class="ToggleFormInputRowsContainer">
+          <div class="ToggleFormInputRowsContainer mt-2" *ngIf="!isAdmin">
             <div class="ToggleInputRow">
               <div class="InputFieldsContainer">
                 <div class="toggle-container" (click)="$event.stopPropagation()">

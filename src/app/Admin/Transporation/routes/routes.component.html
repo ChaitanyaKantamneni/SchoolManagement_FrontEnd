@@ -57,6 +57,7 @@
                     </mat-icon>
                   </span>
                 </th>
+                <th>Academic Year</th>
                 <th *ngIf="isAdmin">School Name</th>
                 <th>Status</th>               
                 <th>Actions</th>
@@ -67,6 +68,7 @@
                 <td data-label="ID" class="visually-hidden">{{ Syllabus.ID }}</td>
                 <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
                 <td data-label="Name">{{ Syllabus.Name }}</td>
+                <td data-label="AcademicYear">{{ Syllabus.AcademicYearName }}</td>
                 <td data-label="SchoolName" *ngIf="isAdmin">{{ Syllabus.SchoolName }}</td>
                 <td data-label="Status">
                   <span

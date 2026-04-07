@@ -236,6 +236,7 @@ export class SchoolDetailsComponent extends BasePermissionComponent {
             this.IsAddNewClicked=!this.IsAddNewClicked;
             this.isModalOpen = true;
             this.AminityInsStatus = "School Details Submitted!";
+            this.currentPage=1;
             this.SchoolsForm.reset();
             this.SchoolsForm.markAsPristine();
           }          
@@ -333,6 +334,7 @@ export class SchoolDetailsComponent extends BasePermissionComponent {
             this.IsAddNewClicked=!this.IsAddNewClicked;
             this.isModalOpen = true;
             this.AminityInsStatus = "School Details Updated!";
+            this.currentPage=1;
             this.SchoolsForm.reset();
             this.SchoolsForm.markAsPristine();
           }

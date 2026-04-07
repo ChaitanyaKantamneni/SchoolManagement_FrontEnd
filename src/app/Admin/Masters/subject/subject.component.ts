@@ -102,6 +102,10 @@ export class SubjectComponent extends BasePermissionComponent {
     this.ModuleForm.get('Class')?.setValue(this.selectedCategories);
   }
 
+  closeDropdown(){
+    this.dropdownOpen = false;
+  };
+
   FetchSchoolsList() {
     const requestData = { Flag: '2' };
 
@@ -321,6 +325,7 @@ export class SubjectComponent extends BasePermissionComponent {
             this.IsAddNewClicked=!this.IsAddNewClicked;
             this.isModalOpen = true;
             this.AminityInsStatus = "Subject Details Submitted!";
+            this.currentPage=1;
             this.ModuleForm.reset();
             this.ModuleForm.markAsPristine();
           }
@@ -429,6 +434,7 @@ export class SubjectComponent extends BasePermissionComponent {
             this.IsAddNewClicked=!this.IsAddNewClicked;
             this.isModalOpen = true;
             this.AminityInsStatus = "Subject Details Updated!";
+            this.currentPage=1;
             this.ModuleForm.reset();
             this.ModuleForm.markAsPristine();
           }

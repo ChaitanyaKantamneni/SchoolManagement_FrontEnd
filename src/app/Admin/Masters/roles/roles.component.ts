@@ -267,9 +267,10 @@ FetchSchoolsList() {
     this.fetchNewRoleId();
     this.fetchModulesFromDB();
     this.RoleForm.reset();
-this.RoleForm.get('School').patchValue('0');
+    this.RoleForm.get('School').patchValue('0');
     this.RoleForm.get('AcademicYear').patchValue('0');
     this.PagesList=[];
+    this.permissionsList=[];
     this.updatedPermissionsList=[];
     this.selectedRoleId='';
     this.selectedModuleName='';
@@ -286,15 +287,15 @@ this.RoleForm.get('School').patchValue('0');
       return;
     }     
     const hasPermission = this.permissionsList.some(p =>
-    p.CanView === "1" || p.CanAdd === "1" ||
-    p.CanEdit === "1" || p.CanDelete === "1"
-  );
+      p.CanView === "1" || p.CanAdd === "1" ||
+      p.CanEdit === "1" || p.CanDelete === "1"
+    );
 
-  if (!hasPermission) {
-    this.isModalOpen = true;
-    this.AminityInsStatus = "Please Select Role Permissions!";
-    return;
-  }
+    if (!hasPermission) {
+      this.isModalOpen = true;
+      this.AminityInsStatus = "Please Select Role Permissions!";
+      return;
+    }
   
       const IsActiveStatusNumeric = this.IsActiveStatus ? '1' : '0';
       const data = {
@@ -681,8 +682,6 @@ updateUpdatedPermissionsList(
       canDelete: permission.CanDelete?.toString() || "0",
       flag: permission.flag || "1"
     }));
-
-    console.log("Permission payload being sent:", permissionPayload);
 
     this.apiurl.post("Tbl_RolePermissions_CRUD_Operations", permissionPayload).subscribe({
       next: (response: any) => {

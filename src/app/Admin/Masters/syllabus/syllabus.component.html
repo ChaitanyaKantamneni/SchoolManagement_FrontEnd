@@ -57,9 +57,9 @@
                     </mat-icon>
                   </span>
                 </th>
-                <th *ngIf="isAdmin">School Name</th>
-                <th>Academic Year</th>
                 <th>Available From</th>
+                <th>Academic Year</th>
+                <th *ngIf="isAdmin">School Name</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -69,9 +69,9 @@
                 <td data-label="ID" class="visually-hidden">{{ Syllabus.ID }}</td>
                 <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
                 <td data-label="Name">{{ Syllabus.Name }}</td>
-                <td data-label="SchoolName" *ngIf="isAdmin">{{ Syllabus.SchoolName }}</td>
-                <td data-label="AcademicYearName">{{ Syllabus.AcademicYearName }}</td>
                 <td data-label="AvailableFrom">{{ Syllabus.AvailableFrom }}</td>
+                <td data-label="AcademicYearName">{{ Syllabus.AcademicYearName }}</td>
+                <td data-label="SchoolName" *ngIf="isAdmin">{{ Syllabus.SchoolName }}</td>
                 <td data-label="Status">
                   <span
                     class="status-pill"
@@ -127,30 +127,6 @@
         <form [formGroup]="SyllabusForm">
           <div class="FormInputRowsContainer">
             <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Name <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(SyllabusForm.get('Name' ) ?. touched && SyllabusForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(SyllabusForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Available From <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" />
-                  <div *ngIf="(SyllabusForm.get('AvailableFrom' ) ?. touched && SyllabusForm.get('AvailableFrom' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(SyllabusForm.get('AvailableFrom' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Select Available From.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>                           
-            </div>
-            <div class="InputRow" [class.inputrowdescription]="!isAdmin">
               <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <label class="inputLabel" for="email">School <span class="required">*</span></label>
                 <div class="input-with-error">
@@ -174,7 +150,42 @@
                       <small>Please Select Academic Year.</small>
                   </div>
                 </div>
-              </div> 
+              </div>
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <label class="inputLabel" for="email">Syllabus Name <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Syllabus Name" />
+                  <div *ngIf="(SyllabusForm.get('Name' ) ?. touched && SyllabusForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(SyllabusForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>                          
+            </div>
+            <div class="InputRow" [class.inputrowdescription]="!isAdmin">
+               <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">Syllabus Name <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Syllabus Name" />
+                  <div *ngIf="(SyllabusForm.get('Name' ) ?. touched && SyllabusForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(SyllabusForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Available From <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" />
+                  <div *ngIf="(SyllabusForm.get('AvailableFrom' ) ?. touched && SyllabusForm.get('AvailableFrom' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(SyllabusForm.get('AvailableFrom' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Select Available From.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div class="InputFieldsContainer" *ngIf="!isAdmin">
                 <label class="inputLabel" for="email">Description</label>
                 <div class="input-with-error">
@@ -250,7 +261,7 @@
       </div>
       <div class="modal-body">
         <div class="row mb-2" *ngIf="viewSyllabus?.Name">
-          <div class="col-4">Name</div>
+          <div class="col-4">Syllabus Name</div>
           <div class="col-8 viewfontsize">{{ viewSyllabus?.Name }}</div>
         </div>
 
