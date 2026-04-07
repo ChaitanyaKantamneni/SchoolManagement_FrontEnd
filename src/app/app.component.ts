@@ -12,6 +12,15 @@ import { PwaInstallPromptComponent } from './components/pwa-install-prompt/pwa-i
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
+
   title = 'SchoolManagementApplication';
+  isLoading = false;
+
   constructor(public loader: LoaderService) {}
+
+  ngOnInit() {
+    this.loader.loading$.subscribe(val => {
+      this.isLoading = val;
+    });
+  }
 }
