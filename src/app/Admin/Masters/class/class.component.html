@@ -57,9 +57,9 @@
                     </mat-icon>
                   </span>
                 </th>
-                <th *ngIf="isAdmin">School Name</th>
-                <th>Academic Year</th>
                 <th>Syllabus</th>
+                <th>Academic Year</th>
+                <th *ngIf="isAdmin">School Name</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -69,9 +69,9 @@
                 <td data-label="ID" class="visually-hidden">{{ Class.ID }}</td>
                 <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
                 <td data-label="Name">{{ Class.Name }}</td>
-                <td data-label="SchoolName" *ngIf="isAdmin">{{ Class.SchoolName }}</td>
-                <td data-label="AcademicYearName">{{ Class.AcademicYearName }}</td>
                 <td data-label="SyllabusName ">{{ Class.SyllabusName }}</td>
+                <td data-label="AcademicYearName">{{ Class.AcademicYearName }}</td>
+                <td data-label="SchoolName" *ngIf="isAdmin">{{ Class.SchoolName }}</td>
                 <td data-label="Status">
                   <span
                     class="status-pill"
@@ -127,18 +127,7 @@
       <div class="AddFormConatiner">
         <form [formGroup]="ClassForm">
           <div class="FormInputRowsContainer">
-            <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Name <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
-                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div class="InputRow">              
               <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <label class="inputLabel" for="email">School <span class="required">*</span></label>
                 <div class="input-with-error">
@@ -151,33 +140,19 @@
                   </div>
                 </div>
               </div> 
-              <div class="InputFieldsContainer" *ngIf="!isAdmin">
-                <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="AcademicYear" placeholder="Select Start Date" (change)="onAdminAcademicYearChange($event)" >
-                    <option value="0">-- Select Academic Year --</option>
-                    <option *ngFor="let school of academicYearList" value="{{school.ID}}">{{school.Name}}</option>
-                  </select>
-                  <div *ngIf="ClassForm.get('AcademicYear')?.hasError('min') && (ClassForm.get('AcademicYear')?.touched || ClassForm.get('AcademicYear')?.dirty)" class="text-danger">
-                      <small>Please Select Academic Year.</small>
-                  </div>
-                </div>
-              </div>                          
-            </div>
-            <div class="InputRow" [class.inputrowdescription]="!isAdmin">              
-              <div class="InputFieldsContainer" *ngIf="isAdmin">
-                <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="AcademicYear" placeholder="Select Start Date" (change)="onAdminAcademicYearChange($event)" >
-                    <option value="0">-- Select Academic Year --</option>
-                    <option *ngFor="let school of academicYearList" value="{{school.ID}}">{{school.Name}}</option>
-                  </select>
-                  <div *ngIf="ClassForm.get('AcademicYear')?.hasError('min') && (ClassForm.get('AcademicYear')?.touched || ClassForm.get('AcademicYear')?.dirty)" class="text-danger">
-                      <small>Please Select Academic Year.</small>
-                  </div>
-                </div>
-              </div>
               <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="AcademicYear" placeholder="Select Start Date" (change)="onAdminAcademicYearChange($event)" >
+                    <option value="0">-- Select Academic Year --</option>
+                    <option *ngFor="let school of academicYearList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="ClassForm.get('AcademicYear')?.hasError('min') && (ClassForm.get('AcademicYear')?.touched || ClassForm.get('AcademicYear')?.dirty)" class="text-danger">
+                      <small>Please Select Academic Year.</small>
+                  </div>
+                </div>
+              </div> 
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
                 <label class="inputLabel" for="email">Syllabus <span class="required">*</span></label>
                 <div class="input-with-error">
                   <select class="inputField" type="date" formControlName="Syllabus" placeholder="Select Start Date">
@@ -188,7 +163,32 @@
                     <small>Please Select Syllabus.</small>
                   </div>
                 </div>
-              </div>  
+              </div>                        
+            </div>
+            <div class="InputRow" [class.inputrowdescription]="!isAdmin"> 
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">Syllabus <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="Syllabus" placeholder="Select Start Date">
+                    <option value="0" disabled>Select Syllabus</option>
+                    <option *ngFor="let Syllabus of SyllabusList" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option>
+                  </select>
+                  <div *ngIf="ClassForm.get('Syllabus')?.hasError('min') && (ClassForm.get('Syllabus')?.touched || ClassForm.get('Syllabus')?.dirty)" class="text-danger">
+                    <small>Please Select Syllabus.</small>
+                  </div>
+                </div>
+              </div>             
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Class Name <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="Name" placeholder="Enter Class Name" />
+                  <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Enter Name.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>                
               <div class="InputFieldsContainer" *ngIf="!isAdmin">
                 <label class="inputLabel" for="email">Description</label>
                 <div class="input-with-error">
@@ -264,7 +264,7 @@
       </div>
       <div class="modal-body">
         <div class="row mb-2" *ngIf="viewSyllabus?.Name">
-          <div class="col-4">Name</div>
+          <div class="col-4">Class Name</div>
           <div class="col-8 viewfontsize">{{ viewSyllabus?.Name }}</div>
         </div>
 
@@ -298,9 +298,6 @@
           </div>
         </div>
       </div>
-      <!-- <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="closeModal()">Close</button>
-      </div> -->
     </div>
   </div>
 </div>

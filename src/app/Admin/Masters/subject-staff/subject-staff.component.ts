@@ -75,7 +75,7 @@ export class SubjectStaffComponent extends BasePermissionComponent {
   lastCreatedDate: string | null = null;
   lastID: number | null = null;
 
-  sortColumn: string = 'Name'; 
+  sortColumn: string = 'StaffName'; 
   sortDirection: 'asc' | 'desc' = 'desc';
   editclicked:boolean=false;
   schoolList: any[] = [];
@@ -160,7 +160,7 @@ export class SubjectStaffComponent extends BasePermissionComponent {
     return this.apiurl.post<any>('Tbl_SubjectStaff_CRUD_Operations', {
       Flag: isSearch ? '8' : '6',
       SchoolID:SchoolIdSelected,
-      Name: isSearch ? this.searchQuery.trim() : null
+      StaffName: isSearch ? this.searchQuery.trim() : null
     });
   }
 
@@ -196,7 +196,7 @@ export class SubjectStaffComponent extends BasePermissionComponent {
           ...extra
         };
 
-        if (isSearch) payload.Name = this.searchQuery.trim();
+        if (isSearch) payload.StaffName = this.searchQuery.trim();
 
         this.apiurl.post<any>('Tbl_SubjectStaff_CRUD_Operations', payload).subscribe({
           next: (response: any) => {
@@ -255,7 +255,8 @@ export class SubjectStaffComponent extends BasePermissionComponent {
     this.IsAddNewClicked=!this.IsAddNewClicked;
     this.IsActiveStatus=true;
     this.ViewModuleClicked=false;
-    this.FetchStaffList();
+    this.StaffListNotAssigned=[];
+    // this.FetchStaffList();
   };
 
   SubmitModule(){
@@ -283,8 +284,14 @@ export class SubjectStaffComponent extends BasePermissionComponent {
             this.ModuleForm.markAsPristine();
           }
         },
-        error: (error) => {
-          this.AminityInsStatus = "Error Updating Subject Staff.";
+        error: (err:any) => {
+          if (err.status === 400 && err.error?.message) {
+            this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+          } else if (err.status === 500 && err.error?.Message) {
+            this.AminityInsStatus = err.error.Message;  // Database or internal error
+          } else {
+            this.AminityInsStatus = "Unexpected error occurred.";
+          }
           this.isModalOpen = true;
         },
         complete: () => {
@@ -340,7 +347,7 @@ export class SubjectStaffComponent extends BasePermissionComponent {
           this.AdminselectedAcademivYearID=item.academicYear;
           this.FetchStaffList();
           this.FetchAcademicYearsList();
-          this.FetchStaffListThatAreNotAssigned();
+          // this.FetchStaffListThatAreNotAssigned();
           this.FetchClassListByschoolIDAndAcademicYearID();
           this.IsActiveStatus = isActive;
           this.IsAddNewClicked = true;
@@ -380,8 +387,14 @@ export class SubjectStaffComponent extends BasePermissionComponent {
             this.ModuleForm.markAsPristine();
           }
         },
-        error: (error) => {
-          this.AminityInsStatus = "Error Updating Subject Staff.";
+        error: (err:any) => {
+          if (err.status === 400 && err.error?.message) {
+            this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+          } else if (err.status === 500 && err.error?.Message) {
+            this.AminityInsStatus = err.error.Message;  // Database or internal error
+          } else {
+            this.AminityInsStatus = "Unexpected error occurred.";
+          }
           this.isModalOpen = true;
         },
         complete: () => {

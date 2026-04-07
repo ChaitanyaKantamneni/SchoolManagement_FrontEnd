@@ -317,6 +317,7 @@ export class ClassDivisionComponent extends BasePermissionComponent {
             this.IsAddNewClicked=!this.IsAddNewClicked;
             this.isModalOpen = true;
             this.AminityInsStatus = "Class Division Details Submitted!";
+            this.currentPage = 1;
             this.ClassDivisionForm.reset();
             this.ClassDivisionForm.markAsPristine();
           }
@@ -421,6 +422,7 @@ export class ClassDivisionComponent extends BasePermissionComponent {
             this.IsAddNewClicked=!this.IsAddNewClicked;
             this.isModalOpen = true;
             this.AminityInsStatus = "Class Division Details Updated!";
+            this.currentPage = 1;
             this.ClassDivisionForm.reset();
             this.ClassDivisionForm.markAsPristine();
           }

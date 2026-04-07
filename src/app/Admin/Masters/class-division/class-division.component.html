@@ -24,7 +24,7 @@
             </div>
             <div class="searchreview" *ngIf="isAdmin">
               <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
-                <option value="">-- Select School --</option>
+                <option value="" disabled>-- Select School --</option>
                 <option value="0">All Schools</option>
                 <option *ngFor="let school of schoolList" [value]="school.ID">
                   {{ school.Name }}
@@ -43,8 +43,7 @@
             <thead>
               <tr>
                 <th class="visually-hidden">Academic Year ID</th>
-                <th>SI.No</th>
-                <th>Class</th>
+                <th>SI.No</th>                
                 <th (click)="sort('Name')" class="sortable-column">
                   <span class="column-text">Division</span>
                   <span class="arrows">
@@ -58,9 +57,9 @@
                     </mat-icon>
                   </span>
                 </th>
-                <th *ngIf="isAdmin">School Name</th>
+                <th>Class</th>
                 <th>Academic Year</th>
-                <th>Strength</th>
+                <th *ngIf="isAdmin">School Name</th>                
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -68,12 +67,11 @@
             <tbody>
               <tr *ngFor="let Class of ClassDivisionList,let i = index">
                 <td data-label="ID" class="visually-hidden">{{ Class.ID }}</td>
-                <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-                <td data-label="Class">{{ Class.ClassName }}</td>
+                <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>                
                 <td data-label="Name">{{ Class.Name }}</td>
-                <td data-label="SchoolName" *ngIf="isAdmin">{{ Class.SchoolName }}</td>
+                <td data-label="Class">{{ Class.ClassName }}</td>
                 <td data-label="AcademicYearName">{{ Class.AcademicYearName }}</td>
-                <td data-label="strength">{{ Class.Strength }}</td>
+                <td data-label="SchoolName" *ngIf="isAdmin">{{ Class.SchoolName }}</td>
                 <td data-label="Status">
                   <span
                     class="status-pill"
@@ -181,9 +179,9 @@
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Name <span class="required">*</span></label>
+                <label class="inputLabel" for="email">Division Name <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <input class="inputField" formControlName="Name" placeholder="Enter Division Name" />
                   <div *ngIf="(ClassDivisionForm.get('Name' ) ?. touched && ClassDivisionForm.get('Name' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(ClassDivisionForm.get('Name' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter Name.</small>
@@ -194,7 +192,7 @@
               <div class="InputFieldsContainer" *ngIf="!isAdmin">
                 <label class="inputLabel" for="email">Strength <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Strength" placeholder="Enter Name" (keydown)="allowOnlyNumbers($event)" />
+                  <input class="inputField" formControlName="Strength" placeholder="Enter Name" (keydown)="allowOnlyNumbers($event)" maxlength="3" />
                   <div *ngIf="(ClassDivisionForm.get('Strength' ) ?. touched && ClassDivisionForm.get('Strength' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(ClassDivisionForm.get('Strength' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter Strength.</small>
@@ -210,7 +208,7 @@
               <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <label class="inputLabel" for="email">Strength <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Strength" placeholder="Enter Name" (keydown)="allowOnlyNumbers($event)" />
+                  <input class="inputField" formControlName="Strength" placeholder="Enter Name" (keydown)="allowOnlyNumbers($event)" maxlength="3" />
                   <div *ngIf="(ClassDivisionForm.get('Strength' ) ?. touched && ClassDivisionForm.get('Strength' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(ClassDivisionForm.get('Strength' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter Strength.</small>
@@ -307,11 +305,6 @@
         </button>
       </div>
       <div class="modal-body">
-        <div class="row mb-2" *ngIf="viewSyllabus?.ClassName">
-          <div class="col-4">Class</div>
-          <div class="col-8 viewfontsize">{{ viewSyllabus?.ClassName }}</div>
-        </div>
-        
         <div class="row mb-2" *ngIf="viewSyllabus?.Name">
           <div class="col-4">Division</div>
           <div class="col-8 viewfontsize">{{ viewSyllabus?.Name }}</div>
@@ -320,16 +313,21 @@
         <div class="row mb-2" *ngIf="viewSyllabus?.Strength">
           <div class="col-4">Strength</div>
           <div class="col-8 viewfontsize">{{ viewSyllabus?.Strength }}</div>
-        </div>        
-
-        <div class="row mb-2" *ngIf="viewSyllabus?.SchoolName">
-          <div class="col-4">School Name</div>
-          <div class="col-8 viewfontsize">{{ viewSyllabus?.SchoolName }}</div>
         </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.ClassName">
+          <div class="col-4">Class</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.ClassName }}</div>
+        </div> 
 
         <div class="row mb-2" *ngIf="viewSyllabus?.AcademicYearName">
           <div class="col-4">Academic Year</div>
           <div class="col-8 viewfontsize">{{ viewSyllabus?.AcademicYearName }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewSyllabus?.SchoolName">
+          <div class="col-4">School Name</div>
+          <div class="col-8 viewfontsize">{{ viewSyllabus?.SchoolName }}</div>
         </div>
 
         <div class="row mb-2" *ngIf="viewSyllabus?.Description && viewSyllabus.Description.trim() !== ''">

@@ -56,15 +56,14 @@
                       keyboard_arrow_down
                     </mat-icon>
                   </span>
-                </th>
-                <th *ngIf="isAdmin">School</th>
+                </th>                
                 <th>RegNo</th>
-                <th>Driver</th>
-                
+                <th>Driver</th>                
                 <th>MorningStartTime</th>
                 <th>EveningStartTime</th>
-                <th>Status</th>
-               
+                <th>Academic Year</th>
+                <th *ngIf="isAdmin">School</th>
+                <th>Status</th>               
                 <th>Actions</th>
               </tr>
             </thead>
@@ -72,14 +71,13 @@
               <tr *ngFor="let Syllabus of SyllabusList,let i = index">
                 <td data-label="ID" class="visually-hidden">{{ Syllabus.ID }}</td>
                 <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-                <td data-label="Name">{{ Syllabus.Name }}</td>
-                <td data-label="SchoolName" *ngIf="isAdmin">{{ Syllabus.SchoolName }}</td>
+                <td data-label="Name">{{ Syllabus.Name }}</td>                
                 <td data-label="RegNo">{{ Syllabus.RegNo }}</td>
-                <td data-label="Driver">{{ Syllabus.Driver }}</td>
-                
+                <td data-label="Driver">{{ Syllabus.Driver }}</td>                
                 <td data-label="MorningStartTime">{{ Syllabus.MorningStartTime }}</td>
                 <td data-label="EveningStartTime">{{ Syllabus.EveningStartTime }}</td>
-                
+                <td data-label="AcademicYear">{{ Syllabus.AcademicYearName }}</td>
+                <td data-label="SchoolName" *ngIf="isAdmin">{{ Syllabus.SchoolName }}</td>
                 <td data-label="Status">
                   <span
                     class="status-pill"

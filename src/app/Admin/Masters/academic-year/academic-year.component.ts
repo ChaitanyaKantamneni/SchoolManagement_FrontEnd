@@ -250,6 +250,7 @@ export class AcademicYearComponent extends BasePermissionComponent {
       next: () => {
         this.isModalOpen = true;
         this.AminityInsStatus = "Academic Year Details Submitted!";
+        this.currentPage=1;
         this.AcademicYearForm.reset();
         this.FetchInitialData();
         this.IsAddNewClicked = false;
@@ -343,6 +344,7 @@ export class AcademicYearComponent extends BasePermissionComponent {
       next: () => {
         this.isModalOpen = true;
         this.AminityInsStatus = "Academic Year Details Updated!";
+        this.currentPage=1;
         this.AcademicYearForm.reset();
         this.FetchInitialData();
         this.IsAddNewClicked = false;

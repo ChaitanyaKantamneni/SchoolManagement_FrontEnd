@@ -62,12 +62,15 @@ export class FareComponent extends BasePermissionComponent{
   }
 
   RouteChange(routeId: any) {
+    this.StopList=[];
+    this.SyllabusForm.get('Stop').patchValue('0'); 
     this.FetchStopsListBySelectedRouteList(routeId);
   }
 
 
   FetchRoutesList() {
-    const requestData = { Flag: '3' };
+    const requestData = { Flag: '3',SchoolID:this.AdminselectedSchoolID||'',
+      AcademicYear:this.AdminselectedAcademivYearID||'' };
 
     this.apiurl.post<any>('Tbl_Route_CRUD_Operations', requestData)
       .subscribe(
@@ -91,8 +94,9 @@ export class FareComponent extends BasePermissionComponent{
       );
   };
 
-  FetchStopsListBySelectedRouteList(Route:any ) {
-    const requestData = { Route,Flag: '3' };
+  FetchStopsListBySelectedRouteList(RouteID:any ) {
+    const requestData = { Flag: '3',SchoolID:this.AdminselectedSchoolID||'',
+      AcademicYear:this.AdminselectedAcademivYearID||'',Route:RouteID };
 
     this.apiurl.post<any>('Tbl_Stops_CRUD_Operations', requestData)
       .subscribe(
@@ -117,7 +121,8 @@ export class FareComponent extends BasePermissionComponent{
   };
 
   FetchBusList() {
-    const requestData = { Flag: '3' };
+    const requestData = { Flag: '3',SchoolID:this.AdminselectedSchoolID||'',
+      AcademicYear:this.AdminselectedAcademivYearID||'' };
 
     this.apiurl.post<any>('Tbl_Bus_CRUD_Operations', requestData)
       .subscribe(
@@ -361,7 +366,7 @@ export class FareComponent extends BasePermissionComponent{
     this.FetchBusList();
     this.SyllabusForm.reset();
 
-    this.SyllabusForm.get('School').patchValue(this.getCurrentSchoolId() || '0');
+    this.SyllabusForm.get('School').patchValue('0');
     this.SyllabusForm.get('AcademicYear').patchValue('0');
 
 
@@ -772,6 +777,7 @@ export class FareComponent extends BasePermissionComponent{
     this.FetchSyllabusDetByID(SyllabusID,'view');
     this.isViewModalOpen=true;
   };
+
   onAdminSchoolChange(event: Event) {
     this.academicYearList=[];
     this.SyllabusForm.get('AcademicYear').patchValue('0');
@@ -783,6 +789,22 @@ export class FareComponent extends BasePermissionComponent{
       this.AdminselectedSchoolID = schoolID;
     }   
     this.FetchAcademicYearsList();
+  };
+
+  onAdminAcademicYearChange(event: Event) {
+    this.RouteList=[];
+    this.BusList=[];
+    this.SyllabusForm.get('Bus').patchValue('0');    
+    this.SyllabusForm.get('Route').patchValue('0');
+    const target = event.target as HTMLSelectElement;
+    const AcademicYearID = target.value;
+    if(AcademicYearID=="0"){
+      this.AdminselectedAcademivYearID="";
+    }else{
+      this.AdminselectedAcademivYearID = AcademicYearID;
+    }
+    this.FetchBusList();
+    this.FetchRoutesList();
   };
 
 }

@@ -266,6 +266,7 @@ export class SyllabusComponent extends BasePermissionComponent  {
             this.IsAddNewClicked=!this.IsAddNewClicked;
             this.isModalOpen = true;
             this.AminityInsStatus = "Syllabus Details Submitted!";
+            this.currentPage=1;
             this.SyllabusForm.reset();
             this.SyllabusForm.markAsPristine();
           }
@@ -365,6 +366,7 @@ export class SyllabusComponent extends BasePermissionComponent  {
             this.IsAddNewClicked=!this.IsAddNewClicked;
             this.isModalOpen = true;
             this.AminityInsStatus = "Syllabus Details Updated!";
+            this.currentPage=1;
             this.SyllabusForm.reset();
             this.SyllabusForm.markAsPristine();
           }
