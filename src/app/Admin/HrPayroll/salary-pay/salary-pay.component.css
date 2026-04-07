@@ -1,0 +1,48 @@
+.salary-pay-top-spacer {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.FormInputRowsContainer {
+  flex-direction: column;
+}
+
+.InputRow {
+  width: 100% !important;
+  flex-direction: row !important;
+}
+
+.salary-pay-fetch-row {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0 8px;
+}
+
+.btn-salary-fetch {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%);
+  box-shadow: 0 8px 18px rgba(6, 182, 212, 0.25);
+  cursor: pointer;
+}
+
+.btn-salary-fetch:hover {
+  filter: brightness(1.05);
+}
+
+.salary-pay-summary {
+  margin: 12px 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(203, 213, 225, 0.95);
+  border-radius: 12px;
+  background: rgba(248, 250, 252, 0.9);
+}
+
+.salary-pay-summary p {
+  margin: 4px 0;
+  font-size: 13px;
+}

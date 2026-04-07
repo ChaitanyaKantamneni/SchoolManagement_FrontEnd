@@ -57,7 +57,7 @@
 
             <div class="InputRow">
                <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Session<span class="required">*</span></label>
+                <label class="inputLabel" for="email">Session <span class="required">*</span></label>
                 <div class="input-with-error">
                   <select class="inputField" formControlName="Session" (change)="onSessionChange($event)">
                     <option value="0">-- Select Session--</option>
@@ -107,7 +107,7 @@
                   </div>
                 </div>
                 <div class="InputFieldsContainer">
-                  <label class="inputLabel" for="email">Session<span class="required">*</span></label>
+                  <label class="inputLabel" for="email">Session <span class="required">*</span></label>
                   <div class="input-with-error">
                     <select class="inputField" formControlName="Session" (change)="onSessionChange($event)">
                       <option value="0">-- Select Session--</option>
@@ -140,7 +140,7 @@
             </div>
           </ng-template>
           <div class="ActionButtons">
-            <button type="button" class="btn" (click)="SyllabusForm.markAllAsTouched(); onSubmit()">Next</button>
+            <button type="button" (click)="SyllabusForm.markAllAsTouched(); onSubmit()">Next</button>
           </div>
         </form>
       </div>

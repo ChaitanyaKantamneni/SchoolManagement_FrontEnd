@@ -5,6 +5,7 @@ import { NavigationEnd, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { SideBarServiceService } from '../../Services/side-bar-service.service';
 import { MenuServiceService } from '../../Services/menu-service.service';
+import { FULL_ADMIN_MENU } from '../../constants/admin-full-menu';
 import { Subscription, filter } from 'rxjs';
 
 @Component({
@@ -140,9 +141,17 @@ export class DashboardTopNavComponent implements OnInit, OnDestroy {
 
   onSearchChange(value: string) {
     this.searchTerm = value;
+    const hasQuery = this.searchTerm.trim().length >= 1;
+    this.showSearchResults = hasQuery;
 
     if (this.searchTimer) {
       clearTimeout(this.searchTimer);
+    }
+
+    if (!hasQuery) {
+      this.searchResults = [];
+      this.isSearching = false;
+      return;
     }
 
     this.isSearching = true;
@@ -193,7 +202,11 @@ export class DashboardTopNavComponent implements OnInit, OnDestroy {
 
   private refreshSearchResults() {
     const query = this.searchTerm.trim().toLowerCase();
-    const menu = this.menuService.getMenu() || [];
+    const normalizedQuery = this.normalizeForSearch(query);
+    const isSuperAdmin = this.isSuperAdminRole();
+    const apiMenu = this.menuService.getMenu() || [];
+    // Super Admin sidebar uses FULL_ADMIN_MENU, not the API list — search must match that.
+    const menu = isSuperAdmin ? FULL_ADMIN_MENU : apiMenu;
 
     if (!query) {
       this.searchResults = [];
@@ -213,22 +226,29 @@ export class DashboardTopNavComponent implements OnInit, OnDestroy {
     }> = [];
 
     for (const module of menu) {
-      const moduleMatches = module.moduleName.toLowerCase().includes(query);
+      const moduleName = module.moduleName || '';
+      const normalizedModuleName = this.normalizeForSearch(moduleName);
+      const moduleMatches =
+        moduleName.toLowerCase().includes(query) ||
+        normalizedModuleName.includes(normalizedQuery);
 
       for (const page of module.pages || []) {
-        if (page.canView !== '1') {
+        if (!isSuperAdmin && page.canView !== '1') {
           continue;
         }
 
+        const pageName = page.pageName || '';
+        const normalizedPageName = this.normalizeForSearch(pageName);
         const pageMatches =
-          page.pageName.toLowerCase().includes(query) ||
+          pageName.toLowerCase().includes(query) ||
+          normalizedPageName.includes(normalizedQuery) ||
           moduleMatches;
 
         if (pageMatches) {
-          const route = `/${currentRoot}/${this.formatRoute(page.pageName, currentRoot)}`;
+          const route = `/${currentRoot}/${this.formatRoute(pageName, currentRoot)}`;
           results.push({
-            moduleName: module.moduleName,
-            pageName: page.pageName,
+            moduleName,
+            pageName,
             route
           });
         }
@@ -332,5 +352,16 @@ export class DashboardTopNavComponent implements OnInit, OnDestroy {
       .split(' ')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
+  }
+
+  private normalizeForSearch(value: string): string {
+    return (value || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '');
+  }
+
+  private isSuperAdminRole(): boolean {
+    const id = `${sessionStorage.getItem('RollID') ?? ''}`.trim();
+    return id === '1';
   }
 }

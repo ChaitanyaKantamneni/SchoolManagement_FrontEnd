@@ -24,13 +24,11 @@
   min-width: 0;
 }
 
-/* ExamType – the lonely one */
+/* Keep single-field rows same width as normal half-row fields */
 .InputRow:last-child .InputFieldsContainer {
-  flex-grow: 0;
-  flex-shrink: 1;
-  flex-basis: auto;
-  max-width: 523px;           /* ← tune this number */
-  margin-right: auto;         /* optional: align left if you want */
+  flex: 0 0 calc(50% - 8px);
+  max-width: calc(50% - 8px);
+  margin-right: auto;
 }
 
 /* make sure select follows container width */
@@ -86,4 +84,58 @@
   padding: 0 15px;
   z-index: 1;
   font-size: 16px;
+}
+
+/* Keep table/pagination compact with no trailing blank space */
+.compact-table-section {
+  padding-bottom: 8px;
+}
+
+.compact-table-section .reviewstable {
+  overflow-y: visible !important;
+}
+
+.compact-table-section .reviewstable .table {
+  margin-bottom: 0 !important;
+}
+
+.compact-table-section .pagination-controls {
+  margin: 12px 0 0 !important;
+}
+
+/* Exam Results page-specific layout tightening */
+:host {
+  display: block;
+}
+
+.MainContentDiv {
+  justify-content: flex-start !important;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.MainContentDiv .compact-table-section {
+  margin-bottom: 0 !important;
+  padding-bottom: 6px !important;
+}
+
+.MainContentDiv .compact-table-section > div {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.MainContentDiv .compact-table-section .reviewstable {
+  max-height: none !important;
+  overflow-y: visible !important;
+}
+
+.MainContentDiv .compact-table-section .pagination-controls {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.MainContentDiv > .w-100,
+.MainContentDiv > .compact-table-section {
+  width: 100%;
+  margin-bottom: 0 !important;
 }

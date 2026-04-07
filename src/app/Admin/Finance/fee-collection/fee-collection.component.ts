@@ -1546,34 +1546,186 @@ constructor(
     }
   }
 
+  // printReceipt() {
+  //   const content = document.getElementById('receiptSection')?.innerHTML;
+
+  // const win = window.open('', '', 'width=900,height=700');
+
+  // win?.document.write(`
+  //   <html>
+  //     <head>
+  //       <title>Fee Receipt</title>
+  //       <style>
+  //         body { font-family: Arial; padding: 20px; }
+  //         .receipt-box { border: 2px solid #000; padding: 20px; }
+  //         .receipt-top { display: flex; justify-content: space-between; }
+  //         .receipt-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  //         .receipt-table th, .receipt-table td {
+  //           border: 1px solid #000;
+  //           padding: 8px;
+  //         }
+  //         .receipt-table th { background-color: #f2f2f2; }
+  //         .section-title { margin-top: 15px; font-weight: bold; }
+  //       </style>
+  //     </head>
+  //     <body onload="window.print(); window.close();">
+  //       ${content}
+  //     </body>
+  //   </html>
+  // `);
+
+  // win?.document.close();
+  // }
+
   printReceipt() {
     const content = document.getElementById('receiptSection')?.innerHTML;
+  
+    const win = window.open('', '', 'width=900,height=700');
+  
+    win?.document.write(`
+      <html>
+        <head>
+          <title>Fee Receipt</title>
+          <style>
+            @page {
+              size: A4;
+              margin: 12mm;
+            }
 
-  const win = window.open('', '', 'width=900,height=700');
+            * {
+              box-sizing: border-box;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
 
-  win?.document.write(`
-    <html>
-      <head>
-        <title>Fee Receipt</title>
-        <style>
-          body { font-family: Arial; padding: 20px; }
-          .receipt-box { border: 2px solid #000; padding: 20px; }
-          .receipt-top { display: flex; justify-content: space-between; }
-          .receipt-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-          .receipt-table th, .receipt-table td {
-            border: 1px solid #000;
-            padding: 8px;
-          }
-          .receipt-table th { background-color: #f2f2f2; }
-          .section-title { margin-top: 15px; font-weight: bold; }
-        </style>
-      </head>
-      <body onload="window.print(); window.close();">
-        ${content}
-      </body>
-    </html>
-  `);
+            body {
+              margin: 0;
+              padding: 0;
+              font-family: "Segoe UI", Arial, sans-serif;
+              color: #111;
+              background: #fff;
+              font-size: 11pt;
+              line-height: 1.35;
+            }
 
-  win?.document.close();
+            .receipt-box {
+              border: 1.5px solid #111;
+              border-radius: 8px;
+              padding: 14px;
+              max-width: 100%;
+              page-break-inside: avoid;
+            }
+
+            .header {
+              position: relative;
+              min-height: 78px;
+              margin-bottom: 8px;
+              padding-bottom: 8px;
+              border-bottom: 1.5px solid #111;
+            }
+
+            .logo {
+              position: absolute;
+              left: 0;
+              top: 0;
+            }
+
+            .logo img {
+              height: 62px;
+              width: auto;
+              object-fit: contain;
+            }
+
+            .header-center {
+              text-align: center;
+              padding: 0 72px;
+            }
+
+            .header-center h2 {
+              margin: 0;
+              font-size: 18pt;
+              font-weight: 700;
+              letter-spacing: 0.2px;
+              color: #111;
+            }
+
+            .header-center h3 {
+              margin: 3px 0 0;
+              font-size: 11pt;
+              font-weight: 700;
+              letter-spacing: 1.4px;
+              color: #111;
+            }
+
+            .receipt-top {
+              display: flex;
+              justify-content: space-between;
+              gap: 10px;
+              margin: 6px 0 4px;
+              font-size: 10.5pt;
+              font-weight: 600;
+            }
+
+            hr {
+              border: 0;
+              border-top: 1px solid #b5b5b5;
+              margin: 10px 0;
+            }
+
+            .section-title {
+              margin: 0 0 6px;
+              font-size: 11pt;
+              font-weight: 700;
+              text-transform: uppercase;
+              letter-spacing: 0.7px;
+              color: #111;
+            }
+
+            .receipt-left-line {
+              margin: 3px 0;
+              font-size: 10.5pt;
+              word-break: break-word;
+            }
+
+            .receipt-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 6px;
+              page-break-inside: avoid;
+            }
+
+            .receipt-table th,
+            .receipt-table td {
+              border: 1px solid #111;
+              padding: 7px 8px;
+              font-size: 10pt;
+              vertical-align: middle;
+            }
+
+            .receipt-table th {
+              font-weight: 700;
+              text-align: left;
+              background: #f2f2f2;
+            }
+
+            .receipt-footer {
+              page-break-inside: avoid;
+            }
+
+            .note {
+              margin: 4px 0 0;
+              font-size: 9.5pt;
+              color: #222;
+            }
+          </style>
+        </head>
+  
+        <body onload="window.print(); window.close();">
+          ${content}
+        </body>
+      </html>
+    `);
+  
+    win?.document.close();
   }
 }

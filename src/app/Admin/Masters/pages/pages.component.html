@@ -163,8 +163,8 @@
             </div>
           </div>
           <div class="ActionButtons">
-            <button class="btn" *ngIf="ViewPageClicked && canEdit()" (click)="UpdatePage()">Update</button>
-            <button class="btn" *ngIf="!ViewPageClicked && canAdd()" (click)="SubmitPage()">Submit</button>
+            <button type="button" *ngIf="ViewPageClicked && canEdit()" (click)="UpdatePage()">Update</button>
+            <button type="button" *ngIf="!ViewPageClicked && canAdd()" (click)="SubmitPage()">Submit</button>
           </div>
         </form>
       </div>

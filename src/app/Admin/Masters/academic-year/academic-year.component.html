@@ -211,8 +211,8 @@
             </div>
           </div>
           <div class="ActionButtons">
-            <button class="btn" *ngIf="ViewAcademicYearClicked && canEdit()" (click)="UpdateAcademicYear()">Update</button>
-            <button class="btn" *ngIf="!ViewAcademicYearClicked && canAdd()" (click)="SubmitAcademicYear()">Submit</button>
+            <button type="button" *ngIf="ViewAcademicYearClicked && canEdit()" (click)="UpdateAcademicYear()">Update</button>
+            <button type="button" *ngIf="!ViewAcademicYearClicked && canAdd()" (click)="SubmitAcademicYear()">Submit</button>
           </div>
         </form>
       </div>

@@ -95,7 +95,7 @@
           <p>Please login using your credentials to continue.</p>
         </div>
 
-        <form [formGroup]="LoginForms" autocomplete="off">
+        <form [formGroup]="LoginForms" autocomplete="off" *ngIf="!isOtpStep">
 
           <!-- Email -->
           <div class="form-group" [class.has-error]="LoginForms.get('email')?.touched && LoginForms.get('email')?.invalid">
@@ -166,8 +166,8 @@
           <!-- Actions -->
           <div class="form-actions">
             <!-- <button type="button" class="btn-forgot">Forgot Password?</button> -->
-            <button type="button" class="btn-login" (click)="OnSubmitSignIn()">
-              <span>Sign In</span>
+            <button type="button" class="btn-login" (click)="OnSubmitSignIn()" [disabled]="isLoginLoading || isSendingOtp">
+              <span>{{ (isLoginLoading || isSendingOtp) ? 'Please wait...' : 'Sign In' }}</span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
               </svg>
@@ -175,6 +175,43 @@
           </div>
 
         </form>
+
+        <form [formGroup]="LoginForms" autocomplete="off" *ngIf="isOtpStep">
+          <div class="otp-info">
+            OTP sent to <strong>{{ getMaskedEmail() }}</strong>
+          </div>
+          <div class="auth-message dev-otp-hint" *ngIf="loginOtpDevHint">{{ loginOtpDevHint }}</div>
+
+          <div class="form-group" [class.has-error]="LoginForms.get('otp')?.touched && LoginForms.get('otp')?.invalid">
+            <label for="otp">
+              <svg class="lbl-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              One-Time Password
+            </label>
+            <div class="input-wrap">
+              <input id="otp" type="text" formControlName="otp" maxlength="6" placeholder="Enter 6-digit OTP" />
+              <span class="input-focus-bar"></span>
+            </div>
+            <small class="error-msg" *ngIf="LoginForms.get('otp')?.touched && LoginForms.get('otp')?.invalid">
+              Enter a valid 6-digit OTP.
+            </small>
+          </div>
+
+          <div class="otp-actions">
+            <button type="button" class="btn-login" (click)="verifyOtpAndLogin()" [disabled]="isVerifyingOtp">
+              <span>{{ isVerifyingOtp ? 'Verifying...' : 'Verify OTP' }}</span>
+            </button>
+            <button type="button" class="btn-secondary" (click)="resendOtp()" [disabled]="resendCooldown > 0 || isSendingOtp">
+              <span *ngIf="resendCooldown > 0">Resend in {{ resendCooldown }}s</span>
+              <span *ngIf="resendCooldown === 0">{{ isSendingOtp ? 'Sending...' : 'Resend OTP' }}</span>
+            </button>
+            <button type="button" class="btn-link" (click)="backToLogin()">Back to Login</button>
+          </div>
+        </form>
+
+        <div class="auth-message error-msg" *ngIf="authMessage && authError">{{ authMessage }}</div>
+        <div class="auth-message success-msg" *ngIf="authMessage && !authError">{{ authMessage }}</div>
 
         <!-- Add-ons -->
         <!-- <div class="form-addons">

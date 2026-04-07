@@ -394,6 +394,73 @@
 }
 .btn-login:active { transform: translateY(0); }
 .btn-login svg { width: 16px; height: 16px; }
+.btn-login:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary {
+  background: #eef4ff;
+  color: #0d47a1;
+  border: 1px solid #c8dafd;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-secondary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn-link {
+  border: none;
+  background: transparent;
+  color: #1565c0;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.otp-info {
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f4f8ff;
+  border: 1px solid #dbe8ff;
+  font-size: 12px;
+  color: #2f3d56;
+}
+
+.otp-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.auth-message {
+  margin-top: 12px;
+}
+
+.dev-otp-hint {
+  font-size: 12px;
+  color: #5c6bc0;
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: #eef2ff;
+  border-radius: 8px;
+}
+
+.success-msg {
+  display: block;
+  font-size: 12px;
+  color: #1b8a3c;
+  margin-top: 4px;
+}
 
 /* Add-ons */
 .form-addons {

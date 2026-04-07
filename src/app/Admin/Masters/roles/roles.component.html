@@ -278,8 +278,8 @@
           </div>
           <!-- Action Buttons -->
           <div class="ActionButtons">
-            <button class="btn" *ngIf="ViewRoleClicked" (click)="UpdateRole()">Update</button>
-            <button class="btn" *ngIf="!ViewRoleClicked" (click)="SubmitRole()">Submit</button>
+            <button type="button" *ngIf="ViewRoleClicked" (click)="UpdateRole()">Update</button>
+            <button type="button" *ngIf="!ViewRoleClicked" (click)="SubmitRole()">Submit</button>
           </div>
         </form>
       </div>
