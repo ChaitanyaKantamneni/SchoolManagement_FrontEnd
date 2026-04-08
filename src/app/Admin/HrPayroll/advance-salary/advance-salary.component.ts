@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { DashboardTopNavComponent } from '../../../SignInAndSignUp/dashboard-top-nav/dashboard-top-nav.component';
 import { ApiServiceService } from '../../../Services/api-service.service';
+import { LoaderService } from '../../../Services/loader.service';
 
 @Component({
   selector: 'app-advance-salary',
@@ -13,7 +14,7 @@ import { ApiServiceService } from '../../../Services/api-service.service';
   styleUrl: './advance-salary.component.css'
 })
 export class AdvanceSalaryComponent implements OnInit {
-  constructor(private apiurl: ApiServiceService) {}
+  constructor(private apiurl: ApiServiceService, public loader: LoaderService) {}
 
   IsAddNewClicked = false;
   isViewModalOpen = false;
@@ -68,17 +69,23 @@ export class AdvanceSalaryComponent implements OnInit {
   }
 
   FetchSchoolsList() {
+    this.loader.show();
     this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', { Flag: '2' }).subscribe({
       next: (response: any) => {
         this.schoolList = Array.isArray(response?.data)
           ? response.data.map((item: any) => ({ ID: item.id, Name: item.name }))
           : [];
+        this.loader.hide();
       },
-      error: () => (this.schoolList = [])
+      error: () => {
+        this.schoolList = [];
+        this.loader.hide();
+      }
     });
   }
 
   FetchAcademicYearsList() {
+    this.loader.show();
     this.apiurl
       .post<any>('Tbl_AcademicYear_CRUD_Operations', { SchoolID: this.selectedSchoolID || '', Flag: '2' })
       .subscribe({
@@ -86,8 +93,12 @@ export class AdvanceSalaryComponent implements OnInit {
           this.academicYearList = Array.isArray(response?.data)
             ? response.data.map((item: any) => ({ ID: item.id, Name: item.name }))
             : [];
+          this.loader.hide();
         },
-        error: () => (this.academicYearList = [])
+        error: () => {
+          this.academicYearList = [];
+          this.loader.hide();
+        }
       });
   }
 

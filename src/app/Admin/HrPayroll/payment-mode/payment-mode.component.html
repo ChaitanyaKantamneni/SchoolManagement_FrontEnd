@@ -17,8 +17,22 @@
         <div class="ComponentRecordsTop">
           <div class="filterOptions">
             <div class="searchreview input-container">
-              <input type="text" class="form-control floating-input" [(ngModel)]="searchQuery" placeholder="Search..." />
+              <input
+                type="text"
+                class="form-control floating-input"
+                [(ngModel)]="searchQuery"
+                (ngModelChange)="onSearchChange()"
+                placeholder="Search..."
+              />
               <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
+            </div>
+            <div class="searchreview school-filter" *ngIf="isAdmin">
+              <select [(ngModel)]="selectedSchoolID" (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
+                <option value="">All Schools</option>
+                <option *ngFor="let school of schoolList" [value]="school.ID">
+                  {{ school.Name }}
+                </option>
+              </select>
             </div>
           </div>
         </div>
@@ -29,18 +43,24 @@
                 <th>SI.No</th>
                 <th>Payment Mode</th>
                 <th>Account</th>
-                <th>Description</th>
+                <th>Academic Year</th>
+                <th>School</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let item of filteredModes; let i = index">
-                <td>{{ i + 1 }}</td>
-                <td>{{ item.paymentModeName }}</td>
-                <td>{{ item.accountType }}</td>
-                <td>{{ item.description || '-' }}</td>
-                <td>{{ item.isEnabled ? 'Active' : 'Inactive' }}</td>
+                <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td>{{ item.paymentMode }}</td>
+                <td>{{ item.account }}</td>
+                <td>{{ item.academicYearName || '-' }}</td>
+                <td>{{ item.schoolName || '-' }}</td>
+                <td data-label="Status">
+                  <span class="badge" [ngClass]="item.isEnabled ? 'badge-success' : 'badge-danger'">
+                    {{ item.isEnabled ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
                 <td data-label="Actions">
                   <div class="d-flex justify-content-center align-items-center h-100">
                     <button type="button" class="btn checkbtn edit" data-tooltip="Edit" (click)="editReview(item, i)">
@@ -60,6 +80,19 @@
             </div>
             <p>No data found.</p>
           </div>
+          <div *ngIf="modeCount > pageSize" class="pagination-controls">
+            <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
+            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
+            <button
+              *ngFor="let page of getVisiblePageNumbers()"
+              class="page-btn"
+              [ngClass]="{'active': page === currentPage}"
+              (click)="goToPage(page)">
+              {{ page }}
+            </button>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
+          </div>
         </div>
       </div>
     </div>
@@ -78,18 +111,24 @@
               <label class="inputLabel">School <span class="required">*</span></label>
               <div class="input-with-error">
                 <select class="inputField" [(ngModel)]="form.schoolID" (change)="onAdminSchoolChange($event)">
-                  <option value="">-- Select School --</option>
+                  <option value="0">-- Select School --</option>
                   <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
                 </select>
+                <div *ngIf="formSubmitAttempted && (!form.schoolID || form.schoolID === '0')" class="text-danger">
+                  <small>Please Select School.</small>
+                </div>
               </div>
             </div>
             <div class="InputFieldsContainer">
               <label class="inputLabel">Academic Year <span class="required">*</span></label>
               <div class="input-with-error">
                 <select class="inputField" [(ngModel)]="form.academicYearID">
-                  <option value="">-- Select Academic Year --</option>
+                  <option value="0">-- Select Academic Year --</option>
                   <option *ngFor="let year of academicYearList" [value]="year.ID">{{ year.Name }}</option>
                 </select>
+                <div *ngIf="formSubmitAttempted && (!form.academicYearID || form.academicYearID === '0')" class="text-danger">
+                  <small>Please Select Academic Year.</small>
+                </div>
               </div>
             </div>
           </div>
@@ -98,15 +137,21 @@
               <label class="inputLabel">Payment Mode <span class="required">*</span></label>
               <div class="input-with-error">
                 <input class="inputField" type="text" [(ngModel)]="form.paymentModeName" placeholder="Payment Mode" />
+                <div *ngIf="formSubmitAttempted && !form.paymentModeName?.trim()" class="text-danger">
+                  <small>Please Enter Payment Mode.</small>
+                </div>
               </div>
             </div>
             <div class="InputFieldsContainer">
-              <label class="inputLabel">Account</label>
+              <label class="inputLabel">Account <span class="required">*</span></label>
               <div class="input-with-error">
                 <select class="inputField" [(ngModel)]="form.accountType">
                   <option value="">Select</option>
                   <option *ngFor="let acc of accountTypes" [value]="acc">{{ acc }}</option>
                 </select>
+                <div *ngIf="formSubmitAttempted && !form.accountType?.trim()" class="text-danger">
+                  <small>Please Select Account.</small>
+                </div>
               </div>
             </div>
           </div>
@@ -147,10 +192,30 @@
         <button type="button" class="close" (click)="closeViewModal()"><span>&times;</span></button>
       </div>
       <div class="modal-body" *ngIf="viewModeItem">
+        <div class="row mb-2"><div class="col-5">School</div><div class="col-7">{{ viewModeItem.schoolName || '-' }}</div></div>
+        <div class="row mb-2"><div class="col-5">Academic Year</div><div class="col-7">{{ viewModeItem.academicYearName || '-' }}</div></div>
         <div class="row mb-2"><div class="col-5">Payment Mode</div><div class="col-7">{{ viewModeItem.paymentModeName }}</div></div>
         <div class="row mb-2"><div class="col-5">Account</div><div class="col-7">{{ viewModeItem.accountType }}</div></div>
         <div class="row mb-2"><div class="col-5">Description</div><div class="col-7">{{ viewModeItem.description || '-' }}</div></div>
         <div class="row mb-2"><div class="col-5">Status</div><div class="col-7">{{ viewModeItem.isEnabled ? 'Active' : 'Inactive' }}</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isModalOpen}" [style.display]="isModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Application Status</h5>
+        <button type="button" class="close" aria-label="Close" (click)="closeModal('status')">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>{{ AminityInsStatus }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="handleOk()">OK</button>
       </div>
     </div>
   </div>
