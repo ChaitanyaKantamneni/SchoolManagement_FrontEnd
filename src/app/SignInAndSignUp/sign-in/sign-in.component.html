@@ -95,120 +95,124 @@
           <p>Please login using your credentials to continue.</p>
         </div>
 
-        <form [formGroup]="LoginForms" autocomplete="off" *ngIf="!isOtpStep">
-
-          <!-- Email -->
-          <div class="form-group" [class.has-error]="LoginForms.get('email')?.touched && LoginForms.get('email')?.invalid">
-            <label for="email">
-              <svg class="lbl-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
-              </svg>
-              Email Address
-            </label>
-            <div class="input-wrap">
-              <input id="email" type="email" formControlName="email" placeholder="Enter your email address" autocomplete="username" />
-              <span class="input-focus-bar"></span>
-            </div>
-            <small class="error-msg" *ngIf="LoginForms.get('email')?.touched && LoginForms.get('email')?.hasError('required')">
-              Email is required.
-            </small>
-          </div>
-
-          <!-- Password -->
-          <div class="form-group" [class.has-error]="LoginForms.get('password')?.touched && LoginForms.get('password')?.invalid">
-            <label for="password">
-              <svg class="lbl-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-              </svg>
-              Password
-            </label>
-            <div class="input-wrap password-wrap">
-              <input id="password" [type]="IsPasswordVisible ? 'text' : 'password'" formControlName="password" placeholder="Enter your password" autocomplete="current-password" />
-              <button type="button" class="toggle-pw" (click)="togglePasswordVisibility()" tabindex="-1" [attr.aria-label]="IsPasswordVisible ? 'Hide password' : 'Show password'">
-                <!-- Eye open -->
-                <svg *ngIf="!IsPasswordVisible" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+        <!-- <form [formGroup]="LoginForms" autocomplete="off"> -->
+          <div [formGroup]="LoginForms" autocomplete="off" *ngIf="!isOtpStep">
+            <!-- Email -->
+            <div class="form-group" [class.has-error]="LoginForms.get('email')?.touched && LoginForms.get('email')?.invalid">
+              <label for="email">
+                <svg class="lbl-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
                 </svg>
-                <!-- Eye off -->
-                <svg *ngIf="IsPasswordVisible" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
-                </svg>
-              </button>
-              <span class="input-focus-bar"></span>
-            </div>
-            <small class="error-msg" *ngIf="LoginForms.get('password')?.touched && LoginForms.get('password')?.hasError('required')">
-              Password is required.
-            </small>
-          </div>
-
-          <!-- Captcha -->
-          <div class="form-group captcha-group">
-            <label>
-              <svg class="lbl-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-              </svg>
-              Captcha Verification
-            </label>
-            <div class="captcha-row">
-              <canvas id="captchaCanvas" class="captcha-canvas"></canvas>
-              <button type="button" class="captcha-refresh" (click)="generateCaptcha()" title="Refresh Captcha">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-                </svg>
-              </button>
-              <div class="input-wrap captcha-input-wrap">
-                <input type="text" formControlName="captcha" placeholder="Type captcha here" />
+                Email Address
+              </label>
+              <div class="input-wrap">
+                <input id="email" type="email" formControlName="email" placeholder="Enter your email address" autocomplete="username" />
                 <span class="input-focus-bar"></span>
               </div>
+              <small class="error-msg" *ngIf="LoginForms.get('email')?.touched && LoginForms.get('email')?.hasError('required')">
+                Email is required.
+              </small>
+            </div>
+
+            <!-- Password -->
+            <div class="form-group" [class.has-error]="LoginForms.get('password')?.touched && LoginForms.get('password')?.invalid">
+              <label for="password">
+                <svg class="lbl-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                Password
+              </label>
+              <div class="input-wrap password-wrap">
+                <input id="password" [type]="IsPasswordVisible ? 'text' : 'password'" formControlName="password" placeholder="Enter your password" autocomplete="current-password" />
+                <button type="button" class="toggle-pw" (click)="togglePasswordVisibility()" tabindex="-1" [attr.aria-label]="IsPasswordVisible ? 'Hide password' : 'Show password'">
+                  <!-- Eye open -->
+                  <svg *ngIf="!IsPasswordVisible" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                  </svg>
+                  <!-- Eye off -->
+                  <svg *ngIf="IsPasswordVisible" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
+                  </svg>
+                </button>
+                <span class="input-focus-bar"></span>
+              </div>
+              <small class="error-msg" *ngIf="LoginForms.get('password')?.touched && LoginForms.get('password')?.hasError('required')">
+                Password is required.
+              </small>
+            </div>
+
+            <!-- Captcha -->
+            <div class="form-group captcha-group">
+              <label>
+                <svg class="lbl-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                Captcha Verification
+              </label>
+              <div class="captcha-row">
+                <canvas id="captchaCanvas" class="captcha-canvas"></canvas>
+                <button type="button" class="captcha-refresh" (click)="generateCaptcha()" title="Refresh Captcha">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                  </svg>
+                </button>
+                <div class="input-wrap captcha-input-wrap">
+                  <input type="text" formControlName="captcha" placeholder="Type captcha here" />
+                  <span class="input-focus-bar"></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="form-actions">
+              <!-- <button type="button" class="btn-forgot">Forgot Password?</button> -->
+              <button type="button" class="btn-login" (click)="OnSubmitSignIn()" [disabled]="isLoginLoading || isSendingOtp">
+                <span>{{ (isLoginLoading || isSendingOtp) ? 'Please wait...' : 'Sign In' }}</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                </svg>
+              </button>
             </div>
           </div>
-
-          <!-- Actions -->
-          <div class="form-actions">
-            <!-- <button type="button" class="btn-forgot">Forgot Password?</button> -->
-            <button type="button" class="btn-login" (click)="OnSubmitSignIn()" [disabled]="isLoginLoading || isSendingOtp">
-              <span>{{ (isLoginLoading || isSendingOtp) ? 'Please wait...' : 'Sign In' }}</span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-              </svg>
-            </button>
-          </div>
-
-        </form>
-
-        <form [formGroup]="LoginForms" autocomplete="off" *ngIf="isOtpStep">
-          <div class="otp-info">
-            OTP sent to <strong>{{ getMaskedEmail() }}</strong>
-          </div>
-          <div class="auth-message dev-otp-hint" *ngIf="loginOtpDevHint">{{ loginOtpDevHint }}</div>
-
-          <div class="form-group" [class.has-error]="LoginForms.get('otp')?.touched && LoginForms.get('otp')?.invalid">
-            <label for="otp">
-              <svg class="lbl-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-              </svg>
-              One-Time Password
-            </label>
-            <div class="input-wrap">
-              <input id="otp" type="text" formControlName="otp" maxlength="6" placeholder="Enter 6-digit OTP" />
-              <span class="input-focus-bar"></span>
+          <div [formGroup]="LoginForms" autocomplete="off" *ngIf="isOtpStep">
+            <div class="otp-info">
+              OTP sent to <strong>{{ getMaskedEmail() }}</strong>
             </div>
-            <small class="error-msg" *ngIf="LoginForms.get('otp')?.touched && LoginForms.get('otp')?.invalid">
-              Enter a valid 6-digit OTP.
-            </small>
-          </div>
+            <!-- <div class="auth-message dev-otp-hint" *ngIf="loginOtpDevHint">{{ loginOtpDevHint }}</div> -->
 
-          <div class="otp-actions">
-            <button type="button" class="btn-login" (click)="verifyOtpAndLogin()" [disabled]="isVerifyingOtp">
-              <span>{{ isVerifyingOtp ? 'Verifying...' : 'Verify OTP' }}</span>
-            </button>
-            <button type="button" class="btn-secondary" (click)="resendOtp()" [disabled]="resendCooldown > 0 || isSendingOtp">
-              <span *ngIf="resendCooldown > 0">Resend in {{ resendCooldown }}s</span>
-              <span *ngIf="resendCooldown === 0">{{ isSendingOtp ? 'Sending...' : 'Resend OTP' }}</span>
-            </button>
-            <button type="button" class="btn-link" (click)="backToLogin()">Back to Login</button>
+            <div class="form-group" [class.has-error]="LoginForms.get('otp')?.touched && LoginForms.get('otp')?.invalid">
+              <label for="otp">
+                <svg class="lbl-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                One-Time Password
+              </label>
+              <div class="input-wrap">
+                <input id="otp" type="text" formControlName="otp" maxlength="6" placeholder="Enter 6-digit OTP" />
+                <span class="input-focus-bar"></span>
+              </div>
+              <small class="error-msg" *ngIf="LoginForms.get('otp')?.touched && LoginForms.get('otp')?.invalid">
+                Enter a valid 6-digit OTP.
+              </small>
+            </div>
+
+            <div class="otp-actions">
+              <button type="button" class="btn-login" (click)="verifyOtpAndLogin()" [disabled]="isVerifyingOtp">
+                <span>{{ isVerifyingOtp ? 'Verifying...' : 'Verify OTP' }}</span>
+              </button>
+              <button type="button" class="btn-secondary" (click)="resendOtp()" [disabled]="resendCooldown > 0 || isSendingOtp">
+                <span *ngIf="resendCooldown > 0">Resend in {{ resendCooldown }}s</span>
+                <span *ngIf="resendCooldown === 0">{{ isSendingOtp ? 'Sending...' : 'Resend OTP' }}</span>
+              </button>
+              <button type="button" class="btn-link" (click)="backToLogin()">Back to Login</button>
+            </div>
+            <!-- <div class="otp-actions">
+              <button type="button" (click)="verifyOtpAndLogin()">Verify OTP</button>
+              <button type="button" (click)="resendOtp()">Resend OTP</button>
+              <button type="button" (click)="backToLogin()">Back</button>
+            </div> -->
           </div>
-        </form>
+        <!-- </form> -->
 
         <div class="auth-message error-msg" *ngIf="authMessage && authError">{{ authMessage }}</div>
         <div class="auth-message success-msg" *ngIf="authMessage && !authError">{{ authMessage }}</div>
