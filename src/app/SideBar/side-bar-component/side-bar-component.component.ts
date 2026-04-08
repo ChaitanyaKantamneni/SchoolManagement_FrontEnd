@@ -199,10 +199,14 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
     );
 
     if (hasHrPayroll) {
-      return visibleModules;
+      return this.dedupeModulesByName(visibleModules);
     }
 
-    return [...visibleModules, this.getFallbackHrPayrollModule()];
+    const fallbackModules: Module[] = [...visibleModules];
+    if (!hasHrPayroll) {
+      fallbackModules.push(this.getFallbackHrPayrollModule());
+    }
+    return this.dedupeModulesByName(fallbackModules);
   }
 
   getVisiblePages(module: Module): Page[] {
@@ -356,6 +360,20 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
       canEdit: '1',
       canDelete: '1'
     };
+  }
+
+  private dedupeModulesByName(modules: Module[]): Module[] {
+    const seen = new Set<string>();
+    const deduped: Module[] = [];
+    for (const module of modules) {
+      const key = (module.moduleName || '').trim().toLowerCase();
+      if (!key || seen.has(key)) {
+        continue;
+      }
+      seen.add(key);
+      deduped.push(module);
+    }
+    return deduped;
   }
 
   // Navigation for admin or school users

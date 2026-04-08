@@ -21,9 +21,18 @@
                 type="text"
                 class="form-control floating-input"
                 [(ngModel)]="searchQuery"
+                (ngModelChange)="onSearchChange()"
                 placeholder="Search..."
               />
               <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
+            </div>
+            <div class="searchreview" *ngIf="isAdmin">
+              <select [(ngModel)]="selectedSchoolID" (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
+                <option value="">All Schools</option>
+                <option *ngFor="let school of schoolList" [value]="school.ID">
+                  {{ school.Name }}
+                </option>
+              </select>
             </div>
           </div>
         </div>
@@ -34,21 +43,30 @@
                 <th>SI.No</th>
                 <th>Pay Head Name</th>
                 <th>Type</th>
-                <th>Description</th>
+                <th>Academic Year</th>
+                <th>School</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let item of filteredHeads; let i = index">
-                <td>{{ i + 1 }}</td>
+                <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
                 <td>{{ item.payHeadName }}</td>
                 <td>{{ item.headType }}</td>
-                <td>{{ item.description || '-' }}</td>
-                <td>{{ item.isEnabled ? 'Active' : 'Inactive' }}</td>
+                <td>{{ item.academicYearName || '-' }}</td>
+                <td>{{ item.schoolName || '-' }}</td>
+                <td data-label="Status">
+                  <span
+                    class="badge"
+                    [ngClass]="item.isEnabled ? 'badge-success' : 'badge-danger'"
+                  >
+                    {{ item.isEnabled ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
                 <td data-label="Actions">
                   <div class="d-flex justify-content-center align-items-center h-100">
-                    <button type="button" class="btn checkbtn edit" data-tooltip="Edit" (click)="editReview(item, i)">
+                    <button type="button" class="btn checkbtn edit" data-tooltip="Edit" (click)="editReview(item)">
                       <mat-icon class="mat-edit-icon">edit</mat-icon>
                     </button>
                     <button type="button" class="btn checkbtn" data-tooltip="View" (click)="viewReview(item)">
@@ -64,6 +82,18 @@
               <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="" />
             </div>
             <p>No data found.</p>
+          </div>
+          <div *ngIf="headCount > pageSize" class="pagination-controls">
+            <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
+            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
+            <button *ngFor="let page of getVisiblePageNumbers()"
+                    class="page-btn"
+                    [ngClass]="{'active': page === currentPage}"
+                    (click)="goToPage(page)">
+              {{ page }}
+            </button>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
           </div>
         </div>
       </div>
@@ -83,18 +113,30 @@
               <label class="inputLabel">School <span class="required">*</span></label>
               <div class="input-with-error">
                 <select class="inputField" [(ngModel)]="form.schoolID" (change)="onAdminSchoolChange($event)">
-                  <option value="">-- Select School --</option>
+                  <option value="0">-- Select School --</option>
                   <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
                 </select>
+                <div
+                  *ngIf="formSubmitAttempted && (!form.schoolID || form.schoolID === '0')"
+                  class="text-danger"
+                >
+                  <small>Please Select School.</small>
+                </div>
               </div>
             </div>
             <div class="InputFieldsContainer">
               <label class="inputLabel">Academic Year <span class="required">*</span></label>
               <div class="input-with-error">
                 <select class="inputField" [(ngModel)]="form.academicYearID">
-                  <option value="">-- Select Academic Year --</option>
+                  <option value="0">-- Select Academic Year --</option>
                   <option *ngFor="let year of academicYearList" [value]="year.ID">{{ year.Name }}</option>
                 </select>
+                <div
+                  *ngIf="formSubmitAttempted && (!form.academicYearID || form.academicYearID === '0')"
+                  class="text-danger"
+                >
+                  <small>Please Select Academic Year.</small>
+                </div>
               </div>
             </div>
           </div>
@@ -103,6 +145,12 @@
               <label class="inputLabel">Pay Head Name <span class="required">*</span></label>
               <div class="input-with-error">
                 <input class="inputField" type="text" [(ngModel)]="form.payHeadName" placeholder="Pay Head Name" />
+                <div
+                  *ngIf="formSubmitAttempted && !form.payHeadName?.trim()"
+                  class="text-danger"
+                >
+                  <small>Please Enter Pay Head Name.</small>
+                </div>
               </div>
             </div>
             <div class="InputFieldsContainer">
@@ -111,6 +159,12 @@
                 <select class="inputField" [(ngModel)]="form.headType">
                   <option *ngFor="let type of headTypes" [value]="type">{{ type }}</option>
                 </select>
+                <div
+                  *ngIf="formSubmitAttempted && !form.headType?.trim()"
+                  class="text-danger"
+                >
+                  <small>Please Select Type.</small>
+                </div>
               </div>
             </div>
           </div>
@@ -140,7 +194,7 @@
           </div>
         </div>
         <div class="ActionButtons">
-          <button type="button" (click)="addHead()">{{ editIndex !== null ? 'Update' : 'Add Head' }}</button>
+          <button type="button" (click)="addHead()">{{ editHeadId !== null ? 'Update' : 'Add Head' }}</button>
         </div>
       </div>
     </div>
@@ -154,10 +208,30 @@
         <button type="button" class="close" (click)="closeViewModal()"><span>&times;</span></button>
       </div>
       <div class="modal-body" *ngIf="viewHead">
+        <div class="row mb-2"><div class="col-5">School</div><div class="col-7">{{ viewHead.schoolName || '-' }}</div></div>
+        <div class="row mb-2"><div class="col-5">Academic Year</div><div class="col-7">{{ viewHead.academicYearName || '-' }}</div></div>
         <div class="row mb-2"><div class="col-5">Pay Head</div><div class="col-7">{{ viewHead.payHeadName }}</div></div>
         <div class="row mb-2"><div class="col-5">Type</div><div class="col-7">{{ viewHead.headType }}</div></div>
         <div class="row mb-2"><div class="col-5">Description</div><div class="col-7">{{ viewHead.description || '-' }}</div></div>
         <div class="row mb-2"><div class="col-5">Status</div><div class="col-7">{{ viewHead.isEnabled ? 'Active' : 'Inactive' }}</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isModalOpen}" [style.display]="isModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Application Status</h5>
+        <button type="button" class="close" aria-label="Close" (click)="closeModal('status')">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>{{ AminityInsStatus }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="handleOk()">OK</button>
       </div>
     </div>
   </div>
