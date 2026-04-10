@@ -330,8 +330,7 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
       'time table': 'schedule',
       exam: 'quiz',
       attendance: 'how_to_reg',
-      'hr & payroll': 'account_balance'
-      attendance: 'how_to_reg',
+      'hr & payroll': 'account_balance',
       'leave management': 'event_note'
     };
 

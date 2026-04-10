@@ -1,7 +1,6 @@
 import { NgClass, NgFor, NgIf } from '@angular/common';
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
-import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
 import { DashboardTopNavComponent } from '../../../SignInAndSignUp/dashboard-top-nav/dashboard-top-nav.component';
 import { MenuServiceService } from '../../../Services/menu-service.service';
@@ -24,11 +23,11 @@ interface LeaveHistoryItem {
 @Component({
   selector: 'app-applyleave',
   standalone: true,
-  imports: [NgIf, NgFor, NgClass, ReactiveFormsModule, FormsModule, MatIconModule, DashboardTopNavComponent],
+  imports: [NgIf, NgFor, NgClass, ReactiveFormsModule, FormsModule, DashboardTopNavComponent],
   templateUrl: './applyleave.component.html',
   styleUrl: './applyleave.component.css'
 })
-export class ApplyleaveComponent extends BasePermissionComponent implements OnInit, AfterViewInit {
+export class ApplyleaveComponent extends BasePermissionComponent implements OnInit {
   pageName = 'Apply Leave';
 
   readonly today = new Date().toISOString().split('T')[0];
@@ -70,11 +69,7 @@ export class ApplyleaveComponent extends BasePermissionComponent implements OnIn
     return sessionStorage.getItem('DivisionID') || localStorage.getItem('DivisionID') || '';
   }
 
-  // Leave types fetched from leave policy — only shown for non-students
   leaveTypes: string[] = [];
-
-
-
   leaveHistory: LeaveHistoryItem[] = [];
 
   selectedAcademicYear = '';
@@ -107,14 +102,6 @@ export class ApplyleaveComponent extends BasePermissionComponent implements OnIn
     { validators: [this.dateRangeValidator] }
   );
 
-  ngAfterViewInit(): void {
-    // Set leaveType required only for non-students
-    if (!this.isStudent) {
-      this.leaveForm.get('leaveType')?.addValidators(Validators.required);
-      this.leaveForm.get('leaveType')?.updateValueAndValidity();
-    }
-  }
-
   get requestedDays(): number {
     const from = this.leaveForm.get('fromDate')?.value;
     const to = this.leaveForm.get('toDate')?.value;
@@ -137,6 +124,11 @@ export class ApplyleaveComponent extends BasePermissionComponent implements OnIn
   }
 
   ngOnInit(): void {
+    if (!this.isStudent) {
+      this.leaveForm.get('leaveType')?.addValidators(Validators.required);
+      this.leaveForm.get('leaveType')?.updateValueAndValidity();
+    }
+
     if (this.isAdmin) {
       this.fetchSchoolsList();
     } else {
@@ -146,7 +138,9 @@ export class ApplyleaveComponent extends BasePermissionComponent implements OnIn
       this.selectedStaffName = this.applicantName;
       this.fetchAcademicYears();
     }
-  }(tab: 'apply' | 'list'): void {
+  }
+
+  setActiveTab(tab: 'apply' | 'list'): void {
     this.activeTab = tab;
     if (tab === 'list') this.fetchLeaveHistory();
   }
@@ -191,7 +185,7 @@ export class ApplyleaveComponent extends BasePermissionComponent implements OnIn
       return;
     }
 
-    const isAdminPickingStaff = this.isAdmin && this.selectedStaffId;
+    const isAdminPickingStaff = this.isAdmin && !!this.selectedStaffId;
     const resolvedApplicantId = isAdminPickingStaff ? this.selectedStaffId : this.applicantId;
     const resolvedApplicantName = isAdminPickingStaff ? this.selectedStaffName : this.applicantName;
     const resolvedRoleId = isAdminPickingStaff ? Number(this.selectedStaffRoleId) : Number(this.applicantRoleId);
@@ -210,8 +204,7 @@ export class ApplyleaveComponent extends BasePermissionComponent implements OnIn
 
     if (!this.isStudent) {
       payload.LeaveType = this.leaveForm.get('leaveType')?.value;
-    }
-    if (this.isStudent) {
+    } else {
       payload.ClassID = this.classId;
       payload.DivisionID = this.divisionId;
     }
@@ -233,7 +226,7 @@ export class ApplyleaveComponent extends BasePermissionComponent implements OnIn
   }
 
   resetForm(): void {
-    this.leaveForm.reset({ fromDate: this.today, toDate: this.today, leaveType: '', durationType: 'full', reason: '' });
+    this.leaveForm.reset({ fromDate: this.today, toDate: this.today, leaveType: '', reason: '' });
   }
 
   showModal(msg: string): void { this.applicationMessage = msg; this.isModalOpen = true; }
@@ -264,16 +257,17 @@ export class ApplyleaveComponent extends BasePermissionComponent implements OnIn
     }
   }
 
-  // Fetch leave types from leave policy (still used for dropdown population)
   private loadLeaveTypes(): void {
-    if (!this.selectedSchoolId || !this.selectedAcademicYearId) return;
+    if (!this.selectedSchoolId || !this.selectedAcademicYearId || this.isStudent) return;
     this.apiurl.post<any>('Tbl_leavePolicy_CRUD_Operations', {
       Flag: '2', SchoolID: this.selectedSchoolId, AcademicYear: this.selectedAcademicYearId
     }).subscribe({
       next: (res: any) => {
         const list = Array.isArray(res?.data) ? res.data : (Array.isArray(res?.Data) ? res.Data : []);
         const active = list.filter((i: any) => String(i.isActive ?? i.IsActive ?? '0') === '1' || i.isActive === true);
-        this.leaveTypes = Array.from(new Set(active.map((i: any) => String(i.leaveType ?? i.LeaveType ?? '')).filter(Boolean))) as string[];
+        this.leaveTypes = Array.from(new Set(
+          active.map((i: any) => String(i.leaveType ?? i.LeaveType ?? '')).filter(Boolean)
+        )) as string[];
         if (!this.leaveTypes.includes(this.leaveForm.get('leaveType')?.value || '')) {
           this.leaveForm.get('leaveType')?.patchValue('');
         }
@@ -283,17 +277,17 @@ export class ApplyleaveComponent extends BasePermissionComponent implements OnIn
   }
 
   private fetchLeaveHistory(): void {
-    if (!this.selectedStaffId) { this.leaveHistory = []; return; }
+    const applicantId = this.isAdmin ? this.selectedStaffId : this.applicantId;
+    if (!applicantId) { this.leaveHistory = []; return; }
     this.isLoadingLeaves = true;
-    const payload = {
+    this.apiurl.post<any>('LeaveManagement', {
       Flag: '3',
-      ApplicantID: this.selectedStaffId,
+      ApplicantID: applicantId,
       SchoolID: this.selectedSchoolId,
       AcademicYear: this.selectedAcademicYearId,
       Limit: 100,
       Offset: 0
-    };
-    this.apiurl.post<any>('LeaveManagement', payload).subscribe({
+    }).subscribe({
       next: (res: any) => {
         const list = Array.isArray(res?.data) ? res.data : (Array.isArray(res?.Data) ? res.Data : []);
         this.leaveHistory = list.map((item: any) => ({
@@ -317,7 +311,10 @@ export class ApplyleaveComponent extends BasePermissionComponent implements OnIn
     this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', { SchoolID: this.selectedSchoolId, Flag: '2' }).subscribe({
       next: (res: any) => {
         const years = Array.isArray(res?.data) ? res.data : (Array.isArray(res?.Data) ? res.Data : []);
-        this.availableAcademicYears = years.map((i: any) => ({ ID: String(i.id ?? i.ID ?? ''), Name: String(i.name ?? i.Name ?? '') }));
+        this.availableAcademicYears = years.map((i: any) => ({
+          ID: String(i.id ?? i.ID ?? ''),
+          Name: String(i.name ?? i.Name ?? '')
+        }));
         if (this.availableAcademicYears.length > 0) {
           this.selectedAcademicYearId = this.availableAcademicYears[0].ID;
           this.selectedAcademicYear = this.availableAcademicYears[0].Name;
