@@ -1,0 +1,222 @@
+<div>
+  <app-dashboard-top-nav></app-dashboard-top-nav>
+</div>
+<div class="MainContentDiv">
+  <div *ngIf="!IsAddNewClicked" class="w-100">
+    <div class="ComponentTop">
+      <div class="ComponentTopHeader">
+        <h5>Payment Mode</h5>
+        <p>Total {{ modeCount }} Payment Modes</p>
+      </div>
+      <div class="ComponentTopBottom">
+        <button class="btnHover" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Payment Mode</button>
+      </div>
+    </div>
+    <div class="ComponentRecords">
+      <div>
+        <div class="ComponentRecordsTop">
+          <div class="filterOptions">
+            <div class="searchreview input-container">
+              <input
+                type="text"
+                class="form-control floating-input"
+                [(ngModel)]="searchQuery"
+                (ngModelChange)="onSearchChange()"
+                placeholder="Search..."
+              />
+              <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
+            </div>
+            <div class="searchreview school-filter" *ngIf="isAdmin">
+              <select [(ngModel)]="selectedSchoolID" (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
+                <option value="">All Schools</option>
+                <option *ngFor="let school of schoolList" [value]="school.ID">
+                  {{ school.Name }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="reviewstable">
+          <table *ngIf="filteredModes.length !== 0" class="table table-bordered">
+            <thead>
+              <tr>
+                <th>SI.No</th>
+                <th>Payment Mode</th>
+                <th>Account</th>
+                <th>Academic Year</th>
+                <th>School</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of filteredModes; let i = index">
+                <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td>{{ item.paymentMode }}</td>
+                <td>{{ item.account }}</td>
+                <td>{{ item.academicYearName || '-' }}</td>
+                <td>{{ item.schoolName || '-' }}</td>
+                <td data-label="Status">
+                  <span class="badge" [ngClass]="item.isEnabled ? 'badge-success' : 'badge-danger'">
+                    {{ item.isEnabled ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+                <td data-label="Actions">
+                  <div class="d-flex justify-content-center align-items-center h-100">
+                    <button type="button" class="btn checkbtn edit" data-tooltip="Edit" (click)="editReview(item, i)">
+                      <mat-icon class="mat-edit-icon">edit</mat-icon>
+                    </button>
+                    <button type="button" class="btn checkbtn" data-tooltip="View" (click)="viewReview(item)">
+                      <mat-icon class="mat-edit-icon">visibility</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div *ngIf="filteredModes.length === 0" class="NoDataFound">
+            <div class="NoDataFoundImg">
+              <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="" />
+            </div>
+            <p>No data found.</p>
+          </div>
+          <div *ngIf="modeCount > pageSize" class="pagination-controls">
+            <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
+            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
+            <button
+              *ngFor="let page of getVisiblePageNumbers()"
+              class="page-btn"
+              [ngClass]="{'active': page === currentPage}"
+              (click)="goToPage(page)">
+              {{ page }}
+            </button>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="IsAddNewClicked" class="w-100">
+    <div class="AddForm">
+      <div class="AddFormTop">
+        <button type="button" (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+        <p>ADD PAYMENT MODE</p>
+      </div>
+      <div class="AddFormConatiner">
+        <div class="FormInputRowsContainer">
+          <div class="InputRow">
+            <div class="InputFieldsContainer" *ngIf="isAdmin">
+              <label class="inputLabel">School <span class="required">*</span></label>
+              <div class="input-with-error">
+                <select class="inputField" [(ngModel)]="form.schoolID" (change)="onAdminSchoolChange($event)">
+                  <option value="0">-- Select School --</option>
+                  <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+                </select>
+                <div *ngIf="formSubmitAttempted && (!form.schoolID || form.schoolID === '0')" class="text-danger">
+                  <small>Please Select School.</small>
+                </div>
+              </div>
+            </div>
+            <div class="InputFieldsContainer">
+              <label class="inputLabel">Academic Year <span class="required">*</span></label>
+              <div class="input-with-error">
+                <select class="inputField" [(ngModel)]="form.academicYearID">
+                  <option value="0">-- Select Academic Year --</option>
+                  <option *ngFor="let year of academicYearList" [value]="year.ID">{{ year.Name }}</option>
+                </select>
+                <div *ngIf="formSubmitAttempted && (!form.academicYearID || form.academicYearID === '0')" class="text-danger">
+                  <small>Please Select Academic Year.</small>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="InputRow">
+            <div class="InputFieldsContainer">
+              <label class="inputLabel">Payment Mode <span class="required">*</span></label>
+              <div class="input-with-error">
+                <input class="inputField" type="text" [(ngModel)]="form.paymentModeName" placeholder="Payment Mode" />
+                <div *ngIf="formSubmitAttempted && !form.paymentModeName?.trim()" class="text-danger">
+                  <small>Please Enter Payment Mode.</small>
+                </div>
+              </div>
+            </div>
+            <div class="InputFieldsContainer">
+              <label class="inputLabel">Account <span class="required">*</span></label>
+              <div class="input-with-error">
+                <select class="inputField" [(ngModel)]="form.accountType">
+                  <option value="">Select</option>
+                  <option *ngFor="let acc of accountTypes" [value]="acc">{{ acc }}</option>
+                </select>
+                <div *ngIf="formSubmitAttempted && !form.accountType?.trim()" class="text-danger">
+                  <small>Please Select Account.</small>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="InputRow">
+            <div class="InputFieldsContainer">
+              <label class="inputLabel">Description</label>
+              <div class="input-with-error">
+                <textarea class="inputField" rows="3" [(ngModel)]="form.description" placeholder="Description"></textarea>
+              </div>
+            </div>
+            <div class="InputFieldsContainer">
+              <label class="inputLabel">Enable this Head</label>
+              <div class="toggle-container" (click)="$event.stopPropagation()">
+                <label class="switch">
+                  <input type="checkbox" [checked]="form.isEnabled" (click)="toggleEnable()" />
+                  <span class="slider">
+                    <span class="toggle-text" [ngStyle]="{ left: form.isEnabled ? '42%' : '60%', fontSize: '9px' }">
+                      {{ form.isEnabled ? 'Active' : 'Inactive' }}
+                    </span>
+                  </span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="ActionButtons">
+          <button type="button" (click)="addPaymentMode()">{{ editIndex !== null ? 'Update' : 'Add Payment Mode' }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Payment Mode Details</h5>
+        <button type="button" class="close" (click)="closeViewModal()"><span>&times;</span></button>
+      </div>
+      <div class="modal-body" *ngIf="viewModeItem">
+        <div class="row mb-2"><div class="col-5">School</div><div class="col-7">{{ viewModeItem.schoolName || '-' }}</div></div>
+        <div class="row mb-2"><div class="col-5">Academic Year</div><div class="col-7">{{ viewModeItem.academicYearName || '-' }}</div></div>
+        <div class="row mb-2"><div class="col-5">Payment Mode</div><div class="col-7">{{ viewModeItem.paymentModeName }}</div></div>
+        <div class="row mb-2"><div class="col-5">Account</div><div class="col-7">{{ viewModeItem.accountType }}</div></div>
+        <div class="row mb-2"><div class="col-5">Description</div><div class="col-7">{{ viewModeItem.description || '-' }}</div></div>
+        <div class="row mb-2"><div class="col-5">Status</div><div class="col-7">{{ viewModeItem.isEnabled ? 'Active' : 'Inactive' }}</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isModalOpen}" [style.display]="isModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Application Status</h5>
+        <button type="button" class="close" aria-label="Close" (click)="closeModal('status')">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>{{ AminityInsStatus }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="handleOk()">OK</button>
+      </div>
+    </div>
+  </div>
+</div>

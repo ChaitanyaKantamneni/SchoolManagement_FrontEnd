@@ -88,14 +88,14 @@
 
               <div class="InputRow">
                 <div class="InputFieldsContainer">
-                  <label class="inputLabel" for="email">ExamType<span class="required">*</span></label>
+                  <label class="inputLabel" for="email">Exam Type <span class="required">*</span></label>
                   <div class="input-with-error">
                     <select class="inputField" type="date" formControlName="ExamType" placeholder="Select Start Date" (change)="onAdminExamtypeChange($event)">
                       <option value="0">-- Select Exam --</option>
                       <option *ngFor="let school of examLists" value="{{school.ID}}">{{school.Name}}</option>
                     </select>
                     <div *ngIf="SyllabusForm.get('ExamType')?.hasError('min') && (SyllabusForm.get('ExamType')?.touched || SyllabusForm.get('ExamType')?.dirty)" class="text-danger">
-                      <small>Please Select ExamType.</small>
+                      <small>Please Select Exam Type.</small>
                     </div>
                   </div>
                 </div>
@@ -144,14 +144,14 @@
                   </div>
                 </div>
                 <div class="InputFieldsContainer">
-                  <label class="inputLabel" for="email">ExamType<span class="required">*</span></label>
+                  <label class="inputLabel" for="email">Exam Type <span class="required">*</span></label>
                   <div class="input-with-error">
                     <select class="inputField" type="date" formControlName="ExamType" (change)="onAdminExamtypeChange($event)">
                       <option value="0">-- Select Exam --</option>
                       <option *ngFor="let school of examLists" value="{{school.ID}}">{{school.Name}}</option>
                     </select>
                     <div *ngIf="SyllabusForm.get('ExamType')?.hasError('min') && (SyllabusForm.get('ExamType')?.touched || SyllabusForm.get('ExamType')?.dirty)" class="text-danger">
-                      <small>Please Select ExamType.</small>
+                      <small>Please Select Exam Type.</small>
                     </div>
                   </div>
                 </div>
@@ -159,13 +159,13 @@
             </ng-template>
           </div>
           <div class="ActionButtons">
-            <button type="button" class="btn" (click)="onSubmit()">Next</button>
+            <button type="button" (click)="onSubmit()">Next</button>
           </div>
         </form>
       </div>
     </div>
   </div>
-  <div *ngIf="!IsAddNewClicked"class="ComponentRecords">
+  <div *ngIf="!IsAddNewClicked" class="ComponentRecords compact-table-section">
       <div>
         <div class="ComponentRecordsTop">
           <div class="filterOptions">
@@ -303,7 +303,7 @@
         </div>
       </div>
     </div>
-     <div *ngIf="IsAddNewClicked"class="ComponentRecords">
+     <div *ngIf="IsAddNewClicked" class="ComponentRecords compact-table-section">
       <div>
         <div class="ComponentRecordsTop">
           <div class="filterOptions">
@@ -396,11 +396,11 @@
         </div>
       </div>
        <div class="ActionButtons">
-<button *ngIf="attendanceMode === 'add'" type="button" class="btn" [disabled]="isSubmittingAttendance"(click)="submitAttendance()">
+<button *ngIf="attendanceMode === 'add'" type="button" [disabled]="isSubmittingAttendance"(click)="submitAttendance()">
   Submit Attendance
 </button>  
 <button   *ngIf="attendanceMode === 'view'"
-type="button" class="btn" (click)="UpdateAttendance()">
+type="button" (click)="UpdateAttendance()">
   Update Attendance
 </button>      
 </div>

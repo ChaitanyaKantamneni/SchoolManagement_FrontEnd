@@ -1,0 +1,165 @@
+<div>
+  <app-dashboard-top-nav></app-dashboard-top-nav>
+</div>
+<div class="MainContentDiv">
+  <div class="w-100">
+    <div class="ComponentTop">
+      <div class="ComponentTopHeader">
+        <h5>Salary Issued</h5>
+        <p>Total {{ issuedCount }} salary records</p>
+      </div>
+    </div>
+    <div class="ComponentRecords">
+      <div>
+        <div class="ComponentRecordsTop">
+          <div class="filterOptions">
+            <div class="searchreview" *ngIf="isAdmin">
+              <select class="form-control" [ngModel]="selectedSchoolID" (ngModelChange)="selectedSchoolID = $event" (change)="onAdminSchoolChange($event)" style="font-size: 11px;">
+                <option value="">-- Select School --</option>
+                <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+              </select>
+            </div>
+            <div class="searchreview">
+              <select class="form-control" [(ngModel)]="selectedAcademicYearID" style="font-size: 11px;">
+                <option value="">-- Select Academic Year --</option>
+                <option *ngFor="let year of academicYearList" [value]="year.ID">{{ year.Name }}</option>
+              </select>
+            </div>
+            <div class="searchreview input-container">
+              <input type="text" class="form-control floating-input" [(ngModel)]="searchQuery" placeholder="Search..." />
+              <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
+            </div>
+          </div>
+          <div class="DownloadButtons" *ngIf="filteredRows.length !== 0">
+            <button type="button" class="btnHover" (click)="exportPlaceholder('copy')"><mat-icon>content_copy</mat-icon></button>
+            <button type="button" class="btnHover" (click)="exportPlaceholder('csv')"><mat-icon>description</mat-icon></button>
+            <button type="button" class="btnHover" (click)="exportPlaceholder('excel')"><mat-icon>table_chart</mat-icon></button>
+            <button type="button" class="btnHover" (click)="exportPlaceholder('pdf')"><mat-icon>picture_as_pdf</mat-icon></button>
+            <button type="button" class="btnHover" (click)="exportPlaceholder('print')"><mat-icon>print</mat-icon></button>
+          </div>
+        </div>
+        <div class="reviewstable">
+          <table *ngIf="filteredRows.length !== 0" class="table table-bordered">
+            <thead>
+              <tr>
+                <th>SI.No</th>
+                <th>Staff Name</th>
+                <th>Designation</th>
+                <th>Payment Mode</th>
+                <th>Salary Period</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of filteredRows; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td>{{ row.staffName }}</td>
+                <td>{{ row.designation }}</td>
+                <td>{{ row.paymentMode }}</td>
+                <td>{{ row.salaryPeriod }}</td>
+                <td>{{ row.amount | number : '1.2-2' }}</td>
+                <td>{{ row.date }}</td>
+                <td data-label="Actions">
+                  <div class="d-flex justify-content-center align-items-center h-100">
+                    <button type="button" class="btn checkbtn" data-tooltip="Payslip" (click)="openPayslip(row)">
+                      <mat-icon class="mat-edit-icon">receipt_long</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div *ngIf="filteredRows.length === 0" class="NoDataFound">
+            <div class="NoDataFoundImg">
+              <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="" />
+            </div>
+            <p>No data found.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{ show: isPayslipOpen }" [style.display]="isPayslipOpen ? 'block' : 'none'">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Payslip</h5>
+        <button type="button" class="close" (click)="closePayslip()">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" *ngIf="selectedPayslip">
+        <div id="payslipSection" class="payslip-print-block professional-payslip">
+          <div class="payslip-head">
+            <div>
+              <h4 class="payslip-title">School Management ERP</h4>
+              <p class="payslip-sub">Salary Payslip</p>
+            </div>
+            <div class="payslip-meta-right">
+              <p><span>Payslip No</span> : PSL-{{ selectedPayslip.staffId || '000' }}-{{ selectedPayslip.date | date: 'MMyy' }}</p>
+              <p><span>Generated On</span> : {{ selectedPayslip.date }}</p>
+            </div>
+          </div>
+
+          <div class="payslip-meta-grid">
+            <p><span>Employee Name</span> : {{ selectedPayslip.staffName }}</p>
+            <p><span>Staff ID</span> : {{ selectedPayslip.staffId || '-' }}</p>
+            <p><span>Designation</span> : {{ selectedPayslip.designation }}</p>
+            <p><span>Payment Mode</span> : {{ selectedPayslip.paymentMode }}</p>
+            <p><span>Salary Period</span> : {{ selectedPayslip.salaryPeriod }}</p>
+            <p><span>Paid Date</span> : {{ selectedPayslip.date }}</p>
+          </div>
+
+          <table class="table table-bordered payslip-table">
+            <thead>
+              <tr>
+                <th>Earnings</th>
+                <th>Amount</th>
+                <th>Deductions</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Basic Salary</td>
+                <td>{{ basicSalary | number : '1.2-2' }}</td>
+                <td>Provident Fund (PF)</td>
+                <td>{{ pfDeduction | number : '1.2-2' }}</td>
+              </tr>
+              <tr>
+                <td>HRA</td>
+                <td>{{ hra | number : '1.2-2' }}</td>
+                <td>Professional Tax</td>
+                <td>{{ professionalTax | number : '1.2-2' }}</td>
+              </tr>
+              <tr>
+                <td>Other Allowances</td>
+                <td>{{ allowances | number : '1.2-2' }}</td>
+                <td>-</td>
+                <td>0.00</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="payslip-totals">
+            <div class="totals-row"><span>Gross Earnings</span><b>{{ grossEarnings | number : '1.2-2' }}</b></div>
+            <div class="totals-row"><span>Total Deductions</span><b>{{ totalDeductions | number : '1.2-2' }}</b></div>
+            <div class="totals-row net-row"><span>Net Pay</span><b>{{ selectedPayslip.amount | number : '1.2-2' }}</b></div>
+          </div>
+
+          <div class="payslip-sign">
+            <div>Employee Signature</div>
+            <div>Authorized Signatory</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="printPayslip()">Print Payslip</button>
+      </div>
+    </div>
+  </div>
+</div>

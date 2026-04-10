@@ -437,7 +437,7 @@
     </div>
   </div>
 </div>
-<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
+<div class="modal viewmodel" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -451,9 +451,17 @@
         <div class="receipt-box">
       
           <!-- HEADER -->
-          <div class="text-center">
-            <h3>{{ viewSyllabus?.SchoolName }}</h3>
-            <h4>FEE RECEIPT</h4>
+          <div class="header">
+            <!-- LOGO (Dynamic optional) -->
+            <div class="logo">
+              <img [src]="viewSyllabus?.SchoolLogo || 'assets/logo.png'" alt="Logo">
+            </div>
+          
+            <!-- CENTER TEXT (Dynamic) -->
+            <div class="header-center">
+              <h2>{{ viewSyllabus?.SchoolName }}</h2>
+              <h3>RECEIPT</h3>
+            </div>
           </div>
       
           <div class="receipt-top">

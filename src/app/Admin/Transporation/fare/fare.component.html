@@ -133,7 +133,7 @@
                 <div class="InputFieldsContainer">
                   <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
                   <div class="input-with-error">
-                    <select class="inputField" type="date" formControlName="AcademicYear">
+                    <select class="inputField" type="date" formControlName="AcademicYear" (change)=onAdminAcademicYearChange($event)>
                       <option value="0">-- Select Academic Year --</option>
                       <option *ngFor="let school of academicYearList" value="{{school.ID}}">{{school.Name}}</option>
                     </select>
@@ -296,8 +296,8 @@
             </ng-template>
           </div>
           <div class="ActionButtons">
-            <button class="btn" *ngIf="ViewSyllabusClicked && canEdit()" (click)="UpdateSyllabus()">Update</button>
-            <button class="btn" *ngIf="!ViewSyllabusClicked && canAdd()" (click)="SubmitSyllabus()">Submit</button>
+            <button type="button" *ngIf="ViewSyllabusClicked && canEdit()" (click)="UpdateSyllabus()">Update</button>
+            <button type="button" *ngIf="!ViewSyllabusClicked && canAdd()" (click)="SubmitSyllabus()">Submit</button>
           </div>
         </form>
       </div>

@@ -8,8 +8,115 @@
         <h5>Admission Management</h5>
         <p>Total {{ SubjectsCount }} Admissions Added</p>
       </div>
-      <div class="ComponentTopBottom">
-        <button *ngIf="canAdd()" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Student Registration</button>
+      <div class="ComponentTopBottom admission-header-actions">
+        <button *ngIf="canAdd()" type="button" class="admission-btn admission-btn--primary" (click)="AddNewClicked()">
+          <mat-icon>add_circle</mat-icon>Student Registration
+        </button>
+        <button *ngIf="canAdd()" type="button" class="admission-btn admission-btn--primary" (click)="openBulkUploadModal()">
+          <mat-icon>cloud_upload</mat-icon>Bulk Upload
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="isBulkUploadModalOpen" class="bulk-modal-overlay" role="presentation">
+      <div class="bulk-modal-backdrop" (click)="closeBulkUploadModal()"></div>
+      <div
+        class="bulk-modal-shell"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="bulkModalTitle"
+        (click)="$event.stopPropagation()"
+      >
+        <button type="button" class="bulk-modal-close" (click)="closeBulkUploadModal()" aria-label="Close dialog">
+          <mat-icon>close</mat-icon>
+        </button>
+        <div class="bulk-modal-split">
+          <div class="bulk-modal-left">
+            <h2 id="bulkModalTitle" class="bulk-modal-title">Bulk admission upload</h2>
+            <p class="bulk-modal-lead">
+              Use the official Excel template with dropdowns, then upload your completed file. Records are validated before import.
+            </p>
+
+            <div class="bulk-modal-actions">
+              <button *ngIf="canAdd()" type="button" class="admission-btn admission-btn--primary admission-btn--block" (click)="downloadBulkTemplate()">
+                <mat-icon>download</mat-icon>Download bulk template
+              </button>
+              <label *ngIf="canAdd()" class="bulk-file-trigger admission-btn admission-btn--outline admission-btn--block">
+                <input #bulkFileInput type="file" accept=".xlsx,.xls,.csv" (change)="onBulkFileSelected($event)" class="bulk-file-input">
+                <mat-icon>upload_file</mat-icon>
+                <span>Choose bulk file</span>
+              </label>
+              <button
+                *ngIf="canAdd()"
+                type="button"
+                class="admission-btn admission-btn--primary admission-btn--block"
+                (click)="startBulkUpload()"
+                [disabled]="isBulkUploading || bulkUploadRows.length === 0"
+              >
+                <mat-icon>{{ isBulkUploading ? 'hourglass_empty' : 'rocket_launch' }}</mat-icon>
+                {{ isBulkUploading ? 'Uploading…' : 'Start bulk upload' }}
+              </button>
+            </div>
+
+            <div class="bulk-modal-status" *ngIf="bulkUploadFileName || bulkUploadStatus">
+              <div class="bulk-status-top" *ngIf="bulkUploadFileName">
+                <span class="bulk-status-label">Selected file</span>
+                <button
+                  type="button"
+                  class="bulk-file-remove"
+                  (click)="clearBulkUploadFileSelection()"
+                  aria-label="Remove selected file"
+                >
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+              <div class="bulk-status-row" *ngIf="bulkUploadFileName">
+                <mat-icon class="bulk-status-icon">description</mat-icon>
+                <div class="bulk-status-file-wrap">
+                  <span class="bulk-status-value">{{ bulkUploadFileName }}</span>
+                </div>
+              </div>
+              <p class="bulk-status-message" *ngIf="bulkUploadStatus">{{ bulkUploadStatus }}</p>
+            </div>
+          </div>
+
+          <div class="bulk-modal-right" aria-hidden="true">
+            <div class="bulk-flow-header">
+              <span class="bulk-flow-badge">How it works</span>
+              <h3 class="bulk-flow-title">Four simple steps</h3>
+            </div>
+            <ol class="bulk-flow-steps">
+              <li class="bulk-flow-step">
+                <div class="bulk-flow-marker">1</div>
+                <div class="bulk-flow-body">
+                  <strong>Download template</strong>
+                  <span>Get the Excel file with headers and smart dropdowns for school, year, class, route, and more.</span>
+                </div>
+              </li>
+              <li class="bulk-flow-step">
+                <div class="bulk-flow-marker">2</div>
+                <div class="bulk-flow-body">
+                  <strong>Fill your rows</strong>
+                  <span>Add student, parent, address, and transport details. Use dropdown values so IDs match the system.</span>
+                </div>
+              </li>
+              <li class="bulk-flow-step">
+                <div class="bulk-flow-marker">3</div>
+                <div class="bulk-flow-body">
+                  <strong>Choose file</strong>
+                  <span>Select your saved <code>.xlsx</code>, <code>.xls</code>, or <code>.csv</code> here. We check required columns.</span>
+                </div>
+              </li>
+              <li class="bulk-flow-step">
+                <div class="bulk-flow-marker">4</div>
+                <div class="bulk-flow-body">
+                  <strong>Upload</strong>
+                  <span>Start bulk upload and wait for the summary. Fix any failed rows and re-upload if needed.</span>
+                </div>
+              </li>
+            </ol>
+          </div>
+        </div>
       </div>
     </div>
     <div class="ComponentRecords">
@@ -444,8 +551,8 @@
               </div>             
             </div>
             <div class="ActionButtons">
-              <button class="btn" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
-              <button class="btn" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitPersonalDetails()">Save & Next</button>
+              <button type="button" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
+              <button type="button" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitPersonalDetails()">Save & Next</button>
             </div>
           </div>
           <div class="FormInputRowsContainer" *ngIf="activeTab === 'parents'">
@@ -608,8 +715,8 @@
               </div>
             </div>
             <div class="ActionButtons">
-              <button class="btn" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
-              <button class="btn" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitPersonalDetails()">Save & Next</button>
+              <button type="button" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
+              <button type="button" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitPersonalDetails()">Save & Next</button>
             </div>
           </div>
           <div class="FormInputRowsContainer" *ngIf="activeTab === 'permanent'">
@@ -716,8 +823,8 @@
               </div>           
             </div>
             <div class="ActionButtons">
-              <button class="btn" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
-              <button class="btn" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitPersonalDetails()">Save & Next</button>
+              <button type="button" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
+              <button type="button" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitPersonalDetails()">Save & Next</button>
             </div>
           </div>
           <div class="FormInputRowsContainer" *ngIf="activeTab === 'temporary'">
@@ -824,9 +931,9 @@
               </div>            
             </div>
             <div class="ActionButtons">
-              <button class="btn" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
-              <button class="btn" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitPersonalDetails()">Save & Next</button>
-              <button class="btn" (click)="SkipButtonClick()">Skip</button>
+              <button type="button" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
+              <button type="button" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitPersonalDetails()">Save & Next</button>
+              <button type="button" (click)="SkipButtonClick()">Skip</button>
             </div>
           </div>
           <div class="FormInputRowsContainer" *ngIf="activeTab === 'bus'">            
@@ -897,14 +1004,14 @@
               </div>            
             </div>
             <div class="ActionButtons">
-              <button class="btn" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
-              <button class="btn" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitPersonalDetails()">Save & Next</button>
-              <button class="btn" (click)="CancelButtonClick()">Cancel</button>
+              <button type="button" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
+              <button type="button" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitPersonalDetails()">Save & Next</button>
+              <button type="button" (click)="CancelButtonClick()">Cancel</button>
             </div>
           </div>
           <!-- <div class="ActionButtons">
-            <button class="btn" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update</button>
-            <button class="btn" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitModule()">Submit</button>
+            <button type="button" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update</button>
+            <button type="button" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitModule()">Submit</button>
           </div> -->
         </form>
       </div>

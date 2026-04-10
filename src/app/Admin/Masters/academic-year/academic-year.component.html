@@ -23,7 +23,7 @@
             </div>
             <div class="searchreview" *ngIf="isAdmin">
               <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
-                <option value="">-- Select School --</option>
+                <option value="" disabled>-- Select School --</option>
                 <option value="0">All Schools</option>
                 <option *ngFor="let school of schoolList" [value]="school.ID">
                   {{ school.Name }}
@@ -50,10 +50,10 @@
                       keyboard_arrow_down
                     </mat-icon>
                   </span>
-                </th>
-                <th *ngIf="isAdmin">School Name</th>
+                </th>                
                 <th>Start Date</th>
                 <th>End Date</th>
+                <th *ngIf="isAdmin">School Name</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -62,10 +62,10 @@
               <tr *ngFor="let AcademicYear of AcademicYearList; let i = index">
                 <td class="visually-hidden">{{ AcademicYear.ID }}</td>
                 <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-                <td>{{ AcademicYear.Name }}</td>
-                <td *ngIf="isAdmin">{{ AcademicYear.SchoolName }}</td>
+                <td>{{ AcademicYear.Name }}</td>                
                 <td>{{ AcademicYear.StartDate }}</td>
                 <td>{{ AcademicYear.EndDate }}</td>
+                <td *ngIf="isAdmin">{{ AcademicYear.SchoolName }}</td>
                 <td data-label="Status">
                   <span
                     class="status-pill"
@@ -124,9 +124,9 @@
           <div class="FormInputRowsContainer">
             <div class="InputRow">
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="Name">Name  <span class="required">*</span></label>
+                <label class="inputLabel" for="Name">Academic Year Name  <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <input class="inputField" formControlName="Name" placeholder="Enter Academic Year Name" />
                   <div *ngIf="(AcademicYearForm.get('Name' ) ?. touched && AcademicYearForm.get('Name' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(AcademicYearForm.get('Name' ) ?. errors ?. ['required' ]) ">
                       <small>Please Enter Name.</small>
@@ -211,8 +211,8 @@
             </div>
           </div>
           <div class="ActionButtons">
-            <button class="btn" *ngIf="ViewAcademicYearClicked && canEdit()" (click)="UpdateAcademicYear()">Update</button>
-            <button class="btn" *ngIf="!ViewAcademicYearClicked && canAdd()" (click)="SubmitAcademicYear()">Submit</button>
+            <button type="button" *ngIf="ViewAcademicYearClicked && canEdit()" (click)="UpdateAcademicYear()">Update</button>
+            <button type="button" *ngIf="!ViewAcademicYearClicked && canAdd()" (click)="SubmitAcademicYear()">Submit</button>
           </div>
         </form>
       </div>
@@ -248,7 +248,7 @@
       </div>
       <div class="modal-body">
         <div class="row mb-2" *ngIf="viewSyllabus?.Name">
-          <div class="col-4">Name</div>
+          <div class="col-4">Academic Year Name</div>
           <div class="col-8 viewfontsize">{{ viewSyllabus?.Name }}</div>
         </div>
 

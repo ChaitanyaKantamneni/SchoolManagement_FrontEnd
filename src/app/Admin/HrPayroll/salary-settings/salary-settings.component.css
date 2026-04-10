@@ -1,0 +1,25 @@
+.FormInputRowsContainer {
+  flex-direction: column;
+}
+
+.InputRow {
+  width: 100% !important;
+  flex-direction: row !important;
+}
+
+.searchreview.input-container .floating-input {
+  padding-left: 32px !important;
+}
+
+.salary-settings-table {
+  margin-top: 12px;
+}
+
+.cell-toggle {
+  display: flex;
+  justify-content: center;
+}
+
+.switch-sm .slider {
+  transform: scale(0.92);
+}

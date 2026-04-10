@@ -59,6 +59,7 @@ import { BusesComponent } from './Admin/Transporation/buses/buses.component';
 import { RoutesComponent } from './Admin/Transporation/routes/routes.component';
 import { StopsComponent } from './Admin/Transporation/stops/stops.component';
 import { schoolGuard } from './guards/school.guard';
+import { AuthMfaGuard } from './guards/auth-mfa.guard';
 import { FareComponent } from './Admin/Transporation/fare/fare.component';
 import { FeeCategoryComponent } from './Admin/Finance/fee-category/fee-category.component';
 import { FeeAllocationComponent } from './Admin/Finance/fee-allocation/fee-allocation.component';
@@ -82,6 +83,13 @@ import { AttendanceSheetComponent } from './Admin/Attendance/attendance-sheet/at
 import { ViewAttendanceComponent } from './Admin/Attendance/view-attendance/view-attendance.component';
 import { StaffattendanceComponent } from './Admin/Attendance/staffattendance/staffattendance.component';
 import { ViewstaffattendanceComponent } from './Admin/Attendance/viewstaffattendance/viewstaffattendance.component';
+import { PayrollHeadComponent } from './Admin/HrPayroll/payroll-head/payroll-head.component';
+import { PaymentModeComponent } from './Admin/HrPayroll/payment-mode/payment-mode.component';
+import { SalarySettingsComponent } from './Admin/HrPayroll/salary-settings/salary-settings.component';
+import { AdvanceSalaryComponent } from './Admin/HrPayroll/advance-salary/advance-salary.component';
+import { SalaryPayComponent } from './Admin/HrPayroll/salary-pay/salary-pay.component';
+import { SalaryIssuedComponent } from './Admin/HrPayroll/salary-issued/salary-issued.component';
+
 import { ApplyleaveComponent } from './Admin/LeaveManagement/applyleave/applyleave.component';
 // import { LeavelistComponent } from './Admin/LeaveManagement/leavelist/leavelist.component';
 import { LeaveapprovalComponent } from './Admin/LeaveManagement/leaveapproval/leaveapproval.component';
@@ -94,7 +102,7 @@ export const routes: Routes = [
 
   // Admin
   {
-    path: 'Admin', component: AdminDashboardComponent,
+    path: 'Admin', component: AdminDashboardComponent, canActivate: [AuthMfaGuard],
     children: [
       { path: '', component: AdminMainDashboardComponent },
       { path: 'Dashboad', component: AdminMainDashboardComponent },
@@ -140,6 +148,13 @@ export const routes: Routes = [
       { path: 'Staffattendance', component: StaffattendanceComponent },
       { path: 'view-staff-attendance', redirectTo: 'ViewStaffAttendance', pathMatch: 'full' },
       { path: 'ViewStaffAttendance', component: ViewstaffattendanceComponent },
+      { path: 'PayrollHead', component: PayrollHeadComponent },
+      { path: 'PaymentMode', component: PaymentModeComponent },
+      { path: 'SalarySettings', component: SalarySettingsComponent },
+      { path: 'AdvanceSalary', component: AdvanceSalaryComponent },
+      { path: 'SalaryPay', component: SalaryPayComponent },
+      { path: 'SalaryIssued', component: SalaryIssuedComponent }
+      { path: 'ViewStaffAttendance', component: ViewstaffattendanceComponent },
       { path: 'ApplyLeave',    component: ApplyleaveComponent },
       // { path: 'MyLeaves',      component:  LeavelistComponent},
       { path: 'LeaveApproval', component: LeaveapprovalComponent },
@@ -149,7 +164,7 @@ export const routes: Routes = [
 
   // OthersSideBar
   {
-    path: 'OthersSideBar', component: SideBarComponentComponent,
+    path: 'OthersSideBar', component: SideBarComponentComponent, canActivate: [AuthMfaGuard],
     children: [
       { path: '', component: AdminMainDashboardComponent },
       { path: 'Staff', component: StaffComponent },
@@ -194,6 +209,13 @@ export const routes: Routes = [
       { path: 'Staffattendance', component: StaffattendanceComponent },
       { path: 'view-staff-attendance', redirectTo: 'ViewStaffAttendance', pathMatch: 'full' },
       { path: 'ViewStaffAttendance', component: ViewstaffattendanceComponent },
+      { path: 'PayrollHead', component: PayrollHeadComponent },
+      { path: 'PaymentMode', component: PaymentModeComponent },
+      { path: 'SalarySettings', component: SalarySettingsComponent },
+      { path: 'AdvanceSalary', component: AdvanceSalaryComponent },
+      { path: 'SalaryPay', component: SalaryPayComponent },
+      { path: 'SalaryIssued', component: SalaryIssuedComponent }
+      { path: 'ViewStaffAttendance', component: ViewstaffattendanceComponent },
       { path: 'ApplyLeave',    component: ApplyleaveComponent },
       // { path: 'MyLeaves',      component:  LeavelistComponent},
       { path: 'LeaveApproval', component: LeaveapprovalComponent },
@@ -208,7 +230,7 @@ export const routes: Routes = [
   {
     path: ':schoolName',
     component: SideBarComponentComponent,
-    canActivate: [schoolGuard],
+    canActivate: [AuthMfaGuard, schoolGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
 
@@ -256,6 +278,13 @@ export const routes: Routes = [
       { path: 'ViewAttendance', component: ViewAttendanceComponent },
       { path: 'Staffattendance', component: StaffattendanceComponent },
       { path: 'view-staff-attendance', redirectTo: 'ViewStaffAttendance', pathMatch: 'full' },
+      { path: 'ViewStaffAttendance', component: ViewstaffattendanceComponent },
+      { path: 'PayrollHead', component: PayrollHeadComponent },
+      { path: 'PaymentMode', component: PaymentModeComponent },
+      { path: 'SalarySettings', component: SalarySettingsComponent },
+      { path: 'AdvanceSalary', component: AdvanceSalaryComponent },
+      { path: 'SalaryPay', component: SalaryPayComponent },
+      { path: 'SalaryIssued', component: SalaryIssuedComponent }
       { path: 'ViewStaffAttendance', component: ViewstaffattendanceComponent },
       { path: 'ApplyLeave',    component: ApplyleaveComponent },
       // { path: 'MyLeaves',      component:  LeavelistComponent},

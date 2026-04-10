@@ -296,6 +296,7 @@ export class ClassComponent extends BasePermissionComponent {
             this.IsAddNewClicked=!this.IsAddNewClicked;
             this.isModalOpen = true;
             this.AminityInsStatus = "Class Details Submitted!";
+            this.currentPage=1;
             this.ClassForm.reset();
             this.ClassForm.markAsPristine();
           }
@@ -398,6 +399,7 @@ export class ClassComponent extends BasePermissionComponent {
             this.IsAddNewClicked=!this.IsAddNewClicked;
             this.isModalOpen = true;
             this.AminityInsStatus = "Class Details Updated!";
+            this.currentPage=1;
             this.ClassForm.reset();
             this.ClassForm.markAsPristine();
           }

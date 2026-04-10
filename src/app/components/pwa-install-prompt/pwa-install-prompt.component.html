@@ -1,0 +1,42 @@
+<div class="pwa-install-banner" *ngIf="visible" role="region" aria-label="Install application">
+  <div class="pwa-install-inner">
+    <div class="pwa-install-text">
+      <strong class="pwa-install-title">Install School ERP for quicker access</strong>
+      <p class="pwa-install-sub mb-0" *ngIf="canNativeInstall">
+        Add this app to your device for a full-screen experience and faster reopening.
+      </p>
+      <ng-container *ngIf="!canNativeInstall">
+        <p class="pwa-install-sub mb-0" *ngIf="browserHint === 'safari-ios'">
+          On iPhone or iPad: tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>.
+        </p>
+        <p class="pwa-install-sub mb-0" *ngIf="browserHint === 'safari-macos'">
+          In Safari on Mac: use <strong>File</strong> → <strong>Add to Dock</strong> (macOS Sonoma or later), or bookmark this page.
+        </p>
+        <p class="pwa-install-sub mb-0" *ngIf="browserHint === 'firefox'">
+          Firefox may not offer a full install for this app. Use a bookmark, or on Android Firefox try
+          <strong>Add to Home screen</strong> from the menu when available.
+        </p>
+        <p class="pwa-install-sub mb-0" *ngIf="browserHint === 'chrome-edge'">
+          Look for the install icon in the address bar or open the browser menu and choose
+          <strong>Install School ERP</strong> / <strong>Install app</strong>.
+        </p>
+        <p class="pwa-install-sub mb-0" *ngIf="browserHint === 'generic'">
+          Use your browser’s menu to install or add this site to your home screen, if your browser supports it.
+        </p>
+      </ng-container>
+    </div>
+    <div class="pwa-install-actions">
+      <button
+        *ngIf="canNativeInstall"
+        type="button"
+        class="btn btn-primary btn-sm pwa-btn-install"
+        (click)="onInstallClick()"
+      >
+        Install
+      </button>
+      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="onDismissClick()">
+        Not now
+      </button>
+    </div>
+  </div>
+</div>

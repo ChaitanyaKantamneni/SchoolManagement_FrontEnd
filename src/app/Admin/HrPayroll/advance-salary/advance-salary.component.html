@@ -1,0 +1,138 @@
+<div>
+  <app-dashboard-top-nav></app-dashboard-top-nav>
+</div>
+<div class="MainContentDiv">
+  <div *ngIf="!IsAddNewClicked" class="w-100">
+    <div class="ComponentTop">
+      <div class="ComponentTopHeader">
+        <h5>Advance Salary</h5>
+        <p>Total {{ records.length }} advance entries</p>
+      </div>
+      <div class="ComponentTopBottom">
+        <button class="btnHover" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Advance Salary</button>
+      </div>
+    </div>
+    <div class="ComponentRecords">
+      <div>
+        <div class="ComponentRecordsTop">
+          <div class="filterOptions">
+            <div class="searchreview input-container">
+              <input type="text" class="form-control floating-input" [(ngModel)]="searchQuery" placeholder="Search..." />
+              <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
+            </div>
+          </div>
+        </div>
+        <div class="reviewstable">
+          <table *ngIf="filteredRecords.length !== 0" class="table table-bordered">
+            <thead>
+              <tr>
+                <th>SI.No</th>
+                <th>Staff</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of filteredRecords; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td>{{ row.staffName }}</td>
+                <td>{{ row.amount }}</td>
+                <td>{{ row.date }}</td>
+                <td data-label="Actions">
+                  <div class="d-flex justify-content-center align-items-center h-100">
+                    <button type="button" class="btn checkbtn edit" data-tooltip="Edit" (click)="editReview(row, i)">
+                      <mat-icon class="mat-edit-icon">edit</mat-icon>
+                    </button>
+                    <button type="button" class="btn checkbtn" data-tooltip="View" (click)="viewReview(row)">
+                      <mat-icon class="mat-edit-icon">visibility</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div *ngIf="filteredRecords.length === 0" class="NoDataFound">
+            <div class="NoDataFoundImg">
+              <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="" />
+            </div>
+            <p>No data found.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="IsAddNewClicked" class="w-100">
+    <div class="AddForm">
+      <div class="AddFormTop">
+        <button type="button" (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+        <p>ADD ADVANCE SALARY</p>
+      </div>
+      <div class="AddFormConatiner">
+        <div class="FormInputRowsContainer">
+          <div class="InputRow">
+            <div class="InputFieldsContainer" *ngIf="isAdmin">
+              <label class="inputLabel">School <span class="required">*</span></label>
+              <div class="input-with-error">
+                <select class="inputField" [ngModel]="selectedSchoolID" (ngModelChange)="selectedSchoolID = $event" (change)="onAdminSchoolChange($event)">
+                  <option value="">-- Select School --</option>
+                  <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="InputFieldsContainer">
+              <label class="inputLabel">Academic Year <span class="required">*</span></label>
+              <div class="input-with-error">
+                <select class="inputField" [(ngModel)]="selectedAcademicYearID">
+                  <option value="">-- Select Academic Year --</option>
+                  <option *ngFor="let year of academicYearList" [value]="year.ID">{{ year.Name }}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="InputRow">
+            <div class="InputFieldsContainer">
+              <label class="inputLabel">Staff <span class="required">*</span></label>
+              <div class="input-with-error">
+                <select class="inputField" [(ngModel)]="form.staffName">
+                  <option *ngFor="let staff of staffList" [value]="staff">{{ staff }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="InputFieldsContainer">
+              <label class="inputLabel">Amount <span class="required">*</span></label>
+              <div class="input-with-error">
+                <input class="inputField" type="number" [(ngModel)]="form.amount" placeholder="Amount" />
+              </div>
+            </div>
+            <div class="InputFieldsContainer">
+              <label class="inputLabel">Date <span class="required">*</span></label>
+              <div class="input-with-error">
+                <input class="inputField" type="date" [(ngModel)]="form.date" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="ActionButtons">
+          <button type="button" (click)="addAdvanceSalary()">{{ editIndex !== null ? 'Update' : 'Add Advance Salary' }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Advance Salary Details</h5>
+        <button type="button" class="close" (click)="closeViewModal()"><span>&times;</span></button>
+      </div>
+      <div class="modal-body" *ngIf="viewRow">
+        <div class="row mb-2"><div class="col-5">Staff</div><div class="col-7">{{ viewRow.staffName }}</div></div>
+        <div class="row mb-2"><div class="col-5">Amount</div><div class="col-7">{{ viewRow.amount }}</div></div>
+        <div class="row mb-2"><div class="col-5">Date</div><div class="col-7">{{ viewRow.date }}</div></div>
+      </div>
+    </div>
+  </div>
+</div>
