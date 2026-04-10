@@ -90,6 +90,10 @@ import { AdvanceSalaryComponent } from './Admin/HrPayroll/advance-salary/advance
 import { SalaryPayComponent } from './Admin/HrPayroll/salary-pay/salary-pay.component';
 import { SalaryIssuedComponent } from './Admin/HrPayroll/salary-issued/salary-issued.component';
 
+import { ApplyleaveComponent } from './Admin/LeaveManagement/applyleave/applyleave.component';
+// import { LeavelistComponent } from './Admin/LeaveManagement/leavelist/leavelist.component';
+import { LeaveapprovalComponent } from './Admin/LeaveManagement/leaveapproval/leaveapproval.component';
+import { LeavedetailsComponent } from './Admin/LeaveManagement/leavedetails/leavedetails.component';
 
 
 export const routes: Routes = [
@@ -150,6 +154,11 @@ export const routes: Routes = [
       { path: 'AdvanceSalary', component: AdvanceSalaryComponent },
       { path: 'SalaryPay', component: SalaryPayComponent },
       { path: 'SalaryIssued', component: SalaryIssuedComponent }
+      { path: 'ViewStaffAttendance', component: ViewstaffattendanceComponent },
+      { path: 'ApplyLeave',    component: ApplyleaveComponent },
+      // { path: 'MyLeaves',      component:  LeavelistComponent},
+      { path: 'LeaveApproval', component: LeaveapprovalComponent },
+      { path: 'LeaveDetails',  component: LeavedetailsComponent },
     ]
   },
 
@@ -206,6 +215,11 @@ export const routes: Routes = [
       { path: 'AdvanceSalary', component: AdvanceSalaryComponent },
       { path: 'SalaryPay', component: SalaryPayComponent },
       { path: 'SalaryIssued', component: SalaryIssuedComponent }
+      { path: 'ViewStaffAttendance', component: ViewstaffattendanceComponent },
+      { path: 'ApplyLeave',    component: ApplyleaveComponent },
+      // { path: 'MyLeaves',      component:  LeavelistComponent},
+      { path: 'LeaveApproval', component: LeaveapprovalComponent },
+      { path: 'LeaveDetails',  component: LeavedetailsComponent },
 
 
 
@@ -271,6 +285,11 @@ export const routes: Routes = [
       { path: 'AdvanceSalary', component: AdvanceSalaryComponent },
       { path: 'SalaryPay', component: SalaryPayComponent },
       { path: 'SalaryIssued', component: SalaryIssuedComponent }
+      { path: 'ViewStaffAttendance', component: ViewstaffattendanceComponent },
+      { path: 'ApplyLeave',    component: ApplyleaveComponent },
+      // { path: 'MyLeaves',      component:  LeavelistComponent},
+      { path: 'LeaveApproval', component: LeaveapprovalComponent },
+      { path: 'LeaveDetails',  component: LeavedetailsComponent },
     ]
   }
 ];

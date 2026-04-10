@@ -303,7 +303,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       attendancesheet: 'AttendanceSheet',
       staffattendance: 'Staffattendance',
       viewattendance: 'ViewAttendance',
-      viewstaffattendance: 'ViewStaffAttendance'
+      viewstaffattendance: 'ViewStaffAttendance',
+      applyleave:           'ApplyLeave',
+      myleaves:             'MyLeaves',
+      leaveapproval:        'LeaveApproval',
+      leavedetails:         'LeaveDetails',
     };
 
     return alias[normalized] ?? compact;

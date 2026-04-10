@@ -16,7 +16,8 @@ import { HttpClient } from '@angular/common/http';
 @Component({
   selector: 'app-fee-allocation',
   standalone:true,
-  imports: [NgIf,NgFor,NgClass,NgStyle,MatIconModule,DashboardTopNavComponent,ReactiveFormsModule,FormsModule],  templateUrl: './fee-allocation.component.html',
+  imports: [NgIf,NgFor,NgClass,NgStyle,MatIconModule,DashboardTopNavComponent,ReactiveFormsModule,FormsModule], 
+   templateUrl: './fee-allocation.component.html',
   styleUrl: './fee-allocation.component.css'
 })
 export class FeeAllocationComponent extends BasePermissionComponent{
