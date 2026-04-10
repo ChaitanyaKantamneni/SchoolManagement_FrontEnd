@@ -153,7 +153,7 @@ export const routes: Routes = [
       { path: 'SalarySettings', component: SalarySettingsComponent },
       { path: 'AdvanceSalary', component: AdvanceSalaryComponent },
       { path: 'SalaryPay', component: SalaryPayComponent },
-      { path: 'SalaryIssued', component: SalaryIssuedComponent }
+      { path: 'SalaryIssued', component: SalaryIssuedComponent },
       { path: 'ViewStaffAttendance', component: ViewstaffattendanceComponent },
       { path: 'ApplyLeave',    component: ApplyleaveComponent },
       // { path: 'MyLeaves',      component:  LeavelistComponent},
@@ -214,7 +214,7 @@ export const routes: Routes = [
       { path: 'SalarySettings', component: SalarySettingsComponent },
       { path: 'AdvanceSalary', component: AdvanceSalaryComponent },
       { path: 'SalaryPay', component: SalaryPayComponent },
-      { path: 'SalaryIssued', component: SalaryIssuedComponent }
+      { path: 'SalaryIssued', component: SalaryIssuedComponent },
       { path: 'ViewStaffAttendance', component: ViewstaffattendanceComponent },
       { path: 'ApplyLeave',    component: ApplyleaveComponent },
       // { path: 'MyLeaves',      component:  LeavelistComponent},
@@ -284,7 +284,7 @@ export const routes: Routes = [
       { path: 'SalarySettings', component: SalarySettingsComponent },
       { path: 'AdvanceSalary', component: AdvanceSalaryComponent },
       { path: 'SalaryPay', component: SalaryPayComponent },
-      { path: 'SalaryIssued', component: SalaryIssuedComponent }
+      { path: 'SalaryIssued', component: SalaryIssuedComponent },
       { path: 'ViewStaffAttendance', component: ViewstaffattendanceComponent },
       { path: 'ApplyLeave',    component: ApplyleaveComponent },
       // { path: 'MyLeaves',      component:  LeavelistComponent},
