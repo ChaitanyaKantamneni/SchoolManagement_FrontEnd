@@ -117,7 +117,17 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         { id: 'viewattendance', pageName: 'ViewAttendance', moduleID: 'attendance', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
         { id: 'viewstaffattendance', pageName: 'ViewStaffAttendance', moduleID: 'attendance', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
       ]
-    }
+    },
+   {
+  id: 'leavemanagement',
+  moduleName: 'Leave Management',
+  pages: [
+    { id: 'applyleave',    pageName: 'Apply Leave',     moduleID: 'leavemanagement', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
+    // { id: 'leavelist',     pageName: 'My Leaves',       moduleID: 'leavemanagement', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
+    { id: 'leaveapproval', pageName: 'Leave Approval',  moduleID: 'leavemanagement', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
+    { id: 'leavedetails',  pageName: 'Leave Details',   moduleID: 'leavemanagement', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
+  ]
+}
   ];
 
   ngOnInit(): void {
@@ -281,7 +291,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       timetable: 'schedule',
       'time table': 'schedule',
       exam: 'quiz',
-      attendance: 'how_to_reg'
+      attendance: 'how_to_reg',
+      'leave management': 'event_note'
     };
 
     return map[key] || 'folder';
@@ -338,7 +349,12 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       viewattendance: 'groups',
       'view attendance': 'groups',
       viewstaffattendance: 'groups',
-      'view staff attendance': 'groups'
+      'view staff attendance': 'groups',
+      'leave management': 'event_note',
+      'apply leave':    'add_circle_outline',
+      'my leaves':      'list_alt',
+      'leave approval': 'approval',
+      'leave details':  'info',
     };
 
     return map[key] || 'menu';
@@ -377,7 +393,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       attendancesheet: 'AttendanceSheet',
       staffattendance: 'Staffattendance',
       viewattendance: 'ViewAttendance',
-      viewstaffattendance: 'ViewStaffAttendance'
+      viewstaffattendance: 'ViewStaffAttendance',
+      applyleave:           'ApplyLeave',
+      myleaves:             'MyLeaves',
+      leaveapproval:        'LeaveApproval',
+      leavedetails:         'LeaveDetails',
     };
 
     return alias[normalized] ?? compact;

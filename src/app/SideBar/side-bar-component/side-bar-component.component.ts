@@ -294,7 +294,8 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
       viewattendance: 'groups',
       'view attendance': 'groups',
       viewstaffattendance: 'groups',
-      'view staff attendance': 'groups'
+      'view staff attendance': 'groups',
+      'leave management': 'event_note'
     };
     return map[key] || 'menu';
   }
@@ -309,7 +310,8 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
       timetable: 'schedule',
       'time table': 'schedule',
       exam: 'quiz',
-      attendance: 'how_to_reg'
+      attendance: 'how_to_reg',
+      'leave management': 'event_note'
     };
 
     return map[key] || 'folder';

@@ -1,0 +1,161 @@
+<div>
+  <app-dashboard-top-nav></app-dashboard-top-nav>
+</div>
+
+<div class="MainContentDiv">
+  <div class="w-100">
+    <div class="ComponentTop">
+      <div class="ComponentTopHeader">
+        <h5>Leave Approval</h5>
+        <p>Review and approve or reject leave applications for staff and students.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="w-100">
+    <div class="AddForm">
+      <div class="AddFormTop">
+        <p>Leave Approval Inbox</p>
+      </div>
+
+      <div class="AddFormConatiner">
+
+        <div class="ContextRow">
+          <div class="ContextField" *ngIf="isAdmin">
+            <label class="inputLabel">School</label>
+            <select class="inputField" [value]="selectedSchoolId" (change)="onSchoolChange($event)">
+              <option value="">-- Select School --</option>
+              <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+            </select>
+          </div>
+          <div class="ContextField">
+            <label class="inputLabel">Academic Year</label>
+            <select class="inputField" [value]="selectedAcademicYearId" (change)="onAcademicYearChange($event)" [disabled]="!availableAcademicYears.length">
+              <option value="">-- Select Year --</option>
+              <option *ngFor="let year of availableAcademicYears" [value]="year.ID">{{ year.Name }}</option>
+            </select>
+          </div>
+          <div class="ContextField">
+            <label class="inputLabel">View</label>
+            <select class="inputField" [value]="viewMode" (change)="onViewModeChange($event)">
+              <option value="mine">Pending For Me</option>
+              <option value="all">All Requests</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="StatsRow">
+          <div class="StatCard">
+            <span>Pending</span>
+            <strong>{{ pendingCount }}</strong>
+          </div>
+          <div class="StatCard">
+            <span>Approved</span>
+            <strong>{{ approvedCount }}</strong>
+          </div>
+          <div class="StatCard">
+            <span>Rejected</span>
+            <strong>{{ rejectedCount }}</strong>
+          </div>
+        </div>
+
+        <div class="FilterRow">
+          <input
+            class="inputField"
+            type="text"
+            [(ngModel)]="searchTerm"
+            placeholder="Search by name, leave type, request id" />
+          <select class="inputField" [(ngModel)]="statusFilter">
+            <option value="Pending">Pending</option>
+            <option value="All">All Status</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+        </div>
+
+        <div class="TableContainer">
+          <div *ngIf="isLoading" class="NoData">Loading...</div>
+          <table *ngIf="!isLoading">
+            <thead>
+              <tr>
+                <th>Request ID</th>
+                <th>Applicant</th>
+                <th>Leave Type</th>
+                <th>Dates</th>
+                <th>Days</th>
+                <th>Applied On</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let req of filteredRequests">
+                <td>{{ req.id }}</td>
+                <td>{{ req.applicantName }}</td>
+                <td>{{ req.leaveType }}</td>
+                <td>{{ req.fromDate }} to {{ req.toDate }}</td>
+                <td>{{ req.days }}</td>
+                <td>{{ req.appliedOn }}</td>
+                <td>
+                  <span class="StatusPill" [ngClass]="getStatusClass(req.status)">{{ req.status }}</span>
+                </td>
+                <td class="ActionCell">
+                  <button type="button" class="btn linkBtn" (click)="openDetails(req)">View</button>
+                </td>
+              </tr>
+              <tr *ngIf="!filteredRequests.length && !isLoading">
+                <td colspan="8" class="NoData">No leave requests found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{ 'show': isDetailsModalOpen }" [style.display]="isDetailsModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog leave-details-dialog" role="document">
+    <div class="modal-content" *ngIf="selectedRequest">
+      <div class="modal-header">
+        <h5 class="modal-title">Leave Request Details</h5>
+        <button type="button" class="close" aria-label="Close" (click)="closeDetails()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="DetailsGrid">
+          <div class="DetailItem"><span>Request ID</span><strong>{{ selectedRequest.id }}</strong></div>
+          <div class="DetailItem"><span>Applicant</span><strong>{{ selectedRequest.applicantName }}</strong></div>
+          <div class="DetailItem"><span>Leave Type</span><strong>{{ selectedRequest.leaveType }}</strong></div>
+          <div class="DetailItem"><span>Days</span><strong>{{ selectedRequest.days }}</strong></div>
+          <div class="DetailItem"><span>From</span><strong>{{ selectedRequest.fromDate }}</strong></div>
+          <div class="DetailItem"><span>To</span><strong>{{ selectedRequest.toDate }}</strong></div>
+          <div class="DetailItem"><span>Applied On</span><strong>{{ selectedRequest.appliedOn }}</strong></div>
+          <div class="DetailItem"><span>Status</span><strong>{{ selectedRequest.status }}</strong></div>
+        </div>
+
+        <div class="ReasonBox">
+          <span>Reason</span>
+          <p>{{ selectedRequest.reason }}</p>
+        </div>
+
+        <div class="InputFieldsContainer" *ngIf="selectedRequest.status === 'Pending'">
+          <label class="inputLabel">Remarks</label>
+          <textarea class="inputField textareaField" [(ngModel)]="actionRemarks" rows="3" placeholder="Optional remarks"></textarea>
+        </div>
+
+        <div class="ReasonBox" *ngIf="selectedRequest.status !== 'Pending'">
+          <span>Action Remarks</span>
+          <p>{{ selectedRequest.approvalRemarks || '-' }}</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn secondaryBtn" (click)="closeDetails()">Close</button>
+        <button type="button" class="btn dangerBtn" *ngIf="selectedRequest.status === 'Pending'" (click)="rejectRequest(selectedRequest)">Reject</button>
+        <button type="button" class="btn" *ngIf="selectedRequest.status === 'Pending'" (click)="approveRequest(selectedRequest)">Approve</button>
+      </div>
+    </div>
+  </div>
+</div>

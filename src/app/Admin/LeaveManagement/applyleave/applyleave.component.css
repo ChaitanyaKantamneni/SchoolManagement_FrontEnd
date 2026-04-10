@@ -1,0 +1,615 @@
+p {
+  margin: 0;
+}
+
+.MainContentDiv {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 25px;
+  flex-direction: column;
+}
+
+.ComponentTop {
+  background-color: #fff;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+  width: 100%;
+  padding: 10px;
+}
+
+.ComponentTop .ComponentTopHeader {
+  border-bottom: 1px solid #d9e3ef;
+}
+
+.ComponentTop .ComponentTopHeader h5 {
+  font-size: medium;
+}
+
+.ComponentTop .ComponentTopHeader p {
+  font-size: x-small;
+  color: gray;
+}
+
+.AddForm {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  border: 1px solid #d7e0ec;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(29, 78, 216, 0.04);
+  width: 100%;
+  padding: 10px;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.AddFormTop {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border-bottom: 1px solid #d9e3ef;
+  padding: 10px 14px 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+}
+
+.AddFormConatiner {
+  margin-top: 10px;
+  padding: 14px 20px 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #f9fbfe 100%);
+}
+
+.EmployeeSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.SummaryCard {
+  border: 1px solid #dbe5ef;
+  border-radius: 12px;
+  padding: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 0 0 1px rgba(29, 78, 216, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.SummaryCard.highlight {
+  background: linear-gradient(180deg, #eef4ff 0%, #f8fbff 100%);
+}
+
+.SummaryLabel {
+  font-size: 11px;
+  color: #6b7280;
+  text-transform: uppercase;
+}
+
+.SummaryCard strong {
+  font-size: 14px;
+  color: #1f2937;
+}
+
+.SummaryCard small {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.FormLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.BalanceContextRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 14px;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border: 1px solid #dbe5ef;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+}
+
+.BalanceContextRow p {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.ContextField {
+  min-width: 180px;
+}
+
+.FormSection {
+  min-width: 0;
+}
+
+.TabsContainer {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding: 6px;
+  border: 1px solid #dbe5ef;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+}
+
+.TabButton {
+  flex: 1 1 0;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: transparent;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.TabButton.active {
+  background: linear-gradient(135deg, #3654f5 0%, #5b76ff 100%);
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(54, 84, 245, 0.18);
+}
+
+.FormInputRowsContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.InputRow,
+.InputGrid,
+.InputCard {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.InputCard {
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+}
+
+.compactCard {
+  align-items: start;
+}
+
+.InputFieldsContainer {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.InputFieldsContainer.fullWidth {
+  flex: 1 1 100%;
+}
+
+.inputLabel {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.required {
+  color: #dc2626;
+}
+
+.inputField {
+  width: 100%;
+  border: 1px solid #d6deea;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  outline: none;
+  background-color: #fff;
+  box-sizing: border-box;
+}
+
+.inputField:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.12);
+}
+
+.textareaField {
+  resize: vertical;
+  min-height: 78px;
+}
+
+.text-danger {
+  margin-top: 4px;
+  color: #dc2626;
+  font-size: 11px;
+}
+
+.UploadBox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  border: 1px dashed #c7d2e2;
+  border-radius: 10px;
+  padding: 10px;
+  background-color: #fff;
+}
+
+.compactUploadBox {
+  min-height: 78px;
+}
+
+.UploadBox input[type="file"] {
+  display: none;
+}
+
+.UploadButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #536ff7;
+  color: #fff;
+  border-radius: 6px;
+  padding: 7px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.UploadFileName {
+  font-size: 12px;
+  color: #4b5563;
+}
+
+.SideSummary {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.SummaryPanel {
+  border: 1px solid #dbe5ef;
+  border-radius: 12px;
+  padding: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 0 0 1px rgba(29, 78, 216, 0.02);
+}
+
+.SummaryPanelTop {
+  border-bottom: 1px solid #e5edf5;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+.SummaryPanelTop h6 {
+  margin: 0;
+  font-size: 13px;
+}
+
+.SummaryPanelTop p {
+  font-size: 11px;
+  color: gray;
+  margin-top: 4px;
+}
+
+.SummaryLine,
+.BalanceRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.SummaryLine:last-child,
+.BalanceRow:last-child {
+  border-bottom: none;
+}
+
+.SummaryLine span,
+.BalanceRow p {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.SummaryLine strong,
+.BalanceRow strong {
+  font-size: 12px;
+  color: #111827;
+}
+
+.BalanceBadge {
+  background-color: #eef4ff;
+  color: #3654f5;
+  font-size: 11px;
+  border-radius: 999px;
+  padding: 5px 10px;
+  white-space: nowrap;
+}
+
+.ActionButtons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 0 6px;
+  gap: 12px;
+}
+
+.ActionButtons .btn,
+.modal-footer .btn {
+  background-color: #536ff7;
+  color: #fff;
+  border: none;
+  font-size: smaller;
+  border-radius: 5px;
+  padding: 7px 14px;
+  transition: background-color 0.3s ease;
+}
+
+.ActionButtons .secondaryBtn {
+  background-color: #94a3b8;
+}
+
+.MyLeavesSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.LeaveStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.StatsCard,
+.LeavesTableCard,
+.LeaveDetailsPanel {
+  border: 1px solid #dbe5ef;
+  border-radius: 12px;
+  padding: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 0 0 1px rgba(29, 78, 216, 0.02);
+}
+
+.StatsCard span,
+.DetailItem span,
+.ReasonBox span {
+  display: block;
+  font-size: 11px;
+  color: #6b7280;
+  text-transform: uppercase;
+}
+
+.StatsCard strong,
+.DetailItem strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 20px;
+  color: #111827;
+}
+
+.SectionHeader {
+  border-bottom: 1px solid #e5edf5;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+}
+
+.SectionHeader h6 {
+  margin: 0;
+  font-size: 13px;
+}
+
+.SectionHeader p {
+  margin-top: 4px;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.LeavesTable {
+  overflow-x: auto;
+}
+
+.LeavesTable table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.LeavesTable th,
+.LeavesTable td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #eef2f7;
+  text-align: left;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.LeavesTable th {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.StatusBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 82px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.StatusBadge.pending {
+  background-color: #fff4db;
+  color: #b7791f;
+}
+
+.StatusBadge.approved {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.StatusBadge.rejected {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.TableActionButton {
+  border: 1px solid #c7d2fe;
+  background: #eef2ff;
+  color: #3654f5;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.DetailsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.DetailItem {
+  border: 1px solid #e5edf5;
+  border-radius: 10px;
+  padding: 12px;
+  background-color: #fbfdff;
+}
+
+.ReasonBox {
+  margin-top: 12px;
+  border: 1px solid #e5edf5;
+  border-radius: 10px;
+  padding: 12px;
+  background-color: #fbfdff;
+}
+
+.ReasonBox p {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #1f2937;
+  line-height: 1.5;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.modal.show {
+  display: block;
+}
+
+.modal-dialog {
+  position: relative;
+  margin: 10% auto;
+  max-width: 500px;
+}
+
+.leave-details-dialog {
+  max-width: 760px;
+}
+
+.modal-content {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid #d7e0ec;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.1);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.close {
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.modal-footer {
+  text-align: center;
+  margin-top: 12px;
+}
+
+@media (max-width: 991.98px) {
+  .EmployeeSummaryGrid,
+  .FormLayout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .MainContentDiv {
+    margin: 10px 12px;
+  }
+
+  .AddFormConatiner {
+    padding: 12px;
+  }
+
+  .InputRow,
+  .InputGrid,
+  .InputCard {
+    grid-template-columns: 1fr;
+  }
+
+  .ActionButtons {
+    flex-direction: column;
+  }
+
+  .ActionButtons .btn {
+    width: 100%;
+  }
+
+  .LeaveStatsGrid,
+  .DetailsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .BalanceContextRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ContextField {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .TabsContainer {
+    flex-direction: column;
+  }
+
+  .LeavesTable th,
+  .LeavesTable td {
+    font-size: 11px;
+  }
+}

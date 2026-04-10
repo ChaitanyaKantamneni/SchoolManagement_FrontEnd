@@ -82,7 +82,10 @@ import { AttendanceSheetComponent } from './Admin/Attendance/attendance-sheet/at
 import { ViewAttendanceComponent } from './Admin/Attendance/view-attendance/view-attendance.component';
 import { StaffattendanceComponent } from './Admin/Attendance/staffattendance/staffattendance.component';
 import { ViewstaffattendanceComponent } from './Admin/Attendance/viewstaffattendance/viewstaffattendance.component';
-
+import { ApplyleaveComponent } from './Admin/LeaveManagement/applyleave/applyleave.component';
+// import { LeavelistComponent } from './Admin/LeaveManagement/leavelist/leavelist.component';
+import { LeaveapprovalComponent } from './Admin/LeaveManagement/leaveapproval/leaveapproval.component';
+import { LeavedetailsComponent } from './Admin/LeaveManagement/leavedetails/leavedetails.component';
 
 
 export const routes: Routes = [
@@ -136,7 +139,11 @@ export const routes: Routes = [
       { path: 'ViewAttendance', component: ViewAttendanceComponent },
       { path: 'Staffattendance', component: StaffattendanceComponent },
       { path: 'view-staff-attendance', redirectTo: 'ViewStaffAttendance', pathMatch: 'full' },
-      { path: 'ViewStaffAttendance', component: ViewstaffattendanceComponent }
+      { path: 'ViewStaffAttendance', component: ViewstaffattendanceComponent },
+      { path: 'ApplyLeave',    component: ApplyleaveComponent },
+      // { path: 'MyLeaves',      component:  LeavelistComponent},
+      { path: 'LeaveApproval', component: LeaveapprovalComponent },
+      { path: 'LeaveDetails',  component: LeavedetailsComponent },
     ]
   },
 
@@ -186,7 +193,11 @@ export const routes: Routes = [
       { path: 'ViewAttendance', component: ViewAttendanceComponent },
       { path: 'Staffattendance', component: StaffattendanceComponent },
       { path: 'view-staff-attendance', redirectTo: 'ViewStaffAttendance', pathMatch: 'full' },
-      { path: 'ViewStaffAttendance', component: ViewstaffattendanceComponent }
+      { path: 'ViewStaffAttendance', component: ViewstaffattendanceComponent },
+      { path: 'ApplyLeave',    component: ApplyleaveComponent },
+      // { path: 'MyLeaves',      component:  LeavelistComponent},
+      { path: 'LeaveApproval', component: LeaveapprovalComponent },
+      { path: 'LeaveDetails',  component: LeavedetailsComponent },
 
 
 
@@ -245,7 +256,11 @@ export const routes: Routes = [
       { path: 'ViewAttendance', component: ViewAttendanceComponent },
       { path: 'Staffattendance', component: StaffattendanceComponent },
       { path: 'view-staff-attendance', redirectTo: 'ViewStaffAttendance', pathMatch: 'full' },
-      { path: 'ViewStaffAttendance', component: ViewstaffattendanceComponent }
+      { path: 'ViewStaffAttendance', component: ViewstaffattendanceComponent },
+      { path: 'ApplyLeave',    component: ApplyleaveComponent },
+      // { path: 'MyLeaves',      component:  LeavelistComponent},
+      { path: 'LeaveApproval', component: LeaveapprovalComponent },
+      { path: 'LeaveDetails',  component: LeavedetailsComponent },
     ]
   }
 ];

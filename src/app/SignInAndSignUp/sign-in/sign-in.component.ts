@@ -329,8 +329,15 @@ export class SignInComponent {
         sessionStorage.setItem('refreshToken', result.refreshToken || '');
         sessionStorage.setItem('email', result.email);
         sessionStorage.setItem('RollID', result.role);
+        sessionStorage.setItem('SchoolID', result.schoolId || '');
         sessionStorage.setItem('schoolId', result.schoolId || '');
         sessionStorage.setItem('schoolName', result.schoolName || '');
+        sessionStorage.setItem('UserID', String(result.userId ?? result.userID ?? result.staffId ?? result.staffID ?? result.id ?? ''));
+        sessionStorage.setItem('StaffID', String(result.staffId ?? result.staffID ?? result.userId ?? result.userID ?? result.id ?? ''));
+        sessionStorage.setItem('AdmissionNo', String(result.admissionNo ?? result.AdmissionNo ?? ''));
+        sessionStorage.setItem('ApplicantName', String(result.name ?? result.fullName ?? result.staffName ?? result.email?.split('@')[0] ?? ''));
+        sessionStorage.setItem('ClassID', String(result.classId ?? result.ClassID ?? result.class ?? ''));
+        sessionStorage.setItem('DivisionID', String(result.divisionId ?? result.DivisionID ?? result.division ?? ''));
 
         // 🔹 Load menu before redirecting
         this.menuService.clearMenu();
