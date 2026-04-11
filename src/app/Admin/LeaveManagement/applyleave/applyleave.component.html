@@ -1,0 +1,235 @@
+<div>
+  <app-dashboard-top-nav></app-dashboard-top-nav>
+</div>
+
+<div class="MainContentDiv">
+  <div class="w-100">
+    <div class="ComponentTop">
+      <div class="ComponentTopHeader">
+        <h5>Apply Leave</h5>
+        <p>Apply new leave or review your previous leave requests.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="w-100">
+    <div class="AddForm">
+      <div class="AddFormTop">
+        <p>Leave Workspace</p>
+      </div>
+
+      <div class="AddFormConatiner">
+
+        <div class="BalanceContextRow AdminContext">
+          <div class="ContextField" *ngIf="isAdmin">
+            <label class="inputLabel">School</label>
+            <select class="inputField" [value]="selectedSchoolId" (change)="onAdminSchoolChange($event)">
+              <option value="">-- Select School --</option>
+              <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+            </select>
+          </div>
+          <div class="ContextField">
+            <label class="inputLabel">Academic Year</label>
+            <select class="inputField" [value]="selectedAcademicYearId" (change)="onAcademicYearChange($event)" [disabled]="!availableAcademicYears.length">
+              <option value="">-- Select Year --</option>
+              <option *ngFor="let year of availableAcademicYears" [value]="year.ID">{{ year.Name }}</option>
+            </select>
+          </div>
+          <div class="ContextField" *ngIf="isAdmin">
+            <label class="inputLabel">Staff Member</label>
+            <select class="inputField" [value]="selectedStaffId" (change)="onAdminStaffChange($event)" [disabled]="!staffList.length">
+              <option value="">-- Select Staff --</option>
+              <option *ngFor="let staff of staffList" [value]="staff.ID">{{ staff.Name }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="FormLayout">
+          <div class="FormSection">
+            <div class="TabsContainer">
+              <button type="button" class="TabButton" [ngClass]="{ 'active': activeTab === 'apply' }" (click)="setActiveTab('apply')">Apply Leave</button>
+              <button type="button" class="TabButton" [ngClass]="{ 'active': activeTab === 'list' }" (click)="setActiveTab('list')">My Leaves</button>
+            </div>
+
+            <div *ngIf="activeTab === 'apply'; else myLeavesView">
+              <form [formGroup]="leaveForm">
+                <div class="FormInputRowsContainer">
+                  <div class="InputGrid">
+                    <div class="InputFieldsContainer">
+                      <label class="inputLabel">From Date <span class="required">*</span></label>
+                      <div class="input-with-error">
+                        <input class="inputField" type="date" formControlName="fromDate" [min]="today" />
+                        <div *ngIf="leaveForm.get('fromDate')?.touched && leaveForm.get('fromDate')?.invalid" class="text-danger">
+                          <small>Please select from date.</small>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="InputFieldsContainer">
+                      <label class="inputLabel">To Date <span class="required">*</span></label>
+                      <div class="input-with-error">
+                        <input class="inputField" type="date" formControlName="toDate" [min]="leaveForm.get('fromDate')?.value || today" />
+                        <div *ngIf="leaveForm.get('toDate')?.touched && leaveForm.get('toDate')?.invalid" class="text-danger">
+                          <small>Please select to date.</small>
+                        </div>
+                        <div *ngIf="leaveForm.errors?.['invalidDateRange'] && leaveForm.get('toDate')?.touched" class="text-danger">
+                          <small>To date cannot be earlier than from date.</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="InputGrid" *ngIf="!isStudent">
+                    <div class="InputFieldsContainer">
+                      <label class="inputLabel">Leave Type <span class="required">*</span></label>
+                      <div class="input-with-error">
+                        <select class="inputField" formControlName="leaveType">
+                          <option value="">-- Select Leave Type --</option>
+                          <option *ngFor="let lt of leaveTypes" [value]="lt">{{ lt }}</option>
+                        </select>
+                        <div *ngIf="leaveForm.get('leaveType')?.touched && leaveForm.get('leaveType')?.invalid" class="text-danger">
+                          <small>Please select leave type.</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="InputFieldsContainer fullWidth">
+                    <label class="inputLabel">Reason <span class="required">*</span></label>
+                    <div class="input-with-error">
+                      <textarea class="inputField textareaField" formControlName="reason" rows="4" placeholder="Enter the reason for leave"></textarea>
+                      <div *ngIf="leaveForm.get('reason')?.touched && leaveForm.get('reason')?.invalid" class="text-danger">
+                        <small *ngIf="leaveForm.get('reason')?.errors?.['required']">Please enter reason.</small>
+                        <small *ngIf="leaveForm.get('reason')?.errors?.['minlength']">Reason should be at least 10 characters.</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="ActionButtons">
+                  <button class="btn secondaryBtn" type="button" (click)="resetForm()">Reset</button>
+                  <button class="btn" type="button" (click)="submitLeave()">Submit Leave</button>
+                </div>
+              </form>
+            </div>
+
+            <ng-template #myLeavesView>
+              <div class="MyLeavesSection">
+                <div class="LeaveStatsGrid">
+                  <div class="StatsCard"><span>Total Applied</span><strong>{{ leaveHistory.length }}</strong></div>
+                  <div class="StatsCard"><span>Approved</span><strong>{{ approvedLeavesCount }}</strong></div>
+                  <div class="StatsCard"><span>Pending</span><strong>{{ pendingLeavesCount }}</strong></div>
+                  <div class="StatsCard"><span>Rejected</span><strong>{{ rejectedLeavesCount }}</strong></div>
+                </div>
+
+                <div class="LeavesTableCard">
+                  <div class="SectionHeader">
+                    <h6>Applied Leaves</h6>
+                    <p>All leave requests with current approval status.</p>
+                  </div>
+                  <div *ngIf="isLoadingLeaves" class="NoData">Loading...</div>
+                  <div class="LeavesTable" *ngIf="!isLoadingLeaves">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Applied On</th>
+                          <th>Leave Type</th>
+                          <th>From</th>
+                          <th>To</th>
+                          <th>Status</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let leave of leaveHistory; trackBy: trackByLeaveId">
+                          <td>{{ leave.appliedOn }}</td>
+                          <td>{{ leave.leaveType }}</td>
+                          <td>{{ leave.fromDate }}</td>
+                          <td>{{ leave.toDate }}</td>
+                          <td><span class="StatusBadge" [ngClass]="getStatusClass(leave.status)">{{ leave.status }}</span></td>
+                          <td><button type="button" class="TableActionButton" (click)="selectLeave(leave)">View</button></td>
+                        </tr>
+                        <tr *ngIf="!leaveHistory.length">
+                          <td colspan="6" class="NoData">No leave records found.</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </ng-template>
+          </div>
+
+          <div class="SideSummary">
+            <div class="SummaryPanel">
+              <div class="SummaryPanelTop">
+                <h6>{{ leaveSummaryTitle }}</h6>
+                <p>{{ leaveSummarySubtitle }}</p>
+              </div>
+              <ng-container *ngIf="activeTab === 'apply'; else listSummary">
+                <div class="SummaryLine"><span>Requested Days</span><strong>{{ requestedDays }}</strong></div>
+                <div class="SummaryLine" *ngIf="!isStudent"><span>Leave Type</span><strong>{{ selectedLeaveType }}</strong></div>
+                <div class="SummaryLine"><span>Applied On</span><strong>{{ today }}</strong></div>
+              </ng-container>
+              <ng-template #listSummary>
+                <div class="SummaryLine"><span>Total Requests</span><strong>{{ leaveHistory.length }}</strong></div>
+                <div class="SummaryLine"><span>Approved</span><strong>{{ approvedLeavesCount }}</strong></div>
+                <div class="SummaryLine"><span>Pending</span><strong>{{ pendingLeavesCount }}</strong></div>
+                <div class="SummaryLine"><span>Rejected</span><strong>{{ rejectedLeavesCount }}</strong></div>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Status Modal -->
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{ 'show': isModalOpen }" [style.display]="isModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Application Status</h5>
+        <button type="button" class="close" aria-label="Close" (click)="closeModal()"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body"><p>{{ applicationMessage }}</p></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="closeModal()">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Leave Details Modal -->
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{ 'show': isLeaveDetailsModalOpen }" [style.display]="isLeaveDetailsModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog leave-details-dialog" role="document">
+    <div class="modal-content" *ngIf="selectedLeave">
+      <div class="modal-header">
+        <h5 class="modal-title">Leave Details</h5>
+        <button type="button" class="close" aria-label="Close" (click)="closeLeaveDetailsModal()"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="DetailsGrid">
+          <div class="DetailItem"><span>Request ID</span><strong>{{ selectedLeave.id }}</strong></div>
+          <div class="DetailItem"><span>Status</span><strong>{{ selectedLeave.status }}</strong></div>
+          <div class="DetailItem"><span>Applied On</span><strong>{{ selectedLeave.appliedOn }}</strong></div>
+          <div class="DetailItem"><span>Leave Type</span><strong>{{ selectedLeave.leaveType }}</strong></div>
+          <div class="DetailItem"><span>From</span><strong>{{ selectedLeave.fromDate }}</strong></div>
+          <div class="DetailItem"><span>To</span><strong>{{ selectedLeave.toDate }}</strong></div>
+        </div>
+        <div class="ReasonBox">
+          <span>Reason</span>
+          <p>{{ selectedLeave.reason }}</p>
+        </div>
+        <div class="ReasonBox" *ngIf="selectedLeave.approvalRemarks">
+          <span>Approval Remarks</span>
+          <p>{{ selectedLeave.approvalRemarks }}</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="closeLeaveDetailsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

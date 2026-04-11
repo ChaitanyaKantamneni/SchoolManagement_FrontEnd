@@ -83,7 +83,8 @@ export class DashboardTopNavComponent implements OnInit, OnDestroy {
     attendancesheet: 'Attendance Sheet',
     viewattendance: 'View Attendance',
     staffattendance: 'Staff Attendance',
-    viewstaffattendance: 'View Staff Attendance'
+    viewstaffattendance: 'View Staff Attendance',
+    leavemanagement: 'Leave Management'
   };
 
   constructor(
@@ -318,6 +319,7 @@ export class DashboardTopNavComponent implements OnInit, OnDestroy {
       viewattendance: 'ViewAttendance',
       staffattendance: 'Staffattendance',
       viewstaffattendance: 'ViewStaffAttendance',
+      leavemanagement: 'LeaveManagement',
       classtransition: 'ClassTransition',
       transferstudents: 'TransferStudents'
     };

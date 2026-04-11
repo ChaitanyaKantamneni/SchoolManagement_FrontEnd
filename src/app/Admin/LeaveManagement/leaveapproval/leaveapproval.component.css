@@ -1,0 +1,312 @@
+p {
+  margin: 0;
+}
+
+.MainContentDiv {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 25px;
+  flex-direction: column;
+}
+
+.ComponentTop {
+  background-color: #fff;
+  box-shadow: rgba(50, 50, 93, 0.2) 0 2px 6px -1px, rgba(0, 0, 0, 0.2) 0 1px 3px -1px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.ComponentTopHeader {
+  border-bottom: 1px solid #d9e3ef;
+}
+
+.ComponentTopHeader h5 {
+  font-size: medium;
+}
+
+.ComponentTopHeader p {
+  font-size: x-small;
+  color: gray;
+}
+
+.AddForm {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  border: 1px solid #d7e0ec;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(29, 78, 216, 0.04);
+  width: 100%;
+  padding: 10px;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.AddFormTop {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border-bottom: 1px solid #d9e3ef;
+  padding: 10px 14px 12px;
+}
+
+.AddFormConatiner {
+  margin-top: 10px;
+  padding: 14px 20px 18px;
+}
+
+.ContextRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.ContextField label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.StatsRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.StatCard {
+  border: 1px solid #dbe5ef;
+  border-radius: 12px;
+  padding: 12px;
+  background: #ffffff;
+}
+
+.StatCard span {
+  display: block;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.StatCard strong {
+  color: #1e293b;
+  font-size: 24px;
+}
+
+.FilterRow {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) minmax(150px, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.inputField {
+  width: 100%;
+  border: 1px solid #d6deea;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  outline: none;
+  background-color: #fff;
+  box-sizing: border-box;
+}
+
+.inputField:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.12);
+}
+
+.TableContainer {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #dbe4f0;
+  border-radius: 12px;
+  background: #fff;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead tr {
+  background: #f6f9ff;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 12px;
+  border-bottom: 1px solid #e7eef7;
+  font-size: 12px;
+  color: #1f2937;
+}
+
+.StatusPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 82px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.StatusPill.pending {
+  background: #fff4db;
+  color: #b45309;
+}
+
+.StatusPill.approved {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.StatusPill.rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.ActionCell {
+  white-space: nowrap;
+}
+
+.btn {
+  border: none;
+  border-radius: 10px;
+  padding: 8px 14px;
+  color: #fff;
+  background: linear-gradient(135deg, #3654f5 0%, #1d9be8 100%);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.linkBtn {
+  background: #e8eefc;
+  color: #3755f5;
+}
+
+.secondaryBtn {
+  background: #94a3b8;
+}
+
+.dangerBtn {
+  background: #ef4444;
+}
+
+.NoData {
+  text-align: center;
+  color: #64748b;
+}
+
+.modal {
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.modal-dialog {
+  margin: 1.75rem auto;
+}
+
+.leave-details-dialog {
+  max-width: 700px;
+}
+
+.modal-content {
+  border-radius: 14px;
+  border: 1px solid #dbe5ef;
+  overflow: hidden;
+}
+
+.modal-header,
+.modal-footer {
+  padding: 12px 14px;
+  border-color: #e5ebf5;
+}
+
+.modal-body {
+  padding: 14px;
+}
+
+.close {
+  border: none;
+  background: transparent;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.DetailsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.DetailItem {
+  border: 1px solid #dbe5ef;
+  border-radius: 10px;
+  padding: 10px;
+  background: #fff;
+}
+
+.DetailItem span {
+  display: block;
+  color: #64748b;
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+
+.DetailItem strong {
+  font-size: 13px;
+  color: #0f172a;
+}
+
+.ReasonBox {
+  margin-top: 12px;
+  border: 1px solid #dbe5ef;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.ReasonBox span {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.ReasonBox p {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #1f2937;
+}
+
+.InputFieldsContainer {
+  margin-top: 12px;
+}
+
+.inputLabel {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.textareaField {
+  resize: vertical;
+  min-height: 70px;
+}
+
+@media (max-width: 900px) {
+  .FilterRow {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .StatsRow {
+    grid-template-columns: 1fr;
+  }
+
+  .DetailsGrid {
+    grid-template-columns: 1fr;
+  }
+}
