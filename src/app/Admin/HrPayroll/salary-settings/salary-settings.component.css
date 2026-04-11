@@ -20,6 +20,63 @@
   justify-content: center;
 }
 
-.switch-sm .slider {
-  transform: scale(0.92);
+.salary-settings-table .cell-toggle {
+  align-items: center;
+}
+
+.salary-settings-table .toggle-container .switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 22px;
+}
+
+.salary-settings-table .toggle-container .switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.salary-settings-table .toggle-container .switch .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, #dbe5ef 0%, #cbd5e1 100%);
+  transition: 0.4s;
+  border-radius: 999px;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+.salary-settings-table .toggle-container .switch .slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  left: 2px;
+  bottom: 3px;
+  background-color: #fff;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
+  transition: 0.4s;
+}
+
+.salary-settings-table .toggle-container .switch input:checked + .slider {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+}
+
+.salary-settings-table .toggle-container .switch input:checked + .slider:before {
+  transform: translateX(40px);
+}
+
+.salary-settings-table .toggle-container .switch .toggle-text {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  color: #fff;
+  font-weight: 700;
+  line-height: 22px;
+  pointer-events: none;
 }

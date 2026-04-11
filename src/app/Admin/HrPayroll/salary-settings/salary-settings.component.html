@@ -6,7 +6,7 @@
     <div class="ComponentTop">
       <div class="ComponentTopHeader">
         <h5>Salary Settings</h5>
-        <p>Total {{ savedRows.length }} staff salary settings</p>
+        <p>Total {{ salarySettings.length }} staff salary settings</p>
       </div>
       <div class="ComponentTopBottom">
         <button class="btnHover" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Salary Setting</button>
@@ -17,8 +17,16 @@
         <div class="ComponentRecordsTop">
           <div class="filterOptions">
             <div class="searchreview input-container">
-              <input type="text" class="form-control floating-input" [(ngModel)]="searchQuery" placeholder="Search staff..." />
+              <input type="text" class="form-control floating-input" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search staff..." />
               <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
+            </div>
+            <div class="searchreview school-filter" *ngIf="isAdmin">
+              <select [(ngModel)]="selectedListSchoolID" (change)="onSchoolFilterChange($event)" class="form-control" style="font-size: 11px;">
+                <option value="">All Schools</option>
+                <option *ngFor="let school of schoolList" [value]="school.ID">
+                  {{ school.Name }}
+                </option>
+              </select>
             </div>
           </div>
         </div>
@@ -27,6 +35,8 @@
             <thead>
               <tr>
                 <th>SI.No</th>
+                <th>School</th>
+                <th>Academic Year</th>
                 <th>Staff</th>
                 <th>Active pay heads</th>
                 <th>Actions</th>
@@ -35,7 +45,9 @@
             <tbody>
               <tr *ngFor="let row of filteredSaved; let i = index">
                 <td>{{ i + 1 }}</td>
-                <td>{{ row.staff }}</td>
+                <td>{{ row.schoolName || '-' }}</td>
+                <td>{{ row.academicYearName || '-' }}</td>
+                <td>{{ row.staffName }}</td>
                 <td>{{ row.headsCount }}</td>
                 <td data-label="Actions">
                   <div class="d-flex justify-content-center align-items-center h-100">
@@ -77,15 +89,21 @@
                   <option value="">-- Select School --</option>
                   <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
                 </select>
+                <div *ngIf="formSubmitAttempted && isAdmin && !selectedSchoolID" class="text-danger">
+                  <small>Please Select School</small>
+                </div>
               </div>
             </div>
             <div class="InputFieldsContainer">
               <label class="inputLabel">Academic Year <span class="required">*</span></label>
               <div class="input-with-error">
-                <select class="inputField" [(ngModel)]="selectedAcademicYearID">
+                <select class="inputField" [(ngModel)]="selectedAcademicYearID" (ngModelChange)="onAcademicYearChange()">
                   <option value="">-- Select Academic Year --</option>
                   <option *ngFor="let year of academicYearList" [value]="year.ID">{{ year.Name }}</option>
                 </select>
+                <div *ngIf="formSubmitAttempted && !selectedAcademicYearID" class="text-danger">
+                  <small>Please Select Academic Year</small>
+                </div>
               </div>
             </div>
           </div>
@@ -93,9 +111,13 @@
             <div class="InputFieldsContainer">
               <label class="inputLabel">Staff <span class="required">*</span></label>
               <div class="input-with-error">
-                <select class="inputField" [(ngModel)]="selectedStaff">
-                  <option *ngFor="let s of staffList" [value]="s">{{ s }}</option>
+                <select class="inputField" [(ngModel)]="selectedStaffID">
+                  <option value="">-- Select Staff --</option>
+                  <option *ngFor="let s of staffList" [value]="s.ID">{{ s.Name }}</option>
                 </select>
+                <div *ngIf="formSubmitAttempted && !selectedStaffID" class="text-danger">
+                  <small>Please Select Staff</small>
+                </div>
               </div>
             </div>
           </div>
@@ -105,7 +127,7 @@
           <table class="table table-bordered">
             <thead>
               <tr>
-                <th>#</th>
+                <th>SI.No</th>
                 <th>Enable</th>
                 <th>Pay Head</th>
                 <th>Amount</th>
@@ -116,15 +138,15 @@
                 <td>{{ i + 1 }}</td>
                 <td>
                   <div class="toggle-container cell-toggle" (click)="$event.stopPropagation()">
-                    <label class="switch switch-sm">
+                    <label class="switch">
                       <input
                         type="checkbox"
                         [(ngModel)]="line.enabled"
                         (ngModelChange)="onLineEnabledChange(line)"
                       />
                       <span class="slider">
-                        <span class="toggle-text" [ngStyle]="{ left: line.enabled ? '42%' : '60%', fontSize: '8px' }">
-                          {{ line.enabled ? 'On' : 'Off' }}
+                        <span class="toggle-text" [ngStyle]="{ left: line.enabled ? '42%' : '60%', fontSize: '9px' }">
+                          {{ line.enabled ? 'Active' : 'Inactive' }}
                         </span>
                       </span>
                     </label>
@@ -140,7 +162,7 @@
         </div>
 
         <div class="ActionButtons">
-          <button type="button" (click)="saveSettings()">Add Salary Setting</button>
+          <button type="button" (click)="saveSettings()">{{ editModeId ? 'Update Salary Setting' : 'Add Salary Setting' }}</button>
         </div>
       </div>
     </div>
@@ -154,8 +176,45 @@
         <button type="button" class="close" (click)="closeViewModal()"><span>&times;</span></button>
       </div>
       <div class="modal-body" *ngIf="viewRow">
-        <div class="row mb-2"><div class="col-5">Staff</div><div class="col-7">{{ viewRow.staff }}</div></div>
+        <div class="row mb-2"><div class="col-5">Staff</div><div class="col-7">{{ viewRow.staffName }}</div></div>
+        <div class="row mb-2"><div class="col-5">School</div><div class="col-7">{{ viewRow.schoolName }}</div></div>
+        <div class="row mb-2"><div class="col-5">Academic Year</div><div class="col-7">{{ viewRow.academicYearName }}</div></div>
         <div class="row mb-2"><div class="col-5">Active Pay Heads</div><div class="col-7">{{ viewRow.headsCount }}</div></div>
+
+        <div class="reviewstable salary-settings-table mt-3" *ngIf="viewPayHeads.length">
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>SI.No</th>
+                <th>Enable</th>
+                <th>Pay Head</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let line of viewPayHeads; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td>{{ line.isEnabled ? 'On' : 'Off' }}</td>
+                <td>{{ line.payHead }}</td>
+                <td>{{ line.amount }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isModalOpen}" [style.display]="isModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Salary Settings</h5>
+        <button type="button" class="close" (click)="closeModal('status')"><span>&times;</span></button>
+      </div>
+      <div class="modal-body"><p>{{ statusMessage }}</p></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="handleOk()">OK</button>
       </div>
     </div>
   </div>
