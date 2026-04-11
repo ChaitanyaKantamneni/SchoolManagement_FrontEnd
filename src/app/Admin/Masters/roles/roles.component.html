@@ -142,7 +142,7 @@
                   </div>
                 </div>
               </div>
-              <div class="InputFieldsContainer" *ngIf="!isAdmin()">
+              <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Description</label>
                 <div class="input-with-error">
                   <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="1"></textarea>
@@ -155,17 +155,6 @@
               </div>
             </div>
             <div class="InputRow">
-              <div class="InputFieldsContainer" *ngIf="isAdmin()">
-                <label class="inputLabel" for="email">Description</label>
-                <div class="input-with-error">
-                  <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="1"></textarea>
-                  <div *ngIf="RoleForm.get('Description')?.touched && RoleForm.get('Description')?.invalid" class="text-danger">
-                    <div *ngIf="RoleForm.get('Description')?.errors?.['required']">
-                      <small>Please Enter Description.</small>
-                    </div>
-                  </div>
-                </div>
-              </div> 
               <div class="InputFieldsContainer">
                 <div class="toggle-container" (click)="$event.stopPropagation()">
                   <label class="switch">
