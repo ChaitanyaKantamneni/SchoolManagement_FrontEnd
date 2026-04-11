@@ -15,13 +15,13 @@
           <div class="filterOptions">
             <div class="searchreview" *ngIf="isAdmin">
               <select class="form-control" [ngModel]="selectedSchoolID" (ngModelChange)="selectedSchoolID = $event" (change)="onAdminSchoolChange($event)" style="font-size: 11px;">
-                <option value="">-- Select School --</option>
+                <option value="">All Schools</option>
                 <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
               </select>
             </div>
             <div class="searchreview">
-              <select class="form-control" [(ngModel)]="selectedAcademicYearID" style="font-size: 11px;">
-                <option value="">-- Select Academic Year --</option>
+              <select class="form-control" [(ngModel)]="selectedAcademicYearID" (ngModelChange)="onAcademicYearChange()" style="font-size: 11px;">
+                <option value="">All Academic Years</option>
                 <option *ngFor="let year of academicYearList" [value]="year.ID">{{ year.Name }}</option>
               </select>
             </div>
@@ -30,19 +30,14 @@
               <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
             </div>
           </div>
-          <div class="DownloadButtons" *ngIf="filteredRows.length !== 0">
-            <button type="button" class="btnHover" (click)="exportPlaceholder('copy')"><mat-icon>content_copy</mat-icon></button>
-            <button type="button" class="btnHover" (click)="exportPlaceholder('csv')"><mat-icon>description</mat-icon></button>
-            <button type="button" class="btnHover" (click)="exportPlaceholder('excel')"><mat-icon>table_chart</mat-icon></button>
-            <button type="button" class="btnHover" (click)="exportPlaceholder('pdf')"><mat-icon>picture_as_pdf</mat-icon></button>
-            <button type="button" class="btnHover" (click)="exportPlaceholder('print')"><mat-icon>print</mat-icon></button>
-          </div>
         </div>
         <div class="reviewstable">
           <table *ngIf="filteredRows.length !== 0" class="table table-bordered">
             <thead>
               <tr>
                 <th>SI.No</th>
+                <th>School</th>
+                <th>Academic Year</th>
                 <th>Staff Name</th>
                 <th>Designation</th>
                 <th>Payment Mode</th>
@@ -55,6 +50,8 @@
             <tbody>
               <tr *ngFor="let row of filteredRows; let i = index">
                 <td>{{ i + 1 }}</td>
+                <td>{{ row.schoolName }}</td>
+                <td>{{ row.academicYearName }}</td>
                 <td>{{ row.staffName }}</td>
                 <td>{{ row.designation }}</td>
                 <td>{{ row.paymentMode }}</td>
@@ -124,23 +121,11 @@
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>Basic Salary</td>
-                <td>{{ basicSalary | number : '1.2-2' }}</td>
-                <td>Provident Fund (PF)</td>
-                <td>{{ pfDeduction | number : '1.2-2' }}</td>
-              </tr>
-              <tr>
-                <td>HRA</td>
-                <td>{{ hra | number : '1.2-2' }}</td>
-                <td>Professional Tax</td>
-                <td>{{ professionalTax | number : '1.2-2' }}</td>
-              </tr>
-              <tr>
-                <td>Other Allowances</td>
-                <td>{{ allowances | number : '1.2-2' }}</td>
-                <td>-</td>
-                <td>0.00</td>
+              <tr *ngFor="let line of payslipRows">
+                <td>{{ line.earningPayHead }}</td>
+                <td>{{ line.earningAmount === null ? '-' : (line.earningAmount | number : '1.2-2') }}</td>
+                <td>{{ line.deductionPayHead }}</td>
+                <td>{{ line.deductionAmount === null ? '-' : (line.deductionAmount | number : '1.2-2') }}</td>
               </tr>
             </tbody>
           </table>

@@ -92,10 +92,10 @@ export const FULL_ADMIN_MENU: Module[] = [
     pages: [
       { id: 'payrollhead', pageName: 'Payroll Head', moduleID: 'hrpayroll', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
       { id: 'paymentmode', pageName: 'Payment Mode', moduleID: 'hrpayroll', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
-      // { id: 'salarysettings', pageName: 'Salary Settings', moduleID: 'hrpayroll', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
+      { id: 'salarysettings', pageName: 'Salary Settings', moduleID: 'hrpayroll', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
+      { id: 'salarypay', pageName: 'Salary Pay', moduleID: 'hrpayroll', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
       // { id: 'advancesalary', pageName: 'Advance Salary', moduleID: 'hrpayroll', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
-      // { id: 'salarypay', pageName: 'Salary Pay', moduleID: 'hrpayroll', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
-      // { id: 'salaryissued', pageName: 'Salary Issued', moduleID: 'hrpayroll', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
+      { id: 'salaryissued', pageName: 'Salary Issued', moduleID: 'hrpayroll', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
     ]
   }
 ];

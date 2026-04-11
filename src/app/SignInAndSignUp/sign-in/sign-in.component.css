@@ -128,7 +128,28 @@
   line-height: 1.1;
   margin-bottom: 10px;
 }
-.brand-name span { color: #64b5f6; }
+.brand-name .brand-erp { color: #64b5f6; }
+
+.brand-name-animated .popup-char {
+  display: inline-block;
+  transition: transform 0.22s ease, text-shadow 0.22s ease;
+  will-change: transform;
+}
+
+.brand-name-animated .popup-space {
+  display: inline-block;
+  width: 0.35em;
+}
+
+.brand-name-animated .popup-char:hover {
+  animation: letterPop 0.34s ease;
+}
+
+@keyframes letterPop {
+  0%   { transform: translateY(0) scale(1); }
+  45%  { transform: translateY(-6px) scale(1.08); }
+  100% { transform: translateY(0) scale(1); }
+}
 
 .brand-headline {
   font-size: 14px;

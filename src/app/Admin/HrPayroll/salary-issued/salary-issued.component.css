@@ -59,29 +59,43 @@
   font-size: 12px;
 }
 
+.payslip-meta-grid p:nth-child(even) {
+  text-align: right;
+}
+
 .payslip-table th {
   background: #f8fafc;
   font-weight: 600;
 }
 
 .payslip-totals {
-  width: 280px;
-  margin-left: auto;
+  width: 100%;
+  margin-left: 0;
   margin-top: 10px;
 }
 
 .totals-row {
   display: flex;
-  justify-content: space-between;
-  font-size: 12px;
+  align-items: center;
+  font-size: 14px;
   padding: 4px 0;
+}
+
+.totals-row span {
+  text-align: left;
+}
+
+.totals-row b {
+  margin-left: auto;
+  text-align: right;
+  min-width: 120px;
 }
 
 .net-row {
   border-top: 1px solid #94a3b8;
   margin-top: 4px;
   padding-top: 6px;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .payslip-sign {
