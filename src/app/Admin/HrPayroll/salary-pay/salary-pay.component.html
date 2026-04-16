@@ -1,6 +1,22 @@
 <div>
   <app-dashboard-top-nav></app-dashboard-top-nav>
 </div>
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isModalOpen}" [style.display]="isModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Salary Pay</h5>
+        <button type="button" class="close" (click)="closeModal()"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <p>{{ statusMessage }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="closeModal()">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="MainContentDiv">
   <div class="w-100">
     <div class="AddForm">
@@ -20,15 +36,21 @@
                   <option value="">-- Select School --</option>
                   <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
                 </select>
+                <div *ngIf="formSubmitAttempted && !selectedSchoolID" class="text-danger">
+                  <small>Please select school.</small>
+                </div>
               </div>
             </div>
             <div class="InputFieldsContainer">
               <label class="inputLabel">Academic Year <span class="required">*</span></label>
               <div class="input-with-error">
-                <select class="inputField" [(ngModel)]="selectedAcademicYearID">
+                <select class="inputField" [(ngModel)]="selectedAcademicYearID" (ngModelChange)="onAcademicYearChange()">
                   <option value="">-- Select Academic Year --</option>
                   <option *ngFor="let year of academicYearList" [value]="year.ID">{{ year.Name }}</option>
                 </select>
+                <div *ngIf="formSubmitAttempted && !selectedAcademicYearID" class="text-danger">
+                  <small>Please select academic year.</small>
+                </div>
               </div>
             </div>
           </div>
@@ -36,17 +58,25 @@
             <div class="InputFieldsContainer">
               <label class="inputLabel">Staff <span class="required">*</span></label>
               <div class="input-with-error">
-                <select class="inputField" [(ngModel)]="form.staffName">
-                  <option *ngFor="let staff of staffList" [value]="staff">{{ staff }}</option>
+                <select class="inputField" [(ngModel)]="selectedStaffID" (ngModelChange)="onStaffChange()">
+                  <option value="">-- Select Staff --</option>
+                  <option *ngFor="let staff of staffList" [value]="staff.ID">{{ staff.Name }}</option>
                 </select>
+                <div *ngIf="formSubmitAttempted && !selectedStaffID" class="text-danger">
+                  <small>Please select staff.</small>
+                </div>
               </div>
             </div>
             <div class="InputFieldsContainer">
               <label class="inputLabel">Payment Mode <span class="required">*</span></label>
               <div class="input-with-error">
-                <select class="inputField" [(ngModel)]="form.paymentMode">
-                  <option *ngFor="let mode of paymentModes" [value]="mode">{{ mode }}</option>
+                <select class="inputField" [(ngModel)]="form.paymentMode" (ngModelChange)="onPaymentModeChange()">
+                  <option value="">-- Select Payment Mode --</option>
+                  <option *ngFor="let mode of paymentModes" [value]="mode.Name">{{ mode.Name }}</option>
                 </select>
+                <div *ngIf="formSubmitAttempted && !form.paymentMode" class="text-danger">
+                  <small>Please select payment mode.</small>
+                </div>
               </div>
             </div>
           </div>
@@ -54,30 +84,134 @@
             <div class="InputFieldsContainer">
               <label class="inputLabel">Start Date <span class="required">*</span></label>
               <div class="input-with-error">
-                <input class="inputField" type="date" [(ngModel)]="form.startDate" />
+                <input class="inputField" type="date" [(ngModel)]="form.startDate" (ngModelChange)="onStartDateChange()" [max]="todayDate" />
+                <div *ngIf="formSubmitAttempted && !form.startDate" class="text-danger">
+                  <small>Please select start date.</small>
+                </div>
               </div>
             </div>
             <div class="InputFieldsContainer">
               <label class="inputLabel">End Date <span class="required">*</span></label>
               <div class="input-with-error">
-                <input class="inputField" type="date" [(ngModel)]="form.endDate" />
+                <input class="inputField" type="date" [(ngModel)]="form.endDate" (ngModelChange)="onEndDateChange()" [max]="todayDate" />
+                <div *ngIf="formSubmitAttempted && !form.endDate" class="text-danger">
+                  <small>Please select end date.</small>
+                </div>
+              </div>
+            </div>
+            <div class="InputFieldsContainer">
+              <label class="inputLabel">
+                Reference No <span class="required" *ngIf="isReferenceNoRequired()">*</span>
+              </label>
+              <div class="input-with-error">
+                <input
+                  class="inputField"
+                  type="text"
+                  [(ngModel)]="form.referenceNo"
+                  [required]="isReferenceNoRequired()"
+                  placeholder="Enter reference no"
+                />
+                <div
+                  *ngIf="formSubmitAttempted && isReferenceNoRequired() && !form.referenceNo?.trim()"
+                  class="text-danger"
+                >
+                  <small>Please enter Reference No.</small>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         <div class="salary-pay-fetch-row">
-          <button type="button" class="btn-salary-fetch" (click)="getSalaryDetails()">Get Salary Details</button>
+          <button type="button" class="btn-salary-fetch" (click)="getSalaryDetails()" [disabled]="isPageLoading || isSubmitting">
+            {{ isPageLoading ? 'Loading...' : 'Get Salary Details' }}
+          </button>
         </div>
 
         <div *ngIf="salaryDetails" class="salary-pay-summary">
-          <p><b>Gross:</b> {{ salaryDetails.gross }}</p>
-          <p><b>Deductions:</b> {{ salaryDetails.deduction }}</p>
-          <p><b>Net Pay:</b> {{ salaryDetails.net }}</p>
+          <table class="sp-table">
+            <thead>
+              <tr>
+                <th class="sp-th-head">#</th>
+                <th class="sp-th-head">Pay Head</th>
+                <th class="sp-th-head">Type</th>
+                <th class="sp-th-head sp-amount">Amount (₹)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Earnings section -->
+              <tr class="sp-section-label">
+                <td colspan="4">Earnings</td>
+              </tr>
+              <ng-container *ngFor="let line of salaryDetails.lines; let i = index">
+                <tr *ngIf="line.type === 'Addition'" class="sp-row-earning">
+                  <td class="sp-num">{{ i + 1 }}</td>
+                  <td>{{ line.payHead }}</td>
+                  <td><span class="sp-badge sp-badge-add">Earning</span></td>
+                  <td class="sp-amount">{{ line.amount | number:'1.2-2' }}</td>
+                </tr>
+              </ng-container>
+              <!-- Gross subtotal -->
+              <tr class="sp-subtotal">
+                <td colspan="3">Gross Earnings</td>
+                <td class="sp-amount">{{ salaryDetails.gross | number:'1.2-2' }}</td>
+              </tr>
+
+              <!-- Deductions section -->
+              <tr class="sp-section-label">
+                <td colspan="4">Deductions</td>
+              </tr>
+              <ng-container *ngFor="let line of salaryDetails.lines; let i = index">
+                <tr *ngIf="line.type === 'Deduction' && !line.isAdvance" class="sp-row-deduction">
+                  <td class="sp-num">{{ i + 1 }}</td>
+                  <td>{{ line.payHead }}</td>
+                  <td><span class="sp-badge sp-badge-ded">Deduction</span></td>
+                  <td class="sp-amount">{{ line.amount | number:'1.2-2' }}</td>
+                </tr>
+              </ng-container>
+
+              <!-- Advance salary deductions -->
+              <ng-container *ngIf="advanceSalaryInfo && advanceSalaryInfo.length > 0">
+                <tr class="sp-advance-label">
+                  <td colspan="4">Advance Salary Recovery</td>
+                </tr>
+                <tr *ngFor="let adv of advanceSalaryInfo; let ai = index" class="sp-row-advance">
+                  <td class="sp-num">—</td>
+                  <td>
+                    <span>Advance #{{ ai + 1 }}</span>
+                    <span class="sp-adv-meta">Total ₹{{ adv.amount }} · {{ adv.tenureMonths }}m tenure · {{ adv.remainingMonths }}m left</span>
+                  </td>
+                  <td><span class="sp-badge sp-badge-adv">Advance</span></td>
+                  <td class="sp-amount">{{ adv.deductionForCurrentMonth | number:'1.2-2' }}</td>
+                </tr>
+                <!-- Advance subtotal -->
+                <tr class="sp-adv-subtotal">
+                  <td colspan="3">Total Advance Recovery</td>
+                  <td class="sp-amount">{{ totalAdvanceDeduction | number:'1.2-2' }}</td>
+                </tr>
+              </ng-container>
+
+              <!-- Total deductions subtotal -->
+              <tr class="sp-subtotal">
+                <td colspan="3">Total Deductions</td>
+                <td class="sp-amount">{{ salaryDetails.deduction | number:'1.2-2' }}</td>
+              </tr>
+
+              <!-- Net Pay footer -->
+              <tr class="sp-net-row">
+                <td colspan="3">Net Pay</td>
+                <td class="sp-amount">{{ salaryDetails.net | number:'1.2-2' }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
+        <p *ngIf="statusMessage" class="salary-pay-status">{{ statusMessage }}</p>
+
         <div class="ActionButtons">
-          <button type="button" (click)="paySalary()">Pay Salary</button>
+          <button type="button" (click)="paySalary()" [disabled]="!salaryDetails || isSubmitting || isPageLoading">
+            {{ isSubmitting || isPageLoading ? 'Processing...' : 'Pay Salary' }}
+          </button>
         </div>
       </div>
     </div>

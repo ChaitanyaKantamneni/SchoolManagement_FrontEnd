@@ -89,6 +89,7 @@ export class AdmissionComponent extends BasePermissionComponent {
   bulkUploadStatus: string = '';
   isBulkUploading: boolean = false;
   isBulkUploadModalOpen: boolean = false;
+  bulkTemplateResolvedSchoolId: string = '';
   academicYearList:any[] = [];
   AdminselectedSchoolID:string = '';
   AdminselectedAcademivYearID:string = '';
@@ -2030,7 +2031,7 @@ export class AdmissionComponent extends BasePermissionComponent {
       const safePost = async (endpoint: string, payload: any) => {
         try {
           const resp = await firstValueFrom(this.apiurl.post<any>(endpoint, payload));
-          return resp?.data || [];
+          return resp?.data || resp?.Data || [];
         } catch {
           return [];
         }
@@ -2038,8 +2039,11 @@ export class AdmissionComponent extends BasePermissionComponent {
 
       const schoolsData = await safePost('Tbl_SchoolDetails_CRUD', { Flag: '2' });
       const effectiveSchoolID = this.getEffectiveSchoolId();
+      let resolvedSchoolIdForTemplate = effectiveSchoolID;
       const schoolIds: string[] = this.isAdmin
-        ? schoolsData.map((x: any) => String(x.id)).filter(Boolean)
+        ? schoolsData
+            .map((x: any) => this.pickField(x, ['id', 'ID']))
+            .filter(Boolean)
         : [effectiveSchoolID].filter(Boolean);
 
       const yearMap = new Map<string, string[]>();
@@ -2059,14 +2063,27 @@ export class AdmissionComponent extends BasePermissionComponent {
       const allBuses: any[] = [];
       const allFares: any[] = [];
 
-      for (const schoolId of schoolIds) {
-        const years = await safePost('Tbl_AcademicYear_CRUD_Operations', { SchoolID: schoolId, Flag: '2' });
-        const schoolYearKey = `AY_S_${schoolId}`;
-        const yearValuesForSchool = years.map((y: any) => `${y.id} - ${y.name ?? ''}`);
-        yearMap.set(schoolYearKey, yearValuesForSchool.length ? yearValuesForSchool : ['']);
-        allYears.push(...years);
+      const normalizeAcademicYears = (years: any[]): Array<{ id: string; name: string }> =>
+        years
+          .map((y: any) => {
+            const id = this.pickField(y, ['id', 'ID']);
+            const name = this.pickField(y, ['name', 'Name', 'academicYear', 'AcademicYear']);
+            return id ? { id, name } : null;
+          })
+          .filter((y): y is { id: string; name: string } => y !== null);
 
-        for (const year of years) {
+      for (const schoolId of schoolIds) {
+        if (!resolvedSchoolIdForTemplate) {
+          resolvedSchoolIdForTemplate = schoolId;
+        }
+        const years = await safePost('Tbl_AcademicYear_CRUD_Operations', { SchoolID: schoolId, Flag: '2' });
+        const normalizedYears = normalizeAcademicYears(years);
+        const schoolYearKey = `AY_S_${schoolId}`;
+        const yearValuesForSchool = normalizedYears.map((y: any) => `${y.id} - ${y.name ?? ''}`);
+        yearMap.set(schoolYearKey, yearValuesForSchool.length ? yearValuesForSchool : ['']);
+        allYears.push(...normalizedYears);
+
+        for (const year of normalizedYears) {
           const yearId = String(year.id ?? '').trim();
           if (!yearId) continue;
 
@@ -2207,6 +2224,72 @@ export class AdmissionComponent extends BasePermissionComponent {
         }
       }
 
+      // Fallback for school/staff login: let backend resolve SchoolID from claims.
+      // This handles sessions where SchoolID is not present in frontend storage.
+      if (!this.isAdmin && allYears.length === 0) {
+        const years = await safePost('Tbl_AcademicYear_CRUD_Operations', { SchoolID: '', Flag: '2' });
+        const normalizedYears = normalizeAcademicYears(years);
+        allYears.push(...normalizedYears);
+        const fallbackSchoolId =
+          this.pickField(years?.[0], ['schoolID', 'SchoolID']) || resolvedSchoolIdForTemplate;
+
+        if (fallbackSchoolId) {
+          resolvedSchoolIdForTemplate = fallbackSchoolId;
+          const schoolYearKey = `AY_S_${fallbackSchoolId}`;
+          const yearValuesForSchool = normalizedYears.map((y: any) => `${y.id} - ${y.name ?? ''}`);
+          yearMap.set(schoolYearKey, yearValuesForSchool.length ? yearValuesForSchool : ['']);
+
+          for (const year of normalizedYears) {
+            const yearId = String(year.id ?? '').trim();
+            if (!yearId) continue;
+
+            const syllabi = await safePost('Tbl_Syllabus_CRUD_Operations', {
+              SchoolID: fallbackSchoolId,
+              AcademicYear: yearId,
+              Flag: '3'
+            });
+            const syllabusKey = `SY_S_${fallbackSchoolId}_Y_${yearId}`;
+            const syllabusValuesForKey = syllabi.map((s: any) => `${s.id} - ${s.name ?? ''}`);
+            syllabusMap.set(syllabusKey, syllabusValuesForKey.length ? syllabusValuesForKey : ['']);
+            allSyllabus.push(...syllabi);
+
+            for (const syllabus of syllabi) {
+              const syllabusId = String(syllabus.id ?? '').trim();
+              if (!syllabusId) continue;
+
+              const classes = await safePost('Tbl_Class_CRUD_Operations', {
+                SchoolID: fallbackSchoolId,
+                AcademicYear: yearId,
+                Syllabus: syllabusId,
+                Flag: '3'
+              });
+              const classKey = `CL_S_${fallbackSchoolId}_Y_${yearId}_SY_${syllabusId}`;
+              const classValuesForKey = classes.map((c: any) => `${c.id} - ${c.name ?? ''}`);
+              classMap.set(classKey, classValuesForKey.length ? classValuesForKey : ['']);
+              allClasses.push(...classes);
+
+              for (const cls of classes) {
+                const classId = String(cls.id ?? '').trim();
+                if (!classId) continue;
+
+                const divisions = await safePost('Tbl_ClassDivision_CRUD_Operations', {
+                  SchoolID: fallbackSchoolId,
+                  AcademicYear: yearId,
+                  Class: classId,
+                  Flag: '11'
+                });
+                const divisionKey = `DV_S_${fallbackSchoolId}_Y_${yearId}_SY_${syllabusId}_CL_${classId}`;
+                const divisionValuesForKey = divisions.map((d: any) => `${d.id} - ${d.name ?? ''}`);
+                divisionMap.set(divisionKey, divisionValuesForKey.length ? divisionValuesForKey : ['']);
+                allDivisions.push(...divisions);
+              }
+            }
+          }
+        }
+      }
+
+      this.bulkTemplateResolvedSchoolId = resolvedSchoolIdForTemplate;
+
       const schoolValues = schoolsData.map((x: any) => `${x.id} - ${x.name ?? ''}`);
       const yearValues = Array.from(new Set(allYears.map((x: any) => `${x.id} - ${x.name ?? ''}`)));
       const syllabusValues = Array.from(new Set(allSyllabus.map((x: any) => `${x.id} - ${x.name ?? ''}`)));
@@ -2304,6 +2387,7 @@ export class AdmissionComponent extends BasePermissionComponent {
 
       this.createStaticNamedRanges(workbook, lookupSheet, {
         SchoolID: schoolValues.length,
+        AcademicYear: yearValues.length,
         Syllabus: syllabusValues.length,
         Class: classValues.length,
         Division: divisionValues.length,
@@ -2482,7 +2566,8 @@ export class AdmissionComponent extends BasePermissionComponent {
     const fareColLetter = colMap['Fare'] !== undefined ? ws.getColumn(colMap['Fare'] + 1).letter : '';
 
     for (let row = 2; row <= 500; row++) {
-      const schoolRef = schoolColLetter ? `$${schoolColLetter}${row}` : `"${this.getEffectiveSchoolId()}"`;
+      const resolvedSchoolId = this.bulkTemplateResolvedSchoolId || this.getEffectiveSchoolId();
+      const schoolRef = schoolColLetter ? `$${schoolColLetter}${row}` : `"${resolvedSchoolId}"`;
       const yearRef = yearColLetter ? `$${yearColLetter}${row}` : '""';
       const syllabusRef = syllabusColLetter ? `$${syllabusColLetter}${row}` : '""';
       const classRef = classColLetter ? `$${classColLetter}${row}` : '""';
@@ -2491,7 +2576,7 @@ export class AdmissionComponent extends BasePermissionComponent {
       const busRef = busColLetter ? `$${busColLetter}${row}` : '""';
       const schoolIdExpr = schoolColLetter
         ? `LEFT(${schoolRef},FIND(" - ",${schoolRef}&" - ")-1)`
-        : `"${this.getEffectiveSchoolId()}"`;
+        : `"${resolvedSchoolId}"`;
       const yearIdExpr = `LEFT(${yearRef},FIND(" - ",${yearRef}&" - ")-1)`;
       const syllabusIdExpr = `LEFT(${syllabusRef},FIND(" - ",${syllabusRef}&" - ")-1)`;
       const classIdExpr = `LEFT(${classRef},FIND(" - ",${classRef}&" - ")-1)`;
@@ -2500,10 +2585,9 @@ export class AdmissionComponent extends BasePermissionComponent {
       const busIdExpr = `LEFT(${busRef},FIND(" - ",${busRef}&" - ")-1)`;
 
       if (yearColLetter) {
-        const effectiveSchoolId = this.getEffectiveSchoolId();
         const formula = schoolColLetter
           ? `INDIRECT(IF(${schoolIdExpr}="","AY_S_EMPTY","AY_S_"&${schoolIdExpr}))`
-          : (effectiveSchoolId ? `AY_S_${effectiveSchoolId}` : 'LIST_EMPTY');
+          : 'LIST_ACADEMICYEAR';
         applyValidation(ws.getCell(`${yearColLetter}${row}`), formula);
       }
 
@@ -2657,13 +2741,25 @@ export class AdmissionComponent extends BasePermissionComponent {
     return '';
   }
 
+  private normalizeSchoolId(value: any): string {
+    const raw = String(value ?? '').trim();
+    if (!raw) return '';
+    // Handle values like "1 - School Name" and keep only ID
+    const splitIndex = raw.indexOf(' - ');
+    const parsed = splitIndex > -1 ? raw.slice(0, splitIndex).trim() : raw;
+    return parsed;
+  }
+
   private getEffectiveSchoolId(): string {
-    return (
+    const candidate =
       this.AdminselectedSchoolID ||
+      this.selectedSchoolID ||
       sessionStorage.getItem('SchoolID') ||
+      sessionStorage.getItem('schoolID') ||
       localStorage.getItem('SchoolID') ||
-      ''
-    ).toString().trim();
+      localStorage.getItem('schoolID') ||
+      '';
+    return this.normalizeSchoolId(candidate);
   }
 
   onBulkFileSelected(event: Event) {

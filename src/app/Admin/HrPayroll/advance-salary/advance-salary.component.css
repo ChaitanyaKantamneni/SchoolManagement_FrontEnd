@@ -10,3 +10,13 @@
 .searchreview.input-container .floating-input {
   padding-left: 32px !important;
 }
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  width: 100%;
+}
