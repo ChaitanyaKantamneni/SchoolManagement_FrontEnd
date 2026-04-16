@@ -46,7 +46,7 @@
                   </div>
                 </div>
               </div>
-              <div class="InputFieldsContainer">
+              <div class="InputFieldsContainer" *ngIf="!isTeacher">
                 <label class="inputLabel">Class <span class="required">*</span></label>
                 <div class="input-with-error">
                   <select class="inputField" formControlName="Class" (change)="onAdminClasschange($event)">
@@ -60,7 +60,7 @@
               </div>
             </div>
 
-            <div class="InputRow">
+            <div class="InputRow" *ngIf="!isTeacher">
               <div class="InputFieldsContainer">
                 <label class="inputLabel">Division <span class="required">*</span></label>
                 <div class="input-with-error">
@@ -124,7 +124,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="InputFieldsContainer">
+                <div class="InputFieldsContainer" *ngIf="!isTeacher">
                   <label class="inputLabel">Class <span class="required">*</span></label>
                   <div class="input-with-error">
                     <select class="inputField" formControlName="Class" (change)="onAdminClasschange($event)">
@@ -136,7 +136,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="InputFieldsContainer">
+                <div class="InputFieldsContainer" *ngIf="!isTeacher">
                   <label class="inputLabel">Division <span class="required">*</span></label>
                   <div class="input-with-error">
                     <select class="inputField" formControlName="Divisions" (change)="onAdminDivisionsChange($event)">

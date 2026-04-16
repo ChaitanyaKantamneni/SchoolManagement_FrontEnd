@@ -1,160 +1,178 @@
-<div>
-  <app-dashboard-top-nav></app-dashboard-top-nav>
-</div>
+<app-dashboard-top-nav></app-dashboard-top-nav>
 
 <div class="MainContentDiv">
-  <div class="w-100">
-    <div class="ComponentTop">
-      <div class="ComponentTopHeader">
-        <h5>Leave Approval</h5>
-        <p>Review and approve or reject leave applications for staff and students.</p>
-      </div>
+  <div class="ComponentTop">
+    <div class="ComponentTopHeader">
+      <h5>Leave Approval Management</h5>
+      <p>Total {{ RequestCount }} Requests Found</p>
     </div>
   </div>
 
-  <div class="w-100">
-    <div class="AddForm">
-      <div class="AddFormTop">
-        <p>Leave Approval Inbox</p>
+  <div class="ComponentRecords">
+    <div>
+      <div class="ComponentRecordsTop">
+        <div class="filterOptions">
+          <div class="searchreview input-container">
+            <input type="text" class="form-control floating-input" 
+                   placeholder="Search applicant..." [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()">
+            <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #64748b; pointer-events: none;">search</mat-icon>
+          </div>
+
+          <div class="searchreview" *ngIf="isAdmin" style="width: 180px;">
+            <select class="form-control" style="font-size: 11px;" [(ngModel)]="selectedSchoolId" (change)="onSchoolChange($event)">
+              <option value="">-- Select School --</option>
+              <option value="0">All Schools</option>
+              <option *ngFor="let s of schoolList" [value]="s.ID">{{ s.Name }}</option>
+            </select>
+          </div>
+
+          <div class="searchreview" style="width: 150px;">
+            <select class="form-control" style="font-size: 11px;" [(ngModel)]="selectedAcademicYearId" (change)="onYearChange($event)">
+              <option value="">-- Select Year --</option>
+              <option *ngFor="let y of academicYears" [value]="y.ID">{{ y.Name }}</option>
+            </select>
+          </div>
+
+          <div class="searchreview" style="width: 130px;">
+            <select class="form-control" style="font-size: 11px;" [(ngModel)]="userTypeFilter" (change)="fetchLeaveRequests()">
+              <option *ngFor="let type of availableUserTypes" [value]="type.value">{{ type.label }}</option>
+            </select>
+          </div>
+
+          <div class="searchreview" style="width: 130px;">
+            <select class="form-control" style="font-size: 11px;" [(ngModel)]="statusFilter" (change)="applyFilters()">
+              <option value="All">All Status</option>
+              <option value="Pending">Pending</option>
+              <option value="Approved">Approved</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+          </div>
+        </div>
       </div>
 
-      <div class="AddFormConatiner">
+      <div class="reviewstable">
+        <table class="table table-bordered" *ngIf="filteredList.length != 0">
+          <thead>
+            <tr>
+              <th>SI.No</th>
+              <th>Applicant</th>
+              <th *ngIf="userTypeFilter === 'Student'">Class/Div</th>
+              <th>Leave Type</th>
+              <th>Duration</th>
+              <th>Days</th>
+              <th>Applied On</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let req of paginatedList; let i = index">
+              <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+              <td>
+                <strong [style.color]="userTypeFilter === 'Student' ? '#536ff7' : 'inherit'">{{ req.applicantName }}</strong><br>
+                <small style="color: #64748b;">{{ req.applicantId }}</small>
+              </td>
+              <td *ngIf="userTypeFilter === 'Student'">
+                <div style="font-size: 13px; font-weight: 600;">{{ req.className }}</div>
+                <div style="font-size: 11px; color: #94a3b8;">{{ req.divisionName }}</div>
+              </td>
+              <td>{{ req.leaveType }}</td>
+              <td>{{ req.fromDate }} to {{ req.toDate }}</td>
+              <td>{{ req.days }}</td>
+              <td>{{ req.appliedOn }}</td>
+              <td>
+                <span class="status-pill"
+                  [style.background]="req.status === 'Approved' ? 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)' : (req.status === 'Rejected' ? 'linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%)' : 'linear-gradient(135deg, #fef9c3 0%, #fef08a 100%)')"
+                  [style.color]="req.status === 'Approved' ? '#166534' : (req.status === 'Rejected' ? '#9f1239' : '#854d0e')"
+                  [style.borderColor]="req.status === 'Approved' ? '#86efac' : (req.status === 'Rejected' ? '#fda4af' : '#fde047')">
+                  {{ req.status }}
+                </span>
+              </td>
+              <td>
+                <button class="btn checkbtn" (click)="viewReview(req)">
+                  <mat-icon style="font-size: 16px;">visibility</mat-icon>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
-        <div class="ContextRow">
-          <div class="ContextField" *ngIf="isAdmin">
-            <label class="inputLabel">School</label>
-            <select class="inputField" [value]="selectedSchoolId" (change)="onSchoolChange($event)">
-              <option value="">-- Select School --</option>
-              <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
-            </select>
+        <div *ngIf="filteredList.length === 0" class="NoDataFound">
+          <div class="NoDataFoundImg">
+            <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
           </div>
-          <div class="ContextField">
-            <label class="inputLabel">Academic Year</label>
-            <select class="inputField" [value]="selectedAcademicYearId" (change)="onAcademicYearChange($event)" [disabled]="!availableAcademicYears.length">
-              <option value="">-- Select Year --</option>
-              <option *ngFor="let year of availableAcademicYears" [value]="year.ID">{{ year.Name }}</option>
-            </select>
-          </div>
-          <div class="ContextField">
-            <label class="inputLabel">View</label>
-            <select class="inputField" [value]="viewMode" (change)="onViewModeChange($event)">
-              <option value="mine">Pending For Me</option>
-              <option value="all">All Requests</option>
-            </select>
-          </div>
+          <p>No data found.</p>
         </div>
-
-        <div class="StatsRow">
-          <div class="StatCard">
-            <span>Pending</span>
-            <strong>{{ pendingCount }}</strong>
-          </div>
-          <div class="StatCard">
-            <span>Approved</span>
-            <strong>{{ approvedCount }}</strong>
-          </div>
-          <div class="StatCard">
-            <span>Rejected</span>
-            <strong>{{ rejectedCount }}</strong>
-          </div>
+        <div *ngIf="filteredList.length > pageSize" class="pagination-controls">
+          <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
+          <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
+          <button *ngFor="let page of getVisiblePageNumbers()"
+                  class="page-btn"
+                  [ngClass]="{'active': page === currentPage}"
+                  (click)="goToPage(page)">
+            {{ page }}
+          </button>
+          <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+          <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
         </div>
-
-        <div class="FilterRow">
-          <input
-            class="inputField"
-            type="text"
-            [(ngModel)]="searchTerm"
-            placeholder="Search by name, leave type, request id" />
-          <select class="inputField" [(ngModel)]="statusFilter">
-            <option value="Pending">Pending</option>
-            <option value="All">All Status</option>
-            <option value="Approved">Approved</option>
-            <option value="Rejected">Rejected</option>
-          </select>
-        </div>
-
-        <div class="TableContainer">
-          <div *ngIf="isLoading" class="NoData">Loading...</div>
-          <table *ngIf="!isLoading">
-            <thead>
-              <tr>
-                <th>Request ID</th>
-                <th>Applicant</th>
-                <th>Leave Type</th>
-                <th>Dates</th>
-                <th>Days</th>
-                <th>Applied On</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let req of filteredRequests">
-                <td>{{ req.id }}</td>
-                <td>{{ req.applicantName }}</td>
-                <td>{{ req.leaveType }}</td>
-                <td>{{ req.fromDate }} to {{ req.toDate }}</td>
-                <td>{{ req.days }}</td>
-                <td>{{ req.appliedOn }}</td>
-                <td>
-                  <span class="StatusPill" [ngClass]="getStatusClass(req.status)">{{ req.status }}</span>
-                </td>
-                <td class="ActionCell">
-                  <button type="button" class="btn linkBtn" (click)="openDetails(req)">View</button>
-                </td>
-              </tr>
-              <tr *ngIf="!filteredRequests.length && !isLoading">
-                <td colspan="8" class="NoData">No leave requests found.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
       </div>
     </div>
   </div>
 </div>
 
-<div class="modal" tabindex="-1" role="dialog" [ngClass]="{ 'show': isDetailsModalOpen }" [style.display]="isDetailsModalOpen ? 'block' : 'none'">
-  <div class="modal-dialog leave-details-dialog" role="document">
-    <div class="modal-content" *ngIf="selectedRequest">
+<!-- View/Process Modal -->
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog modal-md" role="document">
+    <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+      <div class="modal-header" style="background: #536ff7; color: white; border-radius: 12px 12px 0 0; border: none;">
+        <h5 class="modal-title">Process Leave Request</h5>
+        <button type="button" class="close" (click)="closeModal('view')" style="color: white; opacity: 1; outline: none; border: none; background: transparent; font-size: 24px;">×</button>
+      </div>
+      <div class="modal-body" style="padding: 24px;">
+        <div class="row mb-3">
+          <div class="col-5 viewHeadingfontsize">Applicant</div>
+          <div class="col-7 viewfontsize">{{ selectedRequest?.applicantName }}</div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-5 viewHeadingfontsize">Leave Category</div>
+          <div class="col-7 viewfontsize">{{ selectedRequest?.leaveType }}</div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-5 viewHeadingfontsize">Duration</div>
+          <div class="col-7 viewfontsize">{{ selectedRequest?.fromDate }} to {{ selectedRequest?.toDate }}</div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-5 viewHeadingfontsize">Reason</div>
+          <div class="col-7" style="background: #f8fafc; padding: 12px; border-radius: 8px; font-size: 12px; border: 1px solid #e2e8f0;">{{ selectedRequest?.reason }}</div>
+        </div>
+        <div class="form-group mt-4">
+          <label class="inputLabel" style="font-size: 11px; font-weight: 700; color: #64748b; letter-spacing: 0.5px;">REVIEWER REMARKS</label>
+          <textarea class="form-control" style="font-size: 12px; border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px;" rows="3" [(ngModel)]="remarks" placeholder="Add approval/rejection notes..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer" style="background: #f8fafc; border-radius: 0 0 12px 12px; border-top: 1px solid #e2e8f0; gap: 12px;">
+        <button class="btn" style="background: #ef4444; color: white; padding: 8px 24px; border-radius: 6px; font-weight: 500; font-size: 13px;" (click)="updateStatus('Rejected')" [disabled]="isSubmitting">Reject</button>
+        <button class="btn" style="background: #10b981; color: white; padding: 8px 24px; border-radius: 6px; font-weight: 500; font-size: 13px;" (click)="updateStatus('Approved')" [disabled]="isSubmitting">Approve</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Status Modal -->
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isModalOpen}" [style.display]="isModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Leave Request Details</h5>
-        <button type="button" class="close" aria-label="Close" (click)="closeDetails()">
-          <span aria-hidden="true">&times;</span>
+        <h5 class="modal-title">Application Status</h5>
+        <button type="button" class="close" (click)="closeModal('status')">
+          <span>&times;</span>
         </button>
       </div>
       <div class="modal-body">
-        <div class="DetailsGrid">
-          <div class="DetailItem"><span>Request ID</span><strong>{{ selectedRequest.id }}</strong></div>
-          <div class="DetailItem"><span>Applicant</span><strong>{{ selectedRequest.applicantName }}</strong></div>
-          <div class="DetailItem"><span>Leave Type</span><strong>{{ selectedRequest.leaveType }}</strong></div>
-          <div class="DetailItem"><span>Days</span><strong>{{ selectedRequest.days }}</strong></div>
-          <div class="DetailItem"><span>From</span><strong>{{ selectedRequest.fromDate }}</strong></div>
-          <div class="DetailItem"><span>To</span><strong>{{ selectedRequest.toDate }}</strong></div>
-          <div class="DetailItem"><span>Applied On</span><strong>{{ selectedRequest.appliedOn }}</strong></div>
-          <div class="DetailItem"><span>Status</span><strong>{{ selectedRequest.status }}</strong></div>
-        </div>
-
-        <div class="ReasonBox">
-          <span>Reason</span>
-          <p>{{ selectedRequest.reason }}</p>
-        </div>
-
-        <div class="InputFieldsContainer" *ngIf="selectedRequest.status === 'Pending'">
-          <label class="inputLabel">Remarks</label>
-          <textarea class="inputField textareaField" [(ngModel)]="actionRemarks" rows="3" placeholder="Optional remarks"></textarea>
-        </div>
-
-        <div class="ReasonBox" *ngIf="selectedRequest.status !== 'Pending'">
-          <span>Action Remarks</span>
-          <p>{{ selectedRequest.approvalRemarks || '-' }}</p>
-        </div>
+        <p>{{ AminityInsStatus }}</p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn secondaryBtn" (click)="closeDetails()">Close</button>
-        <button type="button" class="btn dangerBtn" *ngIf="selectedRequest.status === 'Pending'" (click)="rejectRequest(selectedRequest)">Reject</button>
-        <button type="button" class="btn" *ngIf="selectedRequest.status === 'Pending'" (click)="approveRequest(selectedRequest)">Approve</button>
+        <button type="button" class="btn btn-primary" (click)="handleOk()">OK</button>
       </div>
     </div>
   </div>

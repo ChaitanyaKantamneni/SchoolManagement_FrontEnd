@@ -1,169 +1,245 @@
-<div>
-  <app-dashboard-top-nav></app-dashboard-top-nav>
-</div>
+<app-dashboard-top-nav></app-dashboard-top-nav>
 
 <div class="MainContentDiv">
-  <div class="w-100">
+  <!-- List View -->
+  <div *ngIf="!IsAddNewClicked" class="w-100">
     <div class="ComponentTop">
       <div class="ComponentTopHeader">
-        <h5>Leave Details</h5>
-        <p>Create and maintain leave balances by school and academic year.</p>
+        <h5>Leave Policy Management</h5>
+        <p>Total {{ PolicyCount }} Policies Added</p>
+      </div>
+      <div class="ComponentTopBottom">
+        <button (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Leave Policy</button>
+      </div>
+    </div>
+
+    <div class="ComponentRecords">
+      <div>
+        <div class="ComponentRecordsTop">
+          <div class="filterOptions">
+            <div class="searchreview input-container">
+              <input type="text" class="form-control floating-input" [(ngModel)]="searchQuery"
+                (ngModelChange)="onSearchChange()" placeholder="Search... " />
+              <mat-icon
+                style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
+            </div>
+            <div class="searchreview" *ngIf="isAdmin">
+              <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
+                <option value="">-- Select School --</option>
+                <option value="0">All Schools</option>
+                <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="reviewstable">
+          <table class="table table-bordered" *ngIf="PolicyList.length != 0">
+            <thead>
+              <tr>
+                <th>SI.No</th>
+                <th>School</th>
+                <th>Academic Year</th>
+                <th>Leave Category</th>
+                <th>Allowance</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of filteredPolicies; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td>{{ p.schoolName }}</td>
+                <td>{{ p.academicYearName }}</td>
+                <td>{{ p.leaveType }}</td>
+                <td>{{ p.count }} Days</td>
+                <td>
+                  <span class="status-pill"
+                    [style.background]="p.isActive ? 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)' : 'linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%)'"
+                    [style.color]="p.isActive ? '#166534' : '#9f1239'"
+                    [style.borderColor]="p.isActive ? '#86efac' : '#fda4af'">
+                    {{ p.isActive ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="d-flex justify-content-center align-items-center h-100" style="gap: 5px;">
+                    <button class="btn checkbtn edit" (click)="editreview(p.id)">
+                      <mat-icon class="mat-edit-icon">edit</mat-icon>
+                    </button>
+                    <button class="btn checkbtn" (click)="viewReview(p.id)">
+                      <mat-icon class="mat-edit-icon">visibility</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div *ngIf="PolicyList.length === 0" class="NoDataFound">
+            <div class="NoDataFoundImg">
+              <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
+            </div>
+            <p>No data found.</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="w-100">
-    <div class="PageLayout">
-      <div class="FormCard">
-        <div class="CardHeader">
-          <h6>{{ isEditMode ? 'Update Leave Policy' : 'Create Leave Policy' }}</h6>
-          <p>Define leave type and count for each school and academic year.</p>
-        </div>
-
-        <form [formGroup]="policyForm" (ngSubmit)="submitPolicy()">
+  <!-- Add/Edit View -->
+  <div *ngIf="IsAddNewClicked" class="w-100">
+    <div class="AddForm">
+      <div class="AddFormTop">
+        <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+        <p>{{ editingId ? 'Update Leave Policy' : 'Add Leave Policy' }}</p>
+      </div>
+      <div class="AddFormConatiner">
+        <form [formGroup]="policyForm">
           <div class="FormInputRowsContainer">
+            <!-- Row 1: School & Academic Year -->
             <div class="InputRow">
-              <div class="FieldGroup InputFieldsContainer" *ngIf="isAdmin; else schoolDisplay">
-                <label>School <span class="required">*</span></label>
-                <select class="inputField" formControlName="schoolId" (change)="onAdminSchoolChange($event)">
-                  <option value="0">-- Select School --</option>
-                  <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
-                </select>
-                <small class="text-danger" *ngIf="policyForm.get('schoolId')?.touched && policyForm.get('schoolId')?.invalid">
-                  Please select school.
-                </small>
-              </div>
-              <ng-template #schoolDisplay>
-                <div class="FieldGroup InputFieldsContainer">
-                  <label>School</label>
-                  <input class="inputField" type="text" [value]="currentSchool" readonly />
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel">SCHOOL <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="schoolId" (change)="onAdminSchoolChange($event)">
+                    <option value="">-- Select School --</option>
+                    <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+                  </select>
                 </div>
-              </ng-template>
-
-              <div class="FieldGroup InputFieldsContainer">
-                <label>Academic Year <span class="required">*</span></label>
-                <select class="inputField" formControlName="academicYearId">
-                  <option value="0">-- Select Academic Year --</option>
-                  <option *ngFor="let year of academicYearList" [value]="year.ID">{{ year.Name }}</option>
-                </select>
-                <small class="text-danger" *ngIf="policyForm.get('academicYearId')?.touched && policyForm.get('academicYearId')?.invalid">
-                  Please select academic year.
-                </small>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">ACADEMIC YEAR <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="academicYearId">
+                    <option value="">-- Select Academic Year --</option>
+                    <option *ngFor="let year of academicYearList" [value]="year.ID">{{ year.Name }}</option>
+                  </select>
+                </div>
+              </div>
+              <!-- For School Login, Leave Category pulls up to this row -->
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <label class="inputLabel">LEAVE CATEGORY <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="leaveType" placeholder="Enter Category" />
+                </div>
               </div>
             </div>
 
+            <!-- Row 2: Leave Category & Allowance -->
             <div class="InputRow">
-              <div class="FieldGroup InputFieldsContainer">
-                <label>Leave Type <span class="required">*</span></label>
-                <input class="inputField" type="text" formControlName="leaveType" placeholder="e.g. Casual Leave" />
-                <small class="text-danger" *ngIf="policyForm.get('leaveType')?.touched && policyForm.get('leaveType')?.invalid">
-                  Leave type is required.
-                </small>
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel">LEAVE CATEGORY <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="leaveType" placeholder="Enter Category" />
+                </div>
               </div>
-
-              <div class="FieldGroup InputFieldsContainer">
-                <label>Leave Count <span class="required">*</span></label>
-                <input class="inputField" type="number" min="0" formControlName="count" />
-                <small class="text-danger" *ngIf="policyForm.get('count')?.touched && policyForm.get('count')?.invalid">
-                  Enter valid leave count.
-                </small>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">ALLOWANCE (DAYS) <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" type="number" formControlName="count" placeholder="Enter Days" />
+                </div>
               </div>
-            </div>
-
-            <div class="InputRow statusRow">
-              <div class="FieldGroup InputFieldsContainer ToggleField">
-                <label>Status</label>
-                <div class="toggle-container" (click)="$event.stopPropagation()">
+              <!-- For School Login, Status pulls up to this row -->
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <div class="toggle-container" (click)="$event.stopPropagation()" style="margin-top: 25px;">
                   <label class="switch">
-                    <input
-                      type="checkbox"
-                      [checked]="policyForm.get('isActive')?.value"
-                      (click)="toggleChange()">
+                    <input type="checkbox" [checked]="IsActiveStatus" (change)="toggleChange()">
                     <span class="slider">
-                      <span
-                        class="toggle-text"
-                        [ngStyle]="{
-                          left: policyForm.get('isActive')?.value ? '42%' : '60%',
-                          fontSize: '9px'
-                        }">
-                        {{ policyForm.get('isActive')?.value ? 'Active' : 'Inactive' }}
+                      <span class="toggle-text" [ngStyle]="{left: IsActiveStatus ? '42%' : '60%', fontSize: '9px'}">
+                        {{ IsActiveStatus ? 'Active' : 'Inactive' }}
                       </span>
                     </span>
                   </label>
                 </div>
               </div>
             </div>
+
+            <!-- Row 3: Status (Admin Only) -->
+            <div class="InputRow" *ngIf="isAdmin">
+              <div class="InputFieldsContainer">
+                <div class="toggle-container" (click)="$event.stopPropagation()" style="margin-top: 20px;">
+                  <label class="switch">
+                    <input type="checkbox" [checked]="IsActiveStatus" (change)="toggleChange()">
+                    <span class="slider">
+                      <span class="toggle-text" [ngStyle]="{left: IsActiveStatus ? '42%' : '60%', fontSize: '9px'}">
+                        {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                 <!-- Empty div to balance Row 3 for Admin -->
+              </div>
+            </div>
           </div>
 
-          <div class="ButtonRow">
-            <button type="button" class="btn secondaryBtn" (click)="resetForm()">Reset</button>
-            <button type="submit" class="btn">{{ isEditMode ? 'Update Policy' : 'Save Policy' }}</button>
+          <div class="ActionButtons" style="display: flex; justify-content: center; margin-top: 40px;">
+            <button type="button" *ngIf="editingId" (click)="UpdateSyllabus()">Update</button>
+            <button type="button" *ngIf="!editingId" (click)="SubmitSyllabus()">Submit</button>
           </div>
         </form>
       </div>
+    </div>
+  </div>
+</div>
 
-      <div class="ListCard">
-        <div class="CardHeader">
-          <h6>Configured Policies</h6>
-          <p>Leave balances maintained per school and academic year.</p>
+<!-- Status Modal -->
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isModalOpen}"
+  [style.display]="isModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Application Status</h5>
+        <button type="button" class="close" (click)="closeModal('status')">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>{{ AminityInsStatus }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="handleOk()">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- View Modal -->
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}"
+  [style.display]="isViewModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog modal-md" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">View Leave Policy</h5>
+        <button type="button" class="close" (click)="closeModal('view')">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-2">
+          <div class="col-6 viewHeadingfontsize">School</div>
+          <div class="col-6 viewfontsize">{{ viewPolicy?.schoolName }}</div>
         </div>
-
-        <div class="StatsRow">
-          <div class="StatCard">
-            <span>Total</span>
-            <strong>{{ totalRecords }}</strong>
-          </div>
-          <div class="StatCard">
-            <span>Active</span>
-            <strong>{{ activeRecords }}</strong>
-          </div>
-          <div class="StatCard">
-            <span>Inactive</span>
-            <strong>{{ inactiveRecords }}</strong>
-          </div>
+        <div class="row mb-2">
+          <div class="col-6 viewHeadingfontsize">Academic Year</div>
+          <div class="col-6 viewfontsize">{{ viewPolicy?.academicYearName }}</div>
         </div>
-
-        <div class="FilterRow">
-          <select class="inputField" [value]="selectedSchoolId" (change)="applySchoolFilter($event)">
-            <option value="">All Schools</option>
-            <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
-          </select>
-          <input class="inputField" type="text" [value]="searchTerm" (input)="applySearch($event)" placeholder="Search by year or leave type" />
+        <div class="row mb-2">
+          <div class="col-6 viewHeadingfontsize">Leave Category</div>
+          <div class="col-6 viewfontsize">{{ viewPolicy?.leaveType }}</div>
         </div>
-
-        <div class="TableContainer">
-          <table>
-            <thead>
-              <tr>
-                <th>School</th>
-                <th>Academic Year</th>
-                <th>Leave Type</th>
-                <th>Count</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let policy of filteredPolicies; trackBy: trackByPolicyId">
-                <td>{{ policy.schoolName }}</td>
-                <td>{{ policy.academicYearName }}</td>
-                <td>{{ policy.leaveType }}</td>
-                <td>{{ policy.count }}</td>
-                <td>
-                  <span class="StatusPill" [ngClass]="policy.isActive ? 'active' : 'inactive'">
-                    {{ policy.isActive ? 'Active' : 'Inactive' }}
-                  </span>
-                </td>
-                <td class="ActionCell">
-                  <button type="button" class="btn linkBtn" (click)="editPolicy(policy)">Edit</button>
-                  <!-- <button type="button" class="btn dangerBtn" (click)="deletePolicy(policy)">Delete</button> -->
-                </td>
-              </tr>
-              <tr *ngIf="!filteredPolicies.length">
-                <td colspan="6" class="NoData">No leave policies found for the selected filters.</td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="row mb-2">
+          <div class="col-6 viewHeadingfontsize">Allowance</div>
+          <div class="col-6 viewfontsize">{{ viewPolicy?.count }} Days</div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-6 viewHeadingfontsize">Status</div>
+          <div class="col-6">
+            <span class="badge" [ngClass]="viewPolicy?.isActive ? 'badge-success' : 'badge-danger'">
+              {{ viewPolicy?.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
         </div>
       </div>
     </div>

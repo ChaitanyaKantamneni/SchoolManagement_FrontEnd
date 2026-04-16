@@ -180,6 +180,16 @@ export class StaffComponent extends BasePermissionComponent {
     return role === '1';
   }
 
+  get currentSchoolId(): string {
+    // If SuperAdmin, use form selection
+    if (this.isAdmin) {
+      const formVal = this.StaffForm.get('School')?.value;
+      if (formVal && formVal !== '0' && formVal !== 0) return formVal;
+    }
+    // Otherwise, use session
+    return sessionStorage.getItem('SchoolID') || sessionStorage.getItem('schoolId') || localStorage.getItem('SchoolID') || '';
+  }
+
   FetchAcademicYearCount(isSearch: boolean) {
     let SchoolIdSelected = '';
 
@@ -325,7 +335,7 @@ export class StaffComponent extends BasePermissionComponent {
     else{
       const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
       const data = {
-        SchoolID:this.StaffForm.get('School')?.value,
+        SchoolID: this.currentSchoolId,
         AcademicYear:this.StaffForm.get('AcademicYear')?.value,
         StaffType: this.StaffForm.get('StaffType')?.value.join(','),
         FirstName: this.StaffForm.get('FirstName')?.value,
@@ -447,7 +457,7 @@ export class StaffComponent extends BasePermissionComponent {
       const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
       const data = {
         ID:this.StaffForm.get('ID')?.value,
-        SchoolID:this.StaffForm.get('School')?.value,
+        SchoolID: this.currentSchoolId,
         AcademicYear:this.StaffForm.get('AcademicYear')?.value,
         StaffType: this.StaffForm.get('StaffType')?.value.join(','),
         FirstName: this.StaffForm.get('FirstName')?.value,
@@ -826,7 +836,7 @@ export class StaffComponent extends BasePermissionComponent {
   SubmitUser(){
     const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
     const formData = new FormData();
-    formData.append('SchoolID', this.StaffForm.get('School')?.value ?? '');
+    formData.append('SchoolID', this.currentSchoolId);
     formData.append('FirstName', this.StaffForm.get('FirstName')?.value ?? '');
     formData.append('LastName', this.StaffForm.get('LastName')?.value ?? '');
     formData.append('MobileNo', this.StaffForm.get('MobileNumber')?.value ?? '');
@@ -861,7 +871,7 @@ export class StaffComponent extends BasePermissionComponent {
   UpdateUser(){
     const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
     const formData = new FormData();
-    formData.append('SchoolID', this.StaffForm.get('School')?.value ?? '');
+    formData.append('SchoolID', this.currentSchoolId);
     formData.append('FirstName', this.StaffForm.get('FirstName')?.value ?? '');
     formData.append('LastName', this.StaffForm.get('LastName')?.value ?? '');
     formData.append('MobileNo', this.StaffForm.get('MobileNumber')?.value ?? '');

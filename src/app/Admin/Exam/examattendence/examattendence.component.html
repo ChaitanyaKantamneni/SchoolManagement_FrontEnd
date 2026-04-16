@@ -30,9 +30,10 @@
       </div>
       <div class="AddFormConatiner">
         <form [formGroup]="SyllabusForm">
-          <div class="FormInputRowsContainer">
-            <ng-container *ngIf="isAdmin; else schoolUserLayout">
-              <div class="InputRow">
+          <ng-container *ngIf="isAdmin; else schoolwiseAttendanceLayout">
+            <div class="FormInputRowsContainer">
+              <!-- School (only for SuperAdmin) -->
+              <div class="InputRow" *ngIf="!isTeacher">
                 <div class="InputFieldsContainer">
                   <label class="inputLabel" for="email">School <span class="required">*</span></label>
                   <div class="input-with-error">
@@ -45,6 +46,9 @@
                     </div>
                   </div>
                 </div>
+              </div>
+              <!-- Row 1: Academic Year, Class, Division (for Admin/SuperAdmin) or Academic Year, Exam Type (for Teacher) -->
+              <div class="InputRow">
                 <div class="InputFieldsContainer">
                   <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
                   <div class="input-with-error">
@@ -57,10 +61,7 @@
                     </div>
                   </div>
                 </div>
-              </div>
-
-              <div class="InputRow">
-                <div class="InputFieldsContainer">
+                <div class="InputFieldsContainer" *ngIf="!isTeacher">
                   <label class="inputLabel" for="email">Class<span class="required">*</span></label>
                   <div class="input-with-error">
                     <select class="inputField" type="date" formControlName="Class" placeholder="Select Start Class" (change)="onAdminClasschange($event)">
@@ -72,7 +73,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="InputFieldsContainer">
+                <div class="InputFieldsContainer" *ngIf="!isTeacher">
                   <label class="inputLabel" for="email">Divisions<span class="required">*</span></label>
                   <div class="input-with-error">
                     <select class="inputField" type="date" formControlName="Divisions" placeholder="Select Divisions" (change)="onAdminDivisionsChange($event)">
@@ -80,13 +81,26 @@
                       <option *ngFor="let school of divisionsList" value="{{school.ID}}">{{school.Name}}</option>
                     </select>
                     <div *ngIf="SyllabusForm.get('Divisions')?.hasError('min') && (SyllabusForm.get('Divisions')?.touched || SyllabusForm.get('Divisions')?.dirty)" class="text-danger">
-                      <small>Please Divisions.</small>
+                      <small>Please Select Division.</small>
+                    </div>
+                  </div>
+                </div>
+                <!-- Teacher: Exam Type in first row -->
+                <div class="InputFieldsContainer" *ngIf="isTeacher">
+                  <label class="inputLabel" for="email">Exam Type <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" type="date" formControlName="ExamType" (change)="onAdminExamtypeChange($event)">
+                      <option value="0">-- Select Exam --</option>
+                      <option *ngFor="let school of examLists" value="{{school.ID}}">{{school.Name}}</option>
+                    </select>
+                    <div *ngIf="SyllabusForm.get('ExamType')?.hasError('min') && (SyllabusForm.get('ExamType')?.touched || SyllabusForm.get('ExamType')?.dirty)" class="text-danger">
+                      <small>Please Select Exam Type.</small>
                     </div>
                   </div>
                 </div>
               </div>
-
-              <div class="InputRow">
+              <!-- Row 2: Exam Type (only for Admin/SuperAdmin) -->
+              <div class="InputRow" *ngIf="!isTeacher">
                 <div class="InputFieldsContainer">
                   <label class="inputLabel" for="email">Exam Type <span class="required">*</span></label>
                   <div class="input-with-error">
@@ -100,9 +114,11 @@
                   </div>
                 </div>
               </div>
-            </ng-container>
-
-            <ng-template #schoolUserLayout>
+            </div>
+          </ng-container>
+          <ng-template #schoolwiseAttendanceLayout>
+            <div class="FormInputRowsContainer">
+              <!-- Row 1: Academic Year, Class, Division (for SchoolAdmin) or Academic Year, Exam Type (for Teacher) -->
               <div class="InputRow">
                 <div class="InputFieldsContainer">
                   <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
@@ -116,7 +132,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="InputFieldsContainer">
+                <div class="InputFieldsContainer" *ngIf="!isTeacher">
                   <label class="inputLabel" for="email">Class<span class="required">*</span></label>
                   <div class="input-with-error">
                     <select class="inputField" type="date" formControlName="Class" (change)="onAdminClasschange($event)">
@@ -128,10 +144,7 @@
                     </div>
                   </div>
                 </div>
-              </div>
-
-              <div class="InputRow">
-                <div class="InputFieldsContainer">
+                <div class="InputFieldsContainer" *ngIf="!isTeacher">
                   <label class="inputLabel" for="email">Divisions<span class="required">*</span></label>
                   <div class="input-with-error">
                     <select class="inputField" type="date" formControlName="Divisions" (change)="onAdminDivisionsChange($event)">
@@ -139,10 +152,26 @@
                       <option *ngFor="let school of divisionsList" value="{{school.ID}}">{{school.Name}}</option>
                     </select>
                     <div *ngIf="SyllabusForm.get('Divisions')?.hasError('min') && (SyllabusForm.get('Divisions')?.touched || SyllabusForm.get('Divisions')?.dirty)" class="text-danger">
-                      <small>Please Divisions.</small>
+                      <small>Please Select Division.</small>
                     </div>
                   </div>
                 </div>
+                <!-- Teacher: Exam Type in first row -->
+                <div class="InputFieldsContainer" *ngIf="isTeacher">
+                  <label class="inputLabel" for="email">Exam Type <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" type="date" formControlName="ExamType" (change)="onAdminExamtypeChange($event)">
+                      <option value="0">-- Select Exam --</option>
+                      <option *ngFor="let school of examLists" value="{{school.ID}}">{{school.Name}}</option>
+                    </select>
+                    <div *ngIf="SyllabusForm.get('ExamType')?.hasError('min') && (SyllabusForm.get('ExamType')?.touched || SyllabusForm.get('ExamType')?.dirty)" class="text-danger">
+                      <small>Please Select Exam Type.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Row 2: Exam Type (only for SchoolAdmin) -->
+              <div class="InputRow" *ngIf="!isTeacher">
                 <div class="InputFieldsContainer">
                   <label class="inputLabel" for="email">Exam Type <span class="required">*</span></label>
                   <div class="input-with-error">
@@ -156,8 +185,8 @@
                   </div>
                 </div>
               </div>
-            </ng-template>
-          </div>
+            </div>
+          </ng-template>
           <div class="ActionButtons">
             <button type="button" (click)="onSubmit()">Next</button>
           </div>

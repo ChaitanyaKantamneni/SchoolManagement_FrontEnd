@@ -201,7 +201,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       'time table': 'schedule',
       exam: 'quiz',
       attendance: 'how_to_reg',
-      'hr & payroll': 'account_balance'
+      'hr & payroll': 'account_balance',
+      'leave management': 'event_note'
     };
 
     return map[key] || 'folder';
@@ -264,7 +265,10 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       'salary settings': 'tune',
       'advance salary': 'request_quote',
       'salary pay': 'paid',
-      'salary issued': 'receipt_long'
+      'salary issued': 'receipt_long',
+      'apply leave': 'event_note',
+      'leave approval': 'fact_check',
+      'leave details': 'settings'
     };
 
     return map[key] || 'menu';

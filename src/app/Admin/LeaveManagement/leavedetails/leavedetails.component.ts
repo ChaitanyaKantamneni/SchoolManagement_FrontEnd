@@ -1,9 +1,13 @@
 import { NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { DashboardTopNavComponent } from '../../../SignInAndSignUp/dashboard-top-nav/dashboard-top-nav.component';
 import { ApiServiceService } from '../../../Services/api-service.service';
+import { Router } from '@angular/router';
+import { MenuServiceService } from '../../../Services/menu-service.service';
+import { BasePermissionComponent } from '../../../shared/base-crud.component';
+import { LoaderService } from '../../../Services/loader.service';
 
 interface LeavePolicyRow {
   id: string;
@@ -19,186 +23,187 @@ interface LeavePolicyRow {
 @Component({
   selector: 'app-leavedetails',
   standalone: true,
-  imports: [NgIf, NgFor, NgClass, NgStyle, ReactiveFormsModule, MatIconModule, DashboardTopNavComponent],
+  imports: [NgIf, NgFor, NgClass, NgStyle, ReactiveFormsModule, FormsModule, MatIconModule, DashboardTopNavComponent],
   templateUrl: './leavedetails.component.html',
   styleUrl: './leavedetails.component.css'
 })
-export class LeavedetailsComponent implements OnInit {
-  roleId = sessionStorage.getItem('RollID') || localStorage.getItem('RollID') || '';
-  schoolList: Array<{ ID: string; Name: string }> = [];
-  academicYearList: Array<{ ID: string; Name: string }> = [];
-  readonly currentSchool = sessionStorage.getItem('schoolName') || 'Smart School Campus';
-  readonly currentSchoolId =
-    sessionStorage.getItem('SchoolID') ||
-    sessionStorage.getItem('schoolId') ||
-    localStorage.getItem('SchoolID') ||
-    localStorage.getItem('schoolId') ||
-    '';
-  selectedSchoolId = '';
-  selectedSchool = this.currentSchool;
-  searchTerm = '';
-  editingId: string | null = null;
+export class LeavedetailsComponent extends BasePermissionComponent implements OnInit {
+  pageName = 'Leave Policy';
 
-  policyForm = new FormGroup({
-    schoolId: new FormControl('0', [Validators.required, Validators.min(1)]),
-    academicYearId: new FormControl('0', [Validators.required, Validators.min(1)]),
-    leaveType: new FormControl('', [Validators.required, Validators.minLength(2)]),
-    count: new FormControl(0, [Validators.required, Validators.min(0)]),
-    isActive: new FormControl(true, Validators.required)
-  });
-
-  policies: LeavePolicyRow[] = [];
-  filteredPolicies: LeavePolicyRow[] = [];
-
-  constructor(private apiurl: ApiServiceService) {}
+  constructor(
+    private apiurl: ApiServiceService,
+    private mService: MenuServiceService,
+    private rtr: Router,
+    public loader: LoaderService
+  ) {
+    super(mService, rtr);
+  }
 
   ngOnInit(): void {
+    this.checkViewPermission();
     this.FetchSchoolsList();
   }
 
-  get isAdmin(): boolean {
+  // ── state (Aligned with Buses) ────────────────────────────────────────────────
+  roleId = sessionStorage.getItem('RollID') || localStorage.getItem('RollID') || '';
+  schoolList: Array<{ ID: string; Name: string }> = [];
+  academicYearList: Array<{ ID: string; Name: string }> = [];
+  
+  readonly currentSchoolId = sessionStorage.getItem('SchoolID') || sessionStorage.getItem('schoolId') || localStorage.getItem('SchoolID') || localStorage.getItem('schoolId') || '';
+
+  IsAddNewClicked: boolean = false;
+  IsActiveStatus: boolean = true;
+  ViewSyllabusClicked: boolean = false;
+  
+  PolicyList: LeavePolicyRow[] = [];
+  filteredPolicies: LeavePolicyRow[] = [];
+  PolicyCount: number = 0;
+  
+  searchQuery: string = '';
+  selectedSchoolID: string = '';
+  
+  AminityInsStatus: string = '';
+  isModalOpen: boolean = false;
+  isViewModalOpen: boolean = false;
+  viewPolicy: any = null;
+  
+  editingId: string | null = null;
+  selectedAdminSchoolID: string = '';
+
+  policyForm = new FormGroup({
+    schoolId: new FormControl('', Validators.required),
+    academicYearId: new FormControl('', Validators.required),
+    leaveType: new FormControl('', [Validators.required, Validators.minLength(2)]),
+    count: new FormControl(0, [Validators.required, Validators.min(1)]),
+    isActive: new FormControl(true)
+  });
+
+  protected override get isAdmin(): boolean {
     return this.roleId === '1';
   }
 
-  get isEditMode(): boolean {
-    return !!this.editingId;
-  }
-
-  get totalRecords(): number {
-    return this.filteredPolicies.length;
-  }
-
-  get activeRecords(): number {
-    return this.filteredPolicies.filter(item => item.isActive).length;
-  }
-
-  get inactiveRecords(): number {
-    return this.filteredPolicies.filter(item => !item.isActive).length;
-  }
-
+  // ── actions ───────────────────────────────────────────────────────────────────
   toggleChange(): void {
-    const currentValue = Boolean(this.policyForm.get('isActive')?.value);
-    this.policyForm.get('isActive')?.patchValue(!currentValue);
+    this.IsActiveStatus = !this.IsActiveStatus;
   }
 
-  applySchoolFilter(event: Event): void {
-    this.selectedSchoolId = (event.target as HTMLSelectElement).value;
-    this.loadPolicies();
-  }
-
-  applySearch(event: Event): void {
-    this.searchTerm = (event.target as HTMLInputElement).value;
-    this.applyFilters();
-  }
-
-  editPolicy(policy: LeavePolicyRow): void {
-    this.editingId = policy.id;
-    const schoolId = policy.schoolId || this.getSchoolIdByName(policy.schoolName);
-    if (schoolId) {
-      this.FetchAcademicYearsList(schoolId);
-    }
-    this.policyForm.patchValue({
-      schoolId: schoolId || '0',
-      academicYearId: policy.academicYearId || '0',
-      leaveType: policy.leaveType,
-      count: policy.count,
-      isActive: policy.isActive
-    });
-  }
-
-  deletePolicy(policy: LeavePolicyRow): void {
-    const payload = {
-      ID: policy.id,
-      SchoolID: policy.schoolId,
-      AcademicYear: policy.academicYearId,
-      LeaveType: policy.leaveType,
-      MaxDays: String(policy.count),
-      Discription: '',
-      IsActive: '0',
-      Flag: '5'
-    };
-
-    this.apiurl.post<any>('Tbl_leavePolicy_CRUD_Operations', payload).subscribe({
-      next: () => {
-        if (this.editingId === policy.id) {
-          this.resetForm();
-        }
-        this.loadPolicies();
-      },
-      error: () => {
-        window.alert('Unable to delete policy right now. Please try again.');
-      }
-    });
-  }
-
-  submitPolicy(): void {
-    if (this.policyForm.invalid) {
-      this.policyForm.markAllAsTouched();
-      return;
-    }
-    const schoolId = this.isAdmin
-      ? String(this.policyForm.get('schoolId')?.value || '0')
-      : this.currentSchoolId;
-    const academicYearId = String(this.policyForm.get('academicYearId')?.value || '0');
-    const leaveType = String(this.policyForm.get('leaveType')?.value || '').trim();
-    const count = Number(this.policyForm.get('count')?.value || 0);
-    const isActive = Boolean(this.policyForm.get('isActive')?.value);
-
-    const payload = {
-      ID: this.editingId || '',
-      SchoolID: schoolId,
-      AcademicYear: academicYearId,
-      LeaveType: leaveType,
-      MaxDays: String(count),
-      Discription: '',
-      IsActive: isActive ? '1' : '0',
-      Flag: this.isEditMode ? '5' : '1'
-    };
-
-    this.apiurl.post<any>('Tbl_leavePolicy_CRUD_Operations', payload).subscribe({
-      next: (response: any) => {
-        if (response?.statusCode === 200) {
-          this.resetForm();
-          this.loadPolicies();
-        }
-      },
-      error: (err: any) => {
-        if (err?.status === 400 && err?.error?.message) {
-          window.alert(err.error.message);
-          return;
-        }
-        window.alert('Unable to save leave policy right now. Please try again.');
-      }
-    });
-  }
-
-  resetForm(): void {
+  AddNewClicked(): void {
     this.editingId = null;
-    const formSchoolId = this.isAdmin ? '0' : this.currentSchoolId;
+    this.selectedAdminSchoolID = '';
+    this.IsActiveStatus = true;
+    this.ViewSyllabusClicked = false;
     this.policyForm.reset({
-      schoolId: formSchoolId || '0',
-      academicYearId: '0',
+      schoolId: this.isAdmin ? '' : this.currentSchoolId,
+      academicYearId: '',
       leaveType: '',
       count: 0,
       isActive: true
     });
+    
+    if (!this.isAdmin && this.currentSchoolId) {
+       this.FetchAcademicYearsList(this.currentSchoolId);
+    }
+
+    this.IsAddNewClicked = !this.IsAddNewClicked;
   }
 
-  trackByPolicyId(_: number, policy: LeavePolicyRow): string {
-    return policy.id;
+  editreview(PolicyID: string): void {
+    this.FetchPolicyDetByID(PolicyID, 'edit');
   }
 
-  private loadPolicies(): void {
+  viewReview(PolicyID: string): void {
+    this.FetchPolicyDetByID(PolicyID, 'view');
+  }
+
+  FetchPolicyDetByID(PolicyID: string, mode: 'view' | 'edit') {
+    const policy = this.PolicyList.find(p => p.id === PolicyID);
+    if (!policy) return;
+
+    if (mode === 'view') {
+      this.viewPolicy = { ...policy };
+      this.isViewModalOpen = true;
+    }
+
+    if (mode === 'edit') {
+      this.editingId = policy.id;
+      this.selectedAdminSchoolID = policy.schoolId;
+      this.FetchAcademicYearsList(this.selectedAdminSchoolID);
+      
+      this.policyForm.patchValue({
+        schoolId: policy.schoolId,
+        academicYearId: policy.academicYearId,
+        leaveType: policy.leaveType,
+        count: policy.count,
+        isActive: policy.isActive
+      });
+      this.IsActiveStatus = policy.isActive;
+      this.IsAddNewClicked = true;
+      this.ViewSyllabusClicked = true;
+    }
+  }
+
+  SubmitSyllabus(): void {
+    this.savePolicy('1');
+  }
+
+  UpdateSyllabus(): void {
+    this.savePolicy('5');
+  }
+
+  private savePolicy(flag: string): void {
+    if (this.policyForm.invalid) {
+      this.policyForm.markAllAsTouched();
+      this.AminityInsStatus = 'Please fill all required fields correctly.';
+      this.isModalOpen = true;
+      return;
+    }
+
+    const payload = {
+      ID: this.editingId || '0',
+      SchoolID: String(this.policyForm.get('schoolId')?.value),
+      AcademicYear: String(this.policyForm.get('academicYearId')?.value),
+      LeaveType: String(this.policyForm.get('leaveType')?.value).trim(),
+      MaxDays: String(this.policyForm.get('count')?.value),
+      Discription: '',
+      IsActive: this.IsActiveStatus ? '1' : '0',
+      Flag: flag
+    };
+
+    this.loader.show();
+    this.apiurl.post<any>('Tbl_leavePolicy_CRUD_Operations', payload).subscribe({
+      next: (res: any) => {
+        this.loader.hide();
+        if (res?.statusCode === 200 || res?.StatusCode === 200) {
+          this.AminityInsStatus = flag === '1' ? 'Leave Policy Submitted Successfully!' : 'Leave Policy Updated Successfully!';
+          this.isModalOpen = true;
+          this.IsAddNewClicked = false;
+          this.loadPolicies();
+        } else {
+          this.AminityInsStatus = res?.message || 'Error occurred while saving.';
+          this.isModalOpen = true;
+        }
+      },
+      error: (err) => {
+        this.loader.hide();
+        this.AminityInsStatus = err?.error?.message || 'API Error.';
+        this.isModalOpen = true;
+      }
+    });
+  }
+
+  loadPolicies(): void {
+    this.loader.show();
     const payload = {
       Flag: '2',
-      SchoolID: this.isAdmin ? this.selectedSchoolId || '' : this.currentSchoolId,
+      SchoolID: this.isAdmin ? (this.selectedSchoolID || '') : this.currentSchoolId,
       AcademicYear: ''
     };
 
     this.apiurl.post<any>('Tbl_leavePolicy_CRUD_Operations', payload).subscribe({
       next: (response: any) => {
-        const rows = Array.isArray(response?.data) ? response.data : [];
-        this.policies = rows.map((item: any) => ({
+        this.loader.hide();
+        const rows = Array.isArray(response?.data) ? response.data : (Array.isArray(response?.Data) ? response.Data : []);
+        this.PolicyList = rows.map((item: any) => ({
           id: String(item.id ?? item.ID ?? ''),
           schoolId: String(item.schoolID ?? item.SchoolID ?? ''),
           schoolName: String(item.schoolName ?? item.SchoolName ?? ''),
@@ -208,114 +213,77 @@ export class LeavedetailsComponent implements OnInit {
           count: Number(item.maxDays ?? item.MaxDays ?? 0),
           isActive: this.getBooleanValue(item.isActive ?? item.IsActive)
         }));
+        this.PolicyCount = this.PolicyList.length;
         this.applyFilters();
       },
       error: () => {
-        this.policies = [];
+        this.loader.hide();
+        this.PolicyList = [];
         this.filteredPolicies = [];
       }
     });
   }
 
-  private applyFilters(): void {
-    const normalizedSearch = this.searchTerm.trim().toLowerCase();
-
-    this.filteredPolicies = this.policies
-      .filter(item => !this.selectedSchoolId || item.schoolId === this.selectedSchoolId)
-      .filter(item =>
-        !normalizedSearch ||
-        item.academicYearName.toLowerCase().includes(normalizedSearch) ||
-        item.leaveType.toLowerCase().includes(normalizedSearch)
-      );
+  onSearchChange(): void {
+    this.applyFilters();
   }
 
+  onSchoolChange(event: Event): void {
+    const val = (event.target as HTMLSelectElement).value;
+    this.selectedSchoolID = val === '0' ? '' : val;
+    this.loadPolicies();
+  }
+
+  applyFilters(): void {
+    const term = this.searchQuery.trim().toLowerCase();
+    this.filteredPolicies = this.PolicyList.filter(p => {
+      const matchSearch = !term || p.leaveType.toLowerCase().includes(term) || p.academicYearName.toLowerCase().includes(term);
+      const matchSchool = !this.selectedSchoolID || p.schoolId === this.selectedSchoolID;
+      return matchSearch && matchSchool;
+    });
+  }
+
+  handleOk() {
+    this.isModalOpen = false;
+  }
+
+  closeModal(type: 'view' | 'status') {
+    if (type === 'view') this.isViewModalOpen = false;
+    if (type === 'status') this.isModalOpen = false;
+  }
+
+  // Form Field Change Handlers
   onAdminSchoolChange(event: Event): void {
-    this.academicYearList = [];
-    this.policyForm.get('academicYearId')?.patchValue('0');
-
     const schoolId = (event.target as HTMLSelectElement).value;
-    const selectedFormSchoolId = schoolId === '0' ? '' : schoolId;
-    this.selectedSchool = this.getSchoolNameById(selectedFormSchoolId);
-
-    if (selectedFormSchoolId) {
-      this.FetchAcademicYearsList(selectedFormSchoolId);
+    this.academicYearList = [];
+    this.policyForm.get('academicYearId')?.patchValue('');
+    if (schoolId && schoolId !== '0') {
+      this.FetchAcademicYearsList(schoolId);
     }
   }
 
   private FetchSchoolsList(): void {
-    const requestData = { Flag: '2' };
-    this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', requestData).subscribe({
-      next: (response: any) => {
-        this.schoolList = Array.isArray(response?.data)
-          ? response.data.map((item: any) => ({
-              ID: String(item.id),
-              Name: String(item.name)
-            }))
-          : [];
-
-        if (this.isAdmin) {
-          this.selectedSchoolId = '';
-          this.policyForm.get('schoolId')?.patchValue('0');
-        } else {
-          const nonAdminSchoolId = this.currentSchoolId || this.getSchoolIdByName(this.currentSchool);
-          this.policyForm.get('schoolId')?.patchValue(nonAdminSchoolId || '0');
-          this.selectedSchoolId = nonAdminSchoolId;
-          if (nonAdminSchoolId) {
-            this.FetchAcademicYearsList(nonAdminSchoolId);
-          }
-        }
-
-        if (this.isAdmin) {
-          this.resetForm();
+    this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', { Flag: '2' }).subscribe({
+      next: (res: any) => {
+        this.schoolList = Array.isArray(res?.data) ? res.data.map((i: any) => ({ ID: String(i.id), Name: String(i.name) })) : [];
+        if (!this.isAdmin && this.currentSchoolId) {
+          this.FetchAcademicYearsList(this.currentSchoolId);
         }
         this.loadPolicies();
-      },
-      error: () => {
-        this.schoolList = [];
-        this.resetForm();
       }
     });
   }
 
   private FetchAcademicYearsList(schoolId: string): void {
-    const requestData = { SchoolID: schoolId || '', Flag: '2' };
-    this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData).subscribe({
-      next: (response: any) => {
-        this.academicYearList = Array.isArray(response?.data)
-          ? response.data.map((item: any) => ({
-              ID: String(item.id),
-              Name: String(item.name)
-            }))
-          : [];
-
-        if (this.academicYearList.length && String(this.policyForm.get('academicYearId')?.value || '0') === '0') {
-          this.policyForm.get('academicYearId')?.patchValue(this.academicYearList[0].ID);
-        }
-      },
-      error: () => {
-        this.academicYearList = [];
+    this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', { SchoolID: schoolId, Flag: '2' }).subscribe({
+      next: (res: any) => {
+        this.academicYearList = Array.isArray(res?.data) ? res.data.map((i: any) => ({ ID: String(i.id), Name: String(i.name) })) : [];
       }
     });
   }
 
-  private getSchoolNameById(id: string): string {
-    if (!id) return this.currentSchool;
-    return this.schoolList.find(item => item.ID === id)?.Name || this.currentSchool;
-  }
-
-  private getSchoolIdByName(name: string): string {
-    return this.schoolList.find(item => item.Name === name)?.ID || '';
-  }
-
-  private getBooleanValue(value: any): boolean {
-    if (value === true || value === 1) {
-      return true;
-    }
-    if (typeof value === 'string') {
-      const normalized = value.toLowerCase();
-      return normalized === 'true' || normalized === '1' || normalized === 'active';
-    }
+  private getBooleanValue(val: any): boolean {
+    if (val === true || val === 1 || val === '1' || val === 'active') return true;
     return false;
   }
-
 }

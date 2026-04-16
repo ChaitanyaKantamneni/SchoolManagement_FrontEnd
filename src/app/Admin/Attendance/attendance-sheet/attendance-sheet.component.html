@@ -57,7 +57,7 @@
                   </div>
                 </div>
               </div>
-              <div class="InputRow">
+              <div class="InputRow" *ngIf="!isTeacher">
                   <div class="InputFieldsContainer">
                   <label class="inputLabel" for="email">Class <span class="required">*</span></label>
                   <div class="input-with-error">
@@ -69,7 +69,7 @@
                         <small>Please Select Class.</small>
                     </div>
                   </div>
-                </div> 
+                </div>
                   <div class="InputFieldsContainer">
                   <label class="inputLabel" for="email">Divisions <span class="required">*</span></label>
                   <div class="input-with-error">
@@ -131,7 +131,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="InputFieldsContainer">
+                <div class="InputFieldsContainer" *ngIf="!isTeacher">
                   <label class="inputLabel" for="email">Class <span class="required">*</span></label>
                   <div class="input-with-error">
                     <select class="inputField" formControlName="Class" (change)="onAdminClasschange($event)">
@@ -144,7 +144,7 @@
                   </div>
                 </div>
               </div>
-              <div class="InputRow">
+              <div class="InputRow" *ngIf="!isTeacher">
                 <div class="InputFieldsContainer">
                   <label class="inputLabel" for="email">Divisions <span class="required">*</span></label>
                   <div class="input-with-error">
@@ -157,6 +157,8 @@
                     </div>
                   </div>
                 </div>
+              </div>
+              <div class="InputRow">
                 <div class="InputFieldsContainer">
                   <label class="inputLabel" for="email">Session <span class="required">*</span></label>
                   <div class="input-with-error">
@@ -229,7 +231,7 @@
                 <th>SI.No</th>
                 <th (click)="sort('ExamTypeName')" class="sortable-column">
                   <span class="column-text">AdmissionNo</span>
-                  <span class="arrows">
+                  <!-- <span class="arrows">
                     <mat-icon 
                       [style.color]="sortColumn === 'ExamTypeName' && sortDirection === 'asc' ? 'red' : 'inherit'">
                       keyboard_arrow_up
@@ -238,11 +240,11 @@
                       [style.color]="sortColumn === 'ExamTypeName' && sortDirection === 'desc' ? 'red' : 'inherit'">
                       keyboard_arrow_down
                     </mat-icon>
-                  </span>
+                  </span> -->
                 </th>
                 <th>Name</th>
-                <!-- <th>Class</th>  
-                <th>Division</th>         -->
+                <th>Class</th>
+                <th>Division</th>
                 <th *ngIf="isAdmin">School Name</th>
                 <th *ngIf="isAdmin">Academic Year</th>               
                 <th class="status-column">Status</th>      
@@ -261,8 +263,8 @@
                 <td data-label="SI.No">{{ i + 1 }}</td>
                 <td data-label="AdmissionNo">{{ Syllabus.AdmissionNo }}</td>
                 <td data-label="Name">{{ Syllabus.Name }}</td>
-                <!-- <td data-label="Class">{{ Syllabus.Class }}</td>
-                <td data-label="ClassDivisionName">{{ Syllabus.ClassDivisionName }}</td> -->
+                <td data-label="Class">{{ Syllabus.ClassName }}</td>
+                <td data-label="Division">{{ Syllabus.DivisionName }}</td>
                 <td data-label="ExamType" *ngIf="isAdmin">{{ Syllabus.SchoolName }}</td>
                 <td data-label="AcademicYearName" *ngIf="isAdmin">{{ Syllabus.AcademicYearName }}{{Syllabus.ExamAttendancAndMarksMarked}}</td>
                 <!-- <td data-label="Status">{{ Syllabus.IsActive }}</td> -->

@@ -31,15 +31,49 @@ export class ExamattendenceComponent  extends BasePermissionComponent{
   ngOnInit(): void {
     this.checkViewPermission();
     this.SchoolSelectionChange = false;
-    this.FetchSchoolsList();
-    if (!this.isAdmin) {
-      this.AdminselectedSchoolID =
-        sessionStorage.getItem('SchoolID')?.toString() ||
-        sessionStorage.getItem('schoolId')?.toString() ||
-        '';
-      this.SyllabusForm.patchValue({ School: this.AdminselectedSchoolID });
+
+    if (this.isTeacher) {
+      this.AdminselectedSchoolID = this.resolvedSchoolId || this.ss('SchoolID') || this.ss('schoolId');
+      this.resolveStaffIdentity();
+      this.FetchAcademicYearsList();
+      this.FetchExamsList();
+
+      // For teachers, remove validators from School, Class, Divisions (auto-resolved)
+      this.SyllabusForm.get('School').clearValidators();
+      this.SyllabusForm.get('School').updateValueAndValidity();
+      this.SyllabusForm.get('Class').clearValidators();
+      this.SyllabusForm.get('Class').updateValueAndValidity();
+      this.SyllabusForm.get('Divisions').clearValidators();
+      this.SyllabusForm.get('Divisions').updateValueAndValidity();
+    } else {
+      this.FetchSchoolsList();
+      if (!this.isAdmin) {
+        this.AdminselectedSchoolID =
+          sessionStorage.getItem('SchoolID')?.toString() ||
+          sessionStorage.getItem('schoolId')?.toString() ||
+          '';
+        this.SyllabusForm.patchValue({ School: this.AdminselectedSchoolID });
+
+        // For SchoolAdmin, remove School validator (auto-resolved from session)
+        this.SyllabusForm.get('School').clearValidators();
+        this.SyllabusForm.get('School').updateValueAndValidity();
+
+        // Add validators for Class and Divisions for SchoolAdmin
+        this.SyllabusForm.get('Class').setValidators([Validators.required, Validators.min(1)]);
+        this.SyllabusForm.get('Class').updateValueAndValidity();
+        this.SyllabusForm.get('Divisions').setValidators([Validators.required, Validators.min(1)]);
+        this.SyllabusForm.get('Divisions').updateValueAndValidity();
+      } else {
+        // For SuperAdmin, add validators for School, Class, Divisions
+        this.SyllabusForm.get('School').setValidators([Validators.required, Validators.min(1)]);
+        this.SyllabusForm.get('School').updateValueAndValidity();
+        this.SyllabusForm.get('Class').setValidators([Validators.required, Validators.min(1)]);
+        this.SyllabusForm.get('Class').updateValueAndValidity();
+        this.SyllabusForm.get('Divisions').setValidators([Validators.required, Validators.min(1)]);
+        this.SyllabusForm.get('Divisions').updateValueAndValidity();
+      }
+      this.FetchAcademicYearsList();
     }
-    this.FetchAcademicYearsList();
   };
 
   
@@ -108,10 +142,10 @@ export class ExamattendenceComponent  extends BasePermissionComponent{
   SyllabusForm :any= new FormGroup({
     ID: new FormControl(''),
     SchoolID:new FormControl(''),
-    AdmissionID: new FormControl(true), // ✅ Default Present
-    Attendance: new FormControl(true), 
-    Divisions: new FormControl(0,[Validators.required,Validators.min(1)]),
-    Class: new FormControl(0,[Validators.required,Validators.min(1)]),
+    AdmissionID: new FormControl(true),
+    Attendance: new FormControl(true),
+    Divisions: new FormControl(0),
+    Class: new FormControl(0),
     ExamType: new FormControl(0,[Validators.required,Validators.min(1)]),
     School: new FormControl(0,[Validators.required,Validators.min(1)]),
     AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
@@ -146,6 +180,59 @@ export class ExamattendenceComponent  extends BasePermissionComponent{
     return role === '1';
   }
 
+  private get currentRollID(): string {
+    return sessionStorage.getItem('RollID') || localStorage.getItem('RollID') || '';
+  }
+
+  private get currentRoleName(): string {
+    return sessionStorage.getItem('role') || localStorage.getItem('role') || '';
+  }
+
+  get isTeacher(): boolean {
+    const r = this.currentRoleName.toLowerCase();
+    const id = this.currentRollID;
+    return id === '3' || r.includes('teacher') || r.includes('teaching');
+  }
+
+  get isSchoolAdmin(): boolean {
+    const r = this.currentRoleName.toLowerCase();
+    const id = this.currentRollID;
+    return !this.isAdmin && (id === '2' || id === '8' || r.includes('admin') || r.includes('principal') || r.includes('management'));
+  }
+
+  private get resolvedSchoolId(): string {
+    const keys = ['SchoolID', 'schoolId', 'schoolID', 'SchoolId', 'sId', 'sid', 'SID', 'SId', 'school_id', 'School_Id', 'user_school_id'];
+    for (const k of keys) {
+      const val = this.ss(k);
+      if (val && val !== '0' && val !== 'null' && val !== 'undefined' && !isNaN(Number(val))) {
+        return val.toString().trim();
+      }
+    }
+    return this.AdminselectedSchoolID || '';
+  }
+
+  private ss(key: string): string {
+    return sessionStorage.getItem(key) || localStorage.getItem(key) || '';
+  }
+
+  private get sessionApplicantId(): string {
+    // Do not use role identifiers as staff identifiers.
+    const keys = ['StaffID', 'staffId', 'StaffId', 'UserID', 'userId', 'UserId', 'user_id', 'id', 'ID'];
+    for (const k of keys) {
+      const val = this.ss(k);
+      if (val && val !== '0' && val !== 'null' && val !== 'undefined' && !isNaN(Number(val))) {
+        return val.toString().trim();
+      }
+    }
+    return '';
+  }
+
+  private resolvedStaffId: string = '';
+
+  get currentUserId(): string {
+    return this.resolvedStaffId || this.sessionApplicantId || this.ss('StaffID') || this.ss('UserID');
+  }
+
   private getCurrentSchoolId(): string {
     if (this.isAdmin) {
       return this.AdminselectedSchoolID || '';
@@ -157,6 +244,52 @@ export class ExamattendenceComponent  extends BasePermissionComponent{
       sessionStorage.getItem('schoolId')?.toString() ||
       ''
     );
+  }
+
+  private resolveStaffIdentity(): void {
+    const schoolId = this.resolvedSchoolId;
+    const email = (this.ss('email') || this.ss('Email') || '').toString().trim().toLowerCase();
+
+    if (!schoolId || !email) return;
+
+    this.apiurl.post<any>('Tbl_Staff_CRUD_Operations', {
+      Flag: '2',
+      SchoolID: schoolId
+    }).subscribe({
+      next: (res: any) => {
+        const list = res?.data || [];
+        const match = list.find((s: any) => (s.email || s.Email || '').toLowerCase() === email);
+        if (match) {
+          this.resolvedStaffId = String(match.id || match.ID);
+          console.log('[EXAM ATTENDANCE] Resolved Teacher StaffID:', this.resolvedStaffId);
+        }
+      },
+      complete: () => {
+        if (this.isTeacher && !this.currentUserId) {
+          console.warn('[EXAM ATTENDANCE] Teacher StaffID could not be resolved from session/email mapping.');
+        }
+      }
+    });
+  }
+
+  private getSelectedExamTypeId(): string {
+    const formExam = String(this.SyllabusForm?.get('ExamType')?.value ?? '').trim();
+    if (formExam && formExam !== '0') return formExam;
+    return (this.AdminselecteExamID || '').toString().trim();
+  }
+
+  private matchesSelectedExamType(item: any, selectedExamTypeId: string): boolean {
+    const candidateIds = [
+      item?.examType,
+      item?.ExamType,
+      item?.examTypeID,
+      item?.ExamTypeID,
+      item?.examTypeId
+    ]
+      .map((v: any) => String(v ?? '').trim())
+      .filter(Boolean);
+
+    return candidateIds.includes(selectedExamTypeId);
   }
   
   FetchAcademicYearsList() {
@@ -220,6 +353,39 @@ FetchClassList() {
     );
 }
 FetchExamsList() {
+  if (this.isTeacher) {
+    const teacherPayload: any = {
+      SchoolID: this.getCurrentSchoolId(),
+      AcademicYear: this.AdminselectedAcademivYearID || '',
+      StaffID: this.currentUserId || '-1',
+      Flag: '12'
+    };
+
+    this.apiurl.post<any>('Tbl_SetExam_CRUD_Operations', teacherPayload)
+      .subscribe(
+        (response: any) => {
+          const rows = Array.isArray(response?.data) ? response.data : [];
+          const byId = new Map<string, any>();
+
+          rows.forEach((item: any) => {
+            const id = String(item?.examType ?? item?.ExamType ?? item?.examTypeID ?? item?.ExamTypeID ?? '').trim();
+            const name = String(item?.examTypeName ?? item?.ExamTypeName ?? item?.examType ?? item?.ExamType ?? '').trim();
+            if (!id) return;
+            if (!byId.has(id)) {
+              byId.set(id, { ID: id, Name: name || `Exam ${id}` });
+            }
+          });
+
+          this.examLists = Array.from(byId.values());
+          console.log('[EXAM ATTENDANCE] Teacher exam list (Flag 12):', this.examLists);
+        },
+        () => {
+          this.examLists = [];
+        }
+      );
+    return;
+  }
+
   const requestData = {
     SchoolID: this.getCurrentSchoolId(),
     AcademicYear: this.AdminselectedAcademivYearID || '',
@@ -515,15 +681,24 @@ checkAttendanceStatusForExams() {
       SchoolIdSelected = this.selectedSchoolID.trim();
     }
 
-    return this.apiurl.post<any>('Tbl_SetExam_CRUD_Operations', {
-      Flag: isSearch ? '8' : '6',
-       SchoolID: this.getCurrentSchoolId(),
+    const payload: any = {
+      SchoolID: this.getCurrentSchoolId(),
       AcademicYear: this.AdminselectedAcademivYearID || '',
       Class: this.AdminselectedClassID || '',
-      Division: this.AdminselectedDiviosnID || '',
+      Divisions: this.AdminselectedDiviosnID || '',
       ExamType: this.AdminselecteExamID || '',
       ExamTypeName: isSearch ? this.searchQuery.trim() : null
-    });
+    };
+
+    // For teachers, use StaffID in FLAG 12
+    if (this.isTeacher) {
+      payload.StaffID = this.currentUserId || '-1';
+      payload.Flag = '12';
+    } else {
+      payload.Flag = isSearch ? '8' : '6';
+    }
+
+    return this.apiurl.post<any>('Tbl_SetExam_CRUD_Operations', payload);
   }
 private resetPaginationAndFetch() {
  this.currentPage = 1;
@@ -534,16 +709,21 @@ private resetPaginationAndFetch() {
 
   FetchInitialData(extra: any = {}) {
   const isSearch = !!this.searchQuery?.trim();
-  const flag = isSearch ? '7' : '10';
+  let flag = isSearch ? '7' : '10';
+
+  // For teachers, use FLAG 12
+  if (this.isTeacher) {
+    flag = '12';
+  }
 
   this.loader.show();
 
   this.FetchAcademicYearCount(isSearch).subscribe({
     next: (countResp: any) => {
-      this.SyllabusCount = countResp?.data?.[0]?.totalcount ?? 0;   // ← Now correct count!
+      this.SyllabusCount = countResp?.data?.[0]?.totalcount ?? 0;
 
-      const cursor = this.currentPage > 1 && !extra.offset 
-        ? this.pageCursors[this.currentPage - 2] || null 
+      const cursor = this.currentPage > 1 && !extra.offset
+        ? this.pageCursors[this.currentPage - 2] || null
         : null;
 
       const payload: any = {
@@ -554,24 +734,86 @@ private resetPaginationAndFetch() {
         LastCreatedDate: cursor?.lastCreatedDate ?? null,
         LastID: cursor?.lastID ?? null,
 
-        // ALL 5 filters always sent
+        // ALL filters always sent
         SchoolID: this.getCurrentSchoolId(),
         AcademicYear: this.AdminselectedAcademivYearID || '',
         Class: this.AdminselectedClassID || '',
-        Division: this.AdminselectedDiviosnID || '',
+        Divisions: this.AdminselectedDiviosnID || '',
         ExamType: this.AdminselecteExamID || '',
 
         ...extra
       };
 
+      // For teachers, pass StaffID
+      if (this.isTeacher) {
+        payload.StaffID = this.currentUserId || '-1';
+        console.log('[EXAM ATTENDANCE] Teacher payload - currentUserId:', this.currentUserId, 'Flag:', flag);
+      }
+
       if (isSearch) payload.ExamTypeName = this.searchQuery.trim();
 
       this.apiurl.post<any>('Tbl_SetExam_CRUD_Operations', payload).subscribe({
         next: (response: any) => {
-          this.mapAcademicYears(response);
+          let responseData = Array.isArray(response?.data) ? response.data : [];
+          const selectedExamTypeId = this.getSelectedExamTypeId();
 
-          if (response.data?.length > 0 && !this.pageCursors[this.currentPage - 1]) {
-            const lastRow = response.data[response.data.length - 1];
+          // Safety net: if FLAG 12 ignores ExamType on backend, filter on client by selected exam id.
+          if (this.isTeacher && selectedExamTypeId) {
+            const before = responseData.length;
+            responseData = responseData.filter((row: any) => this.matchesSelectedExamType(row, selectedExamTypeId));
+            console.log('[EXAM ATTENDANCE] Teacher exam filter:', {
+              selectedExamTypeId,
+              before,
+              after: responseData.length
+            });
+          }
+
+          // For teachers with FLAG 12, auto-populate class/division and handle response
+          if (this.isTeacher && flag === '12' && responseData.length > 0) {
+            const firstExam = responseData[0];
+            const classId = firstExam.classID || firstExam.Class;
+            const divisionId = firstExam.TeacherDivisionID || firstExam.TeacherDivision;
+            const className = firstExam.ClassName;
+            const divisionName = firstExam.TeacherDivisionName || firstExam.DivisionName;
+
+            if (classId && divisionId) {
+              this.AdminselectedClassID = String(classId);
+              this.AdminselectedDiviosnID = String(divisionId);
+              console.log('[EXAM ATTENDANCE] Teacher class/division from FLAG 12:', {
+                classId: this.AdminselectedClassID,
+                divisionId: this.AdminselectedDiviosnID,
+                className,
+                divisionName
+              });
+
+              // Populate class list with the assigned class
+              this.classLists = [{
+                ID: String(classId),
+                Name: className || `Class ${classId}`,
+                Division: divisionName || `Division ${divisionId}`
+              }];
+
+              // Populate division list with the assigned division
+              this.divisionsList = [{
+                ID: String(divisionId),
+                Name: divisionName || `Division ${divisionId}`
+              }];
+
+              // Update form values
+              this.SyllabusForm.patchValue({
+                Class: String(classId),
+                Divisions: String(divisionId)
+              });
+            }
+          }
+
+          this.mapAcademicYears({ ...response, data: responseData });
+          if (this.isTeacher && selectedExamTypeId) {
+            this.SyllabusCount = responseData.length;
+          }
+
+          if (responseData.length > 0 && !this.pageCursors[this.currentPage - 1]) {
+            const lastRow = responseData[responseData.length - 1];
             this.pageCursors[this.currentPage - 1] = {
               lastCreatedDate: lastRow.createdDate,
               lastID: Number(lastRow.id)
@@ -596,7 +838,16 @@ private resetPaginationAndFetch() {
   mapAcademicYears(response: any) {
   this.SyllabusList = (response.data || []).map((item: any) => {
       
-      let displayExamType = item.examTypeName;
+      let displayExamType = item.examTypeName || item.examType || item.ExamType || '-';
+      const divisionDisplay =
+        String(
+          item.divisionName ??
+          item.classDivisionName ??
+          item.divisionList ??
+          item.divisions ??
+          item.Division ??
+          '-'
+        ).trim() || '-';
     
     
     const formattedExamDate = item.examDateAndTime
@@ -631,7 +882,7 @@ private resetPaginationAndFetch() {
       SchoolID: item.schoolID,
       Syllabus: item.syllabus,
       Class: item.className,          // ← friendly for table
-      Divisions: item.divisionName,
+      Divisions: divisionDisplay,
       ExamType: displayExamType,
       ExamTypeID: item.examType,
       Subjects: item.subjectName,
@@ -669,6 +920,10 @@ formatDateYYYYMMDD(dateStr: string | null) {
   }
 
   onSubmit() {
+    // Keep selected exam filter synced even if change-event timing varies.
+    const examFromForm = this.getSelectedExamTypeId();
+    this.AdminselecteExamID = examFromForm && examFromForm !== '0' ? examFromForm : '';
+
     if (this.SyllabusForm.invalid) {
       this.SyllabusForm.markAllAsTouched();
       return;

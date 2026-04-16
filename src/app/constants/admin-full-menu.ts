@@ -97,5 +97,14 @@ export const FULL_ADMIN_MENU: Module[] = [
       { id: 'advancesalary', pageName: 'Advance Salary', moduleID: 'hrpayroll', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
       { id: 'salaryissued', pageName: 'Salary Issued', moduleID: 'hrpayroll', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
     ]
+  },
+  {
+    id: 'leavemanagement',
+    moduleName: 'Leave Management',
+    pages: [
+      { id: 'applyleave', pageName: 'Apply Leave', moduleID: 'leavemanagement', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
+      { id: 'leaveapproval', pageName: 'Leave Approval', moduleID: 'leavemanagement', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
+      { id: 'leavedetails', pageName: 'Leave Details', moduleID: 'leavemanagement', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
+    ]
   }
 ];

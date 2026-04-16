@@ -67,15 +67,22 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
 
   ngOnInit(): void {
     this.checkViewPermission();
-    if (!this.isAdmin) {
-      this.AdminselectedSchoolID =
-        sessionStorage.getItem('SchoolID')?.toString() ||
-        sessionStorage.getItem('schoolId')?.toString() ||
-        '';
-      this.SyllabusForm.patchValue({ School: this.AdminselectedSchoolID || '0' });
+
+    if (this.isTeacher) {
+      this.AdminselectedSchoolID = this.resolvedSchoolId || this.ss('SchoolID') || this.ss('schoolId');
+      this.resolveStaffIdentity();
+      this.FetchAcademicYearsList();
+    } else {
+      if (!this.isAdmin) {
+        this.AdminselectedSchoolID =
+          sessionStorage.getItem('SchoolID')?.toString() ||
+          sessionStorage.getItem('schoolId')?.toString() ||
+          '';
+        this.SyllabusForm.patchValue({ School: this.AdminselectedSchoolID || '0' });
+      }
+      this.FetchSchoolsList();
+      this.FetchAcademicYearsList();
     }
-    this.FetchSchoolsList();
-    this.FetchAcademicYearsList();
   }
 
   schoolList: any[] = [];
@@ -125,8 +132,8 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
   SyllabusForm: any = new FormGroup({
     School: new FormControl(0, [Validators.required, Validators.min(1)]),
     AcademicYear: new FormControl(0, [Validators.required, Validators.min(1)]),
-    Class: new FormControl(0, [Validators.required, Validators.min(1)]),
-    Divisions: new FormControl(0, [Validators.required, Validators.min(1)]),
+    Class: new FormControl(0, []),
+    Divisions: new FormControl(0, []),
     Session: new FormControl(0),
     FromDateTime: new FormControl('', [Validators.required]),
     ToDateTime: new FormControl('', [Validators.required])
@@ -135,6 +142,62 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
   protected override get isAdmin(): boolean {
     const role = sessionStorage.getItem('RollID') || localStorage.getItem('RollID');
     return role === '1';
+  }
+
+  private get currentRollID(): string {
+    return sessionStorage.getItem('RollID') || localStorage.getItem('RollID') || '';
+  }
+
+  private get currentRoleName(): string {
+    return sessionStorage.getItem('role') || localStorage.getItem('role') || '';
+  }
+
+  get isTeacher(): boolean {
+    const r = this.currentRoleName.toLowerCase();
+    const id = this.currentRollID;
+    return id === '3' || r.includes('teacher') || r.includes('teaching');
+  }
+
+  get isSchoolAdmin(): boolean {
+    const r = this.currentRoleName.toLowerCase();
+    const id = this.currentRollID;
+    return !this.isAdmin && (id === '2' || id === '8' || r.includes('admin') || r.includes('principal') || r.includes('management'));
+  }
+
+  private get resolvedSchoolId(): string {
+    const keys = ['SchoolID', 'schoolId', 'schoolID', 'SchoolId', 'sId', 'sid', 'SID', 'SId', 'school_id', 'School_Id', 'user_school_id'];
+    for (const k of keys) {
+      const val = this.ss(k);
+      if (val && val !== '0' && val !== 'null' && val !== 'undefined' && !isNaN(Number(val))) {
+        return val.toString().trim();
+      }
+    }
+    return this.AdminselectedSchoolID || '';
+  }
+
+  private ss(key: string): string {
+    return sessionStorage.getItem(key) || localStorage.getItem(key) || '';
+  }
+
+  private get sessionApplicantId(): string {
+    const keys = ['StaffID', 'staffId', 'StaffId', 'UserID', 'userId', 'UserId', 'user_id', 'id', 'ID', 'RollID', 'rollID', 'menuRoleId'];
+    for (const k of keys) {
+      const val = this.ss(k);
+      if (val && val !== '0' && val !== 'null' && val !== 'undefined' && !isNaN(Number(val))) {
+        return val.toString().trim();
+      }
+    }
+    const fallbackId = this.currentRollID;
+    if (fallbackId && fallbackId !== '0' && !isNaN(Number(fallbackId))) {
+      return fallbackId;
+    }
+    return '';
+  }
+
+  private resolvedStaffId: string = '';
+
+  get currentUserId(): string {
+    return this.resolvedStaffId || this.sessionApplicantId || this.ss('StaffID') || this.ss('UserID');
   }
 
   private getCurrentSchoolId(): string {
@@ -170,6 +233,27 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
       },
       () => { this.academicYearList = []; }
     );
+  }
+
+  private resolveStaffIdentity(): void {
+    const schoolId = this.resolvedSchoolId;
+    const email = (this.ss('email') || this.ss('Email') || '').toString().trim().toLowerCase();
+
+    if (!schoolId || !email) return;
+
+    this.apiurl.post<any>('Tbl_Staff_CRUD_Operations', {
+      Flag: '2',
+      SchoolID: schoolId
+    }).subscribe({
+      next: (res: any) => {
+        const list = res?.data || [];
+        const match = list.find((s: any) => (s.email || s.Email || '').toLowerCase() === email);
+        if (match) {
+          this.resolvedStaffId = String(match.id || match.ID);
+          console.log('[VIEW ATTENDANCE] Resolved Teacher StaffID:', this.resolvedStaffId);
+        }
+      }
+    });
   }
 
   FetchClassList() {
@@ -388,12 +472,115 @@ updateStudentAttendance() {
 
     this.loader.show();
 
+    // 👉 For teachers, first fetch their assigned students using FLAG 11
+    if (this.isTeacher) {
+      const studentPayload: any = {
+        Flag: '11',
+        SchoolID: this.AdminselectedSchoolID || '',
+        AcademicYear: this.AdminselectedAcademivYearID || '',
+        CreatedBy: this.currentUserId,
+        Limit: '10000'
+      };
+
+      this.apiurl.post<any>('Tbl_StudentDetails_CRUD_Operations', studentPayload).subscribe({
+        next: (studentRes: any) => {
+          const students = studentRes?.data || [];
+          const admissionNos = students.map((s: any) => s.admissionNo);
+
+          // Extract class/division from first student for teachers
+          if (students.length > 0) {
+            const firstStudent = students[0];
+            const classId = firstStudent.class;
+            const divisionId = firstStudent.division;
+            const className = firstStudent.className;
+            const divisionName = firstStudent.classDivisionName;
+
+            if (classId && divisionId) {
+              this.AdminselectedClassID = String(classId);
+              this.AdminselectedDiviosnID = String(divisionId);
+              console.log('[VIEW ATTENDANCE] Teacher class/division from FLAG 11:', {
+                classId: this.AdminselectedClassID,
+                divisionId: this.AdminselectedDiviosnID,
+                className,
+                divisionName
+              });
+
+              // Populate class list with the assigned class
+              this.classLists = [{
+                ID: String(classId),
+                Name: className || `Class ${classId}`
+              }];
+
+              // Populate division list with the assigned division
+              this.divisionsList = [{
+                ID: String(divisionId),
+                Name: divisionName || `Division ${divisionId}`
+              }];
+
+              // Update form values
+              this.SyllabusForm.patchValue({
+                Class: String(classId),
+                Divisions: String(divisionId)
+              });
+            }
+          }
+
+          if (admissionNos.length > 0) {
+            // Fetch attendance for these students
+            this.fetchAttendanceForStudents(admissionNos, fromDate, toDate);
+          } else {
+            this.rawData = [];
+            this.studentSummaries = [];
+            this.SyllabusCount = 0;
+            this.isTableVisible = true;
+            this.loader.hide();
+          }
+        },
+        error: () => {
+          this.rawData = [];
+          this.studentSummaries = [];
+          this.SyllabusCount = 0;
+          this.isTableVisible = true;
+          this.loader.hide();
+        }
+      });
+    } else {
+      // For non-teachers, use normal attendance fetch
+      const body: any = {
+        Flag: '2',
+        SchoolID: this.getCurrentSchoolId(),
+        AcademicYear: this.AdminselectedAcademivYearID,
+        Class: this.AdminselectedClassID,
+        Division: this.AdminselectedDiviosnID,
+        Limit: '10000'
+      };
+
+      if (this.AdminSelectedSessionID) body.Session = this.AdminSelectedSessionID;
+
+      this.apiurl.post<any>('Tbl_StudentAttendance_CRUD_Operations', body).subscribe(
+        (response: any) => {
+          this.rawData = Array.isArray(response?.data) ? response.data : [];
+          this.processData(this.rawData);
+          this.loader.hide();
+        },
+        () => {
+          this.rawData = [];
+          this.studentSummaries = [];
+          this.SyllabusCount = 0;
+          this.isTableVisible = true;
+          this.loader.hide();
+        }
+      );
+    }
+  }
+
+  private fetchAttendanceForStudents(admissionNos: string[], fromDate: string, toDate: string) {
     const body: any = {
       Flag: '2',
-      SchoolID: this.getCurrentSchoolId(),
-      AcademicYear: this.AdminselectedAcademivYearID,
-      Class: this.AdminselectedClassID,
-      Division: this.AdminselectedDiviosnID,
+      SchoolID: this.AdminselectedSchoolID || '',
+      AcademicYear: this.AdminselectedAcademivYearID || '',
+      Class: this.AdminselectedClassID || '',
+      Division: this.AdminselectedDiviosnID || '',
       Limit: '10000'
     };
 
@@ -401,7 +588,9 @@ updateStudentAttendance() {
 
     this.apiurl.post<any>('Tbl_StudentAttendance_CRUD_Operations', body).subscribe(
       (response: any) => {
-        this.rawData = Array.isArray(response?.data) ? response.data : [];
+        const allAttendance = Array.isArray(response?.data) ? response.data : [];
+        // Filter attendance to only include teacher's students
+        this.rawData = allAttendance.filter((row: any) => admissionNos.includes(row.admissionID));
         this.processData(this.rawData);
         this.loader.hide();
       },
@@ -597,6 +786,13 @@ updateStudentAttendance() {
   private isFilterReady(): boolean {
     const formValue = this.SyllabusForm.getRawValue();
     const hasSchool = !this.isAdmin || Number(formValue.School) > 0;
+    // For teachers, class/division are auto-filtered by FLAG 11, so only check academic year and dates
+    if (this.isTeacher) {
+      return hasSchool &&
+        Number(formValue.AcademicYear) > 0 &&
+        !!formValue.FromDateTime &&
+        !!formValue.ToDateTime;
+    }
     return hasSchool &&
       Number(formValue.AcademicYear) > 0 &&
       Number(formValue.Class) > 0 &&

@@ -310,6 +310,19 @@ export class AdmissionComponent extends BasePermissionComponent {
     return role === '1';
   }
 
+  get currentSchoolId(): string {
+    const fromForm = this.ModuleForm.get('School')?.value;
+    if (fromForm && fromForm !== '0' && fromForm !== 'null' && fromForm !== 'undefined' && !isNaN(Number(fromForm))) {
+      return fromForm.toString();
+    }
+    const possibleKeys = ['SchoolID', 'schoolId', 'schoolID', 'SchoolId', 'sId', 'sid', 'SID', 'SId', 'school_id', 'School_Id', 'user_school_id'];
+    for (const key of possibleKeys) {
+      const val = sessionStorage.getItem(key) || localStorage.getItem(key);
+      if (val && val !== '0' && val !== 'null' && val !== 'undefined' && !isNaN(Number(val))) return val.toString();
+    }
+    return '';
+  }
+
   FetchAcademicYearCount(isSearch: boolean) {
     let SchoolIdSelected = '';
 
@@ -906,16 +919,16 @@ export class AdmissionComponent extends BasePermissionComponent {
   };
 
   SubmitUser(){
-    // parentroleid=15
+    const currentSchoolId = this.currentSchoolId;
     if(this.activeTab=="personal"){
       const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
       const formData = new FormData();
-      formData.append('SchoolID', this.ModuleForm.get('School')?.value ?? '');
+      formData.append('SchoolID', currentSchoolId);
       formData.append('FirstName', this.ModuleForm.get('FirstName')?.value ?? '');
       formData.append('LastName', this.ModuleForm.get('LastName')?.value ?? '');
       formData.append('MobileNo', this.ModuleForm.get('MobileNo')?.value ?? '');
       formData.append('Email', this.ModuleForm.get('Email')?.value ?? '');
-      formData.append('RollId', '5');
+      formData.append('RollId', '5'); // Role 5 = Student
       formData.append('Password', 'Welcome@2025');
       formData.append('IsActive', IsActiveStatusNumeric);
       formData.append('Flag', '1');
@@ -944,11 +957,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     else if(this.activeTab=="parents"){
       const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
       const formData = new FormData();
-      formData.append('SchoolID', this.ModuleForm.get('School')?.value ?? '');
+      formData.append('SchoolID', currentSchoolId);
       formData.append('FirstName', this.ModuleForm.get('FatherName')?.value ?? '');
       formData.append('MobileNo', this.ModuleForm.get('FatherMobile')?.value ?? '');
       formData.append('Email', this.ModuleForm.get('FatherEmail')?.value ?? '');
-      formData.append('RollId', '6');
+      formData.append('RollId', '6'); // Role 6 = Parent
       formData.append('Password', 'Welcome@2025');
       formData.append('IsActive', IsActiveStatusNumeric);
       formData.append('Flag', '1');
@@ -977,10 +990,11 @@ export class AdmissionComponent extends BasePermissionComponent {
   };
 
   UpdateUser(){
+    const currentSchoolId = this.currentSchoolId;
     if(this.activeTab=="personal"){
       const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
       const formData = new FormData();
-      formData.append('SchoolID', this.ModuleForm.get('School')?.value ?? '');
+      formData.append('SchoolID', currentSchoolId);
       formData.append('FirstName', this.ModuleForm.get('FirstName')?.value ?? '');
       formData.append('LastName', this.ModuleForm.get('LastName')?.value ?? '');
       formData.append('MobileNo', this.ModuleForm.get('MobileNo')?.value ?? '');
@@ -1012,7 +1026,7 @@ export class AdmissionComponent extends BasePermissionComponent {
     else if(this.activeTab=="parents"){
       const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
       const formData = new FormData();
-      formData.append('SchoolID', this.ModuleForm.get('School')?.value ?? '');
+      formData.append('SchoolID', currentSchoolId);
       formData.append('FirstName', this.ModuleForm.get('FatherName')?.value ?? '');
       formData.append('MobileNo', this.ModuleForm.get('FatherMobile')?.value ?? '');
       formData.append('Email', this.ModuleForm.get('FatherEmail')?.value ?? '');
