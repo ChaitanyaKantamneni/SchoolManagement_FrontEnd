@@ -70,6 +70,8 @@ export class SalarySettingsComponent implements OnInit {
     if (this.IsAddNewClicked) {
       this.editModeId = null;
       this.pendingEditPayHeadJson = '';
+      this.selectedAcademicYearID = '';
+      this.staffList = [];
       this.selectedStaffID = '';
       this.salaryHeads = [];
       if (this.selectedAcademicYearID) {

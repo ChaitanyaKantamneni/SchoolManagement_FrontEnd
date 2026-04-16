@@ -81,7 +81,7 @@
 </div>
 
 <div class="modal" tabindex="-1" role="dialog" [ngClass]="{ show: isPayslipOpen }" [style.display]="isPayslipOpen ? 'block' : 'none'">
-  <div class="modal-dialog modal-lg" role="document">
+  <div class="modal-dialog modal-xl" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Payslip</h5>
@@ -90,56 +90,161 @@
         </button>
       </div>
       <div class="modal-body" *ngIf="selectedPayslip">
-        <div id="payslipSection" class="payslip-print-block professional-payslip">
-          <div class="payslip-head">
-            <div>
-              <h4 class="payslip-title">School Management ERP</h4>
-              <p class="payslip-sub">Salary Payslip</p>
+        <div id="payslipSection" class="psl-card">
+
+          <!-- Title -->
+          <div class="psl-title-bar">PAYSLIP</div>
+
+          <!-- Employee Header -->
+          <div class="psl-emp-header">
+            <div class="psl-emp-grid">
+              <div class="psl-emp-field">
+                <span class="psl-label">Employee Name</span>
+                <span class="psl-value">{{ selectedPayslip.staffName }}</span>
+              </div>
+              <div class="psl-emp-field">
+                <span class="psl-label">Employee ID</span>
+                <span class="psl-value">{{ selectedPayslip.staffId || '-' }}</span>
+              </div>
+              <div class="psl-emp-field">
+                <span class="psl-label">Designation</span>
+                <span class="psl-value">{{ selectedPayslip.designation }}</span>
+              </div>
+              <div class="psl-emp-field">
+                <span class="psl-label">Pay Period</span>
+                <span class="psl-value">{{ selectedPayslip.salaryPeriod }}</span>
+              </div>
+              <div class="psl-emp-field">
+                <span class="psl-label">Payment Mode</span>
+                <span class="psl-value">{{ selectedPayslip.paymentMode }}</span>
+              </div>
+              <div class="psl-emp-field">
+                <span class="psl-label">Paid Date</span>
+                <span class="psl-value">{{ selectedPayslip.date }}</span>
+              </div>
             </div>
-            <div class="payslip-meta-right">
-              <p><span>Payslip No</span> : PSL-{{ selectedPayslip.staffId || '000' }}-{{ selectedPayslip.date | date: 'MMyy' }}</p>
-              <p><span>Generated On</span> : {{ selectedPayslip.date }}</p>
+          </div>
+
+          <!-- Two-column: Earnings + Deductions -->
+          <div class="psl-two-col">
+
+            <!-- EARNINGS -->
+            <div class="psl-section psl-earn-section">
+              <div class="psl-section-header psl-earn-header">
+                <span class="psl-section-dot psl-dot-earn"></span> EARNINGS
+              </div>
+              <table class="psl-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Pay Head</th>
+                    <th>Type</th>
+                    <th class="psl-right">Amount (&#8377;)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let line of earningsLines; let i = index">
+                    <td class="psl-idx">{{ i + 1 }}</td>
+                    <td>{{ line.payHead }}</td>
+                    <td><span class="psl-chip psl-chip-earn">Earning</span></td>
+                    <td class="psl-right psl-amt-earn">{{ line.amount | number:'1.2-2' }}</td>
+                  </tr>
+                  <tr *ngIf="earningsLines.length === 0">
+                    <td colspan="4" class="psl-empty">No earnings found</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="psl-col-footer psl-earn-footer">
+                <span>Gross Earnings</span>
+                <span>&#8377; {{ grossEarnings | number:'1.2-2' }}</span>
+              </div>
+            </div>
+
+            <!-- DEDUCTIONS -->
+            <div class="psl-section psl-ded-section">
+              <div class="psl-section-header psl-ded-header">
+                <span class="psl-section-dot psl-dot-ded"></span> DEDUCTIONS
+              </div>
+              <table class="psl-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Pay Head</th>
+                    <th>Type</th>
+                    <th class="psl-right">Amount (&#8377;)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let line of regularDeductionLines; let i = index">
+                    <td class="psl-idx">{{ i + 1 }}</td>
+                    <td>{{ line.payHead }}</td>
+                    <td><span class="psl-chip psl-chip-ded">Deduction</span></td>
+                    <td class="psl-right psl-amt-ded">{{ line.amount | number:'1.2-2' }}</td>
+                  </tr>
+                  <tr *ngIf="regularDeductionLines.length === 0">
+                    <td colspan="4" class="psl-empty">No deductions found</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="psl-col-footer psl-ded-footer">
+                <span>Total Deductions</span>
+                <span>&#8377; {{ totalDeductions | number:'1.2-2' }}</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- ADVANCE SALARY RECOVERY (full width) -->
+          <div class="psl-advance-block" *ngIf="advanceDeductionLines.length > 0">
+            <div class="psl-advance-header">
+              <span class="psl-section-dot psl-dot-adv"></span> ADVANCE SALARY RECOVERY
+            </div>
+            <table class="psl-table psl-adv-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Pay Head</th>
+                  <th>Type</th>
+                  <th class="psl-right">Amount (&#8377;)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let line of advanceDeductionLines; let i = index">
+                  <td class="psl-idx">{{ i + 1 }}</td>
+                  <td>{{ line.payHead }}</td>
+                  <td><span class="psl-chip psl-chip-adv">Advance</span></td>
+                  <td class="psl-right psl-amt-adv">{{ line.amount | number:'1.2-2' }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="psl-adv-footer">
+              <span>Total Advance Recovery</span>
+              <span>&#8377; {{ totalAdvanceDeduction | number:'1.2-2' }}</span>
             </div>
           </div>
 
-          <div class="payslip-meta-grid">
-            <p><span>Employee Name</span> : {{ selectedPayslip.staffName }}</p>
-            <p><span>Staff ID</span> : {{ selectedPayslip.staffId || '-' }}</p>
-            <p><span>Designation</span> : {{ selectedPayslip.designation }}</p>
-            <p><span>Payment Mode</span> : {{ selectedPayslip.paymentMode }}</p>
-            <p><span>Salary Period</span> : {{ selectedPayslip.salaryPeriod }}</p>
-            <p><span>Paid Date</span> : {{ selectedPayslip.date }}</p>
+          <!-- Net Pay -->
+          <div class="psl-net">
+            <div class="psl-net-label">
+              <span class="psl-net-icon">&#9654;</span>
+              Net Pay
+              <span class="psl-net-sub">Earnings &minus; (Deductions + Advance Recovery)</span>
+            </div>
+            <div class="psl-net-amount">&#8377; {{ selectedPayslip.amount | number:'1.2-2' }}</div>
           </div>
 
-          <table class="table table-bordered payslip-table">
-            <thead>
-              <tr>
-                <th>Earnings</th>
-                <th>Amount</th>
-                <th>Deductions</th>
-                <th>Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let line of payslipRows">
-                <td>{{ line.earningPayHead }}</td>
-                <td>{{ line.earningAmount === null ? '-' : (line.earningAmount | number : '1.2-2') }}</td>
-                <td>{{ line.deductionPayHead }}</td>
-                <td>{{ line.deductionAmount === null ? '-' : (line.deductionAmount | number : '1.2-2') }}</td>
-              </tr>
-            </tbody>
-          </table>
-
-          <div class="payslip-totals">
-            <div class="totals-row"><span>Gross Earnings</span><b>{{ grossEarnings | number : '1.2-2' }}</b></div>
-            <div class="totals-row"><span>Total Deductions</span><b>{{ totalDeductions | number : '1.2-2' }}</b></div>
-            <div class="totals-row net-row"><span>Net Pay</span><b>{{ selectedPayslip.amount | number : '1.2-2' }}</b></div>
+          <!-- Signatures -->
+          <div class="psl-sign">
+            <div class="psl-sign-box">
+              <div class="psl-sign-line"></div>
+              <span>Employee Signature</span>
+            </div>
+            <div class="psl-sign-box psl-sign-right">
+              <div class="psl-sign-line"></div>
+              <span>Authorized Signatory</span>
+            </div>
           </div>
 
-          <div class="payslip-sign">
-            <div>Employee Signature</div>
-            <div>Authorized Signatory</div>
-          </div>
         </div>
       </div>
       <div class="modal-footer">

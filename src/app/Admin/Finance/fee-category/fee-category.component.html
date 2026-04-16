@@ -157,12 +157,12 @@
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Name <span class="required">*</span></label>
+                <label class="inputLabel" for="email">Fee Category Name <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <input class="inputField" formControlName="Name" placeholder="Enter Fee Category Name" />
                   <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
+                      <small>Please Enter Fee CategoryName.</small>
                     </div>
                   </div>
                 </div>

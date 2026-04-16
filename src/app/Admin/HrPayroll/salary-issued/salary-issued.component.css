@@ -2,106 +2,334 @@
   padding-left: 32px !important;
 }
 
-.payslip-print-block {
-  font-size: 14px;
+/* ══════════════════════════════════════
+   PAYSLIP CARD
+══════════════════════════════════════ */
+.psl-card {
+  background: #f8fafc;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  color: #0f172a;
 }
 
-.payslip-print-block p {
-  margin: 6px 0;
+.modal-dialog{
+  max-width: 900px !important;
 }
 
-.professional-payslip {
-  border: 1px solid #cbd5e1;
-  border-radius: 10px;
-  padding: 14px;
-  background: #ffffff;
+.modal-body{
+  max-height: 500px !important;
+  overflow: auto;
 }
 
-.payslip-head {
-  display: flex;
-  justify-content: space-between;
+/* ── Title Bar ── */
+.psl-title-bar {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  color: #fff;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  padding: 12px 0;
+}
+
+/* ── Employee Header ── */
+.psl-emp-header {
+  background: #fff;
+  padding: 16px 20px;
   border-bottom: 1px solid #e2e8f0;
-  padding-bottom: 10px;
-  margin-bottom: 12px;
 }
 
-.payslip-title {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 700;
+.psl-emp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px 24px;
 }
 
-.payslip-sub {
-  margin: 3px 0 0;
-  font-size: 12px;
-  color: #64748b;
+.psl-emp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.payslip-meta-right p {
-  margin: 2px 0;
-  font-size: 12px;
+.psl-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
 }
 
-.payslip-meta-right span,
-.payslip-meta-grid span {
-  color: #64748b;
+.psl-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
 }
 
-.payslip-meta-grid {
+/* ══════════════════════════════════════
+   TWO-COLUMN LAYOUT
+══════════════════════════════════════ */
+.psl-two-col {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px 16px;
-  margin-bottom: 12px;
-}
-
-.payslip-meta-grid p {
-  margin: 0;
-  font-size: 12px;
-}
-
-.payslip-meta-grid p:nth-child(even) {
-  text-align: right;
-}
-
-.payslip-table th {
+  gap: 20px;
+  padding: 20px;
   background: #f8fafc;
-  font-weight: 600;
 }
 
-.payslip-totals {
-  width: 100%;
-  margin-left: 0;
-  margin-top: 10px;
+.psl-section {
+  display: flex;
+  flex-direction: column;
 }
 
-.totals-row {
+.psl-earn-section {
+  border-right: 1px solid #e2e8f0;
+}
+
+/* Section Headers */
+.psl-section-header {
   display: flex;
   align-items: center;
-  font-size: 14px;
-  padding: 4px 0;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 9px 16px;
 }
 
-.totals-row span {
+.psl-earn-header {
+  background: #f0fdf4;
+  color: #166534;
+  border-bottom: 2px solid #bbf7d0;
+}
+
+.psl-ded-header {
+  background: #fff1f2;
+  color: #9f1239;
+  border-bottom: 2px solid #fecdd3;
+}
+
+.psl-section-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.psl-dot-earn { background: #22c55e; }
+.psl-dot-ded  { background: #f43f5e; }
+.psl-dot-adv  { background: #f59e0b; }
+
+/* ── Shared Table ── */
+.psl-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  flex: 1;
+}
+
+.psl-table thead tr {
+  background: #f8fafc;
+}
+
+.psl-table th {
+  padding: 7px 14px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  border-bottom: 1px solid #e2e8f0;
   text-align: left;
 }
 
-.totals-row b {
-  margin-left: auto;
-  text-align: right;
-  min-width: 120px;
+.psl-table td {
+  padding: 8px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
 }
 
-.net-row {
-  border-top: 1px solid #94a3b8;
-  margin-top: 4px;
-  padding-top: 6px;
-  font-size: 16px;
+.psl-table tbody tr:hover td {
+  background: #f8fafc;
 }
 
-.payslip-sign {
+.psl-idx {
+  width: 28px;
+  text-align: center;
+  color: #cbd5e1;
+  font-size: 11px;
+}
+
+.psl-right { text-align: right; }
+
+.psl-amt-earn {
+  font-weight: 600;
+  color: #16a34a;
+}
+
+.psl-amt-ded {
+  font-weight: 600;
+  color: #dc2626;
+}
+
+.psl-amt-adv {
+  font-weight: 600;
+  color: #d97706;
+}
+
+.psl-empty {
+  text-align: center;
+  color: #94a3b8;
+  font-style: italic;
+  padding: 16px;
+}
+
+/* ── Type Chips ── */
+.psl-chip {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.psl-chip-earn { background: #dcfce7; color: #166534; }
+.psl-chip-ded  { background: #ffe4e6; color: #9f1239; }
+.psl-chip-adv  { background: #fef3c7; color: #92400e; }
+
+/* ── Column Footers ── */
+.psl-col-footer {
   display: flex;
   justify-content: space-between;
-  margin-top: 26px;
-  color: #475569;
+  align-items: center;
+  padding: 10px 16px;
   font-size: 12px;
+  font-weight: 700;
+  margin-top: auto;
+}
+
+.psl-earn-footer {
+  background: #f0fdf4;
+  color: #166534;
+  border-top: 2px solid #bbf7d0;
+}
+
+.psl-ded-footer {
+  background: #fff1f2;
+  color: #9f1239;
+  border-top: 2px solid #fecdd3;
+}
+
+/* ══════════════════════════════════════
+   ADVANCE SALARY RECOVERY (full width)
+══════════════════════════════════════ */
+.psl-advance-block {
+  background: #fffbeb;
+  border-top: 1px solid #fde68a;
+  border-bottom: 1px solid #fde68a;
+}
+
+.psl-advance-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #92400e;
+  padding: 9px 16px;
+  background: #fef3c7;
+  border-bottom: 1px dashed #fcd34d;
+}
+
+.psl-adv-table tbody tr:hover td {
+  background: #fefce8;
+}
+
+.psl-adv-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #92400e;
+  background: #fef9c3;
+  border-top: 1px dashed #fcd34d;
+}
+
+/* ══════════════════════════════════════
+   NET PAY
+══════════════════════════════════════ */
+.psl-net {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  padding: 14px 20px;
+}
+
+.psl-net-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.psl-net-icon {
+  color: #38bdf8;
+  font-size: 10px;
+}
+
+.psl-net-sub {
+  font-size: 10px;
+  font-weight: 400;
+  color: #94a3b8;
+}
+
+.psl-net-amount {
+  font-size: 20px;
+  font-weight: 800;
+  color: #4ade80;
+  letter-spacing: 0.02em;
+}
+
+/* ══════════════════════════════════════
+   SIGNATURES
+══════════════════════════════════════ */
+.psl-sign {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 24px 12px;
+  background: #fff;
+}
+
+.psl-sign-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.psl-sign-right {
+  align-items: flex-end;
+}
+
+.psl-sign-line {
+  width: 140px;
+  height: 1px;
+  background: #cbd5e1;
+}
+
+.psl-earn-section,
+.psl-ded-section {
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
 }
