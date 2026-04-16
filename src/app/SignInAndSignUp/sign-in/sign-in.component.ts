@@ -604,10 +604,10 @@ interface OtpApiResponse {
   success: boolean;
   message?: string;
 
-  accessToken: string; 
+  accessToken: string;
   refreshToken: string;
 
-  role: string;  
+  role: string;
   email: string;
   schoolId?: string;
   schoolRouteName?: string;
@@ -665,7 +665,7 @@ export class SignInComponent implements OnInit, OnDestroy {
     private apiurl: ApiServiceService,
     private menuService: MenuServiceService,
     private ngZone: NgZone
-  ) {}
+  ) { }
 
   // ================= INIT =================
   ngOnInit(): void {
@@ -742,112 +742,112 @@ export class SignInComponent implements OnInit, OnDestroy {
   }
 
   // ================= LOGIN =================
-OnSubmitSignIn(): void {
+  OnSubmitSignIn(): void {
 
-  console.log('LOGIN CLICKED');
+    console.log('LOGIN CLICKED');
 
-  if (this.isLoginLoading) return;
+    if (this.isLoginLoading) return;
 
-  if (this.LoginForms.invalid) {
-    console.log('FORM INVALID');
-    this.LoginForms.markAllAsTouched();
-    return;
-  }
-
-  const enteredCaptcha = this.LoginForms.get('captcha')?.value?.trim();
-
-  if (!enteredCaptcha || enteredCaptcha !== this.captchaText) {
-    console.log('CAPTCHA INVALID');
-    this.authError = true;
-    this.authMessage = 'Invalid captcha';
-    this.generateCaptcha();
-    this.LoginForms.get('captcha')?.reset();
-    return;
-  }
-
-  console.log('CALLING LOGIN API');
-
-  this.isLoginLoading = true;
-
-  const formData = new FormData();
-  formData.append('Email', this.LoginForms.get('email')?.value || '');
-  formData.append('Password', this.LoginForms.get('password')?.value || '');
-  formData.append('Flag', '4');
-
-  this.apiurl.post<LoginResponse>('Tbl_Users_CRUD_Operations', formData).subscribe({
-    next: (res) => {
-
-      console.log('LOGIN SUCCESS RESPONSE', res);
-      
-      if (!res?.email || !res?.role) {
-        this.authError = true;
-        this.authMessage = res?.message || 'Invalid credentials';
-        this.isLoginLoading = false;
-        return;
-      }
-
-      
-      this.pendingLoginData = {
-        accessToken: '',
-        refreshToken: '',
-        email: res.email,
-        role: res.role,
-        schoolId: res.schoolId || '',
-        schoolName: res.schoolName || ''
-      };
-
-      sessionStorage.setItem('pendingLogin', JSON.stringify(this.pendingLoginData));
-      sessionStorage.setItem('isOtpStep', 'true');
-
-      this.isOtpStep=true;      
-      this.sendOtp(res.email);
-    },
-    error: (err) => {
-      console.log('LOGIN ERROR', err);
-      this.authError = true;
-      this.authMessage = 'Login failed';
-      this.isLoginLoading = false;
+    if (this.LoginForms.invalid) {
+      console.log('FORM INVALID');
+      this.LoginForms.markAllAsTouched();
+      return;
     }
-  });
-}
+
+    const enteredCaptcha = this.LoginForms.get('captcha')?.value?.trim();
+
+    if (!enteredCaptcha || enteredCaptcha !== this.captchaText) {
+      console.log('CAPTCHA INVALID');
+      this.authError = true;
+      this.authMessage = 'Invalid captcha';
+      this.generateCaptcha();
+      this.LoginForms.get('captcha')?.reset();
+      return;
+    }
+
+    console.log('CALLING LOGIN API');
+
+    this.isLoginLoading = true;
+
+    const formData = new FormData();
+    formData.append('Email', this.LoginForms.get('email')?.value || '');
+    formData.append('Password', this.LoginForms.get('password')?.value || '');
+    formData.append('Flag', '4');
+
+    this.apiurl.post<LoginResponse>('Tbl_Users_CRUD_Operations', formData).subscribe({
+      next: (res) => {
+
+        console.log('LOGIN SUCCESS RESPONSE', res);
+
+        if (!res?.email || !res?.role) {
+          this.authError = true;
+          this.authMessage = res?.message || 'Invalid credentials';
+          this.isLoginLoading = false;
+          return;
+        }
+
+
+        this.pendingLoginData = {
+          accessToken: '',
+          refreshToken: '',
+          email: res.email,
+          role: res.role,
+          schoolId: res.schoolId || '',
+          schoolName: res.schoolName || ''
+        };
+
+        sessionStorage.setItem('pendingLogin', JSON.stringify(this.pendingLoginData));
+        sessionStorage.setItem('isOtpStep', 'true');
+
+        this.isOtpStep = true;
+        this.sendOtp(res.email);
+      },
+      error: (err) => {
+        console.log('LOGIN ERROR', err);
+        this.authError = true;
+        this.authMessage = 'Login failed';
+        this.isLoginLoading = false;
+      }
+    });
+  }
 
   // ================= SEND OTP =================
-sendOtp(email: string): void {
+  sendOtp(email: string): void {
 
-  console.log('OTP API CALL');
+    console.log('OTP API CALL');
 
-  this.isSendingOtp = true;
+    this.isSendingOtp = true;
 
-  this.apiurl.post<OtpApiResponse>('sendotp', { email }).subscribe({
-    next: (res) => {
+    this.apiurl.post<OtpApiResponse>('sendotp', { email }).subscribe({
+      next: (res) => {
 
-      console.log('OTP RESPONSE', res);
+        console.log('OTP RESPONSE', res);
 
-      if (!res?.success) {
-        this.authError = true;
-        this.authMessage = 'Failed to send OTP';
+        if (!res?.success) {
+          this.authError = true;
+          this.authMessage = 'Failed to send OTP';
+          this.isSendingOtp = false;
+          this.isLoginLoading = false;
+          return;
+        }
+
+        this.isOtpStep = true;
+        this.authMessage = 'OTP sent successfully';
+
+        this.startResendCooldown(30);
+
         this.isSendingOtp = false;
         this.isLoginLoading = false;
-        return;
+      },
+      error: (err) => {
+        console.log('OTP ERROR', err);
+        this.authError = true;
+        this.authMessage = 'OTP send failed';
+        this.isSendingOtp = false;
+        this.isLoginLoading = false;
       }
-
-      this.isOtpStep = true;
-      this.authMessage = 'OTP sent successfully';
-
-      this.startResendCooldown(30);
-
-      this.isSendingOtp = false;
-      this.isLoginLoading = false;
-    },
-    error: (err) => {
-      console.log('OTP ERROR', err);
-      this.authError = true;
-      this.authMessage = 'OTP send failed';
-      this.isSendingOtp = false;
-      this.isLoginLoading = false;
-    }
-  });
-}
+    });
+  }
 
   // ================= VERIFY OTP =================
   verifyOtpAndLogin(): void {
@@ -891,7 +891,7 @@ sendOtp(email: string): void {
           accessToken: res.accessToken,
           refreshToken: res.refreshToken,
           email: res.email,
-          role: res.role,
+          role: (res as any).menuRoleId || res.role,
           schoolId: res.schoolId || '',
           schoolName: res.schoolRouteName || ''
         };
@@ -907,37 +907,40 @@ sendOtp(email: string): void {
   }
 
   // ================= SESSION =================
-private persistSession(token: string, refresh: string) {
-  sessionStorage.setItem('accessToken', token);
-  sessionStorage.setItem('refreshToken', refresh);
+  private persistSession(token: string, refresh: string) {
+    sessionStorage.setItem('accessToken', token);
+    sessionStorage.setItem('refreshToken', refresh);
+    sessionStorage.setItem('RollID',     this.pendingLoginData?.role || '');
+    sessionStorage.setItem('menuRoleId', this.pendingLoginData?.role || '');
+    sessionStorage.setItem('email',      this.pendingLoginData?.email || '');
+    sessionStorage.setItem('schoolName', this.pendingLoginData?.schoolName || '');
+    sessionStorage.setItem('SchoolID',   this.pendingLoginData?.schoolId || '');
+    sessionStorage.setItem('schoolId',   this.pendingLoginData?.schoolId || '');
+    sessionStorage.setItem('UserID',     this.pendingLoginData?.email || '');
+    sessionStorage.setItem('StaffID',    this.pendingLoginData?.email || '');
 
-  // ✅ ADD THESE — AdminDashboardComponent needs them
-  sessionStorage.setItem('RollID', this.pendingLoginData?.role || '');
-  sessionStorage.setItem('email', this.pendingLoginData?.email || '');
-  sessionStorage.setItem('schoolName', this.pendingLoginData?.schoolName || '');
+    const role = this.pendingLoginData?.role;
+    const schoolName = this.pendingLoginData?.schoolName;
 
-  const role = this.pendingLoginData?.role;
-  const schoolName = this.pendingLoginData?.schoolName;
+    sessionStorage.removeItem('pendingLogin');
+    sessionStorage.removeItem('isOtpStep');
 
-  sessionStorage.removeItem('pendingLogin');
-  sessionStorage.removeItem('isOtpStep');
-
-  this.ngZone.runOutsideAngular(() => {
-    setTimeout(() => {
-      this.ngZone.run(() => {
-        if (String(role) === '1') {
-          this.router.navigate(['/Admin']);
-          return;
-        }
-        if (schoolName) {
-          this.router.navigate([`/${schoolName}/dashboard`]);
-          return;
-        }
-        this.router.navigate(['/signin']);
-      });
-    }, 0);
-  });
-}
+    this.ngZone.runOutsideAngular(() => {
+      setTimeout(() => {
+        this.ngZone.run(() => {
+          if (String(role) === '1') {
+            this.router.navigate(['/Admin']);
+            return;
+          }
+          if (schoolName) {
+            this.router.navigate([`/${schoolName}/dashboard`]);
+            return;
+          }
+          this.router.navigate(['/signin']);
+        });
+      }, 0);
+    });
+  }
 
   // ================= UI =================
   backToLogin() {

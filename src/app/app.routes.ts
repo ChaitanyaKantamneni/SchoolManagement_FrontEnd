@@ -290,6 +290,7 @@ export const routes: Routes = [
       // { path: 'MyLeaves',      component:  LeavelistComponent},
       { path: 'LeaveApproval', component: LeaveapprovalComponent },
       { path: 'LeaveDetails',  component: LeavedetailsComponent },
+      { path: 'LeavePolicy',    component: LeavedetailsComponent },
     ]
   }
 ];

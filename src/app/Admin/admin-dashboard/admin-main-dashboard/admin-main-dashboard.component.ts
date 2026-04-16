@@ -10,13 +10,13 @@ import { NgxEchartsModule } from 'ngx-echarts';
 selector:'app-admin-main-dashboard',
 standalone:true,
 imports:[
+MatIconModule,
+FormsModule,
+NgxEchartsModule,
 NgIf,
 NgFor,
 NgClass,
-SlicePipe,
-MatIconModule,
-FormsModule,
-NgxEchartsModule
+SlicePipe
 ],
 templateUrl:'./admin-main-dashboard.component.html',
 styleUrl:'./admin-main-dashboard.component.css'

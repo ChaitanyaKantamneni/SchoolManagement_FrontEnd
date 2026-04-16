@@ -91,7 +91,7 @@ export class DashboardTopNavComponent implements OnInit, OnDestroy {
     private sidebarService: SideBarServiceService,
     private router: Router,
     protected menuService: MenuServiceService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const email = sessionStorage.getItem('email') || '';
@@ -196,7 +196,7 @@ export class DashboardTopNavComponent implements OnInit, OnDestroy {
   }
 
   logout() {
-    this.menuService.clearMenu(); 
+    this.menuService.clearMenu();
     sessionStorage.clear();
     this.router.navigate(['/signin']);
   }

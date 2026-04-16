@@ -16,12 +16,11 @@
       <div>
         <div class="ComponentRecordsTop">
           <div class="filterOptions">
-            <div class="searchreview input-container" >
+            <!-- <div class="searchreview input-container" >
               <input type="text" id="searchQuery" class="form-control floating-input"
                 [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search... "  />
               <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
-              <!-- <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i> -->
-            </div>
+            </div> -->
             <div class="searchreview" *ngIf="isAdmin && SyllabusList.length != 0">
               <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
                 <option value="">-- Select School --</option>
