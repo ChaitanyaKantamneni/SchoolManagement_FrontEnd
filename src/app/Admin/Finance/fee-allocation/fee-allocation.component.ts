@@ -38,6 +38,7 @@ export class FeeAllocationComponent extends BasePermissionComponent{
     this.SchoolSelectionChange=false;
     this.SyllabusList=[];
     this.FetchSchoolsList();
+    this.FetchAcademicYearsList();
     this.FetchInitialData();
   };
 
@@ -83,13 +84,13 @@ export class FeeAllocationComponent extends BasePermissionComponent{
   ClassForm: any = new FormGroup({
     ID: new FormControl(),
     SchoolID: new FormControl(),
-    Syllabus: new FormControl('',Validators.required),
-    Class: new FormControl('',Validators.required),
-    Divisions: new FormControl('',Validators.required),
-    FeeCategory: new FormControl('',Validators.required),
+    Syllabus: new FormControl('',[Validators.required,Validators.min(1)]),
+    Class: new FormControl('',[Validators.required,Validators.min(1)]),
+    Divisions: new FormControl([],Validators.required),
+    FeeCategory: new FormControl('',[Validators.required,Validators.min(1)]),
     Amount: new FormControl('',Validators.required),
     StartDate: new FormControl('',Validators.required),
-    EndDate:new FormControl(0, Validators.min(1)),
+    EndDate:new FormControl('', Validators.required),
    
     School: new FormControl(),
     AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
@@ -334,25 +335,36 @@ export class FeeAllocationComponent extends BasePermissionComponent{
     this.ClassForm.get('AcademicYear').patchValue('0');  
     this.ClassForm.get('Syllabus').patchValue('0');
     this.ClassForm.get('Class').patchValue('0');
-    this.ClassForm.get('Divisions').patchValue('0');
+    this.ClassForm.get('Divisions').patchValue([]);
     this.ClassForm.get('FeeCategory').patchValue('0');
-    this.ClassForm.get('Amount').patchValue('0');
-    this.ClassForm.get('StartDate').patchValue('0');
-    this.ClassForm.get('EndDate').patchValue('0');
+    this.ClassForm.get('Amount').patchValue('');
+    this.ClassForm.get('StartDate').patchValue('');
+    this.ClassForm.get('EndDate').patchValue('');
     // this.ClassForm.get('School').patchValue('0');
     this.IsAddNewClicked=!this.IsAddNewClicked;
     this.IsActiveStatus=true;
     this.ViewClassClicked=false;
   };
 
-  toggleSelection(value: string) {
-    const index = this.selectedCategories.indexOf(value);
-    if (index > -1) {
-      this.selectedCategories.splice(index, 1);
-    } else {
-      this.selectedCategories.push(value);
-    }
-    this.ClassForm.get('Divisions')?.setValue(this.selectedCategories);
+  closeDropdown(){
+    this.dropdownOpen = false;
+  };
+
+  toggleSelection(value: string, event?: Event) {
+    const normalizedValue = String(value);
+    const isChecked = event ? (event.target as HTMLInputElement).checked : !this.selectedCategories.includes(normalizedValue);
+
+    this.selectedCategories = isChecked
+      ? (this.selectedCategories.includes(normalizedValue)
+          ? [...this.selectedCategories]
+          : [...this.selectedCategories, normalizedValue])
+      : this.selectedCategories.filter(item => item !== normalizedValue);
+
+    const divisionsControl = this.ClassForm.get('Divisions');
+    divisionsControl?.setValue([...this.selectedCategories]);
+    divisionsControl?.markAsTouched();
+    divisionsControl?.markAsDirty();
+    divisionsControl?.updateValueAndValidity();
   }
 
   FetchClassList() {
@@ -940,7 +952,8 @@ export class FeeAllocationComponent extends BasePermissionComponent{
   onAdminClassChange(event: Event){
     this.categories =[];
     this.selectedCategories = [];
-    this.ClassForm.get('Divisions').patchValue('0');
+    this.ClassForm.get('Divisions')?.patchValue([]);
+    this.ClassForm.get('Divisions')?.updateValueAndValidity();
     this.FetchClassDivisionList();
   }
 

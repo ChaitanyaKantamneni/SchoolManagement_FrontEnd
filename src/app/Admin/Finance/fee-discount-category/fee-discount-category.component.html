@@ -150,12 +150,12 @@
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Name <span class="required">*</span></label>
+                <label class="inputLabel" for="email"> Fee Discount Category Name <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Name" />
+                  <input class="inputField" formControlName="Name" placeholder="Enter Fee Discount Category Name" />
                   <div *ngIf="(ClassForm.get('Name' ) ?. touched && ClassForm.get('Name' ) ?. invalid)" class="text-danger">
                     <div *ngIf="(ClassForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
+                      <small>Please Enter Fee Discount Category Name.</small>
                     </div>
                   </div>
                 </div>
@@ -191,7 +191,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="InputFieldsContainer">
+                <!-- <div class="InputFieldsContainer">
                     <label class="inputLabel" for="email">Discount Value Per Installment <span class="required">*</span></label>
                     <div class="input-with-error">
                         <input class="inputField" formControlName="DiscountValuePerInstallment" placeholder="Enter Discount Value" (keypress)="allowOnlyNumbers($event)" />
@@ -204,16 +204,16 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> -->
                 <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">FeeCategory <span class="required">*</span></label>
+                <label class="inputLabel" for="email">Fee Category <span class="required">*</span></label>
                 <div class="input-with-error">
                   <select class="inputField" type="date" formControlName="FeeCategory" placeholder="Select Start Date" >
-                    <option value="0">-- Select FeeCategory --</option>
+                    <option value="0">-- Select Fee Category --</option>
                     <option *ngFor="let school of feecategorylist" value="{{school.ID}}">{{school.Name}}</option>
                   </select>
                   <div *ngIf="ClassForm.get('FeeCategory')?.hasError('min') && (ClassForm.get('FeeCategory')?.touched || ClassForm.get('FeeCategory')?.dirty)" class="text-danger">
-                      <small>Please Select FeeCategory.</small>
+                      <small>Please Select Fee Category.</small>
                   </div>
                 </div>
               </div>

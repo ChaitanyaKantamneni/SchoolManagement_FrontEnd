@@ -33,19 +33,34 @@ export class SalaryPayComponent implements OnInit {
   };
 
   salaryDetails: {
-    lines: Array<{ payHead: string; type: string; amount: number }>;
+    lines: Array<{ payHead: string; type: string; amount: number; isAdvance?: boolean }>;
     gross: number;
     deduction: number;
     net: number;
   } | null = null;
+  advanceSalaryInfo: Array<{
+    id: number;
+    amount: number;
+    tenureMonths: number;
+    advanceDate: string;
+    monthlyDeduction: number;
+    monthsElapsed: number;
+    remainingMonths: number;
+    deductionForCurrentMonth: number;
+  }> | null = null;
   statusMessage = '';
   isModalOpen = false;
   isSubmitting = false;
   isPageLoading = false;
   formSubmitAttempted = false;
+  todayDate: string = '';
   private pendingRequests = 0;
   private payrollHeadTypeById = new Map<string, string>();
   private payrollHeadTypeByName = new Map<string, string>();
+
+  get totalAdvanceDeduction(): number {
+    return this.advanceSalaryInfo?.reduce((sum, a) => sum + a.deductionForCurrentMonth, 0) ?? 0;
+  }
 
   get isAdmin(): boolean {
     const role = sessionStorage.getItem('RollID') || localStorage.getItem('RollID');
@@ -53,18 +68,21 @@ export class SalaryPayComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.setTodayDate();
+
     if (this.isAdmin) {
       this.FetchSchoolsList();
     } else {
-      this.selectedSchoolID =
-        sessionStorage.getItem('SchoolID') ||
-        sessionStorage.getItem('schoolID') ||
-        sessionStorage.getItem('schoolId') ||
-        '';
+      this.selectedSchoolID = this.resolveNonAdminSchoolId();
       this.FetchAcademicYearsList();
       this.FetchPaymentModes();
     }
   }
+
+  setTodayDate() {
+  const today = new Date();
+  this.todayDate = today.toISOString().split('T')[0];
+}
 
   FetchSchoolsList() {
     this.startLoading();
@@ -94,8 +112,15 @@ export class SalaryPayComponent implements OnInit {
       .pipe(finalize(() => this.stopLoading()))
       .subscribe({
         next: (response: any) => {
-          this.academicYearList = Array.isArray(response?.data)
-            ? response.data.map((item: any) => ({ ID: item.id, Name: item.name }))
+          const data = (response?.Data || response?.data) as any[];
+          this.academicYearList = Array.isArray(data)
+            ? data
+                .map((item: any) => {
+                  const id = `${this.pick(item, ['id', 'ID', 'AcademicYearID', 'academicYearId', 'academicYearID']) ?? ''}`.trim();
+                  const name = `${this.pick(item, ['name', 'Name', 'AcademicYearName', 'academicYearName']) ?? ''}`.trim();
+                  return { ID: id, Name: name || id };
+                })
+                .filter((row: { ID: string; Name: string }) => !!row.ID)
             : [];
         },
         error: () => {
@@ -145,6 +170,7 @@ export class SalaryPayComponent implements OnInit {
     this.form.endDate = '';
     this.form.referenceNo = '';
     this.salaryDetails = null;
+    this.advanceSalaryInfo = null;
     this.statusMessage = '';
   }
 
@@ -163,6 +189,7 @@ export class SalaryPayComponent implements OnInit {
     this.form.endDate = '';
     this.form.referenceNo = '';
     this.salaryDetails = null;
+    this.advanceSalaryInfo = null;
     this.statusMessage = '';
   }
 
@@ -328,7 +355,7 @@ export class SalaryPayComponent implements OnInit {
           : null;
 
         if (!match) {
-          this.salaryDetails = null;
+          this.fetchAdvanceSalaryForStaff([]);
           this.statusMessage = 'Salary settings not found for selected staff.';
           return;
         }
@@ -345,12 +372,7 @@ export class SalaryPayComponent implements OnInit {
             };
           });
 
-        const gross = lines.filter((x) => x.type === 'Addition').reduce((sum, x) => sum + x.amount, 0);
-        const deduction = lines.filter((x) => x.type === 'Deduction').reduce((sum, x) => sum + x.amount, 0);
-        const net = gross - deduction;
-
-        this.salaryDetails = { lines, gross, deduction, net };
-        this.statusMessage = lines.length ? '' : 'No enabled pay heads found in salary settings.';
+        this.fetchAdvanceSalaryForStaff(lines);
       },
       error: () => {
         this.salaryDetails = null;
@@ -446,6 +468,99 @@ export class SalaryPayComponent implements OnInit {
     this.isModalOpen = false;
   }
 
+  private readonly advanceSalaryEndpoints = [
+    'Tbl_AdvanceSalary_CRUD_Operations',
+    'Tbl_AdvanceSalary_CRUD_Operation',
+    'Proc_Tbl_AdvanceSalary'
+  ];
+
+  private fetchAdvanceSalaryForStaff(baseLines: Array<{ payHead: string; type: string; amount: number }>): void {
+    const payMonth = this.normalizeToMonthStart(this.form.startDate);
+    if (!payMonth || !this.selectedStaffID || !this.selectedSchoolID) {
+      this.buildSalaryDetails(baseLines, null);
+      return;
+    }
+    const advPayload = {
+      Flag: '9',
+      SchoolID: this.toNumber(this.selectedSchoolID),
+      StaffID: this.toNumber(this.selectedStaffID),
+      PayMonth: payMonth
+    };
+    console.log('[AdvanceSalary] calling with payload:', advPayload);
+    this.startLoading();
+    this.tryAdvanceSalaryEndpoints(advPayload, 0, baseLines);
+  }
+
+  private tryAdvanceSalaryEndpoints(
+    payload: any,
+    index: number,
+    baseLines: Array<{ payHead: string; type: string; amount: number }>
+  ): void {
+    if (index >= this.advanceSalaryEndpoints.length) {
+      this.stopLoading();
+      this.advanceSalaryInfo = null;
+      this.buildSalaryDetails(baseLines, null);
+      return;
+    }
+    this.apiurl.post<any>(this.advanceSalaryEndpoints[index], payload).subscribe({
+      next: (response: any) => {
+        this.stopLoading();
+        console.log('[AdvanceSalary] endpoint:', this.advanceSalaryEndpoints[index], '| response:', response);
+        const data = (response?.Data || response?.data || []) as any[];
+        const activeRows = Array.isArray(data)
+          ? data.filter((r: any) => Number(r?.deductionForCurrentMonth ?? r?.DeductionForCurrentMonth ?? 0) > 0)
+          : [];
+        if (activeRows.length > 0) {
+          this.advanceSalaryInfo = activeRows.map((row: any) => ({
+            id: Number(row?.id ?? row?.ID ?? 0),
+            amount: Number(row?.amount ?? row?.Amount ?? 0),
+            tenureMonths: Number(row?.tenureMonths ?? row?.TenureMonths ?? 0),
+            advanceDate: `${row?.advanceDate ?? row?.AdvanceDate ?? ''}`,
+            monthlyDeduction: Number(row?.monthlyDeduction ?? row?.MonthlyDeduction ?? 0),
+            monthsElapsed: Number(row?.monthsElapsed ?? row?.MonthsElapsed ?? 0),
+            remainingMonths: Number(row?.remainingMonths ?? row?.RemainingMonths ?? 0),
+            deductionForCurrentMonth: Number(row?.deductionForCurrentMonth ?? row?.DeductionForCurrentMonth ?? 0)
+          }));
+        } else {
+          this.advanceSalaryInfo = null;
+        }
+        this.buildSalaryDetails(baseLines, this.advanceSalaryInfo);
+      },
+      error: (err: any) => {
+        console.log('[AdvanceSalary] error from endpoint:', this.advanceSalaryEndpoints[index], '| status:', err?.status, '| err:', err);
+        if (err?.status === 404) {
+          this.tryAdvanceSalaryEndpoints(payload, index + 1, baseLines);
+        } else {
+          this.stopLoading();
+          this.advanceSalaryInfo = null;
+          this.buildSalaryDetails(baseLines, null);
+        }
+      }
+    });
+  }
+
+  private buildSalaryDetails(
+    baseLines: Array<{ payHead: string; type: string; amount: number }>,
+    advance: typeof this.advanceSalaryInfo
+  ): void {
+    const lines: Array<{ payHead: string; type: string; amount: number; isAdvance?: boolean }> = [...baseLines];
+    if (advance && advance.length > 0) {
+      advance.forEach((adv, i) => {
+        lines.push({
+          payHead: advance.length > 1 ? `Advance Recovery #${i + 1}` : 'Advance Salary Recovery',
+          type: 'Deduction',
+          isAdvance: true,
+          amount: adv.deductionForCurrentMonth
+        });
+      });
+    }
+    const gross = lines.filter((x) => x.type === 'Addition').reduce((sum, x) => sum + x.amount, 0);
+    const deduction = lines.filter((x) => x.type === 'Deduction').reduce((sum, x) => sum + x.amount, 0);
+    const net = gross - deduction;
+    this.salaryDetails = { lines, gross, deduction, net };
+    this.statusMessage = lines.length ? '' : 'No enabled pay heads found in salary settings.';
+  }
+
   private parsePayHeads(raw: any): any[] {
     try {
       const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
@@ -462,6 +577,50 @@ export class SalaryPayComponent implements OnInit {
       }
     }
     return null;
+  }
+
+  /** Same key order as legacy pages; also checks localStorage (e.g. leave modules). */
+  private readStoredSchoolIdFromBrowserStorage(): string {
+    const keys = ['SchoolID', 'schoolID', 'schoolId'] as const;
+    for (const key of keys) {
+      const v = sessionStorage.getItem(key) || localStorage.getItem(key);
+      if (v?.trim()) {
+        return v.trim();
+      }
+    }
+    return '';
+  }
+
+  /**
+   * OTP login currently persists tokens + schoolName but not always school id in storage.
+   * Read common claim names from JWT payload when storage has no school id.
+   */
+  private tryReadSchoolIdFromAccessToken(): string {
+    const token =
+      sessionStorage.getItem('accessToken') ||
+      localStorage.getItem('accessToken') ||
+      '';
+    const parts = token.split('.');
+    if (parts.length < 2) {
+      return '';
+    }
+    try {
+      const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+      const payload = JSON.parse(atob(padded));
+      const raw = this.pick(payload, ['SchoolID', 'schoolID', 'schoolId', 'SchoolId']);
+      if (raw === undefined || raw === null) {
+        return '';
+      }
+      const s = `${raw}`.trim();
+      return s;
+    } catch {
+      return '';
+    }
+  }
+
+  private resolveNonAdminSchoolId(): string {
+    return this.readStoredSchoolIdFromBrowserStorage() || this.tryReadSchoolIdFromAccessToken();
   }
 
   private toNumber(value: any): number | null {

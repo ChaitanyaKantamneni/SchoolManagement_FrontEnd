@@ -91,7 +91,7 @@ constructor(
     FeeCategory: new FormControl(0,[Validators.required,Validators.min(1)]),
     DiscountType: new FormControl('',Validators.required),
     MinAmountForDiscount: new FormControl('',Validators.required),
-    DiscountValuePerInstallment: new FormControl('', [Validators.required, Validators.min(1)]),
+    DiscountValuePerInstallment: new FormControl(0),
     Description: new FormControl(),
 
     School: new FormControl(),
@@ -355,6 +355,11 @@ constructor(
     }
     else{
       const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
+      const discountValue =
+        Number(this.ClassForm.get('DiscountValuePerInstallment')?.value) > 0
+          ? this.ClassForm.get('DiscountValuePerInstallment')?.value
+          : this.ClassForm.get('MinAmountForDiscount')?.value;
+
       const data = {
         Name: this.ClassForm.get('Name')?.value,
         StartDate: this.ClassForm.get('StartDate')?.value,
@@ -362,7 +367,7 @@ constructor(
         FeeCategory: this.ClassForm.get('FeeCategory')?.value,
         DiscountType: this.ClassForm.get('DiscountType')?.value,
         MinAmountForDiscount: this.ClassForm.get('MinAmountForDiscount')?.value,
-        DiscountValuePerInstallment: this.ClassForm.get('DiscountValuePerInstallment')?.value,
+        DiscountValuePerInstallment: discountValue,
         Description: this.ClassForm.get('Description')?.value,
         SchoolID: this.getEffectiveSchoolId(),
         AcademicYear: this.ClassForm.get('AcademicYear')?.value,
@@ -480,6 +485,11 @@ constructor(
     }
     else{
       const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
+      const discountValue =
+        Number(this.ClassForm.get('DiscountValuePerInstallment')?.value) > 0
+          ? this.ClassForm.get('DiscountValuePerInstallment')?.value
+          : this.ClassForm.get('MinAmountForDiscount')?.value;
+
       const data = {
         ID:this.ClassForm.get('ID')?.value || '',
         Name: this.ClassForm.get('Name')?.value,
@@ -488,7 +498,7 @@ constructor(
         FeeCategory: this.ClassForm.get('FeeCategory')?.value,
         DiscountType: this.ClassForm.get('DiscountType')?.value,
         MinAmountForDiscount: this.ClassForm.get('MinAmountForDiscount')?.value,
-        DiscountValuePerInstallment: this.ClassForm.get('DiscountValuePerInstallment')?.value,
+        DiscountValuePerInstallment: discountValue,
         Description: this.ClassForm.get('Description')?.value,
         SchoolID: this.getEffectiveSchoolId(),
         AcademicYear: this.ClassForm.get('AcademicYear')?.value,

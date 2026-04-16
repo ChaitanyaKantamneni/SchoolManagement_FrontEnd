@@ -15,7 +15,10 @@ type SalaryIssuedRow = {
   paymentMode: string;
   salaryPeriod: string;
   amount: number;
+  grossAmount: number;
+  deductionAmount: number;
   date: string;
+  rawDate: string;
   payHeadLines: Array<{ payHead: string; type: 'Addition' | 'Deduction'; amount: number }>;
 };
 
@@ -60,32 +63,33 @@ export class SalaryIssuedComponent implements OnInit {
   get earningsLines(): Array<{ payHead: string; amount: number }> {
     if (!this.selectedPayslip) return [];
     return this.selectedPayslip.payHeadLines
-      .filter((x) => x.type === 'Addition')
+      .filter((x) => x.type === 'Addition' && x.amount > 0)
       .map((x) => ({ payHead: x.payHead, amount: x.amount }));
   }
 
   get deductionLines(): Array<{ payHead: string; amount: number }> {
     if (!this.selectedPayslip) return [];
     return this.selectedPayslip.payHeadLines
-      .filter((x) => x.type === 'Deduction')
+      .filter((x) => x.type === 'Deduction' && x.amount > 0)
       .map((x) => ({ payHead: x.payHead, amount: x.amount }));
   }
 
-  get payslipRows(): Array<{
-    earningPayHead: string;
-    earningAmount: number | null;
-    deductionPayHead: string;
-    deductionAmount: number | null;
-  }> {
-    const earnings = this.earningsLines;
-    const deductions = this.deductionLines;
-    const max = Math.max(earnings.length, deductions.length, 1);
-    return Array.from({ length: max }, (_, i) => ({
-      earningPayHead: earnings[i]?.payHead || '-',
-      earningAmount: earnings[i]?.amount ?? null,
-      deductionPayHead: deductions[i]?.payHead || '-',
-      deductionAmount: deductions[i]?.amount ?? null
-    }));
+  get regularDeductionLines(): Array<{ payHead: string; amount: number }> {
+    if (!this.selectedPayslip) return [];
+    return this.selectedPayslip.payHeadLines
+      .filter((x) => x.type === 'Deduction' && x.amount > 0 && !x.payHead.toLowerCase().includes('advance'))
+      .map((x) => ({ payHead: x.payHead, amount: x.amount }));
+  }
+
+  get advanceDeductionLines(): Array<{ payHead: string; amount: number }> {
+    if (!this.selectedPayslip) return [];
+    return this.selectedPayslip.payHeadLines
+      .filter((x) => x.type === 'Deduction' && x.amount > 0 && x.payHead.toLowerCase().includes('advance'))
+      .map((x) => ({ payHead: x.payHead, amount: x.amount }));
+  }
+
+  get totalAdvanceDeduction(): number {
+    return +this.advanceDeductionLines.reduce((sum, x) => sum + x.amount, 0).toFixed(2);
   }
 
   get isAdmin(): boolean {
@@ -174,6 +178,7 @@ export class SalaryIssuedComponent implements OnInit {
     this.loader.show();
     this.apiurl.post<any>('Tbl_SalaryPay_CRUD_Operations', payload).subscribe({
       next: (response: any) => {
+        console.log('[SalaryIssued] raw response:', response);
         const data = (response?.Data || response?.data || []) as any[];
         this.salaryIssued = Array.isArray(data)
           ? data.map((row: any) => this.mapSalaryIssuedRow(row)).filter((x) => !!x.staffName)
@@ -188,24 +193,26 @@ export class SalaryIssuedComponent implements OnInit {
   }
 
   private mapSalaryIssuedRow(row: any): SalaryIssuedRow {
-    const startDateRaw =
-      this.pick(row, ['PayMonth', 'payMonth']) ||
-      this.extractStartDateFromDescription(this.pick(row, ['Description', 'description']));
-    const endDateRaw = this.extractEndDateFromDescription(this.pick(row, ['Description', 'description']));
+    const startDateRaw = row.payMonth || row.PayMonth ||
+      this.extractStartDateFromDescription(row.description || row.Description);
+    const endDateRaw = this.extractEndDateFromDescription(row.description || row.Description);
     const startDate = this.formatDate(startDateRaw);
     const endDate = this.formatDate(endDateRaw);
-    const payHeadLines = this.parsePayHeadJson(this.pick(row, ['PayHeadJson', 'payHeadJson']) || '[]');
+    const payHeadLines = this.parsePayHeadJson(row.payHeadJson || row.PayHeadJson || '[]');
 
     return {
-      staffId: `${this.pick(row, ['StaffID', 'staffID', 'staffId', 'ID', 'id']) || ''}`.trim() || undefined,
-      schoolName: `${this.pick(row, ['SchoolName', 'schoolName']) || this.getSelectedSchoolName() || '-'}`.trim(),
-      academicYearName: `${this.pick(row, ['AcademicYearName', 'academicYearName', 'YearName', 'yearName']) || this.getSelectedAcademicYearName() || '-'}`.trim(),
-      staffName: `${this.pick(row, ['StaffName', 'staffName', 'Name', 'name']) || ''}`.trim(),
-      designation: `${this.pick(row, ['Designation', 'designation', 'RoleName', 'roleName']) || '-'}`.trim(),
-      paymentMode: `${this.pick(row, ['PaymentMode', 'paymentMode']) || '-'}`.trim(),
+      staffId: `${row.staffID ?? row.StaffID ?? row.id ?? row.ID ?? ''}`.trim() || undefined,
+      schoolName: `${row.schoolName || row.SchoolName || this.getSelectedSchoolName() || '-'}`.trim(),
+      academicYearName: `${row.academicYearName || row.AcademicYearName || this.getSelectedAcademicYearName() || '-'}`.trim(),
+      staffName: `${row.staffName || row.StaffName || ''}`.trim(),
+      designation: `${row.designation || row.Designation || row.roleName || row.RoleName || '-'}`.trim(),
+      paymentMode: `${row.paymentMode || row.PaymentMode || '-'}`.trim(),
       salaryPeriod: startDate && endDate ? `${startDate} - ${endDate}` : startDate || '-',
-      amount: Number(this.pick(row, ['NetAmount', 'netAmount', 'Amount', 'amount']) || 0),
-      date: this.formatDate(this.pick(row, ['PayDate', 'payDate', 'PaidDate', 'paidDate', 'Date', 'date', 'CreatedDate', 'createdDate'])) || '-',
+      grossAmount: Number(row.grossAmount ?? row.GrossAmount ?? 0),
+      deductionAmount: Number(row.deductionAmount ?? row.DeductionAmount ?? 0),
+      amount: Number(row.netAmount ?? row.NetAmount ?? row.amount ?? row.Amount ?? 0),
+      date: this.formatDate(row.createdDate || row.CreatedDate || row.payDate || row.PayDate || row.paidDate || row.PaidDate) || '-',
+      rawDate: row.createdDate || row.CreatedDate || row.payDate || row.PayDate || '',
       payHeadLines
     };
   }
@@ -291,51 +298,201 @@ export class SalaryIssuedComponent implements OnInit {
   }
 
   printPayslip(): void {
-    const content = document.getElementById('payslipSection')?.innerHTML;
-    if (!content) return;
-    const printWindow = window.open('', '', 'width=900,height=700');
-    printWindow?.document.write(`
-      <html>
-        <head>
-          <title>Payslip</title>
-          <style>
-            @page { size: auto; margin: 12mm; }
-            * { box-sizing: border-box; }
-            body { font-family: "Segoe UI", Arial, sans-serif; margin: 0; color: #111827; }
-            .print-page { max-width: 860px; margin: 0 auto; }
-            .print-payslip { border: 1px solid #cbd5e1; border-radius: 10px; padding: 14px; background: #fff; font-size: 14px; }
-            .print-payslip p { margin: 6px 0; }
-            .payslip-head { display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 12px; }
-            .payslip-title { margin: 0; font-size: 18px; font-weight: 700; }
-            .payslip-sub { margin: 3px 0 0; font-size: 12px; color: #64748b; }
-            .payslip-meta-right p { margin: 2px 0; font-size: 12px; }
-            .payslip-meta-right span, .payslip-meta-grid span { color: #64748b; }
-            .payslip-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; margin-bottom: 12px; }
-            .payslip-meta-grid p { margin: 0; font-size: 12px; }
-            .payslip-meta-grid p:nth-child(even) { text-align: right; }
-            table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-            th, td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; font-size: 12px; }
-            .payslip-table th { background: #f8fafc; font-weight: 600; }
-            .payslip-totals { width: 100%; margin-left: 0; margin-top: 10px; }
-            .totals-row { display: flex; align-items: center; font-size: 14px; padding: 4px 0; }
-            .totals-row span { text-align: left; }
-            .totals-row b { margin-left: auto; text-align: right; min-width: 120px; }
-            .net-row { border-top: 1px solid #94a3b8; margin-top: 4px; padding-top: 6px; font-size: 16px; }
-            .payslip-sign { display: flex; justify-content: space-between; margin-top: 26px; color: #475569; font-size: 12px; }
-          </style>
-        </head>
-        <body onload="window.print(); window.close();"><div class="print-page"><div class="print-payslip">${content}</div></div></body>
-      </html>
-    `);
-    printWindow?.document.close();
-  }
+  const content = document.getElementById('payslipSection')?.innerHTML;
+  if (!content) return;
+
+  const printWindow = window.open('', '', 'width=900,height=700');
+
+  printWindow?.document.write(`
+    <html>
+      <head>
+        <title>Payslip</title>
+        <style>
+          @page {
+            size: A4;
+            margin: 12mm;
+          }
+
+          body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            margin: 0;
+            color: #111827;
+            background: #ffffff;
+          }
+
+          .print-wrapper {
+            width: 100%;
+            max-width: 850px;
+            margin: auto;
+          }
+
+          /* MAIN CARD */
+          .psl-card {
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            overflow: hidden;
+          }
+
+          /* TITLE */
+          .psl-title-bar {
+            background: #1e293b;
+            color: #fff;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 700;
+            padding: 10px;
+            letter-spacing: 2px;
+          }
+
+          /* EMPLOYEE DETAILS */
+          .psl-emp-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e5e7eb;
+          }
+
+          .psl-emp-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px 16px;
+          }
+
+          .psl-label {
+            font-size: 10px;
+            color: #6b7280;
+            text-transform: uppercase;
+          }
+
+          .psl-value {
+            font-size: 13px;
+            font-weight: 600;
+          }
+
+          /* TWO COLUMN */
+          .psl-two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            border-bottom: 1px solid #e5e7eb;
+          }
+
+          .psl-section {
+            padding: 0;
+          }
+
+          .psl-earn-section {
+            border-right: 1px solid #e5e7eb;
+          }
+
+          .psl-section-header {
+            font-size: 12px;
+            font-weight: 700;
+            padding: 8px 12px;
+            background: #f1f5f9;
+          }
+
+          /* TABLE */
+          table {
+            width: 100%;
+            border-collapse: collapse;
+          }
+
+          th, td {
+            border: 1px solid #e5e7eb;
+            padding: 6px 8px;
+            font-size: 12px;
+          }
+
+          th {
+            background: #f8fafc;
+            font-weight: 600;
+          }
+
+          .psl-right {
+            text-align: right;
+          }
+
+          /* TOTALS */
+          .psl-col-footer {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 12px;
+            font-weight: 700;
+            font-size: 12px;
+            border-top: 1px solid #e5e7eb;
+            background: #f9fafb;
+          }
+
+          /* ADVANCE */
+          .psl-advance-block {
+            border-top: 1px solid #e5e7eb;
+          }
+
+          .psl-advance-header {
+            padding: 8px 12px;
+            font-weight: 700;
+            font-size: 12px;
+            background: #fef3c7;
+          }
+
+          .psl-adv-footer {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 12px;
+            font-weight: 700;
+            font-size: 12px;
+            border-top: 1px solid #e5e7eb;
+            background: #fef9c3;
+          }
+
+          /* NET PAY */
+          .psl-net {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: #111827;
+            color: #fff;
+          }
+
+          .psl-net-amount {
+            font-size: 18px;
+            font-weight: 800;
+          }
+
+          /* SIGNATURE */
+          .psl-sign {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 30px;
+            font-size: 12px;
+          }
+
+          .psl-sign-line {
+            width: 150px;
+            border-bottom: 1px solid #000;
+            margin-bottom: 6px;
+          }
+
+        </style>
+      </head>
+
+      <body onload="window.print(); window.close();">
+        <div class="print-wrapper">
+          ${content}
+        </div>
+      </body>
+    </html>
+  `);
+
+  printWindow?.document.close();
+}
 
   get grossEarnings(): number {
-    return +this.earningsLines.reduce((sum, x) => sum + x.amount, 0).toFixed(2);
+    return this.selectedPayslip?.grossAmount ?? +this.earningsLines.reduce((sum, x) => sum + x.amount, 0).toFixed(2);
   }
 
   get totalDeductions(): number {
-    return +this.deductionLines.reduce((sum, x) => sum + x.amount, 0).toFixed(2);
+    return this.selectedPayslip?.deductionAmount ?? +this.deductionLines.reduce((sum, x) => sum + x.amount, 0).toFixed(2);
   }
 
   exportPlaceholder(kind: string): void {

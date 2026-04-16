@@ -84,7 +84,7 @@
             <div class="InputFieldsContainer">
               <label class="inputLabel">Start Date <span class="required">*</span></label>
               <div class="input-with-error">
-                <input class="inputField" type="date" [(ngModel)]="form.startDate" (ngModelChange)="onStartDateChange()" />
+                <input class="inputField" type="date" [(ngModel)]="form.startDate" (ngModelChange)="onStartDateChange()" [max]="todayDate" />
                 <div *ngIf="formSubmitAttempted && !form.startDate" class="text-danger">
                   <small>Please select start date.</small>
                 </div>
@@ -93,7 +93,7 @@
             <div class="InputFieldsContainer">
               <label class="inputLabel">End Date <span class="required">*</span></label>
               <div class="input-with-error">
-                <input class="inputField" type="date" [(ngModel)]="form.endDate" (ngModelChange)="onEndDateChange()" />
+                <input class="inputField" type="date" [(ngModel)]="form.endDate" (ngModelChange)="onEndDateChange()" [max]="todayDate" />
                 <div *ngIf="formSubmitAttempted && !form.endDate" class="text-danger">
                   <small>Please select end date.</small>
                 </div>
@@ -129,27 +129,81 @@
         </div>
 
         <div *ngIf="salaryDetails" class="salary-pay-summary">
-          <table class="table table-bordered">
+          <table class="sp-table">
             <thead>
               <tr>
-                <th>Pay Head</th>
-                <th>Type</th>
-                <th>Amount</th>
+                <th class="sp-th-head">#</th>
+                <th class="sp-th-head">Pay Head</th>
+                <th class="sp-th-head">Type</th>
+                <th class="sp-th-head sp-amount">Amount (₹)</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let line of salaryDetails.lines">
-                <td>{{ line.payHead }}</td>
-                <td>{{ line.type }}</td>
-                <td>{{ line.amount }}</td>
+              <!-- Earnings section -->
+              <tr class="sp-section-label">
+                <td colspan="4">Earnings</td>
+              </tr>
+              <ng-container *ngFor="let line of salaryDetails.lines; let i = index">
+                <tr *ngIf="line.type === 'Addition'" class="sp-row-earning">
+                  <td class="sp-num">{{ i + 1 }}</td>
+                  <td>{{ line.payHead }}</td>
+                  <td><span class="sp-badge sp-badge-add">Earning</span></td>
+                  <td class="sp-amount">{{ line.amount | number:'1.2-2' }}</td>
+                </tr>
+              </ng-container>
+              <!-- Gross subtotal -->
+              <tr class="sp-subtotal">
+                <td colspan="3">Gross Earnings</td>
+                <td class="sp-amount">{{ salaryDetails.gross | number:'1.2-2' }}</td>
+              </tr>
+
+              <!-- Deductions section -->
+              <tr class="sp-section-label">
+                <td colspan="4">Deductions</td>
+              </tr>
+              <ng-container *ngFor="let line of salaryDetails.lines; let i = index">
+                <tr *ngIf="line.type === 'Deduction' && !line.isAdvance" class="sp-row-deduction">
+                  <td class="sp-num">{{ i + 1 }}</td>
+                  <td>{{ line.payHead }}</td>
+                  <td><span class="sp-badge sp-badge-ded">Deduction</span></td>
+                  <td class="sp-amount">{{ line.amount | number:'1.2-2' }}</td>
+                </tr>
+              </ng-container>
+
+              <!-- Advance salary deductions -->
+              <ng-container *ngIf="advanceSalaryInfo && advanceSalaryInfo.length > 0">
+                <tr class="sp-advance-label">
+                  <td colspan="4">Advance Salary Recovery</td>
+                </tr>
+                <tr *ngFor="let adv of advanceSalaryInfo; let ai = index" class="sp-row-advance">
+                  <td class="sp-num">—</td>
+                  <td>
+                    <span>Advance #{{ ai + 1 }}</span>
+                    <span class="sp-adv-meta">Total ₹{{ adv.amount }} · {{ adv.tenureMonths }}m tenure · {{ adv.remainingMonths }}m left</span>
+                  </td>
+                  <td><span class="sp-badge sp-badge-adv">Advance</span></td>
+                  <td class="sp-amount">{{ adv.deductionForCurrentMonth | number:'1.2-2' }}</td>
+                </tr>
+                <!-- Advance subtotal -->
+                <tr class="sp-adv-subtotal">
+                  <td colspan="3">Total Advance Recovery</td>
+                  <td class="sp-amount">{{ totalAdvanceDeduction | number:'1.2-2' }}</td>
+                </tr>
+              </ng-container>
+
+              <!-- Total deductions subtotal -->
+              <tr class="sp-subtotal">
+                <td colspan="3">Total Deductions</td>
+                <td class="sp-amount">{{ salaryDetails.deduction | number:'1.2-2' }}</td>
+              </tr>
+
+              <!-- Net Pay footer -->
+              <tr class="sp-net-row">
+                <td colspan="3">Net Pay</td>
+                <td class="sp-amount">{{ salaryDetails.net | number:'1.2-2' }}</td>
               </tr>
             </tbody>
           </table>
-          <div class="salary-summary-totals">
-            <p><b>Gross:</b> {{ salaryDetails.gross }}</p>
-            <p><b>Deductions:</b> {{ salaryDetails.deduction }}</p>
-            <p><b>Net Pay:</b> {{ salaryDetails.net }}</p>
-          </div>
         </div>
 
         <p *ngIf="statusMessage" class="salary-pay-status">{{ statusMessage }}</p>
