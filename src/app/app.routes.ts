@@ -273,7 +273,7 @@ export const routes: Routes = [
       { path: 'WorkingDays', component: WorkingDaysComponent },
       { path: 'Sessions', component: SessionsComponent },
       { path: 'TimeTable', component: TimeTableComponent },
-      { path: 'TeachersTimetable', component: TeachersTimeTableComponent },
+      { path: 'TeachersTimeTable', component: TeachersTimeTableComponent },
       { path: 'AttendanceSheet', component: AttendanceSheetComponent },
       { path: 'ViewAttendance', component: ViewAttendanceComponent },
       { path: 'Staffattendance', component: StaffattendanceComponent },
