@@ -111,7 +111,63 @@
           </ng-container>
           <ng-template #schoolwiseLayout>
             <div class="FormInputRowsContainer">
-              <div class="InputRow">
+              <div class="InputRow" *ngIf="isParent">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Academic Year <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" formControlName="AcademicYear" (change)="onAdminAcademicYearchange($event)">
+                      <option value="0">-- Select Academic Year --</option>
+                      <option *ngFor="let year of academicYearList" [value]="year.ID">{{ year.Name }}</option>
+                    </select>
+                    <div *ngIf="SyllabusForm.get('AcademicYear')?.hasError('min') && (SyllabusForm.get('AcademicYear')?.touched || SyllabusForm.get('AcademicYear')?.dirty)" class="text-danger">
+                      <small>Please select Academic Year.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Select Child <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" [value]="selectedChildId" (change)="onChildChange($event)">
+                      <option value="">-- Select Child --</option>
+                      <option *ngFor="let child of parentChildren" [value]="child.ID">{{ child.Name }}</option>
+                    </select>
+                    <div *ngIf="!selectedChildId && (SyllabusForm.get('AcademicYear')?.touched || SyllabusForm.get('FromDateTime')?.touched || SyllabusForm.get('ToDateTime')?.touched)" class="text-danger">
+                      <small>Please select Child.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Session <span class="text-muted">(Optional)</span></label>
+                  <select class="inputField" formControlName="Session" (change)="onSessionChange($event)">
+                    <option value="0">-- All Sessions --</option>
+                    <option *ngFor="let session of sessionList" [value]="session.ID">{{ session.Name }}</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="InputRow" *ngIf="isParent">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">From Date <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <input class="inputField" type="date" formControlName="FromDateTime" (change)="onDateRangeChange()">
+                    <div *ngIf="SyllabusForm.get('FromDateTime')?.invalid && (SyllabusForm.get('FromDateTime')?.touched || SyllabusForm.get('FromDateTime')?.dirty)" class="text-danger">
+                      <small>Please select From Date.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">To Date <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <input class="inputField" type="date" formControlName="ToDateTime" (change)="onDateRangeChange()">
+                    <div *ngIf="SyllabusForm.get('ToDateTime')?.invalid && (SyllabusForm.get('ToDateTime')?.touched || SyllabusForm.get('ToDateTime')?.dirty)" class="text-danger">
+                      <small>Please select To Date.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer" aria-hidden="true"></div>
+              </div>
+
+              <div class="InputRow" *ngIf="!isParent">
                 <div class="InputFieldsContainer">
                   <label class="inputLabel">Academic Year <span class="required">*</span></label>
                   <div class="input-with-error">
@@ -148,17 +204,33 @@
                     </div>
                   </div>
                 </div>
-              </div>
-
-              <div class="InputRow">
-                <div class="InputFieldsContainer">
+                <div class="InputFieldsContainer" *ngIf="isTeacher">
                   <label class="inputLabel">Session <span class="text-muted">(Optional)</span></label>
                   <select class="inputField" formControlName="Session" (change)="onSessionChange($event)">
                     <option value="0">-- All Sessions --</option>
                     <option *ngFor="let session of sessionList" [value]="session.ID">{{ session.Name }}</option>
                   </select>
                 </div>
-                <div class="InputFieldsContainer">
+                <div class="InputFieldsContainer" *ngIf="isTeacher">
+                  <label class="inputLabel">Start Date <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <input class="inputField" type="date" formControlName="FromDateTime" (change)="onDateRangeChange()">
+                    <div *ngIf="SyllabusForm.get('FromDateTime')?.invalid && (SyllabusForm.get('FromDateTime')?.touched || SyllabusForm.get('FromDateTime')?.dirty)" class="text-danger">
+                      <small>Please select Start Date.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="InputRow" *ngIf="!isParent">
+                <div class="InputFieldsContainer" *ngIf="!isTeacher">
+                  <label class="inputLabel">Session <span class="text-muted">(Optional)</span></label>
+                  <select class="inputField" formControlName="Session" (change)="onSessionChange($event)">
+                    <option value="0">-- All Sessions --</option>
+                    <option *ngFor="let session of sessionList" [value]="session.ID">{{ session.Name }}</option>
+                  </select>
+                </div>
+                <div class="InputFieldsContainer" *ngIf="!isTeacher">
                   <label class="inputLabel">From Date <span class="required">*</span></label>
                   <div class="input-with-error">
                     <input class="inputField" type="date" formControlName="FromDateTime" (change)="onDateRangeChange()">
@@ -167,7 +239,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="InputFieldsContainer">
+                <div class="InputFieldsContainer" *ngIf="!isTeacher">
                   <label class="inputLabel">To Date <span class="required">*</span></label>
                   <div class="input-with-error">
                     <input class="inputField" type="date" formControlName="ToDateTime" (change)="onDateRangeChange()">
@@ -176,6 +248,17 @@
                     </div>
                   </div>
                 </div>
+                <div class="InputFieldsContainer" *ngIf="isTeacher">
+                  <label class="inputLabel">To Date <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <input class="inputField" type="date" formControlName="ToDateTime" (change)="onDateRangeChange()">
+                    <div *ngIf="SyllabusForm.get('ToDateTime')?.invalid && (SyllabusForm.get('ToDateTime')?.touched || SyllabusForm.get('ToDateTime')?.dirty)" class="text-danger">
+                      <small>Please select To Date.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer" *ngIf="isTeacher" aria-hidden="true"></div>
+                <div class="InputFieldsContainer" *ngIf="isTeacher" aria-hidden="true"></div>
               </div>
 
               <div class="ActionButtons">
@@ -342,8 +425,8 @@
                   <td>
                     <!-- Not Marked: static badge, no toggle -->
                     <span *ngIf="s.originalStatus === 'Not Marked'" class="badge bg-secondary">Not Marked</span>
-                    <!-- Marked: editable toggle -->
-                    <div *ngIf="s.originalStatus !== 'Not Marked'" class="toggle-container">
+                    <!-- Marked: editable toggle for non-parents, static badge for parents -->
+                    <div *ngIf="s.originalStatus !== 'Not Marked' && !isParent" class="toggle-container">
                       <span class="status-label">Absent</span>
                       <label class="switch">
                         <input type="checkbox" [(ngModel)]="s.isPresent"
@@ -352,20 +435,26 @@
                       </label>
                       <span class="status-label">Present</span>
                     </div>
+                    <!-- Static badge for parents -->
+                    <span *ngIf="s.originalStatus !== 'Not Marked' && isParent" 
+                          class="badge" 
+                          [ngClass]="s.originalStatus === 'Present' ? 'bg-success' : s.originalStatus === 'Absent' ? 'bg-danger' : 'bg-secondary'">
+                      {{ s.originalStatus }}
+                    </span>
                   </td>
                   <td>{{ s.lateMinutes > 0 ? s.lateMinutes + ' min' : '-' }}</td>
                   <td>
-                    <!-- remark input: shown when status changed -->
-                    <input *ngIf="s.showRemark"
+                    <!-- remark input: shown when status changed (only for non-parents) -->
+                    <input *ngIf="s.showRemark && !isParent"
                       type="text" class="inputField remark-input"
                       [(ngModel)]="s.Remark"
                       [placeholder]="s.isPresent ? 'Why marked Present *' : 'Why marked Absent *'"
                       maxlength="200" />
-                    <!-- existing remark: expandable -->
+                    <!-- existing remark: expandable (for all users) -->
                     <span *ngIf="!s.showRemark && s.Remark"
                       class="remark-badge"
-                      (click)="s.showFullRemark = !s.showFullRemark"
-                      style="cursor:pointer;">
+                      (click)="!isParent ? (s.showFullRemark = !s.showFullRemark) : null"
+                      [style.cursor]="!isParent ? 'pointer' : 'default'">
                       <span *ngIf="!s.showFullRemark">{{ s.Remark | slice:0:30 }}{{ s.Remark.length > 30 ? '...' : '' }}</span>
                       <span *ngIf="s.showFullRemark">{{ s.Remark }}</span>
                     </span>
@@ -379,7 +468,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" (click)="closeStudentDetails()">Close</button>
-        <button type="button" class="btn btn-primary" [disabled]="isUpdating" (click)="updateStudentAttendance()">
+        <button type="button" class="btn btn-primary" [disabled]="isUpdating" (click)="updateStudentAttendance()" *ngIf="!isParent">
           {{ isUpdating ? 'Saving...' : 'Update Attendance' }}
         </button>
       </div>

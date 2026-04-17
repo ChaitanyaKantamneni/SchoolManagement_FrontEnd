@@ -661,4 +661,28 @@ console.log('[LEAVE APPROVAL] Teacher payload - currentUserId:', this.currentUse
     }
     return types;
   }
+
+  // ── staff role name resolution (like viewstaffattendance) ─────────────────────
+  getStaffRoleName(req: LeaveRequest): string {
+    // First try to use already resolved role from request data
+    if (req.role && req.role !== '-' && !/^\d+$/.test(String(req.role).trim())) {
+      return String(req.role).trim();
+    }
+
+    // Use staffRoleLookup to get role name
+    const staffId = String(req.applicantId || '').trim();
+    if (!staffId) return '-';
+    
+    const roleFromLookup = this.staffRoleLookup.get(staffId);
+    if (roleFromLookup) {
+      // If it's a numeric role ID, try to resolve it using roleList
+      if (/^\d+$/.test(roleFromLookup.trim())) {
+        const roleMatch = this.roleList.find(role => String(role.ID) === roleFromLookup.trim());
+        return roleMatch ? roleMatch.Name : roleFromLookup;
+      }
+      return roleFromLookup;
+    }
+
+    return '-';
+  }
 }

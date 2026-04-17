@@ -79,7 +79,8 @@
       <!-- Child Selector (Parent Only) -->
       <div class="searchreview" *ngIf="isParent">
         <label class="inputLabel">SELECT CHILD <span class="required">*</span></label>
-        <select class="form-control" (change)="onStaffChange($event)" [(ngModel)]="selectedStaffId">
+        <select class="form-control" [value]="selectedStaffId" (change)="onStaffChange($event)">
+          <option value="">-- Select Child --</option>
           <option *ngFor="let c of parentChildren" [value]="c.ID">{{ c.Name }}</option>
         </select>
       </div>

@@ -32,7 +32,7 @@
           <ng-container *ngIf="isAdmin; else schoolwiseAttendanceLayout">
             <div class="FormInputRowsContainer">
               <div class="InputRow">
-                 <div class="InputFieldsContainer">
+                <div class="InputFieldsContainer">
                   <label class="inputLabel" for="email">School <span class="required">*</span></label>
                   <div class="input-with-error">
                     <select class="inputField" type="date" formControlName="School" placeholder="Select Start Date" (change)="onAdminSchoolChange($event)" >
@@ -43,8 +43,10 @@
                         <small>Please Select School.</small>
                     </div>
                   </div>
-                </div> 
-                  <div class="InputFieldsContainer">
+                </div>
+              </div>
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
                   <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
                   <div class="input-with-error">
                     <select class="inputField" type="date" formControlName="AcademicYear" placeholder="Select Start Date" (change)="onAdminAcademicYearchange($event)">
@@ -56,9 +58,7 @@
                     </div>
                   </div>
                 </div>
-              </div>
-              <div class="InputRow" *ngIf="!isTeacher">
-                  <div class="InputFieldsContainer">
+                <div class="InputFieldsContainer">
                   <label class="inputLabel" for="email">Class <span class="required">*</span></label>
                   <div class="input-with-error">
                     <select class="inputField" type="date" formControlName="Class" placeholder="Select Start Class" (change)="onAdminClasschange($event)">
@@ -70,7 +70,7 @@
                     </div>
                   </div>
                 </div>
-                  <div class="InputFieldsContainer">
+                <div class="InputFieldsContainer">
                   <label class="inputLabel" for="email">Divisions <span class="required">*</span></label>
                   <div class="input-with-error">
                     <select class="inputField" type="date" formControlName="Divisions" placeholder="Select Divisions" (change)="onAdminDivisionsChange($event)" >
@@ -81,11 +81,10 @@
                         <small>Please Divisions.</small>
                     </div>
                   </div>
-                </div> 
-                
+                </div>
               </div>
               <div class="InputRow">
-                  <div class="InputFieldsContainer">
+                <div class="InputFieldsContainer">
                   <label class="inputLabel" for="email">Session <span class="required">*</span></label>
                   <div class="input-with-error">
                     <select class="inputField" formControlName="Session" (change)="onSessionChange($event)">
@@ -99,7 +98,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="InputFieldsContainer compact-field">
+                <div class="InputFieldsContainer">
                   <label class="inputLabel" for="attendanceDateTime">Attendance Date <span class="required">*</span></label>
                   <div class="input-with-error">
                     <input
@@ -113,6 +112,7 @@
                     </div>
                   </div>
                 </div>
+                <div class="InputFieldsContainer" aria-hidden="true"></div>
               </div>
             </div>
           </ng-container>
@@ -143,9 +143,7 @@
                     </div>
                   </div>
                 </div>
-              </div>
-              <div class="InputRow" *ngIf="!isTeacher">
-                <div class="InputFieldsContainer">
+                <div class="InputFieldsContainer" *ngIf="!isTeacher">
                   <label class="inputLabel" for="email">Divisions <span class="required">*</span></label>
                   <div class="input-with-error">
                     <select class="inputField" formControlName="Divisions" (change)="onAdminDivisionsChange($event)">
@@ -157,8 +155,31 @@
                     </div>
                   </div>
                 </div>
+                <div class="InputFieldsContainer" *ngIf="isTeacher">
+                  <label class="inputLabel" for="email">Session <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" formControlName="Session" (change)="onSessionChange($event)">
+                      <option value="0">-- Select Session--</option>
+                      <option *ngFor="let session of SessionList" [value]="session.ID">
+                        {{session.SessionName}}
+                      </option>
+                    </select>
+                    <div *ngIf="SyllabusForm.get('Session')?.hasError('min') && (SyllabusForm.get('Session')?.touched || SyllabusForm.get('Session')?.dirty)" class="text-danger">
+                      <small>Please Session.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer" *ngIf="isTeacher">
+                  <label class="inputLabel" for="attendanceDateTime">Attendance Date <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <input id="attendanceDateTime" type="date" class="inputField" formControlName="AttendanceDateTime" />
+                    <div *ngIf="SyllabusForm.get('AttendanceDateTime')?.invalid && (SyllabusForm.get('AttendanceDateTime')?.touched || SyllabusForm.get('AttendanceDateTime')?.dirty)" class="text-danger">
+                      <small>Please select attendance date and time.</small>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div class="InputRow">
+              <div class="InputRow" *ngIf="!isTeacher">
                 <div class="InputFieldsContainer">
                   <label class="inputLabel" for="email">Session <span class="required">*</span></label>
                   <div class="input-with-error">
@@ -173,9 +194,7 @@
                     </div>
                   </div>
                 </div>
-              </div>
-              <div class="InputRow">
-                <div class="InputFieldsContainer compact-field">
+                <div class="InputFieldsContainer">
                   <label class="inputLabel" for="attendanceDateTime">Attendance Date <span class="required">*</span></label>
                   <div class="input-with-error">
                     <input id="attendanceDateTime" type="date" class="inputField" formControlName="AttendanceDateTime" />
@@ -184,6 +203,7 @@
                     </div>
                   </div>
                 </div>
+                <div class="InputFieldsContainer" aria-hidden="true"></div>
               </div>
             </div>
           </ng-template>
@@ -229,7 +249,7 @@
                 <th class="visually-hidden">Subject ID</th>
                 <th class="visually-hidden">Exam Type ID</th>
                 <th>SI.No</th>
-                <th (click)="sort('ExamTypeName')" class="sortable-column">
+                <th (click)="sort('ExamTypeName')">
                   <span class="column-text">AdmissionNo</span>
                   <!-- <span class="arrows">
                     <mat-icon 
@@ -360,7 +380,7 @@
             </tbody>
           </table>
           <div *ngIf="isTableModalOpen && SyllabusList.length != 0" class="ActionButtons table-action-buttons">
-            <button type="button" class="btn btn-secondary" (click)="cancelAttendanceTable()">
+            <button type="button" class="btn" (click)="cancelAttendanceTable()">
               Cancel
             </button>
            <button 
