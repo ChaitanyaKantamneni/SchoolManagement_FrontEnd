@@ -1,5 +1,5 @@
 import { NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { DashboardTopNavComponent } from '../../../SignInAndSignUp/dashboard-top-nav/dashboard-top-nav.component';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -16,7 +16,7 @@ import { HttpClient } from '@angular/common/http';
   templateUrl: './examresults.component.html',
   styleUrl: './examresults.component.css'
 })
-export class ExamresultsComponent extends BasePermissionComponent{
+export class ExamresultsComponent extends BasePermissionComponent implements OnInit{
    pageName = 'Exam Results';
 
    constructor(
@@ -32,9 +32,14 @@ export class ExamresultsComponent extends BasePermissionComponent{
     ngOnInit(): void {
       this.checkViewPermission();
       this.SchoolSelectionChange = false;
-      this.FetchSchoolsList();
-          this.FetchAcademicYearsList();
-
+      
+      // Initialize parent role detection
+      this.initializeUserRole();
+      
+      if (this.isAdmin) {
+        this.FetchSchoolsList();
+      }
+      this.FetchAcademicYearsList();
     };
   
     allowOnlyNumbers(event: KeyboardEvent) {
@@ -108,12 +113,12 @@ export class ExamresultsComponent extends BasePermissionComponent{
     SyllabusForm :any= new FormGroup({
       ID: new FormControl(''),
       SchoolID:new FormControl(''),
-      Student: new FormControl('0', [Validators.pattern('^(?!0$).*$')]),
-      Divisions: new FormControl(0,[Validators.required,Validators.min(1)]),
-      Class: new FormControl(0,[Validators.required,Validators.min(1)]),
-      ExamType: new FormControl(0,[Validators.required,Validators.min(1)]),
-      School: new FormControl(0),
-      AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
+      Student: new FormControl('0'),
+      Divisions: new FormControl('0'),
+      Class: new FormControl('0'),
+      ExamType: new FormControl('0', [Validators.required, Validators.min(1)]),
+      School: new FormControl('0'),
+      AcademicYear: new FormControl('0', [Validators.required, Validators.min(1)])
     });
   
     FetchSchoolsList() {
@@ -141,11 +146,140 @@ export class ExamresultsComponent extends BasePermissionComponent{
         );
     };
   
-    protected override get isAdmin(): boolean {
-      const role = sessionStorage.getItem('RollID') || localStorage.getItem('RollID');
-      return role === '1';
+    // ── session helpers ──────────────────────────────────────────────────────────
+  public ss(key: string) {
+    return sessionStorage.getItem(key) || localStorage.getItem(key) || '';
+  }
+
+  // Dynamic Role Getters based on Names
+  get currentRoleName(): string { return (this.ss('roleName') || this.ss('RoleName') || this.ss('rollName') || this.ss('RollName') || '').trim(); }
+  get currentRollID(): string { return (this.ss('RollID') || this.ss('rollID') || this.ss('menuRoleId') || this.ss('RoleID') || '').trim(); }
+
+  protected override get isAdmin(): boolean { return this.currentRollID === '1'; }
+
+  // In this project, School Admin/Principal is '2' or '8'. 
+  get isSchoolAdmin(): boolean {
+    const r = this.currentRoleName.toLowerCase();
+    const id = this.currentRollID;
+    return !this.isAdmin && (id === '2' || id === '8' || r.includes('admin') || r.includes('principal') || r.includes('management'));
+  }
+
+  get isParent(): boolean {
+    const r = this.currentRoleName.toLowerCase();
+    return this.currentRollID === '6' || r.includes('parent');
+  }
+
+  public get resolvedSchoolId(): string {
+    const keys = ['SchoolID', 'schoolId', 'schoolID', 'SchoolId', 'sId', 'sid', 'SID', 'SId', 'school_id', 'School_Id', 'user_school_id'];
+    for (const k of keys) {
+      const val = this.ss(k);
+      if (val && val !== '0' && val !== 'null' && val !== 'undefined' && !isNaN(Number(val))) {
+        return val.toString().trim();
+      }
     }
+    return this.AdminselectedSchoolID || '';
+  }
+
+  // Parent-specific properties
+  parentChildren: Array<{ ID: string; AdmissionNo: string; Name: string; Class: string; Division: string; SchoolID: string }> = [];
+  selectedChildId: string = '';
+
+  private initializeUserRole(): void {
+    if (this.isParent) {
+      // Auto-set school ID from session for parents
+      this.AdminselectedSchoolID = this.resolvedSchoolId;
+      // Don't fetch children immediately - wait for academic year to be selected
+    }
+  }
+
+  private fetchParentChildren(): void {
+    const parentEmail = (this.ss('email') || '').toString().trim();
+    if (!parentEmail) return;
+
+    const payload = {
+      Flag: '9',
+      FatherEmail: parentEmail,
+      MotherEmail: parentEmail,
+      AcademicYear: this.AdminselectedAcademivYearID || ''
+    };
+
+    this.apiurl.post<any>('Tbl_StudentParentDetails_CRUD_Operations', payload).subscribe({
+      next: (res: any) => {
+        const list: any[] = res?.data || [];
+        
+        this.parentChildren = list.map((s: any) => {
+          const admissionId = s.admissionID || s.AdmissionID || s.admissionno || s.AdmissionNo || '';
+          const studentName = s.fatherName || s.name || s.Name || '';
+          const classId = s.class || s.Class || s.classID || s.ClassID || '';
+          const divisionId = s.division || s.Division || s.divisionID || s.DivisionID || '';
+          const schoolId = s.schoolID || s.SchoolID || s.schoolId || s.SchoolId || '';
+          
+          return {
+            ID:           String(admissionId),
+            AdmissionNo:  String(admissionId),
+            Name:         `${admissionId} - ${studentName}`.trim(),
+            Class:        String(classId),
+            Division:     String(divisionId),
+            SchoolID:     String(schoolId)
+          };
+        }).filter(c => c.ID && c.AdmissionNo);
+
+        // Don't auto-select - let parent choose manually
+        // Reset selection to show placeholder
+        this.selectedChildId = '';
+        this.AdminselectedStudentID = '';
+        this.AdminselectedClassID = '';
+        this.AdminselectedDiviosnID = '';
+        
+        // Reset form values to show placeholders
+        this.SyllabusForm.patchValue({
+          Student: '',
+          Class: '',
+          Divisions: ''
+        });
+      },
+      error: () => { this.parentChildren = []; }
+    });
+  }
+
+  onChildChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    const childId = target.value;
+    this.selectedChildId = childId || '';
     
+    const selectedChild = this.parentChildren.find(c => c.ID === childId);
+    if (selectedChild) {
+      this.AdminselectedStudentID = selectedChild.ID;
+      this.AdminselectedClassID = selectedChild.Class;
+      this.AdminselectedDiviosnID = selectedChild.Division;
+      
+      // Update form values
+      this.SyllabusForm.patchValue({
+        Student: selectedChild.ID,
+        Class: selectedChild.Class,
+        Divisions: selectedChild.Division
+      });
+      
+      // Reset results and fetch new ones
+      this.resetResultView();
+      this.FetchExamResultsList();
+    } else {
+      // Reset if no child selected
+      this.AdminselectedStudentID = '';
+      this.AdminselectedClassID = '';
+      this.AdminselectedDiviosnID = '';
+      
+      this.SyllabusForm.patchValue({
+        Student: '',
+        Class: '',
+        Divisions: ''
+      });
+      
+      this.resetResultView();
+    }
+  }
+
+        
     FetchAcademicYearsList() {
       const requestData = { 
         SchoolID:this.AdminselectedSchoolID||'',
@@ -648,10 +782,51 @@ export class ExamresultsComponent extends BasePermissionComponent{
   }
   
   onSubmit() {
-    if (this.SyllabusForm.invalid) {
+    if (this.isParent) {
+      // For parents, use form validation
       this.SyllabusForm.markAllAsTouched();
+      
+      // Check if form is valid
+      if (this.SyllabusForm.invalid) {
+        return;
+      }
+
+      this.hasSubmittedSearch = true;
+      this.currentPage = 1;
+      this.FetchExamResultsList();
       return;
     }
+
+    // For admin/teacher/school admin, check if required fields are selected
+    const academicYear = this.AdminselectedAcademivYearID;
+    const classId = this.AdminselectedClassID;
+    const divisionId = this.AdminselectedDiviosnID;
+    const examId = this.AdminselecteExamID;
+
+    if (!academicYear || academicYear === '0') {
+      this.AminityInsStatus = 'Please select Academic Year';
+      this.isModalOpen = true;
+      return;
+    }
+
+    if (!classId || classId === '0') {
+      this.AminityInsStatus = 'Please select Class';
+      this.isModalOpen = true;
+      return;
+    }
+
+    if (!divisionId || divisionId === '0') {
+      this.AminityInsStatus = 'Please select Division';
+      this.isModalOpen = true;
+      return;
+    }
+
+    if (!examId || examId === '0') {
+      this.AminityInsStatus = 'Please select Exam Type';
+      this.isModalOpen = true;
+      return;
+    }
+
     this.hasSubmittedSearch = true;
     this.currentPage = 1;
     // Sync AdminselectedStudentID from form before fetching
@@ -1117,10 +1292,16 @@ export class ExamresultsComponent extends BasePermissionComponent{
       }
       this.isTableModalOpen = false;
   
-  
+      // For parents, fetch children when academic year changes
+      if (this.isParent) {
+        this.fetchParentChildren();
+      }
+      
       // this.tableRows = [];   
       this.FetchExamsList();
-      this.FetchClassList();
+      if (!this.isParent) {
+        this.FetchClassList();
+      }
       this.resetResultView();
       // this.resetPaginationAndFetch();
     };

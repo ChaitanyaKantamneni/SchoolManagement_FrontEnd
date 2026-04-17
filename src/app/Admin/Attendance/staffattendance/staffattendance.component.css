@@ -29,13 +29,6 @@
   min-width: 0;
 }
 
-/* Keep single-field rows same width as normal half-row fields */
-.InputRow:last-child .InputFieldsContainer {
-  flex: 0 0 calc(50% - 8px);
-  max-width: calc(50% - 8px);
-  margin-right: auto;
-}
-
 /* make sure select follows container width */
 .InputFieldsContainer select.inputField {
   width: 100%;
@@ -45,18 +38,6 @@
 .full-width-field {
   flex: 1 1 100%;
   max-width: 523px;
-}
-
-.compact-field {
-  flex: 0 0 calc(50% - 8px);
-  max-width: calc(50% - 8px);
-}
-
-@media (max-width: 767.98px) {
-  .compact-field {
-    flex: 1 1 100%;
-    max-width: 100%;
-  }
 }
 
 .ComponentRecords .ActionButtons{

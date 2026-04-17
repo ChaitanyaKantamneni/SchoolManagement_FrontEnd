@@ -1047,6 +1047,10 @@ if (
           };
         }).filter(c => c.ID && c.AdmissionNo);
 
+        // Reset selection to show placeholder
+        this.selectedStaffId = '';
+        this.selectedStaffName = '';
+
         // if (this.parentChildren.length > 0) {
         //   const first = this.parentChildren[0];
         //   this.selectedSchoolId    = first.SchoolID || this.selectedSchoolId;

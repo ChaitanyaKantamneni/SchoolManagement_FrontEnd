@@ -691,6 +691,7 @@ private resetPaginationAndFetch() {
                 StartTime: '',
                 EndTime: ''
               }));
+              this.applySelectedSessionTimes();
             } else {
               this.SyllabusList = [];
             }
@@ -765,6 +766,9 @@ formatDateYYYYMMDD(dateStr: string | null) {
   }
 
   onSubmit() {
+    const selectedSessionId = this.SyllabusForm.get('Session')?.value;
+    this.AdminSelectedSessionID =
+      selectedSessionId && selectedSessionId !== '0' ? String(selectedSessionId) : '';
     this.loadAttendanceTableIfReady();
   }
 

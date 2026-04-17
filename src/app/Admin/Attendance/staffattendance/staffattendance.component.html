@@ -84,7 +84,7 @@
                   </div>
                 </div>
               </div>
-             
+              <div class="InputFieldsContainer" aria-hidden="true"></div>
             </div>
           </div>
           </ng-container>
@@ -122,9 +122,7 @@
                     </div>
                   </div>
                 </div>
-              </div>
-              <div class="InputRow">
-                <div class="InputFieldsContainer compact-field">
+                <div class="InputFieldsContainer">
                   <label class="inputLabel" for="attendanceDateTime">Attendance Date <span
                       class="required">*</span></label>
                   <div class="input-with-error">
@@ -182,7 +180,7 @@
           <thead>
             <tr>
               <th>SI.No</th>
-              <th (click)="sort('Name')" class="sortable-column">
+              <th (click)="sort('Name')">
                 <span class="column-text">Staff Name</span>
                 <span class="arrows">
                   <mat-icon

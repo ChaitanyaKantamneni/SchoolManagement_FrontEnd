@@ -142,9 +142,32 @@ export class ViewstaffattendanceComponent extends BasePermissionComponent {
     return (
       this.AdminselectedSchoolID ||
       sessionStorage.getItem('SchoolID')?.toString() ||
+      localStorage.getItem('SchoolID')?.toString() ||
       sessionStorage.getItem('schoolId')?.toString() ||
+      localStorage.getItem('schoolId')?.toString() ||
       ''
     );
+  }
+
+  private mapRoleItem(item: any) {
+    const rawId = item?.id ?? item?.ID ?? item?.roleId ?? item?.roleID ?? '';
+    const rawName =
+      item?.roleName ??
+      item?.RoleName ??
+      item?.name ??
+      item?.Name ??
+      item?.role ??
+      item?.Role ??
+      item?.staffTypeName ??
+      item?.title ??
+      item?.label ??
+      item?.description ??
+      rawId;
+
+    return {
+      ID: String(rawId).trim(),
+      Name: String(rawName).trim() || String(rawId).trim()
+    };
   }
 
   FetchSchoolsList() {
@@ -171,18 +194,13 @@ export class ViewstaffattendanceComponent extends BasePermissionComponent {
 
   FetchRoleList() {
     this.apiurl.post<any>('Tbl_Roles_CRUD_Operations', {
-      SchoolID: this.getCurrentSchoolId(),
+      SchoolID: '',
       Flag: '2'
     }).subscribe(
       (response: any) => {
-        console.log('[VIEW] ROLES API RAW', JSON.stringify(response?.data?.[0]));
         this.roleList = Array.isArray(response?.data)
-          ? response.data.map((item: any) => ({
-              ID: String(item.id ?? item.ID ?? ''),
-              Name: String(item.roleName ?? item.RoleName ?? item.name ?? item.Name ?? '').trim() || String(item.id ?? item.ID ?? '')
-            }))
+          ? response.data.map((item: any) => this.mapRoleItem(item))
           : [];
-        console.log('[VIEW] ROLES MAPPED', this.roleList);
 
         // re-process data now that roles are loaded (fixes school-wise login race condition)
         if (this.isTableVisible && this.rawData.length > 0) {
@@ -206,7 +224,17 @@ export class ViewstaffattendanceComponent extends BasePermissionComponent {
             const staffId = String(item.id ?? item.ID ?? '').trim();
             if (!staffId) return;
             // Store raw staffType value — resolve lazily in getResolvedRole once roleList is ready
-            const rawStaffType = String(item.staffType ?? item.StaffType ?? item.role ?? item.roleName ?? '').trim();
+            const rawStaffType = String(
+              item.staffType ??
+              item.StaffType ??
+              item.roleName ??
+              item.RoleName ??
+              item.staffTypeName ??
+              item.staffTypeNames ??
+              item.role ??
+              item.Role ??
+              ''
+            ).trim();
             if (rawStaffType) lookup.set(staffId, rawStaffType);
           });
         }
@@ -465,7 +493,12 @@ export class ViewstaffattendanceComponent extends BasePermissionComponent {
 
     return roleTokens
       .map((token: string) => {
-        const match = this.roleList.find((role: any) => String(role.ID).trim() === token);
+        const normalizedToken = String(token).trim().toLowerCase();
+        const match = this.roleList.find((role: any) => {
+          const roleId = String(role.ID ?? '').trim();
+          const roleName = String(role.Name ?? '').trim().toLowerCase();
+          return roleId === token || (roleName !== '' && roleName === normalizedToken);
+        });
         return match?.Name || token;
       })
       .join(', ');
@@ -481,10 +514,15 @@ export class ViewstaffattendanceComponent extends BasePermissionComponent {
   }
 
   private getResolvedRole(row: any): string {
-    console.log('[VIEW] getResolvedRole row:', JSON.stringify({ role: row.role, roleName: row.roleName, staffType: row.staffType, staffID: row.staffID }));
-    console.log('[VIEW] roleList:', this.roleList);
     // SP returns role name directly — use it if it's not a pure number
-    const directRoleValue = row.role ?? row.Role ?? row.roleName ?? row.RoleName ?? '';
+    const directRoleValue =
+      row.role ??
+      row.Role ??
+      row.roleName ??
+      row.RoleName ??
+      row.staffTypeName ??
+      row.staffTypeNames ??
+      '';
     if (directRoleValue && !/^\d+$/.test(String(directRoleValue).trim())) {
       return String(directRoleValue).trim();
     }
