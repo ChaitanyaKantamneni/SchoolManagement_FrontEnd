@@ -57,6 +57,8 @@ export class SyllabusComponent extends BasePermissionComponent  {
   isModalOpen = false;
   isViewModalOpen= false;
   SyllabusCount: number = 0;
+  SubjectsActiveCount: number = 0;
+  SubjectsInActiveCount: number = 0;
   ActiveUserId:string=sessionStorage.getItem('email')?.toString() || '';
   roleId = sessionStorage.getItem('RollID');
 
@@ -171,6 +173,8 @@ export class SyllabusComponent extends BasePermissionComponent  {
     this.FetchAcademicYearCount(isSearch).subscribe({
       next: (countResp: any) => {
         this.SyllabusCount = countResp?.data?.[0]?.totalcount ?? 0;
+        this.SubjectsActiveCount=countResp?.data?.[0]?.activeCount ?? 0;
+        this.SubjectsInActiveCount=countResp?.data?.[0]?.inactiveCount ?? 0;
 
         const payload: any = {
           Flag: flag,
@@ -631,4 +635,12 @@ export class SyllabusComponent extends BasePermissionComponent  {
     }    
     this.FetchAcademicYearsList();
   };
+
+  pageStartIndex(): number {
+    return this.SyllabusCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
+  }
+
+  pageEndIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.SyllabusCount);
+  }
 }

@@ -300,7 +300,7 @@ a {
   margin-left: var(--erp-sidebar-width);
   width: calc(100% - var(--erp-sidebar-width));
   min-height: calc(100vh - var(--erp-header-height));
-  padding: 0;
+  padding: 10px 0px;
   background: linear-gradient(180deg, #f8fafc 0%, #f2f5f9 100%);
 }
 
