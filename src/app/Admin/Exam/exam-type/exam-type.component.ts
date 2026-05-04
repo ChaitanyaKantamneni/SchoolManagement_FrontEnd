@@ -199,6 +199,7 @@ FetchAcademicYearsList() {
           LastCreatedDate: cursor?.lastCreatedDate ?? null,
           LastID: cursor?.lastID ?? null,
           SchoolID: SchoolIdSelected,
+          AcademicYear: this.AdminselectedAcademivYearID || null,
           ...extra
         };
 
@@ -259,6 +260,8 @@ FetchAcademicYearsList() {
       this.SyllabusForm.get('School')?.clearValidators();
     }
     if(this.AdminselectedSchoolID==''){
+      const schoolFromSession = sessionStorage.getItem('SchoolID') || localStorage.getItem('SchoolID') || '';
+      this.AdminselectedSchoolID = schoolFromSession;
       this.FetchAcademicYearsList();
     }
     this.SyllabusForm.reset();
@@ -302,6 +305,10 @@ FetchAcademicYearsList() {
           this.AminityInsStatus = "Exam Type Details Submitted!";
           this.SyllabusForm.reset();
           this.SyllabusForm.markAsPristine();
+          this.currentPage = 1;
+          this.pageCursors = [];
+          this.sortColumn = 'CreatedDate';
+          this.sortDirection = 'desc';
           this.FetchInitialData();
         } else {
           this.AminityInsStatus = response.message || "Error Submitting Exam Type.";
@@ -420,13 +427,14 @@ else{
           this.AminityInsStatus = "Exam Type Details Updated!";
           this.SyllabusForm.reset();
           this.SyllabusForm.markAsPristine();
+          this.FetchInitialData();
         }
       },
       error: (err:any) => {
             if (err.status === 400 && err.error?.message) {
-              this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+              this.AminityInsStatus = err.error.message;
             } else if (err.status === 500 && err.error?.Message) {
-              this.AminityInsStatus = err.error.Message;  // Database or internal error
+              this.AminityInsStatus = err.error.Message;
             } else {
               this.AminityInsStatus = "Unexpected error occurred.";
             }
@@ -503,6 +511,7 @@ else{
         this.currentPage = 1;
         this.pageSize = 5;
         this.visiblePageCount = 3;
+        this.pageCursors = [];
         this.FetchInitialData();
         return;
       }
@@ -514,6 +523,7 @@ else{
       this.currentPage = 1;
       this.pageSize = 5;
       this.visiblePageCount = 3;
+      this.pageCursors = [];
       this.FetchInitialData();
 
     }, this.SEARCH_DEBOUNCE);

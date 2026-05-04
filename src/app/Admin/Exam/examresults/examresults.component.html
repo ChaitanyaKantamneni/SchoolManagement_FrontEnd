@@ -8,6 +8,22 @@
         <h5>Exam Results</h5>
         <p>Total {{ SyllabusCount }} Students</p>
       </div>
+      
+      <!-- Child Tab Slider for Parent View - Top Right -->
+      <div class="child-tab-slider-top-right" *ngIf="isParent && parentChildren.length > 0">
+        <div class="children-label">Children:</div>
+        <div class="child-tabs-container">
+          <button
+            *ngFor="let child of parentChildren; let i = index"
+            type="button"
+            class="child-tab-btn"
+            [class.active]="selectedChildIndex === i"
+            (click)="selectChild(i)">
+            <mat-icon>person</mat-icon>
+            {{ child.Name }}
+          </button>
+        </div>
+      </div>
      
     </div>
     
@@ -104,112 +120,94 @@
             </ng-container>
 
             <ng-template #schoolWiseLayout>
-              <!-- Parent-specific Child Selector -->
-              <div class="InputRow" *ngIf="isParent">
-                
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <select class="inputField" type="date" formControlName="AcademicYear" (change)="onAdminAcademicYearchange($event)">
-                      <option value="0">-- Select Academic Year --</option>
-                      <option *ngFor="let school of academicYearList" value="{{school.ID}}">{{school.Name}}</option>
-                    </select>
-                    <div *ngIf="SyllabusForm.get('AcademicYear')?.hasError('required') && (SyllabusForm.get('AcademicYear')?.touched || SyllabusForm.get('AcademicYear')?.dirty)" class="text-danger">
-                      <small>Please Select Academic Year.</small>
+              <!-- Parent layout -->
+              <ng-container *ngIf="isParent">
+                <div class="InputRow">
+                  <div class="InputFieldsContainer">
+                    <label class="inputLabel">Academic Year <span class="required">*</span></label>
+                    <div class="input-with-error">
+                      <select class="inputField" formControlName="AcademicYear" (change)="onAdminAcademicYearchange($event)">
+                        <option value="0">-- Select Academic Year --</option>
+                        <option *ngFor="let school of academicYearList" value="{{school.ID}}">{{school.Name}}</option>
+                      </select>
+                      <div *ngIf="SyllabusForm.get('AcademicYear')?.hasError('min') && (SyllabusForm.get('AcademicYear')?.touched || SyllabusForm.get('AcademicYear')?.dirty)" class="text-danger">
+                        <small>Please Select Academic Year.</small>
+                      </div>
                     </div>
-                    <div *ngIf="SyllabusForm.get('AcademicYear')?.hasError('min') && (SyllabusForm.get('AcademicYear')?.touched || SyllabusForm.get('AcademicYear')?.dirty)" class="text-danger">
-                      <small>Please Select Academic Year.</small>
+                  </div>
+                  <div class="InputFieldsContainer">
+                    <label class="inputLabel">Exam Type <span class="required">*</span></label>
+                    <div class="input-with-error">
+                      <select class="inputField" formControlName="ExamType" (change)="onAdminExamtypeChange($event)">
+                        <option value="0">-- Select Exam --</option>
+                        <option *ngFor="let school of examLists" value="{{school.ID}}">{{school.Name}}</option>
+                      </select>
+                      <div *ngIf="SyllabusForm.get('ExamType')?.hasError('min') && (SyllabusForm.get('ExamType')?.touched || SyllabusForm.get('ExamType')?.dirty)" class="text-danger">
+                        <small>Please Select Exam Type.</small>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Select Child <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <select class="inputField" [value]="selectedChildId" (change)="onChildChange($event)">
-                      <option value="">-- Select Child --</option>
-                      <option *ngFor="let child of parentChildren" [value]="child.ID">{{ child.Name }}</option>
-                    </select>
-                    <div *ngIf="!selectedChildId && (SyllabusForm.get('AcademicYear')?.touched || SyllabusForm.get('ExamType')?.touched)" class="text-danger">
-                      <small>Please Select Child.</small>
+              </ng-container>
+
+              <!-- Non-parent layout -->
+              <ng-container *ngIf="!isParent">
+                <div class="InputRow">
+                  <div class="InputFieldsContainer">
+                    <label class="inputLabel">Academic Year <span class="required">*</span></label>
+                    <div class="input-with-error">
+                      <select class="inputField" formControlName="AcademicYear" (change)="onAdminAcademicYearchange($event)">
+                        <option value="0">-- Select Academic Year --</option>
+                        <option *ngFor="let school of academicYearList" value="{{school.ID}}">{{school.Name}}</option>
+                      </select>
+                      <div *ngIf="SyllabusForm.get('AcademicYear')?.hasError('min') && (SyllabusForm.get('AcademicYear')?.touched || SyllabusForm.get('AcademicYear')?.dirty)" class="text-danger">
+                        <small>Please Select Academic Year.</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="InputFieldsContainer">
+                    <label class="inputLabel">Class <span class="required">*</span></label>
+                    <div class="input-with-error">
+                      <select class="inputField" formControlName="Class" (change)="onAdminClasschange($event)">
+                        <option value="0">-- Select Class --</option>
+                        <option *ngFor="let school of classLists" value="{{school.ID}}">{{school.Name}}</option>
+                      </select>
+                      <div *ngIf="SyllabusForm.get('Class')?.hasError('min') && (SyllabusForm.get('Class')?.touched || SyllabusForm.get('Class')?.dirty)" class="text-danger">
+                        <small>Please Select Class.</small>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-              <!-- Non-parent Academic Year and Class selectors -->
-              <div class="InputRow" *ngIf="!isParent">
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <select class="inputField" type="date" formControlName="AcademicYear" (change)="onAdminAcademicYearchange($event)">
-                      <option value="0">-- Select Academic Year --</option>
-                      <option *ngFor="let school of academicYearList" value="{{school.ID}}">{{school.Name}}</option>
-                    </select>
-                    <div *ngIf="SyllabusForm.get('AcademicYear')?.hasError('min') && (SyllabusForm.get('AcademicYear')?.touched || SyllabusForm.get('AcademicYear')?.dirty)" class="text-danger">
-                      <small>Please Select Academic Year.</small>
+                <div class="InputRow">
+                  <div class="InputFieldsContainer">
+                    <label class="inputLabel">Divisions <span class="required">*</span></label>
+                    <div class="input-with-error">
+                      <select class="inputField" formControlName="Divisions" (change)="onAdminDivisionsChange($event)">
+                        <option value="0">-- Select Divisions --</option>
+                        <option *ngFor="let school of divisionsList" value="{{school.ID}}">{{school.Name}}</option>
+                      </select>
+                      <div *ngIf="SyllabusForm.get('Divisions')?.hasError('min') && (SyllabusForm.get('Divisions')?.touched || SyllabusForm.get('Divisions')?.dirty)" class="text-danger">
+                        <small>Please Select Divisions.</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="InputFieldsContainer">
+                    <label class="inputLabel">Exam Type <span class="required">*</span></label>
+                    <div class="input-with-error">
+                      <select class="inputField" formControlName="ExamType" (change)="onAdminExamtypeChange($event)">
+                        <option value="0">-- Select Exam --</option>
+                        <option *ngFor="let school of examLists" value="{{school.ID}}">{{school.Name}}</option>
+                      </select>
+                      <div *ngIf="SyllabusForm.get('ExamType')?.hasError('min') && (SyllabusForm.get('ExamType')?.touched || SyllabusForm.get('ExamType')?.dirty)" class="text-danger">
+                        <small>Please Select Exam Type.</small>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel" for="email">Class<span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <select class="inputField" type="date" formControlName="Class" (change)="onAdminClasschange($event)">
-                      <option value="0">-- Select Class--</option>
-                      <option *ngFor="let school of classLists" value="{{school.ID}}">{{school.Name}}</option>
-                    </select>
-                    <div *ngIf="SyllabusForm.get('Class')?.hasError('min') && (SyllabusForm.get('Class')?.touched || SyllabusForm.get('Class')?.dirty)" class="text-danger">
-                      <small>Please Select Class.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!-- Non-parent Division and Exam selectors -->
-              <div class="InputRow" *ngIf="!isParent">
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel" for="email">Divisions<span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <select class="inputField" type="date" formControlName="Divisions" (change)="onAdminDivisionsChange($event)">
-                      <option value="0">-- Select Divisions--</option>
-                      <option *ngFor="let school of divisionsList" value="{{school.ID}}">{{school.Name}}</option>
-                    </select>
-                    <div *ngIf="SyllabusForm.get('Divisions')?.hasError('min') && (SyllabusForm.get('Divisions')?.touched || SyllabusForm.get('Divisions')?.dirty)" class="text-danger">
-                      <small>Please Divisions.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel" for="email">Exam Type <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <select class="inputField" type="date" formControlName="ExamType" (change)="onAdminExamtypeChange($event)">
-                      <option value="0">-- Select Exam --</option>
-                      <option *ngFor="let school of examLists" value="{{school.ID}}">{{school.Name}}</option>
-                    </select>
-                    <div *ngIf="SyllabusForm.get('ExamType')?.hasError('min') && (SyllabusForm.get('ExamType')?.touched || SyllabusForm.get('ExamType')?.dirty)" class="text-danger">
-                      <small>Please Select Exam Type.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!-- Parent Exam Type selector -->
-              <div class="InputRow" *ngIf="isParent">
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel" for="email">Exam Type <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <select class="inputField" type="date" formControlName="ExamType" (change)="onAdminExamtypeChange($event)">
-                      <option value="0">-- Select Exam --</option>
-                      <option *ngFor="let school of examLists" value="{{school.ID}}">{{school.Name}}</option>
-                    </select>
-                    <div *ngIf="SyllabusForm.get('ExamType')?.hasError('required') && (SyllabusForm.get('ExamType')?.touched || SyllabusForm.get('ExamType')?.dirty)" class="text-danger">
-                      <small>Please Select Exam Type.</small>
-                    </div>
-                    <div *ngIf="SyllabusForm.get('ExamType')?.hasError('min') && (SyllabusForm.get('ExamType')?.touched || SyllabusForm.get('ExamType')?.dirty)" class="text-danger">
-                      <small>Please Select Exam Type.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              </ng-container>
             </ng-template>
           </div>
-          <div class="ActionButtons">
+          <div class="ActionButtons" *ngIf="!isParent">
             <button type="button" (click)="onSubmit()">Submit</button>
           </div>
         </form>

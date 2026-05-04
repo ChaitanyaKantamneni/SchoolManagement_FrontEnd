@@ -1120,7 +1120,7 @@ selectedRows.forEach(row => {
       return { hasConflict: false, message: '' };
     }
 
-    const bufferTime = durationInMinutes; // Dynamic buffer = exam duration
+    const bufferTime = Math.min(durationInMinutes, 30); // 30 minutes maximum buffer
     const examSchedules: any[] = [];
 
     // Create schedule objects for each active subject/division
@@ -1129,6 +1129,13 @@ selectedRows.forEach(row => {
         const examStart = new Date(row.examDateAndTime);
         const examEnd = new Date(examStart.getTime() + (durationInMinutes * 60 * 1000));
         const bufferEnd = new Date(examStart.getTime() + ((durationInMinutes + bufferTime) * 60 * 1000));
+        
+        // Debug: Log time calculation
+        console.log(`Time Calculation Debug:`);
+        console.log(`- Start Time: ${examStart.toISOString()}`);
+        console.log(`- Duration: ${durationInMinutes} minutes`);
+        console.log(`- Exam End: ${examEnd.toISOString()}`);
+        console.log(`- Buffer End: ${bufferEnd.toISOString()}`);
 
         row.selectedDivisions.forEach((divisionId: string) => {
           examSchedules.push({
@@ -1149,8 +1156,8 @@ selectedRows.forEach(row => {
         const schedule1 = examSchedules[i];
         const schedule2 = examSchedules[j];
 
-        // ✅ Only check conflicts for SAME DIVISION
-        if (schedule1.divisionId === schedule2.divisionId) {
+        // ✅ Only check conflicts for SAME DIVISION and SAME SUBJECT
+        if (schedule1.divisionId === schedule2.divisionId && schedule1.subjectId === schedule2.subjectId) {
           // Check if time ranges overlap (including buffer)
           if (schedule1.examStart < schedule2.bufferEnd && schedule2.examStart < schedule1.bufferEnd) {
             const conflictType = this.getConflictType(schedule1, schedule2, durationInMinutes, bufferTime);

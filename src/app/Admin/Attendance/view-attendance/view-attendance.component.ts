@@ -120,6 +120,7 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
   private rawData: any[] = [];
   parentChildren: Array<{ ID: string; AdmissionNo: string; Name: string; Class: string; Division: string; SchoolID: string }> = [];
   selectedChildId = '';
+  selectedChildIndex = 0;
 
   // status modal
   statusModalTitle = 'Status';
@@ -144,8 +145,8 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
     Class: new FormControl(0, []),
     Divisions: new FormControl(0, []),
     Session: new FormControl(0),
-    FromDateTime: new FormControl('', [Validators.required]),
-    ToDateTime: new FormControl('', [Validators.required])
+    FromDateTime: new FormControl(new Date().toISOString().split('T')[0], [Validators.required]),
+    ToDateTime: new FormControl(new Date().toISOString().split('T')[0], [Validators.required])
   });
 
   private configureRoleBasedForm() {
@@ -313,14 +314,30 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
         this.AdminselectedStudentID = '';
         this.AdminselectedClassID = '';
         this.AdminselectedDiviosnID = '';
-        this.SyllabusForm.patchValue({
-          Class: '',
-          Divisions: ''
-        });
+        this.SyllabusForm.patchValue({ Class: '', Divisions: '' });
         this.resetAttendanceView();
+
+        // Auto-select first child
+        if (this.parentChildren.length > 0) {
+          this.selectChild(0);
+        }
       },
       error: () => { this.parentChildren = []; }
     });
+  }
+
+  selectChild(index: number): void {
+    this.selectedChildIndex = index;
+    const child = this.parentChildren[index];
+    if (!child) return;
+    this.selectedChildId = child.ID;
+    this.AdminselectedStudentID = child.ID;
+    this.AdminselectedClassID = child.Class;
+    this.AdminselectedDiviosnID = child.Division;
+    this.AdminselectedSchoolID = child.SchoolID || this.AdminselectedSchoolID;
+    this.SyllabusForm.patchValue({ Class: child.Class, Divisions: child.Division });
+    this.resetAttendanceView();
+    this.loadAttendance();
   }
 
   onChildChange(event: Event): void {
@@ -496,12 +513,19 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
     this.AdminSelectedSessionID = v === '0' ? '' : v;
     if (this.isTableVisible && this.rawData.length > 0) {
       this.processData(this.rawData);
+    } else if (this.isParent && this.selectedChildId) {
+      this.loadAttendance();
     } else {
       this.resetAttendanceView();
     }
   }
 
-  onDateRangeChange() { this.resetAttendanceView(); }
+  onDateRangeChange() {
+    this.resetAttendanceView();
+    if (this.isParent && this.selectedChildId) {
+      setTimeout(() => this.loadAttendance(), 0);
+    }
+  }
 
   openStudentDetails(student: StudentAttendanceSummary) {
     this.selectedStudent = student;

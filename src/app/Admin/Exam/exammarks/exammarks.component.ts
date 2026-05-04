@@ -966,10 +966,42 @@ private resetPaginationAndFetch() {
       IndividualSubjectName:item.individualSubjectName,
       SubjectExamDateAndTime: formattedSubjectExamDate,
       AttendanceMarked:item.attendanceMarked,
-      ExamAttendancAndMarksMarked:item.examAttendancAndMarksMarked
+      ExamAttendancAndMarksMarked:item.examAttendancAndMarksMarked,
+      IsPublished: item.isPublished ?? 0
     };
   });
   console.log('this.SyllabusList',this.SyllabusList)
+}
+
+togglePublish(examRow: any) {
+  const newPublishValue = examRow.IsPublished === 1 ? 0 : 1;
+  const body = {
+    Flag: '13',
+    ID: examRow.ID,
+    IsPublished: newPublishValue,
+    ModifiedBy: this.ActiveUserId,
+    ModifiedIP: ''
+  };
+
+  this.apiurl.post<any>('Tbl_SetExam_CRUD_Operations', body).subscribe({
+    next: (res: any) => {
+      const updated = res?.data?.[0];
+      if (updated) {
+        // Update all rows with the same exam ID
+        this.SyllabusList.forEach(row => {
+          if (row.ID === examRow.ID) {
+            row.IsPublished = updated.isPublished ?? newPublishValue;
+          }
+        });
+      }
+      this.AminityInsStatus = newPublishValue === 1 ? 'Exam Published Successfully' : 'Exam Unpublished Successfully';
+      this.isModalOpen = true;
+    },
+    error: () => {
+      this.AminityInsStatus = 'Error updating publish status';
+      this.isModalOpen = true;
+    }
+  });
 }
 
 formatDateYYYYMMDD(dateStr: string | null) {
@@ -1435,6 +1467,26 @@ resetTable() {
   this.currentPage = 1;
   this.pageCursors = [];
   this.isTableModalOpen = false;
+}
+
+get canTogglePublish(): boolean {
+  return this.SyllabusList.length > 0 &&
+    this.SyllabusList.every(row =>
+      row.AttendanceMarked === '1' && row.ExamAttendancAndMarksMarked === '1'
+    );
+}
+
+onPublishClick() {
+  if (!this.canTogglePublish) {
+    const pending = this.SyllabusList
+      .filter(row => row.AttendanceMarked !== '1' || row.ExamAttendancAndMarksMarked !== '1')
+      .map(row => row.IndividualSubjectName || `Subject ${row.SubjectID}`)
+      .join(', ');
+    this.AminityInsStatus = `Please complete attendance & marks for: ${pending}`;
+    this.isModalOpen = true;
+    return;
+  }
+  this.togglePublish(this.SyllabusList[0]);
 }
 }
 

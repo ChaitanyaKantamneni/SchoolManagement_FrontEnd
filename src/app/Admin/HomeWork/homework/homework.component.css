@@ -1,0 +1,216 @@
+/* Child Tab Slider Styles */
+.child-tab-slider-top-right {
+  position: absolute;
+  top: 15px;
+  right: 60px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 500px;
+}
+
+/* Enhanced modal width for homework view - matching fee receipt modal */
+.modal-dialog {
+  position: relative;
+  margin: 4% auto;
+  max-width: 900px;
+}
+
+.children-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  white-space: nowrap;
+  margin-right: 4px;
+}
+
+.child-tabs-container {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  align-items: center;
+}
+
+.child-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: white;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.child-tab-btn:hover {
+  border-color: #536ff7;
+  color: #536ff7;
+  background: #eff6ff;
+}
+
+.child-tab-btn.active {
+  background: #536ff7;
+  border-color: #536ff7;
+  color: white;
+  box-shadow: 0 4px 12px rgba(83, 111, 247, 0.3);
+}
+
+.child-tab-btn mat-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+}
+
+.child-tab-btn i {
+  font-size: 11px;
+}
+
+.ComponentTop {
+  position: relative;
+}
+
+.FormInputRowsContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.InputRow {
+  width: 100% !important;
+  flex-direction: row !important;
+}
+
+.InputFieldsContainer {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.InputFieldsContainer select.inputField {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Pagination Styles - Matching ExamType UI */
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.arrow-btn {
+  padding: 8px 12px;
+  border: 1px solid #dee2e6;
+  background: #fff;
+  color: #6c757d;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  min-width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.arrow-btn:hover:not(:disabled) {
+  background: #f8f9fa;
+  border-color: #adb5bd;
+  color: #495057;
+}
+
+.arrow-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #e9ecef;
+  border-color: #dee2e6;
+  color: #6c757d;
+}
+
+.arrow-btn.FirstandLastButton {
+  padding: 8px 16px;
+  font-size: 12px;
+  min-width: auto;
+}
+
+.page-btn {
+  padding: 8px 12px;
+  border: 1px solid #dee2e6;
+  background: #fff;
+  color: #6c757d;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-btn:hover:not(.active) {
+  background: #f8f9fa;
+  border-color: #adb5bd;
+  color: #495057;
+}
+
+.page-btn.active {
+  background: #007bff;
+  border-color: #007bff;
+  color: #fff;
+  font-weight: 600;
+}
+
+.page-btn.active:hover {
+  background: #0056b3;
+  border-color: #0056b3;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .child-tab-slider-top-right {
+    position: relative;
+    top: auto;
+    right: auto;
+    margin-bottom: 15px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .child-tabs-container {
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .child-tab-btn {
+    min-width: auto;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .pagination-controls {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .arrow-btn,
+  .page-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+    min-width: 32px;
+  }
+
+  .arrow-btn.FirstandLastButton {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+}

@@ -106,5 +106,13 @@ export const FULL_ADMIN_MENU: Module[] = [
       { id: 'leaveapproval', pageName: 'Leave Approval', moduleID: 'leavemanagement', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
       { id: 'leavedetails', pageName: 'Leave Details', moduleID: 'leavemanagement', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
     ]
+  },
+  {
+    id: 'homework',
+    moduleName: 'Homework',
+    pages: [
+      { id: 'homework', pageName: 'HomeWork', moduleID: 'homework', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
+      { id: 'assignhomework', pageName: 'Assign Homework', moduleID: 'homework', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
+    ]
   }
 ];

@@ -1011,8 +1011,21 @@ submitAttendance() {
   };
 
   this.apiurl.post('Tbl_StudentAttendance_CRUD_Operations', body).subscribe({
-      next: () => {
-      this.AminityInsStatus = 'Attendance Saved Successfully';
+      next: (response: any) => {
+      // Check for holiday restriction or other messages from backend in the status field
+      if (response.data && response.data.length > 0 && response.data[0].status) {
+        const statusMessage = response.data[0].status;
+        if (statusMessage.includes('Cannot mark attendance') || statusMessage.includes('Holiday')) {
+          this.AminityInsStatus = statusMessage;
+          this.statusModalTitle = 'Holiday Restriction';
+          this.isModalOpen = true;
+          return;
+        }
+        // Use the actual database message for success cases
+        this.AminityInsStatus = statusMessage;
+      } else {
+        this.AminityInsStatus = 'Attendance Saved Successfully';
+      }
       this.statusModalTitle = 'Application Status';
       this.isModalOpen = true;
       this.isAttendanceSubmitted = true;

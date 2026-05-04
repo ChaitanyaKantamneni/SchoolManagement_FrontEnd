@@ -1,0 +1,55 @@
+.FormInputRowsContainer{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.InputRow{
+    width: 100% !important;
+    flex-direction: row !important;
+}
+
+.InputFieldsContainer {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.InputFieldsContainer select.inputField {
+  width: 100%;
+}
+/* default for paired fields */
+.InputFieldsContainer {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* Homework Form - the lonely ones */
+.InputRow:last-child .InputFieldsContainer {
+  flex-grow: 0;
+  flex-shrink: 1;
+  flex-basis: auto;
+  max-width: 350px;           /* tune this number */
+  margin-right: auto;         /* optional: align left if you want */
+}
+
+/* make sure select follows container width */
+.InputFieldsContainer select.inputField {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Teacher read-only field styles */
+.teacher-readonly-field input.inputField {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  color: #6c757d;
+  cursor: not-allowed;
+  font-weight: 500;
+}
+
+.teacher-readonly-field input.inputField:focus {
+  outline: none;
+  border-color: #dee2e6;
+  box-shadow: none;
+}

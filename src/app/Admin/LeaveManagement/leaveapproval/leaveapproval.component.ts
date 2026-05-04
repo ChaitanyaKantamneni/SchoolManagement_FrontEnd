@@ -399,6 +399,16 @@ console.log('[LEAVE APPROVAL] Teacher payload - currentUserId:', this.currentUse
   updateStatus(status: 'Approved' | 'Rejected'): void {
     const req = this.selectedRequest;
     if (!req || this.isSubmitting) return;
+    
+    // Prevent approval/rejection of cancelled records
+    if (req.status === 'Cancelled') {
+      this.AminityInsStatus = 'Cannot approve or reject cancelled leave requests.';
+      this.isModalOpen = true;
+      this.isSubmitting = false;
+      this.loader.hide();
+      return;
+    }
+    
     this.isSubmitting = true;
     this.loader.show();
 
