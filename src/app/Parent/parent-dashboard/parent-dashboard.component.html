@@ -1,0 +1,503 @@
+<div class="pd-shell">
+
+  <!-- ════════════════════════════════════════════════════════════ MAIN CONTENT -->
+  <div class="pd-main">
+
+    <!-- ─────────────────────────────────────────────────────── TOP HEADER -->
+    <header class="pd-header">
+      <div class="pd-header__left">
+        <div class="pd-header__welcome">
+          <span class="pd-header__greeting">Welcome back,</span>
+          <span class="pd-header__name">{{ getUserName() }}</span>
+        </div>
+      </div>
+
+      <div class="pd-header__center">
+        <!-- Child Selector Chips (shown when parent has multiple children) -->
+        <div class="pd-child-chips" *ngIf="childrenList.length > 1">
+          <span class="pd-child-chips__label">Child:</span>
+          <button *ngFor="let child of childrenList"
+            class="pd-chip"
+            [class.pd-chip--active]="selectedChildId === child.id"
+            (click)="selectChild(child.id)">
+            {{ child.name }}
+          </button>
+        </div>
+        <span *ngIf="childrenList.length === 1" class="pd-single-child-name">
+          <mat-icon style="font-size:1rem;vertical-align:middle">child_care</mat-icon>
+          {{ selectedChild?.name }}
+        </span>
+      </div>
+
+      <div class="pd-header__right">
+        <div class="pd-search">
+          <mat-icon class="pd-search__icon">search</mat-icon>
+          <input class="pd-search__input" placeholder="Search…" />
+        </div>
+        <button class="pd-icon-btn" title="Notifications">
+          <mat-icon>notifications_none</mat-icon>
+          <span class="pd-notif-badge">3</span>
+        </button>
+        <div class="pd-avatar" [title]="getUserName()">
+          {{ getUserInitials() }}
+        </div>
+      </div>
+    </header>
+
+    <!-- DEBUG STRIP (remove after fixing) -->
+    <div style="background:#fef3c7;border-bottom:1px solid #fbbf24;padding:6px 1.5rem;font-size:0.75rem;color:#92400e;font-family:monospace">
+      🔍 Debug: {{ debugInfo }}
+    </div>
+
+    <!-- ─────────────────────────────────────────────── PAGE TITLE + TABS -->
+    <div class="pd-page-title">
+      <div>
+        <h1 class="pd-page-title__h1">Parent Portal</h1>
+        <p class="pd-page-title__sub">Academic Overview — {{ selectedChild?.name || 'Student' }}</p>
+      </div>
+    </div>
+
+    <nav class="pd-tabs">
+      <button *ngFor="let tab of visibleTabs"
+        class="pd-tab"
+        [class.pd-tab--active]="currentView === tab.id"
+        (click)="switchView(tab.id)">
+        <mat-icon>{{ tab.icon }}</mat-icon>
+        {{ tab.label }}
+      </button>
+    </nav>
+
+    <!-- ────────────────────────────────────────────────────── CONTENT AREA -->
+    <div class="pd-content">
+
+      <!-- Loading children -->
+      <div *ngIf="loadingChildren" class="pd-empty-state">
+        <mat-icon class="pd-spin">autorenew</mat-icon>
+        <p>Loading student data…</p>
+      </div>
+
+      <!-- No children found -->
+      <div *ngIf="!loadingChildren && noChildrenFound" class="pd-empty-state">
+        <mat-icon>person_off</mat-icon>
+        <p>No students linked to this account. Please contact school administration.</p>
+      </div>
+
+      <!-- ══════════════════════════════════════════════ DASHBOARD VIEW -->
+      <div *ngIf="!loadingChildren && !noChildrenFound && currentView === 'dashboard'" class="pd-view pd-view--dashboard">
+
+        <!-- Summary Cards -->
+        <div class="pd-cards">
+          <div *ngFor="let card of summaryCards"
+            class="pd-card pd-card--{{ card.color }}">
+            <div class="pd-card__body">
+              <p class="pd-card__label">{{ card.label }}</p>
+              <h2 class="pd-card__value">{{ card.value }}</h2>
+              <span class="pd-card__sub">{{ card.subtext }}</span>
+            </div>
+            <div class="pd-card__icon">
+              <mat-icon>{{ card.icon }}</mat-icon>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grid: Profile + Progress -->
+        <div class="pd-grid-2">
+
+          <!-- Student Profile Card -->
+          <div class="pd-panel">
+            <h3 class="pd-panel__title">
+              <mat-icon>person</mat-icon> Student Profile
+            </h3>
+            <ng-container *ngIf="studentProfile; else noProfile">
+              <div class="pd-profile">
+                <div class="pd-profile__avatar">
+                  <mat-icon>account_circle</mat-icon>
+                </div>
+                <div class="pd-profile__info">
+                  <div class="pd-profile__name">{{ studentProfile.fullName }}</div>
+                  <div class="pd-profile__class">{{ studentProfile.class }}</div>
+                  <span class="pd-badge pd-badge--active">{{ studentProfile.status }}</span>
+                </div>
+              </div>
+              <div class="pd-profile__details">
+                <div class="pd-detail">
+                  <span class="pd-detail__key">Admission ID</span>
+                  <span class="pd-detail__val">{{ studentProfile.admissionId }}</span>
+                </div>
+                <div class="pd-detail">
+                  <span class="pd-detail__key">Roll No</span>
+                  <span class="pd-detail__val">{{ studentProfile.rollNo }}</span>
+                </div>
+                <div class="pd-detail">
+                  <span class="pd-detail__key">Blood Group</span>
+                  <span class="pd-detail__val">{{ studentProfile.bloodGroup }}</span>
+                </div>
+                <div class="pd-detail">
+                  <span class="pd-detail__key">Academic Year</span>
+                  <span class="pd-detail__val">{{ academicYear }}</span>
+                </div>
+              </div>
+            </ng-container>
+            <ng-template #noProfile>
+              <p class="pd-empty-inline">Loading profile…</p>
+            </ng-template>
+          </div>
+
+          <!-- Academic Progress Card -->
+          <div class="pd-panel">
+            <h3 class="pd-panel__title">
+              <mat-icon>analytics</mat-icon> Academic Progress
+            </h3>
+            <div class="pd-progress-section">
+              <div class="pd-progress-header">
+                <span class="pd-progress-label">Attendance</span>
+                <span class="pd-progress-pct" [style.color]="attendanceColor">{{ attendanceSummary.percentage }}%</span>
+              </div>
+              <div class="pd-progress-bar">
+                <div class="pd-progress-fill"
+                  [style.width.%]="attendanceSummary.percentage"
+                  [style.background]="attendanceColor">
+                </div>
+              </div>
+              <p class="pd-progress-msg" [class.pd-progress-msg--warn]="attendanceSummary.percentage < 75">
+                {{ attendanceMessage }}
+              </p>
+            </div>
+
+            <!-- Today's Mini Schedule -->
+            <h4 class="pd-panel__subtitle">Today's Schedule ({{ currentDay }})</h4>
+            <div class="pd-mini-schedule" *ngIf="todaysSchedule.length > 0; else noSchedule">
+              <div *ngFor="let s of todaysSchedule.slice(0, 4)" class="pd-mini-row">
+                <span class="pd-mini-period">P{{ s.period }}</span>
+                <span class="pd-mini-subject">{{ s.subject }}</span>
+                <span class="pd-mini-time">{{ s.time }}</span>
+              </div>
+            </div>
+            <ng-template #noSchedule>
+              <p class="pd-empty-inline">Timetable not loaded yet — visit the Timetable tab.</p>
+            </ng-template>
+          </div>
+        </div>
+
+        <!-- Notice Board + Schedule full -->
+        <div class="pd-grid-2">
+          <!-- Notice Board -->
+          <div class="pd-panel">
+            <div class="pd-panel__header">
+              <h3 class="pd-panel__title">
+                <mat-icon>campaign</mat-icon> Notice Board
+              </h3>
+              <button class="pd-btn-ghost">View All</button>
+            </div>
+            <div class="pd-notices">
+              <div *ngFor="let notice of noticesList" class="pd-notice">
+                <div class="pd-notice__icon">
+                  <mat-icon>announcement</mat-icon>
+                </div>
+                <div class="pd-notice__content">
+                  <p class="pd-notice__title">{{ notice.title }}</p>
+                  <p class="pd-notice__desc">{{ notice.description }}</p>
+                  <span class="pd-notice__date">{{ notice.date }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Full Today's Schedule -->
+          <div class="pd-panel">
+            <h3 class="pd-panel__title">
+              <mat-icon>schedule</mat-icon> Today's Schedule — {{ currentDay }}
+            </h3>
+            <ng-container *ngIf="todaysSchedule.length > 0; else noTodaySchedule">
+              <table class="pd-table">
+                <thead>
+                  <tr>
+                    <th>Period</th>
+                    <th>Time</th>
+                    <th>Subject</th>
+                    <th>Teacher</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let s of todaysSchedule">
+                    <td>P{{ s.period }}</td>
+                    <td>{{ s.time }}</td>
+                    <td>{{ s.subject }}</td>
+                    <td>{{ s.teacher }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </ng-container>
+            <ng-template #noTodaySchedule>
+              <p class="pd-empty-inline">Visit the Timetable tab to load the schedule.</p>
+            </ng-template>
+          </div>
+        </div>
+
+      </div><!-- /dashboard view -->
+
+
+      <!-- ══════════════════════════════════════════════ ATTENDANCE VIEW -->
+      <div *ngIf="!loadingChildren && !noChildrenFound && currentView === 'attendance'" class="pd-view">
+        <div class="pd-view-header">
+          <div>
+            <h2 class="pd-view-header__title">Attendance Tracker</h2>
+            <p class="pd-view-header__sub">Detailed attendance for {{ selectedChild?.name || 'Student' }}</p>
+          </div>
+        </div>
+
+        <!-- Attendance Summary Chips -->
+        <div class="pd-cards pd-cards--sm">
+          <div class="pd-card pd-card--green">
+            <div class="pd-card__body">
+              <p class="pd-card__label">Total Days</p>
+              <h2 class="pd-card__value">{{ attendanceSummary.total }}</h2>
+            </div>
+            <div class="pd-card__icon"><mat-icon>calendar_month</mat-icon></div>
+          </div>
+          <div class="pd-card pd-card--blue">
+            <div class="pd-card__body">
+              <p class="pd-card__label">Present</p>
+              <h2 class="pd-card__value">{{ attendanceSummary.present }}</h2>
+            </div>
+            <div class="pd-card__icon"><mat-icon>check_circle</mat-icon></div>
+          </div>
+          <div class="pd-card pd-card--orange">
+            <div class="pd-card__body">
+              <p class="pd-card__label">Absent</p>
+              <h2 class="pd-card__value">{{ attendanceSummary.absent }}</h2>
+            </div>
+            <div class="pd-card__icon"><mat-icon>cancel</mat-icon></div>
+          </div>
+          <div class="pd-card pd-card--purple">
+            <div class="pd-card__body">
+              <p class="pd-card__label">Percentage</p>
+              <h2 class="pd-card__value">{{ attendanceSummary.percentage }}%</h2>
+            </div>
+            <div class="pd-card__icon"><mat-icon>percent</mat-icon></div>
+          </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="pd-panel" style="margin-bottom: 1.5rem;">
+          <div class="pd-progress-header">
+            <span class="pd-progress-label">Attendance Rate</span>
+            <span class="pd-progress-pct" [style.color]="attendanceColor">{{ attendanceSummary.percentage }}%</span>
+          </div>
+          <div class="pd-progress-bar">
+            <div class="pd-progress-fill"
+              [style.width.%]="attendanceSummary.percentage"
+              [style.background]="attendanceColor">
+            </div>
+          </div>
+        </div>
+
+        <!-- Records Table -->
+        <div class="pd-panel">
+          <h3 class="pd-panel__title"><mat-icon>list_alt</mat-icon> Daily Records</h3>
+          <div *ngIf="loadingAttendance" class="pd-empty-state">
+            <mat-icon class="pd-spin">autorenew</mat-icon><p>Loading…</p>
+          </div>
+          <ng-container *ngIf="!loadingAttendance">
+            <table class="pd-table" *ngIf="attendanceRecords.length > 0; else noAtt">
+              <thead>
+                <tr><th>#</th><th>Date</th><th>Day</th><th>Session</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let rec of attendanceRecords; let i = index">
+                  <td>{{ i + 1 }}</td>
+                  <td>{{ rec.date }}</td>
+                  <td>{{ rec.day }}</td>
+                  <td>{{ rec.session || '—' }}</td>
+                  <td><span class="pd-badge" [ngClass]="getStatusClass(rec.status)">{{ rec.status }}</span></td>
+                </tr>
+              </tbody>
+            </table>
+            <ng-template #noAtt>
+              <p class="pd-empty-inline">No attendance records found for this student.</p>
+            </ng-template>
+          </ng-container>
+        </div>
+      </div><!-- /attendance view -->
+
+
+      <!-- ══════════════════════════════════════════════ FEES VIEW -->
+      <div *ngIf="!loadingChildren && !noChildrenFound && currentView === 'fees'" class="pd-view">
+        <div class="pd-view-header">
+          <div>
+            <h2 class="pd-view-header__title">Fee Management</h2>
+            <p class="pd-view-header__sub">Fee details for {{ selectedChild?.name || 'Student' }}</p>
+          </div>
+        </div>
+
+        <div class="pd-cards pd-cards--sm">
+          <div class="pd-card pd-card--green">
+            <div class="pd-card__body">
+              <p class="pd-card__label">Total Fee</p>
+              <h2 class="pd-card__value">₹{{ feeTotal.toLocaleString('en-IN') }}</h2>
+            </div>
+            <div class="pd-card__icon"><mat-icon>account_balance_wallet</mat-icon></div>
+          </div>
+          <div class="pd-card pd-card--blue">
+            <div class="pd-card__body">
+              <p class="pd-card__label">Amount Paid</p>
+              <h2 class="pd-card__value">₹{{ feePaid.toLocaleString('en-IN') }}</h2>
+            </div>
+            <div class="pd-card__icon"><mat-icon>check_circle</mat-icon></div>
+          </div>
+          <div class="pd-card pd-card--orange">
+            <div class="pd-card__body">
+              <p class="pd-card__label">Balance Due</p>
+              <h2 class="pd-card__value">₹{{ feeBalance.toLocaleString('en-IN') }}</h2>
+            </div>
+            <div class="pd-card__icon"><mat-icon>warning</mat-icon></div>
+          </div>
+        </div>
+
+        <div class="pd-panel">
+          <h3 class="pd-panel__title"><mat-icon>receipt_long</mat-icon> Fee Ledger</h3>
+          <div *ngIf="loadingFees" class="pd-empty-state">
+            <mat-icon class="pd-spin">autorenew</mat-icon><p>Loading…</p>
+          </div>
+          <ng-container *ngIf="!loadingFees">
+            <table class="pd-table" *ngIf="feeRecords.length > 0; else noFees">
+              <thead>
+                <tr>
+                  <th>Term</th><th>Description</th><th>Amount (₹)</th>
+                  <th>Paid (₹)</th><th>Balance (₹)</th><th>Status</th><th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let fee of feeRecords">
+                  <td>{{ fee.term }}</td>
+                  <td>{{ fee.description }}</td>
+                  <td>{{ fee.amount | number }}</td>
+                  <td>{{ fee.paid | number }}</td>
+                  <td>{{ (fee.amount - fee.paid) | number }}</td>
+                  <td><span class="pd-badge" [ngClass]="getFeeStatusClass(fee.status)">{{ fee.status }}</span></td>
+                  <td>{{ fee.date }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <ng-template #noFees>
+              <p class="pd-empty-inline">No fee records found for this student.</p>
+            </ng-template>
+          </ng-container>
+        </div>
+      </div><!-- /fees view -->
+
+
+      <!-- ══════════════════════════════════════════════ EXAMS VIEW -->
+      <div *ngIf="!loadingChildren && !noChildrenFound && currentView === 'exams'" class="pd-view">
+        <div class="pd-view-header">
+          <div>
+            <h2 class="pd-view-header__title">Exam Reports</h2>
+            <p class="pd-view-header__sub">Academic performance for {{ selectedChild?.name || 'Student' }}</p>
+          </div>
+        </div>
+        <div class="pd-panel">
+          <h3 class="pd-panel__title"><mat-icon>quiz</mat-icon> Marks & Results</h3>
+          <div *ngIf="loadingExams" class="pd-empty-state">
+            <mat-icon class="pd-spin">autorenew</mat-icon><p>Loading…</p>
+          </div>
+          <ng-container *ngIf="!loadingExams">
+            <table class="pd-table" *ngIf="examRecords.length > 0; else noExams">
+              <thead>
+                <tr>
+                  <th>Exam</th><th>Subject</th><th>Max Marks</th>
+                  <th>Scored</th><th>%</th><th>Grade</th><th>Status</th><th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let exam of examRecords">
+                  <td>{{ exam.examName }}</td>
+                  <td>{{ exam.subject }}</td>
+                  <td>{{ exam.totalMarks }}</td>
+                  <td>{{ exam.obtainedMarks || '—' }}</td>
+                  <td>{{ exam.percentage ? exam.percentage + '%' : '—' }}</td>
+                  <td><span class="pd-grade" [ngClass]="getGradeClass(exam.grade)">{{ exam.grade }}</span></td>
+                  <td><span class="pd-badge" [ngClass]="getExamStatusClass(exam.status)">{{ exam.status }}</span></td>
+                  <td>{{ exam.date }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <ng-template #noExams>
+              <p class="pd-empty-inline">No exam records found for this student.</p>
+            </ng-template>
+          </ng-container>
+        </div>
+      </div><!-- /exams view -->
+
+
+      <!-- ══════════════════════════════════════════════ HOMEWORK VIEW -->
+      <div *ngIf="!loadingChildren && !noChildrenFound && currentView === 'homework'" class="pd-view">
+        <div class="pd-view-header">
+          <div>
+            <h2 class="pd-view-header__title">Homework</h2>
+            <p class="pd-view-header__sub">Assignments for {{ selectedChild?.name || 'Student' }}</p>
+          </div>
+        </div>
+        <div *ngIf="loadingHomework" class="pd-empty-state">
+          <mat-icon class="pd-spin">autorenew</mat-icon><p>Loading…</p>
+        </div>
+        <ng-container *ngIf="!loadingHomework">
+          <div class="pd-homework-list" *ngIf="homeworkRecords.length > 0; else noHW">
+            <div *ngFor="let hw of homeworkRecords" class="pd-hw-card">
+              <div class="pd-hw-card__top">
+                <div class="pd-hw-card__subject-badge">{{ hw.subject }}</div>
+                <span class="pd-badge" [ngClass]="getHomeworkStatusClass(hw.status)">{{ hw.status }}</span>
+              </div>
+              <h4 class="pd-hw-card__title">{{ hw.title }}</h4>
+              <p class="pd-hw-card__desc">{{ hw.description }}</p>
+              <div class="pd-hw-card__footer">
+                <mat-icon style="font-size:1rem;vertical-align:middle;">event</mat-icon>
+                <span>Due: {{ hw.dueDate }}</span>
+              </div>
+            </div>
+          </div>
+          <ng-template #noHW>
+            <p class="pd-empty-inline">No homework assignments found.</p>
+          </ng-template>
+        </ng-container>
+      </div><!-- /homework view -->
+
+
+      <!-- ══════════════════════════════════════════════ TIMETABLE VIEW -->
+      <div *ngIf="!loadingChildren && !noChildrenFound && currentView === 'timetable'" class="pd-view">
+        <div class="pd-view-header">
+          <div>
+            <h2 class="pd-view-header__title">Weekly Timetable</h2>
+            <p class="pd-view-header__sub">Class schedule for {{ selectedChild?.class || 'Class' }}</p>
+          </div>
+        </div>
+        <div *ngIf="loadingTimetable" class="pd-empty-state">
+          <mat-icon class="pd-spin">autorenew</mat-icon><p>Loading timetable…</p>
+        </div>
+        <div class="pd-panel pd-panel--overflow" *ngIf="!loadingTimetable">
+          <ng-container *ngIf="timetableGrid.length > 0; else noTT">
+            <table class="pd-table pd-table--timetable">
+              <thead>
+                <tr>
+                  <th>Period / Time</th>
+                  <th *ngFor="let day of timetableDays">{{ day }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of timetableGrid">
+                  <td class="pd-tt-period">{{ row.period }}<br><small>{{ row.time }}</small></td>
+                  <td *ngFor="let day of timetableDays">
+                    {{ getTimetableCell(row, day) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </ng-container>
+          <ng-template #noTT>
+            <p class="pd-empty-inline">No timetable data found. The timetable may not be configured yet.</p>
+          </ng-template>
+        </div>
+      </div><!-- /timetable view -->
+
+    </div><!-- /pd-content -->
+  </div><!-- /pd-main -->
+</div><!-- /pd-shell -->

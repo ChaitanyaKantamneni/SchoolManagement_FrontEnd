@@ -96,6 +96,7 @@
 
 import { Directive } from '@angular/core';
 import { Router } from '@angular/router';
+import { filter, first } from 'rxjs/operators';
 import { MenuServiceService, Page } from '../Services/menu-service.service';
 
 @Directive()
@@ -152,10 +153,18 @@ export abstract class BasePermissionComponent {
   }
 
   checkViewPermission(): void {
-    console.log('Checking view permission for page:', this.pageName);
+    if (this.menuService.menuLoaded$.value) {
+      this._doCheck();
+      return;
+    }
+    this.menuService.menuLoaded$.pipe(
+      filter(loaded => loaded),
+      first()
+    ).subscribe(() => this._doCheck());
+  }
 
+  private _doCheck(): void {
     if (!this.canView()) {
-      console.warn('Permission denied for page:', this.pageName);
       alert('You do not have permission to view this page');
       this.router.navigate(['/']);
     }

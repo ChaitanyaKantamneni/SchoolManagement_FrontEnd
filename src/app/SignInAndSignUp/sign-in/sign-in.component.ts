@@ -1020,7 +1020,12 @@ export class SignInComponent implements OnInit, OnDestroy {
             return;
           }
           if (schoolName) {
-            this.router.navigate([`/${schoolName}/dashboard`]);
+            // Parent role (6) should be redirected to parent-dashboard
+            if (String(role) === '6') {
+              this.router.navigate([`/${schoolName}/parent-dashboard`]);
+            } else {
+              this.router.navigate([`/${schoolName}/dashboard`]);
+            }
             return;
           }
           this.router.navigate(['/signin']);

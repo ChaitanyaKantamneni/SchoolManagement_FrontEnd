@@ -66,10 +66,7 @@ export class FeeAllocationComponent extends BasePermissionComponent{
   ActiveUserId:string=sessionStorage.getItem('email')?.toString() || '';
   roleId = sessionStorage.getItem('RollID');
 
-  pageCursors: { lastCreatedDate: any; lastID: number }[] = [];
-  lastCreatedDate: string | null = null;
-  lastID: number | null = null;
-
+  
   sortColumn: string = 'FeeAllocation'; 
   sortDirection: 'asc' | 'desc' = 'desc';
   editclicked:boolean=false;
@@ -232,18 +229,7 @@ export class FeeAllocationComponent extends BasePermissionComponent{
     const isSearch = !!this.searchQuery?.trim();
     const flag = isSearch ? '7' : '2';
 
-    // let SchoolIdSelected = '';
-
-    // if (this.SchoolSelectionChange) {
-    //   SchoolIdSelected = this.selectedSchoolID.trim();
-    // }
-
     const SchoolIdSelected = this.selectedSchoolID?.trim() || '';
-
-    const cursor =
-      !extra.offset && this.currentPage > 1
-        ? this.pageCursors[this.currentPage - 2] || null
-        : null;
 
     this.loader.show();
 
@@ -256,11 +242,14 @@ export class FeeAllocationComponent extends BasePermissionComponent{
           Limit: this.pageSize,
           SortColumn: this.sortColumn,
           SortDirection: this.sortDirection,
-          LastCreatedDate: cursor?.lastCreatedDate ?? null,
-          LastID: cursor?.lastID ?? null,
-          SchoolID:SchoolIdSelected,
+          SchoolID: SchoolIdSelected,
           ...extra
         };
+
+        // Handle offset-based pagination
+        if (extra.offset !== undefined) {
+          payload.Offset = extra.offset;
+        }
 
         if (isSearch) {
           const searchText = this.searchQuery.trim();
@@ -272,15 +261,6 @@ export class FeeAllocationComponent extends BasePermissionComponent{
           next: (response: any) => {
             const data = response?.data || [];
             this.mapAcademicYears(response);
-
-            if (data.length > 0 && !this.pageCursors[this.currentPage - 1]) {
-              const lastRow = data[data.length - 1];
-              this.pageCursors[this.currentPage - 1] = {
-                lastCreatedDate: lastRow.createdDate,
-                lastID: Number(lastRow.id)
-              };
-            }
-
             this.loader.hide();
           },
           error: () => {
@@ -697,17 +677,9 @@ export class FeeAllocationComponent extends BasePermissionComponent{
 
     this.currentPage = pageNumber;
 
-    const isBoundaryPage =
-      pageNumber === 1 ||
-      pageNumber === total ||
-      !this.pageCursors[pageNumber - 2];
-
-    if (isBoundaryPage) {
-      const offset = (pageNumber - 1) * this.pageSize;
-      this.FetchInitialData({ offset });
-    } else {
-      this.FetchInitialData();
-    }
+    // Always use offset-based pagination for consistency
+    const offset = (pageNumber - 1) * this.pageSize;
+    this.FetchInitialData({ offset });
   };
 
   totalPages() {
@@ -744,7 +716,7 @@ export class FeeAllocationComponent extends BasePermissionComponent{
       this.currentPage = 1;
       this.pageSize=5;
       this.visiblePageCount=3;
-      this.FetchInitialData();
+      this.FetchInitialData({ offset: 0 });
       return;
     }
 
@@ -755,7 +727,7 @@ export class FeeAllocationComponent extends BasePermissionComponent{
     this.currentPage = 1;
     this.pageSize=5;
     this.visiblePageCount=3;
-    this.FetchInitialData();
+    this.FetchInitialData({ offset: 0 });
   };
 
   formatDateYYYYMMDD(dateStr: string | null) {
@@ -784,7 +756,8 @@ export class FeeAllocationComponent extends BasePermissionComponent{
 
   handleOk() {
     this.isModalOpen = false;
-    this.FetchInitialData();
+    this.currentPage = 1;
+    this.FetchInitialData({ offset: 0 });
   };
 
   editreview(SyllabusID: string): void {
@@ -805,8 +778,7 @@ export class FeeAllocationComponent extends BasePermissionComponent{
       this.sortDirection = 'asc';
     }
     this.currentPage = 1;
-    this.pageCursors = [];
-    this.FetchInitialData();
+    this.FetchInitialData({ offset: 0 });
   };
 
   onSchoolChange(event: Event) {
@@ -816,9 +788,7 @@ export class FeeAllocationComponent extends BasePermissionComponent{
   this.selectedSchoolID = schoolID === "0" ? '' : schoolID;
 
   this.currentPage = 1;
-  this.pageCursors = [];
-
-  this.FetchInitialData();
+  this.FetchInitialData({ offset: 0 });
 }
 
   exportToExcel() {

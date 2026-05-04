@@ -15,116 +15,205 @@
     <!-- Filter card -->
     <div class="ComponentRecords">
       <div class="fee-dues-filter-card">
-        <!-- Row 1: School, Academic Year -->
-        <div class="fee-dues-filters-row">
-          <div class="InputFieldsContainer">
-            <label class="inputLabel">School <span class="required">*</span></label>
-            <select
-              class="inputField"
-              [ngModel]="selectedSchool"
-              (ngModelChange)="onSchoolChange($event)"
-            >
-              <option value="">-- Select School --</option>
-              <option *ngFor="let s of schoolList" [value]="s.id">
-                {{ s.name }}
-              </option>
-            </select>
-            <div class="field-error" *ngIf="schoolError">Please select School.</div>
+        <!-- Layout for Super Admin -->
+        <ng-container *ngIf="isAdmin">
+          <!-- Row 1: School, Academic Year, Class, Division -->
+          <div class="fee-dues-filters-row">
+            <div class="InputFieldsContainer">
+              <label class="inputLabel">School <span class="required">*</span></label>
+              <select
+                class="inputField"
+                [ngModel]="selectedSchool"
+                (ngModelChange)="onSchoolChange($event)"
+              >
+                <option value="">-- Select School --</option>
+                <option *ngFor="let s of schoolList" [value]="s.id">
+                  {{ s.name }}
+                </option>
+              </select>
+              <div class="field-error" *ngIf="schoolError">Please select School.</div>
+            </div>
+
+            <div class="InputFieldsContainer">
+              <label class="inputLabel">Academic Year <span class="required">*</span></label>
+              <select
+                class="inputField"
+                [disabled]="!selectedSchool"
+                [ngModel]="selectedAcademicYear"
+                (ngModelChange)="onAcademicYearChange($event)"
+              >
+                <option value="">-- Select Academic Year --</option>
+                <option *ngFor="let ay of academicYearList" [value]="ay.id">
+                  {{ ay.name }}
+                </option>
+              </select>
+              <div class="field-error" *ngIf="academicYearError">Please select Academic Year.</div>
+            </div>
+
+            <div class="InputFieldsContainer">
+              <label class="inputLabel">Class</label>
+              <select
+                class="inputField"
+                [disabled]="!selectedSchool || !selectedAcademicYear"
+                [ngModel]="selectedClass"
+                (ngModelChange)="onClassChange($event)"
+              >
+                <option value="">-- Select Class --</option>
+                <option *ngFor="let c of classList" [value]="c.id">
+                  {{ c.name }}
+                </option>
+              </select>
+              <div class="field-error" *ngIf="classError">Please select Class.</div>
+            </div>
+
+            <div class="InputFieldsContainer">
+              <label class="inputLabel">Division</label>
+              <select
+                class="inputField"
+                [disabled]="!selectedClass"
+                [ngModel]="selectedDivision"
+                (ngModelChange)="onDivisionChange($event)"
+              >
+                <option value="">-- Select Division --</option>
+                <option *ngFor="let div of divisionList" [value]="div.id">
+                  {{ div.name }}
+                </option>
+              </select>
+              <div class="field-error" *ngIf="divisionError">Please select Division.</div>
+            </div>
           </div>
 
-          <div class="InputFieldsContainer">
-            <label class="inputLabel">Academic Year <span class="required">*</span></label>
-            <select
-              class="inputField"
-              [disabled]="!selectedSchool"
-              [ngModel]="selectedAcademicYear"
-              (ngModelChange)="onAcademicYearChange($event)"
-            >
-              <option value="">-- Select Academic Year --</option>
-              <option *ngFor="let ay of academicYearList" [value]="ay.id">
-                {{ ay.name }}
-              </option>
-            </select>
-            <div class="field-error" *ngIf="academicYearError">Please select Academic Year.</div>
-          </div>
-        </div>
+          <!-- Row 2: Student, Fee Category, Submit button -->
+          <div class="fee-dues-filters-row fee-dues-filters-row-bottom">
+            <div class="InputFieldsContainer">
+              <label class="inputLabel">Student</label>
+              <select
+                class="inputField"
+                [disabled]="!selectedDivision"
+                [ngModel]="selectedStudent"
+                (ngModelChange)="onStudentChange($event)"
+              >
+                <option value="">-- Select Student --</option>
+                <option *ngFor="let st of studentList" [value]="st.id">
+                  {{ st.name }}
+                </option>
+              </select>
+              <div class="field-error" *ngIf="studentError">Please select Student.</div>
+            </div>
 
-        <!-- Row 2: Class, Division -->
-        <div class="fee-dues-filters-row fee-dues-filters-row-bottom">
-          <div class="InputFieldsContainer">
-            <label class="inputLabel">Class</label>
-            <select
-              class="inputField"
-              [disabled]="!selectedSchool || !selectedAcademicYear"
-              [ngModel]="selectedClass"
-              (ngModelChange)="onClassChange($event)"
-            >
-              <option value="">-- Select Class --</option>
-              <option *ngFor="let c of classList" [value]="c.id">
-                {{ c.name }}
-              </option>
-            </select>
-            <div class="field-error" *ngIf="classError">Please select Class.</div>
+            <div class="InputFieldsContainer">
+              <label class="inputLabel">Fee Category</label>
+              <select
+                class="inputField"
+                [disabled]="!selectedSchool || !selectedAcademicYear"
+                [ngModel]="selectedFeeCategory"
+                (ngModelChange)="onFeeCategoryChange($event)"
+              >
+                <option value="">-- Select Fee Category --</option>
+                <option *ngFor="let cat of feeCategoryList" [value]="cat.id">
+                  {{ cat.name }}
+                </option>
+              </select>
+              <div class="field-error" *ngIf="feeCategoryError">Please select Fee Category.</div>
+            </div>
+
+            <div class="InputFieldsContainer" style="display: flex; align-items: flex-end;">
+              <button type="button" class="btnHover" (click)="onSubmit()">Submit</button>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Layout for School Admin -->
+        <ng-container *ngIf="!isAdmin">
+          <!-- Row 1: Academic Year, Class, Division -->
+          <div class="fee-dues-filters-row admin-row">
+            <div class="InputFieldsContainer">
+              <label class="inputLabel">Academic Year <span class="required">*</span></label>
+              <select
+                class="inputField"
+                [ngModel]="selectedAcademicYear"
+                (ngModelChange)="onAcademicYearChange($event)"
+              >
+                <option value="">-- Select Academic Year --</option>
+                <option *ngFor="let ay of academicYearList" [value]="ay.id">
+                  {{ ay.name }}
+                </option>
+              </select>
+              <div class="field-error" *ngIf="academicYearError">Please select Academic Year.</div>
+            </div>
+
+            <div class="InputFieldsContainer">
+              <label class="inputLabel">Class</label>
+              <select
+                class="inputField"
+                [disabled]="!selectedAcademicYear"
+                [ngModel]="selectedClass"
+                (ngModelChange)="onClassChange($event)"
+              >
+                <option value="">-- Select Class --</option>
+                <option *ngFor="let c of classList" [value]="c.id">
+                  {{ c.name }}
+                </option>
+              </select>
+              <div class="field-error" *ngIf="classError">Please select Class.</div>
+            </div>
+
+            <div class="InputFieldsContainer">
+              <label class="inputLabel">Division</label>
+              <select
+                class="inputField"
+                [disabled]="!selectedClass"
+                [ngModel]="selectedDivision"
+                (ngModelChange)="onDivisionChange($event)"
+              >
+                <option value="">-- Select Division --</option>
+                <option *ngFor="let div of divisionList" [value]="div.id">
+                  {{ div.name }}
+                </option>
+              </select>
+              <div class="field-error" *ngIf="divisionError">Please select Division.</div>
+            </div>
           </div>
 
-          <!-- Divisions -->
-          <div class="InputFieldsContainer">
-            <label class="inputLabel">Division</label>
-            <select
-              class="inputField"
-              [disabled]="!selectedClass"
-              [ngModel]="selectedDivision"
-              (ngModelChange)="onDivisionChange($event)"
-            >
-              <option value="">-- Select Division --</option>
-              <option *ngFor="let div of divisionList" [value]="div.id">
-                {{ div.name }}
-              </option>
-            </select>
-            <div class="field-error" *ngIf="divisionError">Please select Division.</div>
-          </div>
-        </div>
+          <!-- Row 2: Student, Fee Category, Submit button -->
+          <div class="fee-dues-filters-row admin-row fee-dues-filters-row-bottom">
+            <div class="InputFieldsContainer">
+              <label class="inputLabel">Student</label>
+              <select
+                class="inputField"
+                [disabled]="!selectedDivision"
+                [ngModel]="selectedStudent"
+                (ngModelChange)="onStudentChange($event)"
+              >
+                <option value="">-- Select Student --</option>
+                <option *ngFor="let st of studentList" [value]="st.id">
+                  {{ st.name }}
+                </option>
+              </select>
+              <div class="field-error" *ngIf="studentError">Please select Student.</div>
+            </div>
 
-        <!-- Row 3: Student, Fee Category -->
-        <div class="fee-dues-filters-row fee-dues-filters-row-bottom">
-          <div class="InputFieldsContainer">
-            <label class="inputLabel">Student</label>
-            <select
-              class="inputField"
-              [disabled]="!selectedDivision"
-              [ngModel]="selectedStudent"
-              (ngModelChange)="onStudentChange($event)"
-            >
-              <option value="">-- Select Student --</option>
-              <option *ngFor="let st of studentList" [value]="st.id">
-                {{ st.name }}
-              </option>
-            </select>
-            <div class="field-error" *ngIf="studentError">Please select Student.</div>
-          </div>
+            <div class="InputFieldsContainer">
+              <label class="inputLabel">Fee Category</label>
+              <select
+                class="inputField"
+                [disabled]="!selectedAcademicYear"
+                [ngModel]="selectedFeeCategory"
+                (ngModelChange)="onFeeCategoryChange($event)"
+              >
+                <option value="">-- Select Fee Category --</option>
+                <option *ngFor="let cat of feeCategoryList" [value]="cat.id">
+                  {{ cat.name }}
+                </option>
+              </select>
+              <div class="field-error" *ngIf="feeCategoryError">Please select Fee Category.</div>
+            </div>
 
-          <!-- Fee Category -->
-          <div class="InputFieldsContainer">
-            <label class="inputLabel">Fee Category</label>
-            <select
-              class="inputField"
-              [disabled]="!selectedSchool || !selectedAcademicYear"
-              [ngModel]="selectedFeeCategory"
-              (ngModelChange)="onFeeCategoryChange($event)"
-            >
-              <option value="">-- Select Fee Category --</option>
-              <option *ngFor="let cat of feeCategoryList" [value]="cat.id">
-                {{ cat.name }}
-              </option>
-            </select>
-            <div class="field-error" *ngIf="feeCategoryError">Please select Fee Category.</div>
+            <div class="InputFieldsContainer" style="display: flex; align-items: flex-end;">
+              <button type="button" class="btnHover" (click)="onSubmit()">Submit</button>
+            </div>
           </div>
-        </div>
-
-        <!-- Submit button -->
-        <div class="fee-dues-submit-row">
-          <button type="button" class="btnHover" (click)="onSubmit()">Submit</button>
-        </div>
+        </ng-container>
       </div>
 
       <!-- Table card (show only after Submit) -->

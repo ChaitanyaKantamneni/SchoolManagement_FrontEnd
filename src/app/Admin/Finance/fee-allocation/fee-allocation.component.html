@@ -38,8 +38,10 @@
               <tr>
                 <th class="visually-hidden">Academic Year ID</th>
                 <th>SI.No</th>
+                <th *ngIf="isAdmin">School</th>
+                <th *ngIf="isAdmin">Academic Year</th>
+                <th *ngIf="!isAdmin">Academic Year</th>
                 <th>Syllabus</th>
-                <!-- <th *ngIf="isAdmin">School Name</th> -->
                 <th>Class</th>               
                 <th>Divisions</th>               
                 <th>Fee Category</th>               
@@ -54,14 +56,16 @@
               <tr *ngFor="let Syllabus of FeeAllocationList,let i = index">
                 <td data-label="ID" class="visually-hidden">{{ Syllabus.ID }}</td>
                 <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-                <td data-label="ExamTypeName">{{ Syllabus.SyllabusName }}</td>
-                <td data-label="Priority">{{ Syllabus.ClassName }}</td>
-                <!-- <td data-label="ExamType" *ngIf="isAdmin">{{ Syllabus.SchoolName }}</td> -->
-                <td data-label="ExamType">{{ Syllabus.DivisionName }}</td>
-                <td data-label="MaxMark">{{ Syllabus.FeeCategoryName }}</td>
-                <td data-label="PassMarks">{{ Syllabus.Amount }}</td>
-                <td data-label="ExamDuration">{{ Syllabus.StartDate }}</td>
-                <td data-label="NoofQuestion">{{ Syllabus.EndDate }}</td>
+                <td data-label="School" *ngIf="isAdmin">{{ Syllabus.SchoolName }}</td>
+                <td data-label="Academic Year" *ngIf="isAdmin">{{ Syllabus.AcademicYearName }}</td>
+                <td data-label="Academic Year" *ngIf="!isAdmin">{{ Syllabus.AcademicYearName }}</td>
+                <td data-label="Syllabus">{{ Syllabus.SyllabusName }}</td>
+                <td data-label="Class">{{ Syllabus.ClassName }}</td>
+                <td data-label="Divisions">{{ Syllabus.DivisionName }}</td>
+                <td data-label="Fee Category">{{ Syllabus.FeeCategoryName }}</td>
+                <td data-label="Amount">{{ Syllabus.Amount }}</td>
+                <td data-label="Start Date">{{ Syllabus.StartDate }}</td>
+                <td data-label="End Date">{{ Syllabus.EndDate }}</td>
                 <td data-label="Status">
                   <span
                     class="status-pill"

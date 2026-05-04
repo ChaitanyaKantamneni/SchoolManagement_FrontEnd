@@ -114,5 +114,28 @@ export const FULL_ADMIN_MENU: Module[] = [
       { id: 'homework', pageName: 'HomeWork', moduleID: 'homework', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
       { id: 'assignhomework', pageName: 'Assign Homework', moduleID: 'homework', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
     ]
-  }
+  },
+  {
+    id: 'holidaycalendar',
+    moduleName: 'Holiday Calendar',
+    pages: [
+      { id: 'holidaycalendar', pageName: 'Holiday Calendar', moduleID: 'holidaycalendar', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
+    ]
+  },
+  {
+    id: 'reports',
+    moduleName: 'Reports',
+    pages: [
+      { id: 'StudentsReport', pageName: 'Students Report', moduleID: 'reports', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
+      { id: 'FeeReport', pageName: 'Fee Report', moduleID: 'reports', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
+    ]
+  },
+  {
+    id: 'notices',
+    moduleName: 'Notices',
+    pages: [
+      { id: 'notices', pageName: 'Notices', moduleID: 'notices', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
+    ]
+  },
+
 ];

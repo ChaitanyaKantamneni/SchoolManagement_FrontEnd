@@ -39,6 +39,7 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
   private sidebarSub?: Subscription;
   private mobileSidebarSub?: Subscription;
   private routeSub?: Subscription;
+  isParentRole: boolean = false;
 
   constructor(
     public menuService: MenuServiceService,
@@ -61,6 +62,9 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
     const email = sessionStorage.getItem('email');
     this.roleId = sessionStorage.getItem('RollID') || '';
     this.schoolName = sessionStorage.getItem('schoolName');
+
+    // Check if user is parent (roleId === '6')
+    this.isParentRole = this.roleId === '6';
 
     // If not logged in, redirect to signin
     if (!email || !this.roleId) {
@@ -131,11 +135,17 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
   goToDashboard(): void {
     this.activeMobileSection = 'dashboard';
     this.openedSubmenu = null;
-    const path = this.roleId === '1'
-      ? '/Admin/Dashboad'
-      : `/${this.roleRoot}/dashboard`;
-
-    this.router.navigate([path]);
+    
+    // For parent role, navigate to parent dashboard
+    if (this.isParentRole) {
+      const path = `/${this.roleRoot}/parent-dashboard`;
+      this.router.navigate([path]);
+    } else {
+      const path = this.roleId === '1'
+        ? '/Admin/Dashboad'
+        : `/${this.roleRoot}/dashboard`;
+      this.router.navigate([path]);
+    }
 
     if (this.isMobileViewport()) {
       this.sidebarService.setMobileMenuOpen(false);
@@ -187,6 +197,7 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
       fare: 'Fare',
       fares: 'Fares',
       dashboard: 'dashboard',
+      holidaycalendar: 'HolidayCalendar',
     };
 
     return alias[normalized] ?? compact;
@@ -194,19 +205,7 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
 
   getVisibleModules(): Module[] {
     const visibleModules = (this.menu || []).filter(module => this.getVisiblePages(module).length > 0);
-    const hasHrPayroll = visibleModules.some(
-      module => (module.moduleName || '').trim().toLowerCase() === 'hr & payroll'
-    );
-
-    if (hasHrPayroll) {
-      return this.dedupeModulesByName(visibleModules);
-    }
-
-    const fallbackModules: Module[] = [...visibleModules];
-    if (!hasHrPayroll) {
-      fallbackModules.push(this.getFallbackHrPayrollModule());
-    }
-    return this.dedupeModulesByName(fallbackModules);
+    return this.dedupeModulesByName(visibleModules);
   }
 
   getVisiblePages(module: Module): Page[] {
@@ -316,7 +315,12 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
       'salary issued': 'receipt_long',
       'leave management': 'event_note',
       homework: 'assignment',
-      'assign homework': 'assignment_turned_in'
+      'assign homework': 'assignment_turned_in',
+      'holiday calendar': 'event',
+      'students report': 'school',
+      'student report': 'school',
+      'fee report': 'receipt',
+      'notices': 'campaign'
     };
     return map[key] || 'menu';
   }
@@ -334,37 +338,11 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
       attendance: 'how_to_reg',
       'hr & payroll': 'account_balance',
       'leave management': 'event_note',
-      homework: 'assignment'
+      homework: 'assignment',
+      'holiday calendar': 'event'
     };
 
     return map[key] || 'folder';
-  }
-
-  private getFallbackHrPayrollModule(): Module {
-    return {
-      id: '999999',
-      moduleName: 'HR & Payroll',
-      pages: [
-        this.createFallbackPage('900001', 'Payroll Head'),
-        this.createFallbackPage('900002', 'Payment Mode'),
-        this.createFallbackPage('900003', 'Salary Settings'),
-        this.createFallbackPage('900004', 'Advance Salary'),
-        this.createFallbackPage('900005', 'Salary Pay'),
-        this.createFallbackPage('900006', 'Salary Issued')
-      ]
-    };
-  }
-
-  private createFallbackPage(id: string, pageName: string): Page {
-    return {
-      id,
-      pageName,
-      moduleID: '999999',
-      canView: '1',
-      canAdd: '1',
-      canEdit: '1',
-      canDelete: '1'
-    };
   }
 
   private dedupeModulesByName(modules: Module[]): Module[] {

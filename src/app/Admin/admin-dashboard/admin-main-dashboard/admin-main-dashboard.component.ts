@@ -1,10 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatIcon, MatIconModule } from '@angular/material/icon';
 import { NgClass, NgFor, NgIf, SlicePipe, UpperCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiServiceService } from '../../../Services/api-service.service';
 import { LoaderService } from '../../../Services/loader.service';
 import { NgxEchartsModule } from 'ngx-echarts';
+import { MenuServiceService, Module, Page } from '../../../Services/menu-service.service';
+import { Router } from '@angular/router';
+import { FULL_ADMIN_MENU } from '../../../constants/admin-full-menu';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
 selector:'app-admin-main-dashboard',
@@ -25,11 +29,16 @@ NgxEchartsModule
 templateUrl:'./admin-main-dashboard.component.html',
 styleUrl:'./admin-main-dashboard.component.css'
 })
-export class AdminMainDashboardComponent{
+export class AdminMainDashboardComponent implements OnInit{
+
+isMobileNavOpen = false;
 
 constructor(
-private apiurl:ApiServiceService,
-public loader:LoaderService,
+  private cd: ChangeDetectorRef,
+  private apiurl:ApiServiceService,
+  public loader:LoaderService,
+  private menuService: MenuServiceService,
+  private router: Router
 ){}
 
 /* ================= FILTER DATA ================= */
@@ -45,12 +54,21 @@ selectedDivision:any=null
 selectedBranch:any=null
 selectedDateRange='academic_year'
 selectedCompareMode='previous_period'
+selectedTimePeriod:string='today'
 
 /* ================= DASHBOARD ================= */
 
 dashboard:any={}
 
 chartTitle="Students by Class"
+
+noticesList: Array<{ NoticeId: number; Title: string; Description: string; NoticeType: string; StartDate: string; EndDate: string; SchoolName?: string; AcademicYearName?: string; IsActive?: boolean }> = []
+noticeSlide = 0
+
+quickLinks: Array<{ icon: string; label: string; route: string }> = []
+
+menu: Module[] = []
+private readonly fullAdminMenu: Module[] = FULL_ADMIN_MENU
 
 roleId = ''
 roleKey: 'super_admin' | 'school_admin' | 'principal' | 'chairman' | 'staff' | 'parent' | 'student' = 'school_admin'
@@ -61,6 +79,7 @@ studentsChart:any
 staffChart:any
 attendanceChart:any
 feeChart:any
+staffDepartmentChart:any
 roleActivityCards: Array<{ title: string; dataKey: string; icon: string; type: 'people' | 'notice' }> = [];
 drillPath: string[] = ['Network']
 alerts: Array<{ severity: 'high' | 'medium' | 'low'; title: string; reason: string; action: string }> = [];
@@ -70,7 +89,11 @@ alerts: Array<{ severity: 'high' | 'medium' | 'low'; title: string; reason: stri
 
 ngOnInit(){
 
+console.log('Dashboard ngOnInit called');
+
 this.roleId = sessionStorage.getItem('RollID') || ''
+console.log('Role ID from sessionStorage:', this.roleId);
+
 this.setRoleContext()
 
 const storedSchoolId = sessionStorage.getItem('schoolId') || sessionStorage.getItem('SchoolID') || ''
@@ -78,9 +101,14 @@ if (storedSchoolId) {
   this.selectedSchool = storedSchoolId
 }
 
+console.log('Initial school ID:', this.selectedSchool);
+
 this.loadSchools()
 this.loadAcademicYears()
 this.loadDashboard()
+this.loadNotices()
+this.loadMenu()
+this.loadQuickLinks()
 
 }
 
@@ -219,10 +247,14 @@ private getRoleActivities(role: string): Array<{ title: string; dataKey: string;
 
 loadSchools(){
 
+console.log('Loading schools...');
+
 const req={Flag:'2'}
 
 this.apiurl.post<any>('Tbl_SchoolDetails_CRUD',req)
 .subscribe(res=>{
+
+console.log('Schools API Response:', res);
 
 this.schoolList=(res?.data || []).map((x:any)=>({
 
@@ -230,6 +262,8 @@ ID:x.id,
 Name:x.name
 
 }))
+
+console.log('Schools list:', this.schoolList);
 
 })
 
@@ -240,25 +274,51 @@ Name:x.name
 
 loadAcademicYears(){
 
+console.log('Loading academic years for school:', this.selectedSchool);
+
 const fetchYears = (flag: '2' | '3') => {
   const req = {
     SchoolID: this.selectedSchool,
     Flag: flag
   }
 
+  console.log('Academic years API request:', req);
+
   this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', req).subscribe(res => {
+    console.log('Academic years API response:', res);
+
     const list = (res?.data || []).map((x: any) => ({
       ID: x.id,
       Name: x.name
     }))
 
     if (list.length === 0 && flag === '3') {
+      console.log('No academic years found with flag 3, trying flag 2');
       fetchYears('2')
       return
     }
 
     this.academicYearList = list
+
+    // ✅ SET DEFAULT ACADEMIC YEAR (IMPORTANT FIX)
+    // Only auto-select if NOT Super Admin (when school is already determined)
+    if (this.academicYearList.length > 0 && !this.selectedAcademicYear && !this.showSchoolFilter()) {
+      this.selectedAcademicYear = this.academicYearList[0].ID;
+
+      console.log('Default Academic Year selected:', this.selectedAcademicYear);
+
+      // ✅ LOAD DASHBOARD AFTER YEAR SET
+      this.loadDashboard();
+    }
+
+    console.log('Academic years list:', this.academicYearList);
   })
+}
+
+// For Super Admin with no school selected, don't fetch academic years yet
+if (this.showSchoolFilter() && !this.selectedSchool) {
+  console.log('Super Admin: Skipping academic year load until school is selected');
+  return;
 }
 
 fetchYears('3')
@@ -282,13 +342,22 @@ if (this.selectedSchool) {
 }
 
 this.loadDashboard()
+this.loadNotices()
 }
 
 onAcademicYearChange(): void {
+console.log('Academic year changed:', this.selectedAcademicYear)
 this.selectedClass = null
 this.selectedDivision = null
 this.chartTitle = 'Students by Class'
 this.drillPath = ['Network']
+this.loadDashboard()
+this.loadNotices()
+}
+
+onTimePeriodChange(period: string): void {
+this.selectedTimePeriod = period
+console.log('Time period changed:', period)
 this.loadDashboard()
 }
 
@@ -307,52 +376,111 @@ this.loadDashboard()
 
 /* ================= LOAD DASHBOARD ================= */
 
-loadDashboard(){
+loadDashboard() {
 
-const toNullableNumber = (value: any): number | null => {
-  if (value === null || value === undefined || value === '') return null;
-  const n = Number(value);
-  return Number.isNaN(n) ? null : n;
+  const toNullableNumber = (value: any): number | null => {
+    if (value === null || value === undefined || value === '') return null;
+    const n = Number(value);
+    return Number.isNaN(n) ? null : n;
+  };
+
+  const request = {
+    SchoolID: toNullableNumber(this.selectedSchool),
+    AcademicYear: toNullableNumber(this.selectedAcademicYear),
+    ClassID: toNullableNumber(this.selectedClass),
+    DivisionID: toNullableNumber(this.selectedDivision),
+    BranchID: toNullableNumber(this.selectedBranch),
+    DateRangeKey: this.selectedTimePeriod,   // MUST match SP values
+    CompareMode: this.selectedCompareMode,
+    RoleKey: this.roleKey,
+    UserID: toNullableNumber(sessionStorage.getItem('UserID'))
+  };
+
+  console.log('Dashboard API Request:', request);
+
+  this.loader.show();
+
+  this.apiurl.post<any>('Dashboard_API', request)
+    .subscribe({
+
+      next: (res) => {
+
+        console.log('Dashboard API Raw Response:', res);
+
+        this.loader.hide();
+
+        // ✅ IMPORTANT: normalize backend data
+        const normalized = this.normalizeResponse(res?.data || {});
+        console.log('Normalized Dashboard Data:', normalized);
+
+        this.dashboard = normalized;
+
+        this.buildAlerts();
+
+        // ✅ ensure charts rebuild properly
+        setTimeout(() => {
+          this.buildCharts();
+          this.cd.detectChanges();
+        }, 0);
+      },
+
+      error: (err) => {
+
+        console.error('Dashboard API Error:', err);
+
+        this.loader.hide();
+
+        // fallback (avoid crash)
+        this.dashboard = {};
+        this.buildCharts();
+      }
+
+    });
 }
 
-const request={
+normalizeResponse(data: any) {
 
-SchoolID:toNullableNumber(this.selectedSchool),
-AcademicYear:toNullableNumber(this.selectedAcademicYear),
-ClassID:toNullableNumber(this.selectedClass),
-DivisionID:toNullableNumber(this.selectedDivision),
-BranchID:toNullableNumber(this.selectedBranch),
-DateRangeKey:this.selectedDateRange,
-CompareMode:this.selectedCompareMode,
-RoleKey:this.roleKey,
-UserID: toNullableNumber(sessionStorage.getItem('UserID'))
+  if (!data) return {};
 
-}
+  return {
 
-this.loader.show()
+    ...data,
 
-this.apiurl.post<any>('Dashboard_API',request)
-.subscribe({
+    // ✅ STUDENT CHART
+    studentChart: (data.studentChart || []).map((x: any) => ({
+      id: x.ID ?? x.id ?? x.classId ?? x.ClassID ?? 0,
+      name: x.Name ?? x.name ?? x.className ?? x.ClassName ?? 'Unknown',
+      studentCount: x.StudentCount ?? x.studentCount ?? x.Count ?? x.total ?? 0
+    })),
 
-next:(res)=>{
+    // ✅ STAFF CHART
+    staffChart: (data.staffChart || []).map((x: any) => ({
+      staffType: x.StaffType ?? x.staffType,
+      count: x.Count ?? x.count
+    })),
 
-this.loader.hide()
 
-this.dashboard=res.data || {}
-this.buildAlerts()
+    // ✅ ATTENDANCE
+    attendance: (data.attendance || []).map((x: any) => ({
+      month: x.Month ?? x.month,
+      attendance: x.Attendance ?? x.attendance
+    })),
+    
+    // ✅ FEES
+    fees: (data.fees || []).map((x: any) => ({
+      month: x.Month ?? x.month,
+      amount: x.Amount ?? x.amount
+    })),
 
-this.buildCharts()
-
-},
-
-error:()=>{
-
-this.loader.hide()
-
-}
-
-})
-
+    // ✅ SAFE FALLBACKS
+    notices: data.notices || [],
+    counts: data.counts || {},
+    miniKpis: data.miniKpis || {},
+    roleKpis: data.roleKpis || {},
+    roleActivities: data.roleActivities || {},
+    alerts: data.alerts || [],
+    meta: data.meta || {}
+  };
 }
 
 
@@ -364,6 +492,7 @@ this.buildStudentsChart()
 this.buildStaffChart()
 this.buildAttendanceChart()
 this.buildFeeChart()
+this.buildStaffDepartmentChart()
 
 }
 
@@ -496,40 +625,111 @@ borderWidth:2
 
 buildAttendanceChart(){
 
-this.attendanceChart={
+const attendanceData = (this.dashboard.attendance || [])
+  .filter((x:any) => x.month !== 'No Data');
+const months = attendanceData.map((x:any)=>x.month) || [];
+const attendanceValues = attendanceData.map((x:any)=>x.attendance) || [];
+
+const displayMonths = months.length > 0 
+  ? months 
+  : ['No Data'];
+
+const displayValues = attendanceValues.length > 0 
+  ? attendanceValues 
+  : [0];
+
+this.attendanceChart = JSON.parse(JSON.stringify({
+
+animation:true,
+animationDuration:1000,
+animationEasing:'cubicOut',
 
 tooltip:{
 trigger:'axis',
 backgroundColor:'rgba(15,23,42,0.96)',
 borderWidth:0,
-textStyle:{color:'#e2e8f0'}
+borderRadius:8,
+padding:[12,16],
+textStyle:{color:'#e2e8f0',fontSize:13},
+formatter: (params: any) => {
+  const param = params[0];
+  const value = param.value;
+  const color = value >= 90 ? '#22c55e' : value >= 75 ? '#eab308' : '#ef4444';
+  return `<div style="font-weight:600;margin-bottom:4px">${param.name}</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="display:inline-block;width:10px;height:10px;background:${color};border-radius:50%"></span>
+            <span>Attendance: <strong style="color:${color}">${value}%</strong></span>
+          </div>`;
+}
+},
+
+grid:{
+left:'8%',
+right:'4%',
+bottom:'12%',
+top:'18%',
+containLabel:true
 },
 
 xAxis:{
 type:'category',
-data:this.dashboard.attendance?.map((x:any)=>x.month) || [],
-axisLine:{lineStyle:{color:'#cbd5e1'}},
-axisLabel:{color:'#475569'}
+data:displayMonths,
+axisLine:{lineStyle:{color:'#e2e8f0',width:2}},
+axisLabel:{color:'#64748b',fontSize:12,fontWeight:500},
+axisTick:{show:false}
 },
 
 yAxis:{
 type:'value',
-axisLabel:{color:'#64748b'},
-splitLine:{lineStyle:{color:'#e2e8f0'}}
+min:0,
+max:100,
+axisLabel:{
+color:'#64748b',
+fontSize:12,
+formatter:'{value}%'
+},
+splitLine:{
+lineStyle:{
+color:'#e2e8f0',
+type:'dashed',
+width:1,
+opacity:0.6
+}
+}
 },
 
 series:[{
 
 type:'line',
-smooth:true,
-showSymbol:false,
-lineStyle:{width:3,color:'#0891b2'},
-areaStyle:{color:'rgba(8,145,178,0.14)'},
-data:this.dashboard.attendance?.map((x:any)=>x.attendance) || []
+smooth:false,
+showSymbol:true,
+symbolSize:8,
+symbol:'circle',
+lineStyle:{
+width:3,
+color:'#6366f1'
+},
+itemStyle:{
+color:'#6366f1',
+borderWidth:2,
+borderColor:'#fff'
+},
+emphasis:{
+focus:'series',
+itemStyle:{
+color:'#4f46e5',
+borderWidth:3,
+borderColor:'#fff'
+},
+lineStyle:{
+width:4
+}
+},
+data:displayValues
 
 }]
 
-}
+}))
 
 }
 
@@ -538,41 +738,110 @@ data:this.dashboard.attendance?.map((x:any)=>x.attendance) || []
 
 buildFeeChart(){
 
-this.feeChart={
+const feeData = (this.dashboard.fees || [])
+  .filter((x:any) => x.month !== 'No Data');
+const months = feeData.map((x:any)=>x.month) || [];
+const feeValues = feeData.map((x:any)=>x.amount) || [];
+
+// Use mock data if no data is available
+const displayMonths = months.length > 0 
+  ? months 
+  : ['No Data'];
+
+const displayValues = feeValues.length > 0 
+  ? feeValues 
+  : [0];
+
+this.feeChart = JSON.parse(JSON.stringify({
+
+animation:true,
+animationDuration:1000,
+animationEasing:'cubicOut',
 
 tooltip:{
 trigger:'axis',
 backgroundColor:'rgba(15,23,42,0.96)',
 borderWidth:0,
-textStyle:{color:'#e2e8f0'}
+borderRadius:8,
+padding:[12,16],
+textStyle:{color:'#e2e8f0',fontSize:13},
+formatter: (params: any) => {
+  const param = params[0];
+  const value = param.value;
+  return `<div style="font-weight:600;margin-bottom:4px">${param.name}</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="display:inline-block;width:10px;height:10px;background:#10b981;border-radius:50%"></span>
+            <span>Fee Collection: <strong style="color:#10b981">₹${value.toLocaleString()}</strong></span>
+          </div>`;
+}
+},
+
+grid:{
+left:'8%',
+right:'4%',
+bottom:'12%',
+top:'18%',
+containLabel:true
 },
 
 xAxis:{
 type:'category',
-data:this.dashboard.fees?.map((x:any)=>x.month) || [],
-axisLine:{lineStyle:{color:'#cbd5e1'}},
-axisLabel:{color:'#475569'}
+data:displayMonths,
+axisLine:{lineStyle:{color:'#e2e8f0',width:2}},
+axisLabel:{color:'#64748b',fontSize:12,fontWeight:500},
+axisTick:{show:false}
 },
 
 yAxis:{
 type:'value',
-axisLabel:{color:'#64748b'},
-splitLine:{lineStyle:{color:'#e2e8f0'}}
+axisLabel:{
+color:'#64748b',
+fontSize:12,
+formatter:'₹{value}'
+},
+splitLine:{
+lineStyle:{
+color:'#e2e8f0',
+type:'dashed',
+width:1,
+opacity:0.6
+}
+}
 },
 
 series:[{
 
-type:'line',
-smooth:true,
-showSymbol:false,
-lineStyle:{width:3,color:'#16a34a'},
-areaStyle:{color:'rgba(22,163,74,0.12)'},
-data:this.dashboard.fees?.map((x:any)=>x.amount) || []
+type:'bar',
+barWidth:'45%',
+itemStyle:{
+borderRadius:[8,8,0,0],
+color:{
+type:'linear',
+x:0,y:0,x2:0,y2:1,
+colorStops:[
+{offset:0,color:'#059669'},
+{offset:0.5,color:'#10b981'},
+{offset:1,color:'#34d399'}
+]
+},
+shadowColor:'rgba(16,185,129,0.4)',
+shadowBlur:8,
+shadowOffsetY:4
+},
+emphasis:{
+focus:'series',
+itemStyle:{
+color:'#10b981',
+shadowColor:'rgba(16,185,129,0.6)',
+shadowBlur:12
+}
+},
+data:displayValues
 
 }]
 
 }
-
+));
 }
 
 
@@ -680,6 +949,24 @@ get hasFeeTrend(): boolean {
   return Array.isArray(this.dashboard?.fees) && this.dashboard.fees.length > 0;
 }
 
+get hasStaffDepartmentData(): boolean {
+  const staffData = this.dashboard?.staffDepartmentDistribution ||
+                   this.dashboard?.staffChart ||
+                   this.dashboard?.staffDepartment ||
+                   this.dashboard?.counts?.staffDepartment ||
+                   this.dashboard?.staffList;
+  
+  if (!staffData && this.dashboard?.data) {
+    const nestedData = this.dashboard.data.staffDepartmentDistribution ||
+                      this.dashboard.data.staffChart ||
+                      this.dashboard.data.staffDepartment ||
+                      this.dashboard.data.staffList;
+    return Array.isArray(nestedData) && nestedData.length > 0;
+  }
+  
+  return Array.isArray(staffData) && staffData.length > 0;
+}
+
 get attendanceDirection(): 'up' | 'down' | 'flat' {
   const series = this.dashboard?.attendance || [];
   if (series.length < 2) return 'flat';
@@ -741,6 +1028,248 @@ buildAlerts(): void {
   }
 
   this.alerts = generated;
+}
+
+getCurrentDate(): string {
+  const today = new Date();
+  return today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+}
+
+calculatePresentStudents(): number {
+  const totalStudents = this.getKpiValue('students') || 0;
+  const attendancePercent = this.getMiniKpiValue('attendancePercent') || 0;
+  return Math.round(totalStudents * attendancePercent / 100);
+}
+
+getUserInitials(): string {
+  const userName = sessionStorage.getItem('UserName') || 'User';
+  const names = userName.split(' ');
+  if (names.length >= 2) {
+    return (names[0][0] + names[1][0]).toUpperCase();
+  }
+  return userName.substring(0, 2).toUpperCase();
+}
+
+getUserName(): string {
+  return sessionStorage.getItem('UserName') || 'User';
+}
+
+get activeNotices() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return this.noticesList.filter(n => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const start = new Date(n.StartDate);
+    const end = new Date(n.EndDate);
+
+    start.setHours(0,0,0,0);
+    end.setHours(0,0,0,0);
+
+    return start >= today || (start <= today && end >= today);
+  });
+}
+
+get noticeSlideCount(): number {
+  return Math.ceil(this.activeNotices.length / 3);
+}
+
+get pagedNotices() {
+  const start = this.noticeSlide * 3;
+  return this.activeNotices.slice(start, start + 3);
+}
+
+prevNoticeSlide(): void {
+  if (this.noticeSlide > 0) this.noticeSlide--;
+}
+
+nextNoticeSlide(): void {
+  if (this.noticeSlide < this.noticeSlideCount - 1) this.noticeSlide++;
+}
+
+loadNotices(): void {
+  const payload = {
+    Flag: '2',
+    SchoolID: this.selectedSchool || null,
+    AcademicYear: this.selectedAcademicYear || null,
+    IsActive: 1
+  };
+
+  this.apiurl.post<any>('Tbl_Notices_CRUD_Operations', payload).subscribe({
+    next: (res) => {
+      this.noticeSlide = 0;
+      this.noticesList = (res?.data || []).map((item: any) => ({
+        NoticeId: item.noticeId,
+        Title: item.title,
+        Description: item.description || '',
+        NoticeType: item.noticeType,
+        StartDate: item.startDate,
+        EndDate: item.endDate,
+        SchoolName: item.schoolName,
+        AcademicYearName: item.academicYearName,
+        IsActive: item.isActive === 1 || item.isActive === true
+      }));
+    },
+    error: (err) => {
+      console.error('Error loading notices:', err);
+      this.noticesList = [];
+    }
+  });
+}
+
+loadMenu(): void {
+  try {
+    this.menu = this.menuService.getMenu();
+  } catch (error) {
+    console.error('Error loading menu:', error);
+    this.menu = [];
+  }
+}
+
+loadQuickLinks(): void {
+  this.quickLinks = [];
+  const sourceMenu = this.roleId === '1' ? this.fullAdminMenu : this.menu;
+
+  // First, try to add "Admission" (Quick Admission) as the first link
+  let admissionAdded = false;
+  sourceMenu.forEach(module => {
+    const pages = this.roleId === '1' ? (module.pages || []) : (module.pages || []).filter((page: Page) => page.canView === '1');
+    const admissionPage = pages.find((page: Page) => page.pageName.toLowerCase().includes('admission'));
+    if (admissionPage && !admissionAdded) {
+      this.quickLinks.push({
+        icon: 'person_add',
+        label: 'Quick Admission',
+        route: `/Admin/${this.formatRoute(admissionPage.pageName)}`
+      });
+      admissionAdded = true;
+    }
+  });
+
+  // Then add other pages
+  sourceMenu.forEach(module => {
+    const pages = this.roleId === '1' ? (module.pages || []) : (module.pages || []).filter((page: Page) => page.canView === '1');
+    pages.forEach((page: Page) => {
+      // Skip admission since we already added it
+      if (page.pageName.toLowerCase().includes('admission')) return;
+
+      if (this.quickLinks.length < 6) { // Limit to 6 quick links
+        this.quickLinks.push({
+          icon: this.getPageIcon(page.pageName),
+          label: page.pageName,
+          route: `/Admin/${this.formatRoute(page.pageName)}`
+        });
+      }
+    });
+  });
+}
+
+private formatRoute(pageName: string): string {
+  // Convert to PascalCase format matching the actual routes
+  return pageName
+    .split(/\s+/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join('');
+}
+
+private getPageIcon(pageName: string): string {
+  const key = (pageName || '').trim().toLowerCase();
+  const iconMap: Record<string, string> = {
+    'admission': 'person_add',
+    'attendance': 'fact_check',
+    'staff': 'badge',
+    'students': 'groups',
+    'classes': 'school',
+    'subjects': 'book',
+    'fees': 'payments',
+    'exams': 'quiz',
+    'timetable': 'schedule',
+    'transport': 'commute',
+    'library': 'local_library',
+    'notice': 'campaign',
+    'leave': 'event_busy',
+    'reports': 'assessment',
+    'settings': 'settings'
+  };
+  return iconMap[key] || 'link';
+}
+
+toggleMobileNav(): void {
+  this.isMobileNavOpen = !this.isMobileNavOpen;
+}
+
+getNoticeIcon(noticeType: string): string {
+  const iconMap: Record<string, string> = {
+    'General': 'campaign',
+    'Exam': 'quiz',
+    'Holiday': 'celebration',
+    'Urgent': 'priority_high'
+  };
+  return iconMap[noticeType] || 'campaign';
+}
+
+formatDate(dateString: string): string {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}`;
+}
+
+navigateTo(route: string): void {
+  this.router.navigate([route]);
+}
+
+buildStaffDepartmentChart(): void {
+
+  // ✅ FIX: define staffData
+  const staffData = this.dashboard?.staffChart || [];
+
+  console.log('Staff Department Data:', staffData);
+
+  // ✅ Empty state
+  if (!staffData || !Array.isArray(staffData) || staffData.length === 0) {
+    this.staffDepartmentChart = {
+      tooltip: { trigger: 'item' },
+      series: [
+        {
+          name: 'Staff Departments',
+          type: 'pie',
+          radius: ['40%', '70%'],
+          data: [{ value: 0, name: 'No Data' }]
+        }
+      ]
+    };
+    return;
+  }
+
+  const colors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+
+  const chartData = staffData.map((item: any, index: number) => ({
+    value: item.count,
+    name: item.staffType,
+    itemStyle: { color: colors[index % colors.length] }
+  }));
+
+  console.log('Chart Data:', chartData);
+
+  this.staffDepartmentChart = {
+    tooltip: {
+      trigger: 'item',
+      formatter: '{b}: {c} ({d}%)'
+    },
+    legend: {
+      orient: 'vertical',
+      left: 'left'
+    },
+    series: [
+      {
+        name: 'Staff Departments',
+        type: 'pie',
+        radius: ['40%', '70%'],
+        data: chartData
+      }
+    ]
+  };
 }
 
 }

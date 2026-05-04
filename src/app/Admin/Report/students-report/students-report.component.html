@@ -1,0 +1,462 @@
+<div>
+  <app-dashboard-top-nav></app-dashboard-top-nav>
+</div>
+
+<div class="MainContentDiv">
+
+  <!-- ===== LIST VIEW ===== -->
+  <div *ngIf="!isDetailView" class="w-100">
+
+    <!-- Header -->
+    <div class="ComponentTop">
+      <div class="ComponentTopHeader">
+        <h5>Students Report</h5>
+        <p>Total {{ totalCount }} Students Added</p>
+      </div>
+      <!-- Filters -->
+      <div class="ComponentTopBottom" style="margin-top:10px;">
+        <div class="filterOptions" style="gap:12px; flex-wrap:wrap; align-items:flex-end;">
+
+          <!-- School (admin only) -->
+          <div *ngIf="isAdmin" class="InputFieldsContainer" style="min-width:180px; flex:1;">
+            <label class="inputLabel">School</label>
+            <select class="inputField selectFormControl" [(ngModel)]="selectedSchoolID" (change)="onSchoolChange()">
+              <option value="">-- All Schools --</option>
+              <option *ngFor="let s of schoolList" [value]="s.ID">{{ s.Name }}</option>
+            </select>
+          </div>
+
+          <!-- Academic Year -->
+          <div class="InputFieldsContainer" style="min-width:180px; flex:1;">
+            <label class="inputLabel">Academic Year</label>
+            <select class="inputField selectFormControl" [(ngModel)]="selectedAcademicYear" (change)="onAcademicYearChange()">
+              <option value="">-- All Years --</option>
+              <option *ngFor="let y of academicYearList" [value]="y.ID">{{ y.Name }}</option>
+            </select>
+          </div>
+
+          <!-- Class -->
+          <div class="InputFieldsContainer" style="min-width:160px; flex:1;">
+            <label class="inputLabel">Class</label>
+            <select class="inputField selectFormControl" [(ngModel)]="selectedClass" (change)="onClassChange()">
+              <option value="">-- All Classes --</option>
+              <option *ngFor="let c of ClassList" [value]="c.ID">{{ c.Name }}</option>
+            </select>
+          </div>
+
+          <!-- Division -->
+          <div class="InputFieldsContainer" style="min-width:140px; flex:1;">
+            <label class="inputLabel">Division</label>
+            <select class="inputField selectFormControl" [(ngModel)]="selectedDivision" (change)="onDivisionChange()">
+              <option value="">-- All --</option>
+              <option *ngFor="let d of DivisionList" [value]="d.ID">{{ d.Name }}</option>
+            </select>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="ComponentRecords">
+      <div class="ComponentRecordsTop">
+        <!-- Export buttons -->
+        <div class="DownloadButtons">
+          <button class="btnHover" title="Copy" (click)="copyToClipboard()">
+            <mat-icon>content_copy</mat-icon>
+          </button>
+          <button class="btnHover" title="CSV" (click)="exportCSV()">
+            <mat-icon>description</mat-icon>
+          </button>
+          <button class="btnHover" title="Excel" (click)="exportExcel()">
+            <mat-icon>table_chart</mat-icon>
+          </button>
+          <button class="btnHover" title="Print" (click)="printPage()">
+            <mat-icon>print</mat-icon>
+          </button>
+        </div>
+        <!-- Search -->
+        <div class="searchreview input-container">
+          <input type="text" class="form-control floating-input"
+            [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search..." />
+          <mat-icon style="position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none;">search</mat-icon>
+        </div>
+      </div>
+
+      <div class="reviewstable">
+        <!-- <table *ngIf="studentsList.length > 0" class="table table-bordered">
+          <thead>
+            <tr>
+              <th style="width:50px;">SI.No</th>
+              <th (click)="sort('Name')" class="sortable-column">
+                <span class="column-text">Name</span>
+                <span class="arrows">
+                  <mat-icon [style.color]="sortColumn==='Name' && sortDirection==='asc' ? 'red' : 'inherit'">keyboard_arrow_up</mat-icon>
+                  <mat-icon [style.color]="sortColumn==='Name' && sortDirection==='desc' ? 'red' : 'inherit'">keyboard_arrow_down</mat-icon>
+                </span>
+              </th>
+              <th (click)="sort('AdmissionNo')" class="sortable-column">
+                <span class="column-text">Admission No</span>
+                <span class="arrows">
+                  <mat-icon [style.color]="sortColumn==='AdmissionNo' && sortDirection==='asc' ? 'red' : 'inherit'">keyboard_arrow_up</mat-icon>
+                  <mat-icon [style.color]="sortColumn==='AdmissionNo' && sortDirection==='desc' ? 'red' : 'inherit'">keyboard_arrow_down</mat-icon>
+                </span>
+              </th>
+              <th *ngIf="isAdmin">School</th>
+              <th>Academic Year</th>
+              <th>Class</th>
+              <th>Division</th>
+              <th>Phone</th>
+              <th>Email</th>
+              <th>Gender</th>
+              <th style="width:70px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of studentsList; let i = index">
+              <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+              <td style="text-align:left;"><a class="student-name-link" (click)="viewStudent(s.AdmissionNo)">{{ s.Name }}</a></td>
+              <td>{{ s.AdmissionNo }}</td>
+              <td *ngIf="isAdmin">{{ s.SchoolName }}</td>
+              <td>{{ s.AcademicYearName }}</td>
+              <td>{{ s.ClassName }}</td>
+              <td>{{ s.Division }}</td>
+              <td>{{ s.MobileNo }}</td>
+              <td style="text-align:left;">{{ s.Email }}</td>
+              <td>{{ s.Gender }}</td>
+              <td>
+                <div class="d-flex justify-content-center align-items-center h-100">
+                  <button class="btn checkbtn" title="View" (click)="viewStudent(s.AdmissionNo)">
+                    <mat-icon class="mat-edit-icon">visibility</mat-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table> -->
+
+        <table *ngIf="studentsList.length > 0" class="table table-bordered custom-student-table">
+          <thead>
+            <tr>
+              <th class="col-slno">SI.No</th>
+              <th (click)="sort('Name')" class="col-name sortable-column">
+                <div class="header-flex left-align">
+                  <span class="column-text">Name</span>
+                  <span class="arrows">
+                    <mat-icon [style.color]="sortColumn==='Name' && sortDirection==='asc' ? 'red' : 'inherit'">keyboard_arrow_up</mat-icon>
+                    <mat-icon [style.color]="sortColumn==='Name' && sortDirection==='desc' ? 'red' : 'inherit'">keyboard_arrow_down</mat-icon>
+                  </span>
+                </div>
+              </th>
+              <th (click)="sort('AdmissionNo')" class="col-admission sortable-column">
+                <div class="header-flex center-align">
+                  <span class="column-text">Admission No</span>
+                  <span class="arrows">
+                    <mat-icon [style.color]="sortColumn==='AdmissionNo' && sortDirection==='asc' ? 'red' : 'inherit'">keyboard_arrow_up</mat-icon>
+                    <mat-icon [style.color]="sortColumn==='AdmissionNo' && sortDirection==='desc' ? 'red' : 'inherit'">keyboard_arrow_down</mat-icon>
+                  </span>
+                </div>
+              </th>
+              <th *ngIf="isAdmin" class="col-school">School</th>
+              <th class="col-academic">Academic Year</th>
+              <th class="col-class">Class</th>
+              <!-- <th class="col-division">Division</th> -->
+              <!-- <th class="col-phone">Phone</th> -->
+              <th class="col-email">Email</th>
+              <!-- <th class="col-gender">Gender</th> -->
+              <th class="col-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of studentsList; let i = index">
+              <td class="col-slno">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+              <td class="col-name text-start"><a class="student-name-link" (click)="viewStudent(s.AdmissionNo)">{{ s.Name }}</a></td>
+              <td class="col-admission">{{ s.AdmissionNo }}</td>
+              <td *ngIf="isAdmin" class="col-school">{{ s.SchoolName }}</td>
+              <td class="col-academic">{{ s.AcademicYearName }}</td>
+              <td class="col-class">{{ s.ClassName }}</td>
+              <!-- <td class="col-division">{{ s.Division }}</td> -->
+              <!-- <td class="col-phone">{{ s.MobileNo }}</td> -->
+              <td class="col-email text-start">{{ s.Email }}</td>
+              <!-- <td class="col-gender">{{ s.Gender }}</td> -->
+              <td class="col-actions">
+                <div class="d-flex justify-content-center align-items-center h-100">
+                  <button class="btn checkbtn" title="View" (click)="viewStudent(s.AdmissionNo)">
+                    <mat-icon class="mat-edit-icon">visibility</mat-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div *ngIf="studentsList.length === 0" class="NoDataFound">
+          <div class="NoDataFoundImg">
+            <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="No data found" />
+          </div>
+          <p>No data found.</p>
+        </div>
+
+        <!-- Pagination -->
+        <div *ngIf="totalCount > pageSize" class="pagination-controls">
+          <button *ngIf="totalPages() > 3" (click)="firstPage()" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
+          <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
+          <button *ngFor="let page of getVisiblePageNumbers()"
+                  class="page-btn"
+                  [ngClass]="{'active': page === currentPage}"
+                  (click)="goToPage(page)">
+            {{ page }}
+          </button>
+          <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+          <button *ngIf="totalPages() > 3" (click)="lastPage()" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== DETAIL VIEW ===== -->
+  <div *ngIf="isDetailView && selectedStudent" class="w-100">
+    <div class="AddForm student-report-detail-shell">
+      <div class="AddFormTop">
+        <button (click)="backToList()" title="Back">
+          <mat-icon>arrow_circle_left</mat-icon>
+        </button>
+        <p>{{ selectedStudent.Name }}</p>
+        <button class="btnHover" style="margin-left:auto;" title="Print" (click)="printPage()">
+          <mat-icon>print</mat-icon>
+        </button>
+      </div>
+
+      <div class="AddFormConatiner student-report-body">
+        <section class="student-hero-card">
+          <div class="student-hero-header">
+            <span>Personal Details</span>
+            <span class="report-badge">{{ selectedStudent.ClassName || '--' }}<ng-container *ngIf="selectedStudent.ClassDivisionName"> - {{ selectedStudent.ClassDivisionName }}</ng-container></span>
+          </div>
+
+          <div class="student-hero-content">
+            <div class="student-avatar-panel">
+              <div class="student-avatar-circle">{{ getStudentInitials(selectedStudent.Name) }}</div>
+              <div class="student-avatar-name">{{ selectedStudent.Name }}</div>
+              <div class="student-avatar-meta">Admission No: {{ selectedStudent.AdmissionNo || '--' }}</div>
+              <div class="student-avatar-meta">Academic Year: {{ selectedStudent.AcademicYearName || '--' }}</div>
+            </div>
+
+            <div class="student-detail-grid">
+              <div class="detail-item">
+                <span class="detail-label">Admission No</span>
+                <span class="detail-value">{{ selectedStudent.AdmissionNo || '--' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Class</span>
+                <span class="detail-value">{{ selectedStudent.ClassName || '--' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Division</span>
+                <span class="detail-value">{{ selectedStudent.ClassDivisionName || '--' }}</span>
+              </div>
+              <!-- <div class="detail-item">
+                <span class="detail-label">Roll Number</span>
+                <span class="detail-value">{{ selectedStudent.RollNo || '--' }}</span>
+              </div> -->
+              <div class="detail-item">
+                <span class="detail-label">Date of Birth</span>
+                <span class="detail-value">{{ selectedStudent.DOB || '--' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Blood Group</span>
+                <span class="detail-value">{{ selectedStudent.BloodGroup || '--' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Gender</span>
+                <span class="detail-value">{{ selectedStudent.Gender || '--' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Religion</span>
+                <span class="detail-value">{{ selectedStudent.Religion || '--' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Caste</span>
+                <span class="detail-value">{{ selectedStudent.Caste || '--' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Father</span>
+                <span class="detail-value">{{ parentDetails?.fatherName || '--' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Mother</span>
+                <span class="detail-value">{{ parentDetails?.motherName || '--' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Aadhaar Number</span>
+                <span class="detail-value">{{ selectedStudent.AadharNo || '--' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Phone Number</span>
+                <span class="detail-value">{{ selectedStudent.MobileNo || '--' }}</span>
+              </div>
+              <div class="detail-item detail-item-wide detail-item-address">
+                <span class="detail-label">Address</span>
+                <span class="detail-value">{{ fullAddress }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Email</span>
+                <span class="detail-value">{{ selectedStudent.Email || '--' }}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="report-section-card">
+          <div class="section-title">Fee Details</div>
+
+          <div class="reviewstable detail-table-wrap" *ngIf="feeDetails.length > 0; else noFeeData">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>SI.NO</th>
+                  <th>Fee Category</th>
+                  <th>Total Amount</th>
+                  <th>Paid Amount</th>
+                  <th>Discount</th>
+                  <th>Installment</th>
+                  <th>Due Amount</th>
+                  <th>Fine</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let fee of feeDetails; let i = index">
+                  <td>{{ i + 1 }}</td>
+                  <td class="text-start">{{ fee.feeCategoryName || '--' }}</td>
+                  <td>{{ formatAmount(fee.totalAmount) }}</td>
+                  <td>{{ formatAmount(fee.paidAmount) }}</td>
+                  <td>{{ formatAmount(fee.discount) }}</td>
+                  <td>{{ formatAmount(fee.installment) }}</td>
+                  <td>{{ formatAmount(fee.dueAmount) }}</td>
+                  <td>{{ formatAmount(fee.fine) }}</td>
+                </tr>
+                <tr class="report-total-row">
+                  <td colspan="2">Total</td>
+                  <td>{{ formatAmount(feeTotals.totalAmount) }}</td>
+                  <td>{{ formatAmount(feeTotals.paidAmount) }}</td>
+                  <td>{{ formatAmount(feeTotals.discount) }}</td>
+                  <td>{{ formatAmount(feeTotals.installment) }}</td>
+                  <td>{{ formatAmount(feeTotals.dueAmount) }}</td>
+                  <td>{{ formatAmount(feeTotals.fine) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <ng-template #noFeeData>
+            <p class="empty-state-text">No fee details found for this student.</p>
+          </ng-template>
+        </section>
+
+        <div class="attendance-grid">
+          <section class="report-section-card">
+            <div class="section-title">Attendance Details</div>
+
+            <div class="reviewstable detail-table-wrap" *ngIf="attendanceDetails.length > 0; else noAttendanceData">
+              <table class="table table-bordered attendance-summary-table">
+                <thead>
+                  <tr>
+                    <th>Total Working Days</th>
+                    <th>Present</th>
+                    <th>Absent</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{{ attendanceSummary.workingDays }}</td>
+                    <td>{{ attendanceSummary.present }}</td>
+                    <td>{{ attendanceSummary.absent }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <ng-template #noAttendanceData>
+              <p class="empty-state-text">No attendance details found for this student.</p>
+            </ng-template>
+          </section>
+
+          <section class="report-section-card attendance-chart-card">
+            <div class="section-title">Attendance Report</div>
+
+            <div *ngIf="attendanceChartOptions; else noAttendanceChart" echarts [options]="attendanceChartOptions" class="attendance-chart"></div>
+
+            <ng-template #noAttendanceChart>
+              <p class="empty-state-text">Attendance chart will appear once records are available.</p>
+            </ng-template>
+          </section>
+        </div>
+
+        <!-- <section class="report-section-card" *ngIf="recentAttendanceDetails.length > 0">
+          <div class="section-title">Attendance Log</div>
+
+          <div class="reviewstable detail-table-wrap">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>SI.NO</th>
+                  <th>Date</th>
+                  <th>Session</th>
+                  <th>Status</th>
+                  <th>Late Minutes</th>
+                  <th>Remark</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let attendance of recentAttendanceDetails; let i = index">
+                  <td>{{ i + 1 }}</td>
+                  <td>{{ attendance.attendanceDate }}</td>
+                  <td>{{ attendance.session || '--' }}</td>
+                  <td>
+                    <span class="attendance-chip" [ngClass]="attendance.status === 'Present' ? 'present-chip' : 'absent-chip'">
+                      {{ attendance.status }}
+                    </span>
+                  </td>
+                  <td>{{ attendance.lateMinutes }}</td>
+                  <td class="text-start">{{ attendance.remark || '--' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section> -->
+
+        <section class="report-section-card">
+          <div class="section-title">Bus Information</div>
+
+          <div class="reviewstable detail-table-wrap" *ngIf="transportDetails; else noBusData">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Route</th>
+                  <th>Stop</th>
+                  <th>Bus</th>
+                  <th>Amount</th>
+                  <th>Start Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="text-start">{{ transportDetails?.routeName || '--' }}</td>
+                  <td class="text-start">{{ transportDetails?.stopName || '--' }}</td>
+                  <td>{{ transportDetails?.busName || '--' }}</td>
+                  <td>{{ transportDetails?.fareName || '--' }}</td>
+                  <td>{{ transportDetails?.startDate ? formatDate(transportDetails.startDate) : '--' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <ng-template #noBusData>
+            <p class="empty-state-text">No bus or fare information found for this student.</p>
+          </ng-template>
+        </section>
+      </div>
+    </div>
+  </div>
+
+</div>

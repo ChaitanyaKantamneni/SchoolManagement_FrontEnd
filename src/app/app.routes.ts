@@ -97,6 +97,11 @@ import { LeavedetailsComponent } from './Admin/LeaveManagement/leavedetails/leav
 import { AssignHomewrokComponent } from './Admin/HomeWork/assign-homewrok/assign-homewrok.component';
 import { HomeworkComponent } from './Admin/HomeWork/homework/homework.component';
 
+import { HolidayCalenderComponent } from './Admin/HolidayCalender/holiday-calender/holiday-calender.component';
+import { NoticesComponent } from './Admin/Notices/notices/notices.component';
+import { StudentsReportComponent } from './Admin/Report/students-report/students-report.component';
+import { FeeReportComponent } from './Admin/Report/fee-report/fee-report.component';
+import { ParentDashboardComponent } from './Parent/parent-dashboard/parent-dashboard.component';
 
 export const routes: Routes = [
   { path: '', component: SignInComponent },
@@ -163,6 +168,12 @@ export const routes: Routes = [
       { path: 'LeaveDetails',  component: LeavedetailsComponent },
       { path: 'AssignHomework',  component: AssignHomewrokComponent },
       { path: 'HomeWork',  component: HomeworkComponent },
+      { path: 'HolidayCalendar', component: HolidayCalenderComponent },
+      { path: 'HolidayCalender', redirectTo: 'HolidayCalendar', pathMatch: 'full' },
+      { path: 'Notices', component: NoticesComponent },
+      { path: 'StudentsReport', component: StudentsReportComponent },
+      { path: 'StudentReport', redirectTo: 'StudentsReport', pathMatch: 'full' },
+      { path: 'FeeReport', component: FeeReportComponent },
     ]
   },
 
@@ -229,6 +240,11 @@ export const routes: Routes = [
 
 
 
+      { path: 'HolidayCalendar', component: HolidayCalenderComponent },
+      { path: 'HolidayCalender', redirectTo: 'HolidayCalendar', pathMatch: 'full' },
+      { path: 'StudentsReport', component: StudentsReportComponent },
+      { path: 'StudentReport', redirectTo: 'StudentsReport', pathMatch: 'full' },
+      { path: 'FeeReports', component: FeeReportComponent },
     ]
   },
 
@@ -241,6 +257,7 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
 
       { path: 'dashboard', component: AdminMainDashboardComponent },
+      { path: 'parent-dashboard', component: ParentDashboardComponent },
       { path: 'Staff', component: StaffComponent },
       { path: 'SchoolDetails', component: SchoolDetailsComponent },
       { path: 'AcademicYear', component: AcademicYearComponent },
@@ -300,6 +317,12 @@ export const routes: Routes = [
       { path: 'AssignHomework',  component: AssignHomewrokComponent },
       { path: 'HomeWork',  component: HomeworkComponent },
 
+      { path: 'HolidayCalendar', component: HolidayCalenderComponent },
+      { path: 'HolidayCalender', redirectTo: 'HolidayCalendar', pathMatch: 'full' },
+      { path: 'Notices', component: NoticesComponent },
+      { path: 'StudentsReport', component: StudentsReportComponent },
+      { path: 'StudentReport', redirectTo: 'StudentsReport', pathMatch: 'full' },
+      { path: 'FeeReports', component: FeeReportComponent },
     ]
   }
 ];

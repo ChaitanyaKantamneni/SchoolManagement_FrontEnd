@@ -1,0 +1,258 @@
+.FormInputRowsContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.InputRow {
+  width: 100% !important;
+  flex-direction: row !important;
+}
+
+.InputFieldsContainer {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.InputFieldsContainer select.inputField {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ── Table header alignment ───────────────────── */
+.reviewstable table th {
+  white-space: nowrap;
+}
+
+.reviewstable table th.sortable-column {
+  padding: 8px 10px !important;
+}
+
+.reviewstable table th {
+  white-space: nowrap;
+  padding: 10px 12px;
+  vertical-align: middle;
+}
+
+.th-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.sort-icons {
+  display: flex;
+  flex-direction: column;
+  line-height: 10px;
+}
+
+.sort-icons mat-icon {
+  font-size: 16px;
+  height: 14px;
+  width: 14px;
+  opacity: 0.4;
+}
+
+.sort-icons mat-icon.active {
+  color: #2563eb;
+  opacity: 1;
+}
+
+.sortable-column {
+  cursor: pointer;
+}
+
+/* ── View toggle (in filter row) ─────────────── */
+.view-toggle-btns {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.view-toggle-btns button {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+.view-toggle-btns button.active-view {
+  background: #3b82f6;
+  color: #fff;
+  border-color: #3b82f6;
+}
+
+/* ── Calendar ─────────────────────────────────── */
+.calendar-wrapper {
+  padding: 12px 0;
+}
+
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.cal-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+  min-width: 160px;
+  text-align: center;
+}
+
+.cal-nav-btn {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 2px 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: #475569;
+  transition: background 0.2s;
+}
+
+.cal-nav-btn:hover {
+  background: #e2e8f0;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.cal-day-header {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  padding: 6px 0;
+  background: #f8fafc;
+  border-radius: 4px;
+}
+
+.cal-cell {
+  min-height: 72px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 4px 6px;
+  background: #fff;
+  transition: background 0.15s;
+}
+
+.cal-cell.empty {
+  background: #f8fafc;
+  border-color: transparent;
+}
+
+.cal-cell.today {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.cal-cell.has-holiday {
+  background: #fef9ec;
+}
+
+.cal-date {
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.cal-cell.today .cal-date {
+  color: #2563eb;
+}
+
+.cal-events {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cal-event-pill {
+  display: block;
+  font-size: 9px;
+  border-radius: 3px;
+  padding: 1px 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: default;
+}
+
+.cal-event-pill.active-pill {
+  background: linear-gradient(135deg, #bbf7d0, #22c55e);
+  color: #14532d;
+}
+
+.cal-event-pill.inactive-pill {
+  background: linear-gradient(135deg, #fecdd3, #f87171);
+  color: #7f1d1d;
+  text-decoration: line-through;
+  opacity: 0.85;
+}
+
+.cal-legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.holiday-dot {
+  background: linear-gradient(135deg, #bbf7d0, #22c55e);
+}
+
+.inactive-dot {
+  background: linear-gradient(135deg, #fecdd3, #f87171);
+}
+
+.show-inactive-btn {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+.show-inactive-btn.active-toggle {
+  background: #3b82f6;
+  color: #fff;
+  border-color: #3b82f6;
+}
+
+.today-dot {
+  background: #eff6ff;
+  border: 2px solid #3b82f6;
+}
+
+/* ── Delete icon colour ───────────────────────── */
+.delete-icon {
+  color: #dc2626;
+}
