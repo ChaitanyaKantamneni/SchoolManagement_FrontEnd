@@ -94,6 +94,9 @@ import { ApplyleaveComponent } from './Admin/LeaveManagement/applyleave/applylea
 // import { LeavelistComponent } from './Admin/LeaveManagement/leavelist/leavelist.component';
 import { LeaveapprovalComponent } from './Admin/LeaveManagement/leaveapproval/leaveapproval.component';
 import { LeavedetailsComponent } from './Admin/LeaveManagement/leavedetails/leavedetails.component';
+import { AssignHomewrokComponent } from './Admin/HomeWork/assign-homewrok/assign-homewrok.component';
+import { HomeworkComponent } from './Admin/HomeWork/homework/homework.component';
+
 import { HolidayCalenderComponent } from './Admin/HolidayCalender/holiday-calender/holiday-calender.component';
 import { NoticesComponent } from './Admin/Notices/notices/notices.component';
 import { StudentsReportComponent } from './Admin/Report/students-report/students-report.component';
@@ -163,6 +166,8 @@ export const routes: Routes = [
       // { path: 'MyLeaves',      component:  LeavelistComponent},
       { path: 'LeaveApproval', component: LeaveapprovalComponent },
       { path: 'LeaveDetails',  component: LeavedetailsComponent },
+      { path: 'AssignHomework',  component: AssignHomewrokComponent },
+      { path: 'HomeWork',  component: HomeworkComponent },
       { path: 'HolidayCalendar', component: HolidayCalenderComponent },
       { path: 'HolidayCalender', redirectTo: 'HolidayCalendar', pathMatch: 'full' },
       { path: 'Notices', component: NoticesComponent },
@@ -230,6 +235,11 @@ export const routes: Routes = [
       // { path: 'MyLeaves',      component:  LeavelistComponent},
       { path: 'LeaveApproval', component: LeaveapprovalComponent },
       { path: 'LeaveDetails',  component: LeavedetailsComponent },
+      { path: 'AssignHomework',  component: AssignHomewrokComponent },
+      { path: 'HomeWork',  component: HomeworkComponent },
+
+
+
       { path: 'HolidayCalendar', component: HolidayCalenderComponent },
       { path: 'HolidayCalender', redirectTo: 'HolidayCalendar', pathMatch: 'full' },
       { path: 'StudentsReport', component: StudentsReportComponent },
@@ -286,7 +296,7 @@ export const routes: Routes = [
       { path: 'WorkingDays', component: WorkingDaysComponent },
       { path: 'Sessions', component: SessionsComponent },
       { path: 'TimeTable', component: TimeTableComponent },
-      { path: 'TeachersTimetable', component: TeachersTimeTableComponent },
+      { path: 'TeachersTimeTable', component: TeachersTimeTableComponent },
       { path: 'AttendanceSheet', component: AttendanceSheetComponent },
       { path: 'ViewAttendance', component: ViewAttendanceComponent },
       { path: 'Staffattendance', component: StaffattendanceComponent },
@@ -304,6 +314,9 @@ export const routes: Routes = [
       { path: 'LeaveApproval', component: LeaveapprovalComponent },
       { path: 'LeaveDetails',  component: LeavedetailsComponent },
       { path: 'LeavePolicy',    component: LeavedetailsComponent },
+      { path: 'AssignHomework',  component: AssignHomewrokComponent },
+      { path: 'HomeWork',  component: HomeworkComponent },
+
       { path: 'HolidayCalendar', component: HolidayCalenderComponent },
       { path: 'HolidayCalender', redirectTo: 'HolidayCalendar', pathMatch: 'full' },
       { path: 'Notices', component: NoticesComponent },

@@ -36,7 +36,6 @@ export class ExamattendenceComponent  extends BasePermissionComponent{
       this.AdminselectedSchoolID = this.resolvedSchoolId || this.ss('SchoolID') || this.ss('schoolId');
       this.resolveStaffIdentity();
       this.FetchAcademicYearsList();
-      this.FetchExamsList();
 
       // For teachers, remove validators from School, Class, Divisions (auto-resolved)
       this.SyllabusForm.get('School').clearValidators();
@@ -134,6 +133,8 @@ export class ExamattendenceComponent  extends BasePermissionComponent{
   AdminselectedAcademivYearID: string = '';
   AdminselectedClassID:string ='';
   AdminselectedDiviosnID:string = '';
+  teacherAssignedClassID: string = '';
+  teacherAssignedDivisionID: string = '';
   AdminselecteExamID:string = '';
   selectedExamIDForAttendance!: number;
   selectedSubjectID!: number;
@@ -268,7 +269,97 @@ export class ExamattendenceComponent  extends BasePermissionComponent{
         if (this.isTeacher && !this.currentUserId) {
           console.warn('[EXAM ATTENDANCE] Teacher StaffID could not be resolved from session/email mapping.');
         }
+        if (this.isTeacher && this.AdminselectedAcademivYearID) {
+          this.syncTeacherClassDivisionFromAllocation(() => this.FetchExamsList());
+        }
       }
+    });
+  }
+
+  private normalizeId(value: any): string {
+    const normalized = String(value ?? '').trim();
+    return normalized === '0' || normalized.toLowerCase() === 'null' || normalized.toLowerCase() === 'undefined'
+      ? ''
+      : normalized;
+  }
+
+  private tokenizeDivisionIds(raw: any): string[] {
+    return String(raw ?? '')
+      .split(/[|,]/)
+      .map(v => this.normalizeId(v))
+      .filter(Boolean);
+  }
+
+  private rowContainsTeacherDivision(row: any): boolean {
+    if (!this.teacherAssignedDivisionID) return true;
+    const fromDivisionList = this.tokenizeDivisionIds(row?.divisionList ?? row?.DivisionList);
+    const fromDivisions = this.tokenizeDivisionIds(row?.divisions ?? row?.Divisions);
+    const fromTeacherDivision = this.tokenizeDivisionIds(row?.teacherDivisionID ?? row?.TeacherDivisionID ?? row?.teacherDivision ?? row?.TeacherDivision);
+    const candidateIds = new Set<string>([...fromDivisionList, ...fromDivisions, ...fromTeacherDivision]);
+    return candidateIds.size === 0 || candidateIds.has(this.teacherAssignedDivisionID);
+  }
+
+  private syncTeacherClassDivisionFromAllocation(onDone?: () => void): void {
+    if (!this.isTeacher) {
+      onDone?.();
+      return;
+    }
+
+    const schoolId = this.getCurrentSchoolId();
+    const academicYear = this.AdminselectedAcademivYearID || '';
+    const staffId = this.currentUserId || '';
+
+    if (!schoolId || !academicYear || !staffId) {
+      onDone?.();
+      return;
+    }
+
+    this.apiurl.post<any>('Tbl_AllotClassTeacher_CRUD_Operations', {
+      Flag: '2',
+      SchoolID: schoolId,
+      AcademicYear: academicYear,
+      ClassTeacher: staffId
+    }).subscribe({
+      next: (res: any) => {
+        const rows = Array.isArray(res?.data) ? res.data : [];
+        const currentStaff = this.normalizeId(staffId);
+        const match = rows.find((x: any) =>
+          this.normalizeId(x?.classTeacher ?? x?.ClassTeacher) === currentStaff
+        ) || rows[0];
+
+        if (!match) return;
+
+        const classId = this.normalizeId(match?.class ?? match?.Class);
+        const divisionId = this.normalizeId(match?.division ?? match?.Division);
+        const className = String(match?.className ?? match?.ClassName ?? '').trim();
+        const divisionName = String(match?.divisionName ?? match?.DivisionName ?? '').trim();
+
+        if (classId) {
+          this.teacherAssignedClassID = classId;
+          this.AdminselectedClassID = classId;
+          this.classLists = [{
+            ID: classId,
+            Name: className || `Class ${classId}`,
+            Division: divisionName || ''
+          }];
+        }
+
+        if (divisionId) {
+          this.teacherAssignedDivisionID = divisionId;
+          this.AdminselectedDiviosnID = divisionId;
+          this.divisionsList = [{
+            ID: divisionId,
+            Name: divisionName || `Division ${divisionId}`
+          }];
+        }
+
+        this.SyllabusForm.patchValue({
+          Class: this.AdminselectedClassID || '0',
+          Divisions: this.AdminselectedDiviosnID || '0'
+        });
+      },
+      complete: () => onDone?.(),
+      error: () => onDone?.()
     });
   }
 
@@ -354,9 +445,15 @@ FetchClassList() {
 }
 FetchExamsList() {
   if (this.isTeacher) {
+    if (!this.AdminselectedAcademivYearID || !this.currentUserId) {
+      this.examLists = [];
+      return;
+    }
+
     const teacherPayload: any = {
       SchoolID: this.getCurrentSchoolId(),
       AcademicYear: this.AdminselectedAcademivYearID || '',
+      Divisions: this.teacherAssignedDivisionID || this.AdminselectedDiviosnID || '',
       StaffID: this.currentUserId || '-1',
       Flag: '12'
     };
@@ -364,7 +461,8 @@ FetchExamsList() {
     this.apiurl.post<any>('Tbl_SetExam_CRUD_Operations', teacherPayload)
       .subscribe(
         (response: any) => {
-          const rows = Array.isArray(response?.data) ? response.data : [];
+          const rows = (Array.isArray(response?.data) ? response.data : [])
+            .filter((row: any) => this.rowContainsTeacherDivision(row));
           const byId = new Map<string, any>();
 
           rows.forEach((item: any) => {
@@ -693,6 +791,7 @@ checkAttendanceStatusForExams() {
     // For teachers, use StaffID in FLAG 12
     if (this.isTeacher) {
       payload.StaffID = this.currentUserId || '-1';
+      payload.Divisions = this.teacherAssignedDivisionID || this.AdminselectedDiviosnID || '';
       payload.Flag = '12';
     } else {
       payload.Flag = isSearch ? '8' : '6';
@@ -747,6 +846,7 @@ private resetPaginationAndFetch() {
       // For teachers, pass StaffID
       if (this.isTeacher) {
         payload.StaffID = this.currentUserId || '-1';
+        payload.Divisions = this.teacherAssignedDivisionID || this.AdminselectedDiviosnID || '';
         console.log('[EXAM ATTENDANCE] Teacher payload - currentUserId:', this.currentUserId, 'Flag:', flag);
       }
 
@@ -756,6 +856,10 @@ private resetPaginationAndFetch() {
         next: (response: any) => {
           let responseData = Array.isArray(response?.data) ? response.data : [];
           const selectedExamTypeId = this.getSelectedExamTypeId();
+
+          if (this.isTeacher) {
+            responseData = responseData.filter((row: any) => this.rowContainsTeacherDivision(row));
+          }
 
           // Safety net: if FLAG 12 ignores ExamType on backend, filter on client by selected exam id.
           if (this.isTeacher && selectedExamTypeId) {
@@ -769,10 +873,17 @@ private resetPaginationAndFetch() {
           }
 
           // For teachers with FLAG 12, auto-populate class/division and handle response
-          if (this.isTeacher && flag === '12' && responseData.length > 0) {
+          if (this.isTeacher && flag === '12' && responseData.length > 0 && !this.AdminselectedClassID) {
             const firstExam = responseData[0];
-            const classId = firstExam.classID || firstExam.Class;
-            const divisionId = firstExam.TeacherDivisionID || firstExam.TeacherDivision;
+            const classId = this.normalizeId(firstExam.classID || firstExam.class || firstExam.Class);
+            const divisionId = this.normalizeId(
+              firstExam.TeacherDivisionID ||
+              firstExam.teacherDivisionID ||
+              firstExam.TeacherDivision ||
+              firstExam.teacherDivision ||
+              firstExam.divisionList ||
+              firstExam.DivisionList
+            );
             const className = firstExam.ClassName;
             const divisionName = firstExam.TeacherDivisionName || firstExam.DivisionName;
 
@@ -808,7 +919,7 @@ private resetPaginationAndFetch() {
           }
 
           this.mapAcademicYears({ ...response, data: responseData });
-          if (this.isTeacher && selectedExamTypeId) {
+          if (this.isTeacher) {
             this.SyllabusCount = responseData.length;
           }
 
@@ -923,6 +1034,11 @@ formatDateYYYYMMDD(dateStr: string | null) {
     // Keep selected exam filter synced even if change-event timing varies.
     const examFromForm = this.getSelectedExamTypeId();
     this.AdminselecteExamID = examFromForm && examFromForm !== '0' ? examFromForm : '';
+
+    if (this.isTeacher && this.teacherAssignedClassID && this.teacherAssignedDivisionID) {
+      this.AdminselectedClassID = this.teacherAssignedClassID;
+      this.AdminselectedDiviosnID = this.teacherAssignedDivisionID;
+    }
 
     if (this.SyllabusForm.invalid) {
       this.SyllabusForm.markAllAsTouched();
@@ -1285,9 +1401,15 @@ submitAttendance() {
  onAdminAcademicYearchange(event: Event) {
   const academicyearId = (event.target as HTMLSelectElement).value;
   this.AdminselectedAcademivYearID = academicyearId === "0" ? "" : academicyearId;
+  this.teacherAssignedClassID = '';
+  this.teacherAssignedDivisionID = '';
   this.resetFilters('academic');  
-  this.FetchExamsList();
-  this.FetchClassList();
+  if (this.isTeacher) {
+    this.syncTeacherClassDivisionFromAllocation(() => this.FetchExamsList());
+  } else {
+    this.FetchExamsList();
+    this.FetchClassList();
+  }
  }
   
   onAdminClasschange(event: Event) {

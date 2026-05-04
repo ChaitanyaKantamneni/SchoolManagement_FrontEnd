@@ -1,3 +1,7 @@
+.ComponentTop {
+  position: relative;
+}
+
 .FormInputRowsContainer{
   display: flex;
   justify-content: center;
@@ -138,4 +142,115 @@
 .MainContentDiv > .compact-table-section {
   width: 100%;
   margin-bottom: 0 !important;
+}
+
+
+/* Child Tab Slider (Parent View) */
+.child-tab-slider {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 0 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.child-tab-slider::-webkit-scrollbar { display: none; }
+
+.child-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 10px;
+  border: 2px solid #e2e8f0;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.child-tab-btn:hover {
+  border-color: #536ff7;
+  color: #536ff7;
+  background: #eff6ff;
+}
+
+.child-tab-btn.active {
+  background: #536ff7;
+  border-color: #536ff7;
+  color: white;
+  box-shadow: 0 4px 12px rgba(83,111,247,0.3);
+}
+
+.child-tab-btn mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+/* Top Right Child Tab Slider for Parent View */
+.child-tab-slider-top-right {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 10;
+  max-width: 500px;
+}
+
+.children-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  white-space: nowrap;
+  margin-right: 4px;
+}
+
+.child-tabs-container {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  align-items: center;
+}
+
+.child-tab-slider-top-right .child-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.child-tab-slider-top-right .child-tab-btn:hover {
+  border-color: #536ff7;
+  color: #536ff7;
+  background: #eff6ff;
+}
+
+.child-tab-slider-top-right .child-tab-btn.active {
+  background: #536ff7;
+  border-color: #536ff7;
+  color: white;
+  box-shadow: 0 4px 12px rgba(83,111,247,0.3);
+}
+
+.child-tab-slider-top-right .child-tab-btn mat-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
 }

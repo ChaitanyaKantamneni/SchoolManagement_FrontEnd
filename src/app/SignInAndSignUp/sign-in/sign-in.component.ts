@@ -598,6 +598,7 @@ interface LoginResponse {
   schoolId?: string;
   schoolName?: string;
   message?: string;
+  requireOtp?: boolean;
 }
 
 interface OtpApiResponse {
@@ -742,14 +743,80 @@ export class SignInComponent implements OnInit, OnDestroy {
   }
 
   // ================= LOGIN =================
-  OnSubmitSignIn(): void {
+  // OnSubmitSignIn(): void {
 
-    console.log('LOGIN CLICKED');
+  //   console.log('LOGIN CLICKED');
+
+  //   if (this.isLoginLoading) return;
+
+  //   if (this.LoginForms.invalid) {
+  //     console.log('FORM INVALID');
+  //     this.LoginForms.markAllAsTouched();
+  //     return;
+  //   }
+
+  //   const enteredCaptcha = this.LoginForms.get('captcha')?.value?.trim();
+
+  //   if (!enteredCaptcha || enteredCaptcha !== this.captchaText) {
+  //     console.log('CAPTCHA INVALID');
+  //     this.authError = true;
+  //     this.authMessage = 'Invalid captcha';
+  //     this.generateCaptcha();
+  //     this.LoginForms.get('captcha')?.reset();
+  //     return;
+  //   }
+
+  //   console.log('CALLING LOGIN API');
+
+  //   this.isLoginLoading = true;
+
+  //   const formData = new FormData();
+  //   formData.append('Email', this.LoginForms.get('email')?.value || '');
+  //   formData.append('Password', this.LoginForms.get('password')?.value || '');
+  //   formData.append('Flag', '4');
+
+  //   this.apiurl.post<LoginResponse>('Tbl_Users_CRUD_Operations', formData).subscribe({
+  //     next: (res) => {
+
+  //       console.log('LOGIN SUCCESS RESPONSE', res);
+
+  //       if (!res?.email || !res?.role) {
+  //         this.authError = true;
+  //         this.authMessage = res?.message || 'Invalid credentials';
+  //         this.isLoginLoading = false;
+  //         return;
+  //       }
+
+
+  //       this.pendingLoginData = {
+  //         accessToken: '',
+  //         refreshToken: '',
+  //         email: res.email,
+  //         role: res.role,
+  //         schoolId: res.schoolId || '',
+  //         schoolName: res.schoolName || ''
+  //       };
+
+  //       sessionStorage.setItem('pendingLogin', JSON.stringify(this.pendingLoginData));
+  //       sessionStorage.setItem('isOtpStep', 'true');
+
+  //       this.isOtpStep = true;
+  //       this.sendOtp(res.email);
+  //     },
+  //     error: (err) => {
+  //       console.log('LOGIN ERROR', err);
+  //       this.authError = true;
+  //       this.authMessage = 'Login failed';
+  //       this.isLoginLoading = false;
+  //     }
+  //   });
+  // }
+
+  OnSubmitSignIn(): void {
 
     if (this.isLoginLoading) return;
 
     if (this.LoginForms.invalid) {
-      console.log('FORM INVALID');
       this.LoginForms.markAllAsTouched();
       return;
     }
@@ -757,15 +824,12 @@ export class SignInComponent implements OnInit, OnDestroy {
     const enteredCaptcha = this.LoginForms.get('captcha')?.value?.trim();
 
     if (!enteredCaptcha || enteredCaptcha !== this.captchaText) {
-      console.log('CAPTCHA INVALID');
       this.authError = true;
       this.authMessage = 'Invalid captcha';
       this.generateCaptcha();
       this.LoginForms.get('captcha')?.reset();
       return;
     }
-
-    console.log('CALLING LOGIN API');
 
     this.isLoginLoading = true;
 
@@ -774,10 +838,8 @@ export class SignInComponent implements OnInit, OnDestroy {
     formData.append('Password', this.LoginForms.get('password')?.value || '');
     formData.append('Flag', '4');
 
-    this.apiurl.post<LoginResponse>('Tbl_Users_CRUD_Operations', formData).subscribe({
+    this.apiurl.post<any>('Tbl_Users_CRUD_Operations', formData).subscribe({
       next: (res) => {
-
-        console.log('LOGIN SUCCESS RESPONSE', res);
 
         if (!res?.email || !res?.role) {
           this.authError = true;
@@ -786,31 +848,56 @@ export class SignInComponent implements OnInit, OnDestroy {
           return;
         }
 
+        // 🔥 CASE 1: OTP REQUIRED
+        if (res.requireOtp === true) {
 
-        this.pendingLoginData = {
-          accessToken: '',
-          refreshToken: '',
-          email: res.email,
-          role: res.role,
-          schoolId: res.schoolId || '',
-          schoolName: res.schoolName || ''
-        };
+          this.pendingLoginData = {
+            accessToken: '',
+            refreshToken: '',
+            email: res.email,
+            role: res.role,
+            schoolId: res.schoolId || '',
+            schoolName: res.schoolName || ''
+          };
 
-        sessionStorage.setItem('pendingLogin', JSON.stringify(this.pendingLoginData));
-        sessionStorage.setItem('isOtpStep', 'true');
+          sessionStorage.setItem('pendingLogin', JSON.stringify(this.pendingLoginData));
+          sessionStorage.setItem('isOtpStep', 'true');
 
-        this.isOtpStep = true;
-        this.sendOtp(res.email);
+          this.isOtpStep = true;
+          this.sendOtp(res.email);
+
+          return;
+        }
+
+        // 🔥 CASE 2: DIRECT LOGIN (NO OTP)
+        if (res.accessToken && res.refreshToken) {
+
+          this.pendingLoginData = {
+            accessToken: res.accessToken,
+            refreshToken: res.refreshToken,
+            email: res.email,
+            role: res.role,
+            schoolId: res.schoolId || '',
+            schoolName: res.schoolName || ''
+          };
+
+          this.persistSession(res.accessToken, res.refreshToken);
+
+          return;
+        }
+
+        this.authError = true;
+        this.authMessage = 'Unexpected login response';
+        this.isLoginLoading = false;
       },
-      error: (err) => {
-        console.log('LOGIN ERROR', err);
+
+      error: () => {
         this.authError = true;
         this.authMessage = 'Login failed';
         this.isLoginLoading = false;
       }
     });
   }
-
   // ================= SEND OTP =================
   sendOtp(email: string): void {
 

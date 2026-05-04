@@ -57,7 +57,8 @@
               <th>SI.No</th>
               <th>Applicant</th>
               <th *ngIf="userTypeFilter === 'Student'">Class/Div</th>
-              <th>Leave Type</th>
+              <th *ngIf="userTypeFilter === 'Staff'">Staff Type</th>
+              <th *ngIf="userTypeFilter === 'Staff'">Leave Type</th>
               <th>Duration</th>
               <th>Days</th>
               <th>Applied On</th>
@@ -76,7 +77,10 @@
                 <div style="font-size: 13px; font-weight: 600;">{{ req.className }}</div>
                 <div style="font-size: 11px; color: #94a3b8;">{{ req.divisionName }}</div>
               </td>
-              <td>{{ req.leaveType }}</td>
+              <td *ngIf="userTypeFilter === 'Staff'">
+                {{ getStaffRoleName(req) }}
+              </td>
+              <td *ngIf="userTypeFilter === 'Staff'">{{ req.leaveType }}</td>
               <td>{{ req.fromDate }} to {{ req.toDate }}</td>
               <td>{{ req.days }}</td>
               <td>{{ req.appliedOn }}</td>

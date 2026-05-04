@@ -67,16 +67,22 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
 
   ngOnInit(): void {
     this.checkViewPermission();
+    this.configureRoleBasedForm();
 
     if (this.isTeacher) {
       this.AdminselectedSchoolID = this.resolvedSchoolId || this.ss('SchoolID') || this.ss('schoolId');
+      this.SyllabusForm.patchValue({ School: this.AdminselectedSchoolID || '0' });
       this.resolveStaffIdentity();
+      this.FetchAcademicYearsList();
+    } else if (this.isParent) {
+      this.AdminselectedSchoolID = this.resolvedSchoolId || this.ss('SchoolID') || this.ss('schoolId');
+      this.SyllabusForm.patchValue({ School: this.AdminselectedSchoolID || '0' });
       this.FetchAcademicYearsList();
     } else {
       if (!this.isAdmin) {
         this.AdminselectedSchoolID =
-          sessionStorage.getItem('SchoolID')?.toString() ||
-          sessionStorage.getItem('schoolId')?.toString() ||
+          this.ss('SchoolID') ||
+          this.ss('schoolId') ||
           '';
         this.SyllabusForm.patchValue({ School: this.AdminselectedSchoolID || '0' });
       }
@@ -97,6 +103,7 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
   AdminselectedClassID = '';
   AdminselectedDiviosnID = '';
   AdminSelectedSessionID = '';
+  AdminselectedStudentID = '';
 
   currentPage = 1;
   pageSize = 5;
@@ -111,6 +118,9 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
   selectedStudent: StudentAttendanceSummary | null = null;
   studentSummaries: StudentAttendanceSummary[] = [];
   private rawData: any[] = [];
+  parentChildren: Array<{ ID: string; AdmissionNo: string; Name: string; Class: string; Division: string; SchoolID: string }> = [];
+  selectedChildId = '';
+  selectedChildIndex = 0;
 
   // status modal
   statusModalTitle = 'Status';
@@ -135,9 +145,22 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
     Class: new FormControl(0, []),
     Divisions: new FormControl(0, []),
     Session: new FormControl(0),
-    FromDateTime: new FormControl('', [Validators.required]),
-    ToDateTime: new FormControl('', [Validators.required])
+    FromDateTime: new FormControl(new Date().toISOString().split('T')[0], [Validators.required]),
+    ToDateTime: new FormControl(new Date().toISOString().split('T')[0], [Validators.required])
   });
+
+  private configureRoleBasedForm() {
+    this.setControlValidators('School', this.isAdmin ? [Validators.required, Validators.min(1)] : []);
+    this.setControlValidators('Class', (this.isTeacher || this.isParent) ? [] : [Validators.required, Validators.min(1)]);
+    this.setControlValidators('Divisions', (this.isTeacher || this.isParent) ? [] : [Validators.required, Validators.min(1)]);
+  }
+
+  private setControlValidators(controlName: string, validators: any[]) {
+    const control = this.SyllabusForm.get(controlName);
+    if (!control) return;
+    control.setValidators(validators);
+    control.updateValueAndValidity({ emitEvent: false });
+  }
 
   protected override get isAdmin(): boolean {
     const role = sessionStorage.getItem('RollID') || localStorage.getItem('RollID');
@@ -156,6 +179,11 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
     const r = this.currentRoleName.toLowerCase();
     const id = this.currentRollID;
     return id === '3' || r.includes('teacher') || r.includes('teaching');
+  }
+
+  get isParent(): boolean {
+    const r = this.currentRoleName.toLowerCase();
+    return this.currentRollID === '6' || r.includes('parent');
   }
 
   get isSchoolAdmin(): boolean {
@@ -207,10 +235,138 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
 
     return (
       this.AdminselectedSchoolID ||
-      sessionStorage.getItem('SchoolID')?.toString() ||
-      sessionStorage.getItem('schoolId')?.toString() ||
+      this.ss('SchoolID') ||
+      this.ss('schoolId') ||
       ''
     );
+  }
+
+  private applyTeacherAssignedClassDivision(students: any[]) {
+    if (!this.isTeacher || students.length === 0) return;
+
+    const firstStudent = students[0];
+    const classId = firstStudent.class;
+    const divisionId = firstStudent.division;
+    const className = firstStudent.className;
+    const divisionName = firstStudent.classDivisionName;
+
+    if (!classId || !divisionId) return;
+
+    this.AdminselectedClassID = String(classId);
+    this.AdminselectedDiviosnID = String(divisionId);
+
+    this.classLists = [{
+      ID: String(classId),
+      Name: className || `Class ${classId}`
+    }];
+
+    this.divisionsList = [{
+      ID: String(divisionId),
+      Name: divisionName || `Division ${divisionId}`
+    }];
+
+    this.SyllabusForm.patchValue({
+      Class: String(classId),
+      Divisions: String(divisionId)
+    });
+  }
+
+  private fetchParentChildren(): void {
+    const parentEmail = (this.ss('email') || this.ss('Email') || '').toString().trim();
+    if (!parentEmail || !this.AdminselectedAcademivYearID) {
+      this.parentChildren = [];
+      return;
+    }
+
+    const payload = {
+      Flag: '9',
+      FatherEmail: parentEmail,
+      MotherEmail: parentEmail,
+      AcademicYear: this.AdminselectedAcademivYearID || ''
+    };
+
+    this.apiurl.post<any>('Tbl_StudentParentDetails_CRUD_Operations', payload).subscribe({
+      next: (res: any) => {
+        const list: any[] = res?.data || [];
+
+        this.parentChildren = list.map((s: any) => {
+          // Debug: Log the structure of API response
+          console.log('[VIEW ATTENDANCE] Parent child API response:', s);
+          
+          const admissionId = s.admissionID || s.AdmissionID || s.admissionno || s.AdmissionNo || '';
+          const studentName = s.studentName || s.firstName || s.lastName || s.name || s.Name || 
+                           (s.fatherName && s.motherName ? `${s.fatherName} & ${s.motherName}` : s.fatherName || s.motherName || '');
+          const classId = s.class || s.Class || s.classID || s.ClassID || '';
+          const divisionId = s.division || s.Division || s.divisionID || s.DivisionID || '';
+          const schoolId = s.schoolID || s.SchoolID || s.schoolId || s.SchoolId || this.AdminselectedSchoolID || '';
+
+          return {
+            ID: String(admissionId),
+            AdmissionNo: String(admissionId),
+            Name: `${admissionId} - ${studentName}`.trim(),
+            Class: String(classId),
+            Division: String(divisionId),
+            SchoolID: String(schoolId)
+          };
+        }).filter(c => c.ID && c.AdmissionNo);
+
+        this.selectedChildId = '';
+        this.AdminselectedStudentID = '';
+        this.AdminselectedClassID = '';
+        this.AdminselectedDiviosnID = '';
+        this.SyllabusForm.patchValue({ Class: '', Divisions: '' });
+        this.resetAttendanceView();
+
+        // Auto-select first child
+        if (this.parentChildren.length > 0) {
+          this.selectChild(0);
+        }
+      },
+      error: () => { this.parentChildren = []; }
+    });
+  }
+
+  selectChild(index: number): void {
+    this.selectedChildIndex = index;
+    const child = this.parentChildren[index];
+    if (!child) return;
+    this.selectedChildId = child.ID;
+    this.AdminselectedStudentID = child.ID;
+    this.AdminselectedClassID = child.Class;
+    this.AdminselectedDiviosnID = child.Division;
+    this.AdminselectedSchoolID = child.SchoolID || this.AdminselectedSchoolID;
+    this.SyllabusForm.patchValue({ Class: child.Class, Divisions: child.Division });
+    this.resetAttendanceView();
+    this.loadAttendance();
+  }
+
+  onChildChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    const childId = target.value;
+    this.selectedChildId = childId || '';
+
+    const selectedChild = this.parentChildren.find(c => c.ID === childId);
+    if (selectedChild) {
+      this.AdminselectedStudentID = selectedChild.ID;
+      this.AdminselectedClassID = selectedChild.Class;
+      this.AdminselectedDiviosnID = selectedChild.Division;
+      this.AdminselectedSchoolID = selectedChild.SchoolID || this.AdminselectedSchoolID;
+
+      this.SyllabusForm.patchValue({
+        Class: selectedChild.Class,
+        Divisions: selectedChild.Division
+      });
+    } else {
+      this.AdminselectedStudentID = '';
+      this.AdminselectedClassID = '';
+      this.AdminselectedDiviosnID = '';
+      this.SyllabusForm.patchValue({
+        Class: '',
+        Divisions: ''
+      });
+    }
+
+    this.resetAttendanceView();
   }
 
   FetchSchoolsList() {
@@ -318,8 +474,17 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
     this.classLists = []; this.divisionsList = []; this.sessionList = [];
     this.SyllabusForm.patchValue({ Class: 0, Divisions: 0, Session: 0 });
     this.AdminselectedClassID = ''; this.AdminselectedDiviosnID = ''; this.AdminSelectedSessionID = '';
+    this.AdminselectedStudentID = '';
+    this.selectedChildId = '';
     this.resetAttendanceView();
-    if (this.AdminselectedAcademivYearID) { this.FetchClassList(); this.FetchSessionsList(); }
+    if (this.AdminselectedAcademivYearID) {
+      this.FetchSessionsList();
+      if (this.isParent) {
+        this.fetchParentChildren();
+      } else {
+        this.FetchClassList();
+      }
+    }
   }
 
   onAdminClasschange(event: Event) {
@@ -335,6 +500,11 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
   onAdminDivisionsChange(event: Event) {
     const v = (event.target as HTMLSelectElement).value;
     this.AdminselectedDiviosnID = v === '0' ? '' : v;
+    const selectedDivision = this.divisionsList.find((division: any) => String(division.ID) === this.AdminselectedDiviosnID);
+    console.log('[VIEW ATTENDANCE] Selected division:', {
+      id: this.AdminselectedDiviosnID,
+      name: selectedDivision?.Name ?? ''
+    });
     this.resetAttendanceView();
   }
 
@@ -343,12 +513,19 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
     this.AdminSelectedSessionID = v === '0' ? '' : v;
     if (this.isTableVisible && this.rawData.length > 0) {
       this.processData(this.rawData);
+    } else if (this.isParent && this.selectedChildId) {
+      this.loadAttendance();
     } else {
       this.resetAttendanceView();
     }
   }
 
-  onDateRangeChange() { this.resetAttendanceView(); }
+  onDateRangeChange() {
+    this.resetAttendanceView();
+    if (this.isParent && this.selectedChildId) {
+      setTimeout(() => this.loadAttendance(), 0);
+    }
+  }
 
   openStudentDetails(student: StudentAttendanceSummary) {
     this.selectedStudent = student;
@@ -476,7 +653,7 @@ updateStudentAttendance() {
     if (this.isTeacher) {
       const studentPayload: any = {
         Flag: '11',
-        SchoolID: this.AdminselectedSchoolID || '',
+        SchoolID: this.getCurrentSchoolId(),
         AcademicYear: this.AdminselectedAcademivYearID || '',
         CreatedBy: this.currentUserId,
         Limit: '10000'
@@ -486,44 +663,7 @@ updateStudentAttendance() {
         next: (studentRes: any) => {
           const students = studentRes?.data || [];
           const admissionNos = students.map((s: any) => s.admissionNo);
-
-          // Extract class/division from first student for teachers
-          if (students.length > 0) {
-            const firstStudent = students[0];
-            const classId = firstStudent.class;
-            const divisionId = firstStudent.division;
-            const className = firstStudent.className;
-            const divisionName = firstStudent.classDivisionName;
-
-            if (classId && divisionId) {
-              this.AdminselectedClassID = String(classId);
-              this.AdminselectedDiviosnID = String(divisionId);
-              console.log('[VIEW ATTENDANCE] Teacher class/division from FLAG 11:', {
-                classId: this.AdminselectedClassID,
-                divisionId: this.AdminselectedDiviosnID,
-                className,
-                divisionName
-              });
-
-              // Populate class list with the assigned class
-              this.classLists = [{
-                ID: String(classId),
-                Name: className || `Class ${classId}`
-              }];
-
-              // Populate division list with the assigned division
-              this.divisionsList = [{
-                ID: String(divisionId),
-                Name: divisionName || `Division ${divisionId}`
-              }];
-
-              // Update form values
-              this.SyllabusForm.patchValue({
-                Class: String(classId),
-                Divisions: String(divisionId)
-              });
-            }
-          }
+          this.applyTeacherAssignedClassDivision(students);
 
           if (admissionNos.length > 0) {
             // Fetch attendance for these students
@@ -577,7 +717,7 @@ updateStudentAttendance() {
   private fetchAttendanceForStudents(admissionNos: string[], fromDate: string, toDate: string) {
     const body: any = {
       Flag: '2',
-      SchoolID: this.AdminselectedSchoolID || '',
+      SchoolID: this.getCurrentSchoolId(),
       AcademicYear: this.AdminselectedAcademivYearID || '',
       Class: this.AdminselectedClassID || '',
       Division: this.AdminselectedDiviosnID || '',
@@ -608,11 +748,17 @@ updateStudentAttendance() {
     const formValue = this.SyllabusForm.getRawValue();
     const from = new Date(formValue.FromDateTime); from.setHours(0, 0, 0, 0);
     const to = new Date(formValue.ToDateTime); to.setHours(23, 59, 59, 999);
+    const selectedClassId = String(this.AdminselectedClassID || '').trim();
+    const selectedDivisionId = String(this.AdminselectedDiviosnID || '').trim();
+    const selectedAdmissionId = String(this.AdminselectedStudentID || '').trim();
 
     const data = rawData.filter(row => {
       const d = new Date(row.attendanceDate);
       const sessionMatch = !this.AdminSelectedSessionID || row.session == this.AdminSelectedSessionID;
-      return d >= from && d <= to && sessionMatch;
+      const classMatch = !selectedClassId || String(row.class ?? row.Class ?? '').trim() === selectedClassId;
+      const divisionMatch = !selectedDivisionId || String(row.division ?? row.Division ?? '').trim() === selectedDivisionId;
+      const admissionMatch = !selectedAdmissionId || String(row.admissionID ?? row.admissionId ?? '').trim() === selectedAdmissionId;
+      return d >= from && d <= to && sessionMatch && classMatch && divisionMatch && admissionMatch;
     });
 
     const uniqueDateSet = new Set(data.map(r => new Date(r.attendanceDate).toDateString()));
@@ -790,6 +936,13 @@ updateStudentAttendance() {
     if (this.isTeacher) {
       return hasSchool &&
         Number(formValue.AcademicYear) > 0 &&
+        !!formValue.FromDateTime &&
+        !!formValue.ToDateTime;
+    }
+    if (this.isParent) {
+      return hasSchool &&
+        Number(formValue.AcademicYear) > 0 &&
+        !!this.selectedChildId &&
         !!formValue.FromDateTime &&
         !!formValue.ToDateTime;
     }

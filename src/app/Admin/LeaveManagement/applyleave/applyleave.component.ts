@@ -156,12 +156,20 @@ export class ApplyleaveComponent extends BasePermissionComponent implements OnIn
   staffList: Array<{ ID: string; Name: string; RoleID: string }> = [];
   academicYears: Array<{ ID: string; Name: string }> = [];
   rolesList: Array<{ ID: string; Name: string }> = [];
+  staffRoleLookup: Map<string, string> = new Map<string, string>();
   leavePoliciesData: LeavePolicyData[] = [];
   leaveBalances: BalanceItem[] = [];
   leaveTypes: string[] = [];
   leaveHistory: LeaveHistoryItem[] = [];
+  filteredHistory: LeaveHistoryItem[] = [];
+  paginatedHistory: LeaveHistoryItem[] = [];
+  historyTotalCount = 0;
+  historyCurrentPage = 1;
+  historyPageSize = 5;
+  historyVisiblePageCount = 3;
+  selectedStatusFilter: 'All' | 'Pending' | 'Approved' | 'Rejected' | 'Cancelled' = 'All';
 
-  selectedUserType: 'Staff' | 'Student' | 'Admin' = 'Staff';
+  selectedUserType: 'Staff' | 'Student' | 'Admin' | '' = '';
   selectedSchoolId = '';
   selectedAcademicYearId = '';
   selectedStaffId = '';
@@ -199,8 +207,8 @@ export class ApplyleaveComponent extends BasePermissionComponent implements OnIn
 
   leaveForm = new FormGroup({
     staffId: new FormControl(''),
-    fromDate: new FormControl(this.today, Validators.required),
-    toDate: new FormControl(this.today, Validators.required),
+    fromDate: new FormControl(this.today, [Validators.required]),
+    toDate: new FormControl(this.today, [Validators.required]),
     leaveType: new FormControl(''),
     reason: new FormControl('', [Validators.required, Validators.minLength(5)])
   }, { validators: this.dateRangeValidator });
@@ -225,6 +233,18 @@ export class ApplyleaveComponent extends BasePermissionComponent implements OnIn
   get pendingCount() { return this.leaveHistory.filter(i => i.status === 'Pending').length; }
   get rejectedCount() { return this.leaveHistory.filter(i => i.status === 'Rejected').length; }
   get cancelledCount() { return this.leaveHistory.filter(i => i.status === 'Cancelled').length; }
+  
+  // Pagination getters
+  get historyTotalPages(): number { return Math.ceil(this.historyTotalCount / this.historyPageSize); }
+  get historyVisiblePages(): number[] {
+    const total = this.historyTotalPages;
+    const pages: number[] = [];
+    let start = Math.max(this.historyCurrentPage - Math.floor(this.historyVisiblePageCount / 2), 1);
+    let end = Math.min(start + this.historyVisiblePageCount - 1, total);
+    if (end - start < this.historyVisiblePageCount - 1) start = Math.max(end - this.historyVisiblePageCount + 1, 1);
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
+  }
   get selectedLeaveType() { return this.leaveForm.get('leaveType')?.value || '—'; }
 
   constructor(menu: MenuServiceService, router: Router, private api: ApiServiceService, public loader: LoaderService) {
@@ -305,6 +325,13 @@ export class ApplyleaveComponent extends BasePermissionComponent implements OnIn
           this.selectedSchoolId = this.resolvedSchoolId;
         }
 
+        // Load role lookup data after school ID is resolved
+        if (this.selectedSchoolId && this.isSchoolAdmin) {
+          console.log('[APPLY LEAVE] Loading role lookup data for school:', this.selectedSchoolId);
+          this.fetchStaffRoleLookup();
+          this.fetchRoleList();
+        }
+
         // Proactively resolve Teacher/Staff numeric identity if possible
         if (this.selectedSchoolId && !this.isParent && !this.isActuallyStudent) {
           this.resolveStaffIdentity();
@@ -315,8 +342,7 @@ export class ApplyleaveComponent extends BasePermissionComponent implements OnIn
         this.selectedUserType = 'Student';
         // this.fetchParentChildren();
       } else if (this.isSchoolAdmin) {
-        this.fetchStaff();
-        this.fetchClassList();
+        // Role lookup will be called after school ID is resolved
       } else if (this.isTeacher || this.isStaff) {
         // Teachers and all other staff (Driver, Accountant, Maid, etc.) only see their own history/balance by default
         this.loadBalances();
@@ -395,10 +421,6 @@ if (!this.isActuallyStudent && !this.isParent) {
         // For School Admin applying leave for themselves, load their own data
         console.log('School Admin Admin Leave Selected:', {
           isSchoolAdmin: this.isSchoolAdmin,
-          selectedUserType: this.selectedUserType,
-          sessionApplicantId: this.sessionApplicantId,
-          selectedSchoolId: this.selectedSchoolId,
-          selectedAcademicYearId: this.selectedAcademicYearId
         });
         this.loadBalances();
         this.fetchHistory();
@@ -462,6 +484,18 @@ if (!this.isActuallyStudent && !this.isParent) {
   submitLeave(): void {
     if (this.leaveForm.invalid) { this.leaveForm.markAllAsTouched(); return; }
     if (this.isSubmitting) return;
+
+    // Parent-specific validation
+    if (this.isParent) {
+      if (!this.selectedAcademicYearId) {
+        this.openModal('Please select academic year first.');
+        return;
+      }
+      if (!this.selectedStaffId) {
+        this.openModal('Please select a child first.');
+        return;
+      }
+    }
 
     const formValues = this.leaveForm.value;
     let staffIdFromForm = formValues.staffId || this.selectedStaffId;
@@ -663,6 +697,39 @@ if (!this.isActuallyStudent && !this.isParent) {
 
   getStatusClass(s: string) { return s?.toLowerCase() || 'pending'; }
   trackById(_: number, l: LeaveHistoryItem) { return l.id; }
+  
+  // Pagination methods
+  onStatusFilterChange(): void {
+    this.historyCurrentPage = 1;
+    this.fetchHistory();
+  }
+  
+  historyGoToPage(page: number): void {
+    if (page < 1) page = 1;
+    if (page > this.historyTotalPages) page = this.historyTotalPages;
+    this.historyCurrentPage = page;
+    this.fetchHistory();
+  }
+  
+  historyPreviousPage(): void {
+    if (this.historyCurrentPage > 1) {
+      this.historyGoToPage(this.historyCurrentPage - 1);
+    }
+  }
+  
+  historyNextPage(): void {
+    if (this.historyCurrentPage < this.historyTotalPages) {
+      this.historyGoToPage(this.historyCurrentPage + 1);
+    }
+  }
+  
+  historyFirstPage(): void {
+    this.historyGoToPage(1);
+  }
+  
+  historyLastPage(): void {
+    this.historyGoToPage(this.historyTotalPages);
+  }
 
   // ── private ───────────────────────────────────────────────────────────────────
   private dateRangeValidator(c: AbstractControl) {
@@ -795,8 +862,10 @@ private checkAndLoad(): void {
     SchoolID: schoolId,
     AcademicYear: this.selectedAcademicYearId,
     UserType: (this.isParent || this.isActuallyStudent) ? 'Student' : 'Staff',
-    Limit: 100,
-    Offset: 0
+    Limit: this.historyPageSize,
+    Offset: (this.historyCurrentPage - 1) * this.historyPageSize,
+    ApplicationStatus: this.selectedStatusFilter === 'All' ? null : this.selectedStatusFilter,
+    IsActive: "1"
   };
 
   if (this.isParent || this.isActuallyStudent) {
@@ -807,11 +876,19 @@ private checkAndLoad(): void {
 
   this.loader.show();
 
-  this.api.post<any>('Tbl_LeaveApplication_Operations', payload).subscribe({
-    next: (res: any) => {
-      this.loader.hide();
-      const list = Array.isArray(res?.data) ? res.data : (Array.isArray(res?.Data) ? res.Data : []);
-      this.leaveHistory = list.map((item: any) => {
+  // Fetch both count and data in parallel
+  const countPayload = { ...payload, Flag: '6' };
+  
+  this.api.post<any>('Tbl_LeaveApplication_Operations', countPayload).subscribe({
+    next: (countRes: any) => {
+      this.historyTotalCount = countRes?.data?.[0]?.totalcount || 0;
+      
+      // Then fetch paginated data
+      this.api.post<any>('Tbl_LeaveApplication_Operations', payload).subscribe({
+        next: (res: any) => {
+          this.loader.hide();
+          const list = Array.isArray(res?.data) ? res.data : (Array.isArray(res?.Data) ? res.Data : []);
+          this.leaveHistory = list.map((item: any) => {
         // Extract approver name from AdminRemarks as fallback since backend doesn't return approvedByName
         const remarks = item.adminRemarks || item.AdminRemarks || '';
         const approvedByEmail = item.approvedBy || item.ApprovedBy || '';
@@ -850,10 +927,18 @@ private checkAndLoad(): void {
           divisionName: item.divisionName || item.DivisionName || ''
         };
       });
-      this.isLoadingLeaves = false;
+        this.isLoadingLeaves = false;
+      },
+      error: () => {
+        this.loader.hide();
+        this.leaveHistory = [];
+        this.isLoadingLeaves = false;
+      }
+      });
     },
     error: () => {
       this.loader.hide();
+      this.historyTotalCount = 0;
       this.leaveHistory = [];
       this.isLoadingLeaves = false;
     }
@@ -949,6 +1034,118 @@ if (
       },
       error: () => { this.staffList = []; this.staffLoaded = true; this.checkAndLoad(); }
     });
+    // Also fetch role lookup data
+    this.fetchStaffRoleLookup();
+    this.fetchRoleList();
+  }
+
+  // Fetch staff role lookup (like viewstaffattendance)
+  private fetchStaffRoleLookup(): void {
+    console.log('[APPLY LEAVE] Fetching staff role lookup for school:', this.selectedSchoolId);
+    this.api.post<any>('Tbl_Staff_CRUD_Operations', {
+      SchoolID: this.selectedSchoolId,
+      Flag: '2'
+    }).subscribe(
+      (response: any) => {
+        console.log('[APPLY LEAVE] Staff role lookup API response:', response);
+        const lookup = new Map<string, string>();
+
+        if (Array.isArray(response?.data)) {
+          response.data.forEach((item: any) => {
+            console.log('[APPLY LEAVE] Processing staff item:', item);
+            const staffId = String(item.id ?? item.ID ?? '').trim();
+            if (!staffId) return;
+            
+            // Log all possible role-related fields
+            console.log('[APPLY LEAVE] Staff role fields for', staffId, ':', {
+              staffType: item.staffType,
+              StaffType: item.StaffType,
+              roleName: item.roleName,
+              RoleName: item.RoleName,
+              staffTypeName: item.staffTypeName,
+              staffTypeNames: item.staffTypeNames,
+              role: item.role,
+              Role: item.Role,
+              roleId: item.roleId,
+              RoleId: item.RoleId
+            });
+            
+            const rawStaffType = String(
+              item.staffType ??
+              item.StaffType ??
+              item.roleName ??
+              item.RoleName ??
+              item.staffTypeName ??
+              item.staffTypeNames ??
+              item.role ??
+              item.Role ??
+              ''
+            ).trim();
+            if (rawStaffType) lookup.set(staffId, rawStaffType);
+          });
+        }
+
+        this.staffRoleLookup = lookup;
+        console.log('[APPLY LEAVE] Processed staffRoleLookup:', Array.from(this.staffRoleLookup.entries()));
+      },
+      () => {
+        console.log('[APPLY LEAVE] Staff role lookup API error');
+        this.staffRoleLookup = new Map<string, string>();
+      }
+    );
+  }
+
+  // Fetch role list (like leave approval component)
+  private fetchRoleList(): void {
+    this.api.post<any>('Tbl_Roles_CRUD_Operations', { Flag: '2' }).subscribe(
+      (response: any) => {
+        console.log('[APPLY LEAVE] Role list API response:', response);
+        this.rolesList = Array.isArray(response?.data) ? response.data.map((role: any) => ({
+          ID: String(role.id ?? role.ID),
+          Name: String(role.roleName ?? role.RoleName ?? role.name ?? role.Name)
+        })) : [];
+        console.log('[APPLY LEAVE] Processed rolesList:', this.rolesList);
+      },
+      () => {
+        console.log('[APPLY LEAVE] Role list API error');
+        this.rolesList = [];
+      }
+    );
+  }
+
+  // Get staff role name (like leave approval component)
+  getStaffRoleName(staff: any): string {
+    // Debug: Log the staff object and lookup process
+    console.log('[APPLY LEAVE] getStaffRoleName debug:', {
+      staff: staff,
+      staffId: String(staff.ID || '').trim(),
+      staffRoleLookup: Array.from(this.staffRoleLookup.entries()),
+      rolesList: this.rolesList
+    });
+
+    // First try to use already resolved role from staff data
+    if (staff.RoleID && staff.RoleID !== '-' && !/^\d+$/.test(String(staff.RoleID).trim())) {
+      return String(staff.RoleID).trim();
+    }
+
+    // Use staffRoleLookup to get role name
+    const staffId = String(staff.ID || '').trim();
+    if (!staffId) return '-';
+    
+    const roleFromLookup = this.staffRoleLookup.get(staffId);
+    console.log('[APPLY LEAVE] roleFromLookup for staffId', staffId, ':', roleFromLookup);
+    
+    if (roleFromLookup) {
+      // If it's a numeric role ID, try to resolve it using roleList
+      if (/^\d+$/.test(roleFromLookup.trim())) {
+        const roleMatch = this.rolesList.find(role => String(role.ID) === roleFromLookup.trim());
+        console.log('[APPLY LEAVE] roleMatch for numeric role', roleFromLookup, ':', roleMatch);
+        return roleMatch ? roleMatch.Name : roleFromLookup;
+      }
+      return roleFromLookup;
+    }
+
+    return '-';
   }
 
   private fetchStudents(): void {
@@ -1047,6 +1244,16 @@ if (
           };
         }).filter(c => c.ID && c.AdmissionNo);
 
+        // Reset selection to show placeholder
+        this.selectedStaffId = '';
+        this.selectedStaffName = '';
+        this.selectedChildIndex = 0;
+
+        // Auto-select first child
+        if (this.parentChildren.length > 0) {
+          this.selectChild(0);
+        }
+
         // if (this.parentChildren.length > 0) {
         //   const first = this.parentChildren[0];
         //   this.selectedSchoolId    = first.SchoolID || this.selectedSchoolId;
@@ -1059,6 +1266,19 @@ if (
       },
       error: () => { this.parentChildren = []; }
     });
+  }
+
+  selectedChildIndex: number = 0;
+
+  selectChild(index: number): void {
+    this.selectedChildIndex = index;
+    const child = this.parentChildren[index];
+    if (!child) return;
+    this.selectedStaffId = child.ID;
+    this.selectedStaffName = child.Name;
+    this.selectedClassId = child.Class;
+    this.selectedDivisionId = child.Division;
+    this.fetchHistory();
   }
 
   private loadStudentsByAdmissionIds(_admissionIds: string[]): void {

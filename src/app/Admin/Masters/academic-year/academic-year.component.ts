@@ -41,6 +41,8 @@ export class AcademicYearComponent extends BasePermissionComponent {
   AminityInsStatus = '';
   isModalOpen = false;
   AcademicYearCount = 0;
+  SubjectsActiveCount: number = 0;
+  SubjectsInActiveCount: number = 0;
 
   ActiveUserId = sessionStorage.getItem('SchoolID')?.toString() || '';
   roleId = sessionStorage.getItem('RollID');
@@ -161,7 +163,8 @@ export class AcademicYearComponent extends BasePermissionComponent {
     this.FetchAcademicYearCount(isSearch).subscribe({
       next: (countResp: any) => {
         this.AcademicYearCount = countResp?.data?.[0]?.totalcount ?? 0;
-
+        this.SubjectsActiveCount=countResp?.data?.[0]?.activeCount ?? 0;
+        this.SubjectsInActiveCount=countResp?.data?.[0]?.inactiveCount ?? 0;
         const payload: any = {
           Flag: flag,
           Limit: this.pageSize,
@@ -520,6 +523,13 @@ export class AcademicYearComponent extends BasePermissionComponent {
     this.isViewModalOpen=true;
   };
 
+  pageStartIndex(): number {
+    return this.AcademicYearCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
+  }
+
+  pageEndIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.AcademicYearCount);
+  }
 }
 
 

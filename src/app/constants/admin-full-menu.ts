@@ -108,6 +108,14 @@ export const FULL_ADMIN_MENU: Module[] = [
     ]
   },
   {
+    id: 'homework',
+    moduleName: 'Homework',
+    pages: [
+      { id: 'homework', pageName: 'HomeWork', moduleID: 'homework', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
+      { id: 'assignhomework', pageName: 'Assign Homework', moduleID: 'homework', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
+    ]
+  },
+  {
     id: 'holidaycalendar',
     moduleName: 'Holiday Calendar',
     pages: [

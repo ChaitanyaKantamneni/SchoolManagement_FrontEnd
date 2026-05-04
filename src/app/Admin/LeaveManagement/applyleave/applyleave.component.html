@@ -28,15 +28,19 @@
           <option value="">-- Choose Year --</option>
           <option *ngFor="let y of academicYears" [value]="y.ID">{{ y.Name }}</option>
         </select>
+        <div *ngIf="isParent && !selectedAcademicYearId" class="text-danger">
+          <small>Please select academic year.</small>
+        </div>
       </div>
 
       <!-- Application Type (Management only - Teachers only manage themselves) -->
       <div class="searchreview" *ngIf="isAdmin || isSchoolAdmin">
         <label class="inputLabel">APPLICATION TYPE <span class="required">*</span></label>
         <select class="form-control" [(ngModel)]="selectedUserType" (change)="onUserTypeChange()">
+          <option value="">-- Select Application Type --</option>
           <option value="Staff">Staff Leave</option>
           <option value="Student">Student Leave</option>
-          <option value="Admin">Admin Leave</option>
+          <!-- <option value="Admin">Admin Leave</option> -->
         </select>
       </div>
 
@@ -67,7 +71,7 @@
         <select class="form-control" (change)="onStaffChange($event)" [(ngModel)]="selectedStaffId">
           <ng-container *ngIf="selectedUserType === 'Staff'">
             <option value="">-- Choose Staff --</option>
-            <option *ngFor="let s of staffList" [value]="s.ID">{{ s.Name }}</option>
+            <option *ngFor="let s of staffList" [value]="s.ID">{{ s.Name }} - {{ getStaffRoleName(s) }}</option>
           </ng-container>
           <ng-container *ngIf="selectedUserType === 'Student'">
             <option value="">-- Choose Student --</option>
@@ -77,12 +81,21 @@
       </div>
 
       <!-- Child Selector (Parent Only) -->
-      <div class="searchreview" *ngIf="isParent">
-        <label class="inputLabel">SELECT CHILD <span class="required">*</span></label>
-        <select class="form-control" (change)="onStaffChange($event)" [(ngModel)]="selectedStaffId">
-          <option *ngFor="let c of parentChildren" [value]="c.ID">{{ c.Name }}</option>
-        </select>
+      <div class="searchreview" *ngIf="isParent && parentChildren.length === 0 && selectedAcademicYearId">
+        <small style="color: #94a3b8;">No children found for selected year.</small>
       </div>
+    </div>
+
+    <!-- Child Tab Slider (Parent Only) -->
+    <div class="child-tab-slider" *ngIf="isParent && parentChildren.length > 0">
+      <button
+        *ngFor="let child of parentChildren; let i = index"
+        class="child-tab-btn"
+        [class.active]="selectedChildIndex === i"
+        (click)="selectChild(i)">
+        <mat-icon>person</mat-icon>
+        {{ child.Name }}
+      </button>
     </div>
   </div>
 
@@ -138,10 +151,16 @@
               <div class="InputFieldsContainer">
                 <label class="inputLabel">FROM DATE <span class="required">*</span></label>
                 <input type="date" class="inputField" formControlName="fromDate" [min]="today">
+                <div *ngIf="leaveForm.get('fromDate')?.invalid && (leaveForm.get('fromDate')?.touched || leaveForm.get('fromDate')?.dirty)" class="text-danger">
+                  <small>Please select from date.</small>
+                </div>
               </div>
               <div class="InputFieldsContainer">
                 <label class="inputLabel">TO DATE <span class="required">*</span></label>
                 <input type="date" class="inputField" formControlName="toDate" [min]="leaveForm.get('fromDate')?.value">
+                <div *ngIf="leaveForm.get('toDate')?.invalid && (leaveForm.get('toDate')?.touched || leaveForm.get('toDate')?.dirty)" class="text-danger">
+                  <small>Please select to date.</small>
+                </div>
               </div>
 
               <div class="InputFieldsContainer" *ngIf="!isParent && !isActuallyStudent">
@@ -150,6 +169,9 @@
                   <option value="">-- Choose Category --</option>
                   <option *ngFor="let t of leaveTypes" [value]="t">{{ t }}</option>
                 </select>
+                <div *ngIf="leaveForm.get('leaveType')?.invalid && (leaveForm.get('leaveType')?.touched || leaveForm.get('leaveType')?.dirty)" class="text-danger">
+                  <small>Please select leave category.</small>
+                </div>
               </div>
 
               <div class="InputFieldsContainer">
@@ -163,6 +185,10 @@
               <div class="InputFieldsContainer full-width">
                 <label class="inputLabel">REASON FOR LEAVE <span class="required">*</span></label>
                 <textarea class="inputField" formControlName="reason" rows="3" placeholder="Please provide details..."></textarea>
+                <div *ngIf="leaveForm.get('reason')?.invalid && (leaveForm.get('reason')?.touched || leaveForm.get('reason')?.dirty)" class="text-danger">
+                  <small *ngIf="leaveForm.get('reason')?.errors?.['required']">Reason for leave is required.</small>
+                  <small *ngIf="leaveForm.get('reason')?.errors?.['minlength']">Reason must be at least 5 characters.</small>
+                </div>
               </div>
 
               <div class="InputFieldsContainer full-width">
@@ -183,6 +209,15 @@
                 <small class="text-muted">Supported formats: PDF, DOC, DOCX, JPG, JPEG, PNG (Max: 5MB)</small>
               </div>
 
+              <!-- Form Level Validation Errors -->
+              <div class="InputFieldsContainer full-width" *ngIf="leaveForm.errors && (leaveForm.touched || leaveForm.dirty)">
+                <div class="text-danger">
+                  <small *ngIf="leaveForm.errors?.['invalidDateRange']">
+                    <strong>Invalid Date Range:</strong> To date cannot be earlier than from date.
+                  </small>
+                </div>
+              </div>
+
               <!-- Document Required Warning -->
               <div class="InputFieldsContainer full-width" *ngIf="requestedDays >= 3 && !selectedFile">
                 <div class="document-warning">
@@ -196,7 +231,7 @@
 
             <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px;">
               <button type="button" class="btn" style="background: #f1f5f9; color: #475569; padding: 10px 24px; border-radius: 8px; border: none; font-weight: 600;" (click)="resetForm()">Reset</button>
-              <button type="button" class="btn btn-primary" (click)="submitLeave()" [disabled]="isSubmitting || isDocumentRequiredButMissing">
+              <button type="button" class="btn btn-primary" (click)="submitLeave()">
                 {{ isSubmitting ? 'Processing...' : 'Submit' }}
               </button>
             </div>
@@ -205,6 +240,19 @@
 
         <!-- History Table -->
         <div *ngIf="activeTab === 'list'">
+          <!-- Status Filter -->
+          <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px;">
+            <label style="font-weight: 600; color: #374151;">Status Filter:</label>
+            <select class="form-control" style="width: 200px;" [(ngModel)]="selectedStatusFilter" (change)="onStatusFilterChange()">
+              <option value="All">All Status</option>
+              <option value="Pending">Pending</option>
+              <option value="Approved">Approved</option>
+              <option value="Rejected">Rejected</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+            <span style="color: #6b7280; font-size: 14px;">Total: {{ historyTotalCount }} records</span>
+          </div>
+          
           <div class="reviewstable">
             <table class="table" style="width: 100%;" *ngIf="leaveHistory.length > 0">
               <thead>
@@ -212,7 +260,7 @@
                   <th>SI.</th>
                   <th *ngIf="isParent || isActuallyStudent">Student</th>
                   <th *ngIf="isParent || isActuallyStudent">Class/Div</th>
-                  <th>Type</th>
+                  <th *ngIf="!(isParent || isActuallyStudent)">Type</th>
                   <th>Duration</th>
                   <th>Days</th>
                   <th>Status</th>
@@ -221,16 +269,16 @@
               </thead>
               <tbody>
                 <tr *ngFor="let l of leaveHistory; let i = index">
-                  <td>{{ i + 1 }}</td>
+                  <td>{{ (historyCurrentPage - 1) * historyPageSize + i + 1 }}</td>
                   <td *ngIf="isParent || isActuallyStudent">
-                      <div style="font-weight: 700; color: #536ff7; font-size: 13px;">{{ l.admissionNo }}</div>
-                      <div style="font-size: 11px; color: #64748b;">{{ l.applicantName }}</div>
+                      <div style="font-weight: 700; color: #536ff7; font-size: 13px;">{{ l.applicantName }}</div>
+                      <div style="font-size: 11px; color: #64748b;">{{ l.admissionNo }}</div>
                   </td>
                   <td *ngIf="isParent || isActuallyStudent">
                       <div style="font-size: 13px; font-weight: 500;">{{ l.className }}</div>
                       <div style="font-size: 11px; color: #94a3b8;">{{ l.divisionName }}</div>
                   </td>
-                  <td style="font-weight: 600;">{{ l.leaveType }}</td>
+                  <td *ngIf="!(isParent || isActuallyStudent)" style="font-weight: 600;">{{ l.leaveType }}</td>
                   <td style="font-size: 13px; color: #475569;">{{ l.fromDate }} - {{ l.toDate }}</td>
                   <td style="font-weight: 700;">{{ l.days }}</td>
                   <td>
@@ -250,6 +298,36 @@
             <div *ngIf="leaveHistory.length === 0" style="text-align: center; padding: 40px;">
               <mat-icon style="font-size: 48px; color: #cbd5e1; width: 48px; height: 48px;">inbox</mat-icon>
               <p style="color: #94a3b8; font-size: 14px; margin-top: 10px;">No records found.</p>
+            </div>
+            
+            <!-- Pagination Controls -->
+            <div *ngIf="historyTotalPages > 1" style="margin-top: 20px; display: flex; justify-content: center; align-items: center; gap: 8px;">
+              <button *ngIf="historyTotalPages > 3" (click)="historyFirstPage()" [disabled]="historyCurrentPage === 1" 
+                      class="btn" style="padding: 6px 12px; font-size: 12px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;">
+                First
+              </button>
+              <button (click)="historyPreviousPage()" [disabled]="historyCurrentPage === 1" 
+                      class="btn" style="padding: 6px 12px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;">
+                &lt;
+              </button>
+              <button *ngFor="let page of historyVisiblePages" 
+                      (click)="historyGoToPage(page)" 
+                      [disabled]="page === historyCurrentPage"
+                      class="btn" 
+                      [style.background]="page === historyCurrentPage ? '#6366f1' : '#f1f5f9'"
+                      [style.color]="page === historyCurrentPage ? 'white' : '#64748b'"
+                      [style.border]="'1px solid #e2e8f0'"
+                      style="padding: 6px 12px; min-width: 36px;">
+                {{ page }}
+              </button>
+              <button (click)="historyNextPage()" [disabled]="historyCurrentPage === historyTotalPages" 
+                      class="btn" style="padding: 6px 12px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;">
+                &gt;
+              </button>
+              <button *ngIf="historyTotalPages > 3" (click)="historyLastPage()" [disabled]="historyCurrentPage === historyTotalPages" 
+                      class="btn" style="padding: 6px 12px; font-size: 12px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;">
+                Last
+              </button>
             </div>
           </div>
         </div>

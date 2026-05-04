@@ -21,7 +21,7 @@ import { HttpClient } from '@angular/common/http';
   styleUrl: './teachers-time-table.component.css'
 })
 export class TeachersTimeTableComponent extends BasePermissionComponent {
-  pageName = 'Time Table';
+  pageName = 'Teachers Time Table';
   
     constructor(
       private http: HttpClient,

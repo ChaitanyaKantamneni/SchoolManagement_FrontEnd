@@ -314,6 +314,8 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
       'salary pay': 'paid',
       'salary issued': 'receipt_long',
       'leave management': 'event_note',
+      homework: 'assignment',
+      'assign homework': 'assignment_turned_in',
       'holiday calendar': 'event',
       'students report': 'school',
       'student report': 'school',
@@ -336,6 +338,7 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
       attendance: 'how_to_reg',
       'hr & payroll': 'account_balance',
       'leave management': 'event_note',
+      homework: 'assignment',
       'holiday calendar': 'event'
     };
 
