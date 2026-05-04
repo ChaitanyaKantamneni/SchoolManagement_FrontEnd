@@ -309,170 +309,197 @@ export class SalaryIssuedComponent implements OnInit {
         <title>Payslip</title>
         <style>
           @page {
-            size: A4;
-            margin: 12mm;
-          }
+          size: A4;
+          margin: 14mm;
+        }
 
-          body {
-            font-family: "Segoe UI", Arial, sans-serif;
-            margin: 0;
-            color: #111827;
-            background: #ffffff;
-          }
+        body {
+          font-family: "Segoe UI", Arial, sans-serif;
+          margin: 0;
+          color: #000;
+        }
 
-          .print-wrapper {
-            width: 100%;
-            max-width: 850px;
-            margin: auto;
-          }
+        .print-wrapper {
+          max-width: 820px;
+          margin: auto;
+        }
 
-          /* MAIN CARD */
-          .psl-card {
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            overflow: hidden;
-          }
+        /* MAIN CARD */
+        .psl-card {
+          border: 1px solid #000;
+        }
 
-          /* TITLE */
-          .psl-title-bar {
-            background: #1e293b;
-            color: #fff;
-            text-align: center;
-            font-size: 16px;
-            font-weight: 700;
-            padding: 10px;
-            letter-spacing: 2px;
-          }
+        /* TITLE */
+        .psl-title-bar {
+          text-align: center;
+          font-size: 20px;
+          font-weight: 700;
+          padding: 12px 0;
+          border-bottom: 2px solid #000;
+          letter-spacing: 2px;
+        }
 
-          /* EMPLOYEE DETAILS */
-          .psl-emp-header {
-            padding: 12px 16px;
-            border-bottom: 1px solid #e5e7eb;
-          }
+        /* HEADER */
+        .psl-emp-header {
+          padding: 14px 18px;
+          border-bottom: 1px solid #ccc;
+        }
 
-          .psl-emp-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px 16px;
-          }
+        .psl-emp-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 12px 40px;
+        }
 
-          .psl-label {
-            font-size: 10px;
-            color: #6b7280;
-            text-transform: uppercase;
-          }
+        .psl-label {
+          font-size: 10px;
+          color: #666;
+        }
 
-          .psl-value {
-            font-size: 13px;
-            font-weight: 600;
-          }
+        .psl-value {
+          font-size: 13px;
+          font-weight: 600;
+        }
 
-          /* TWO COLUMN */
-          .psl-two-col {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0;
-            border-bottom: 1px solid #e5e7eb;
-          }
+        /* TWO COLUMN */
+        .psl-two-col {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 30px; /* 🔥 important spacing */
+          padding: 18px;
+        }
 
-          .psl-section {
-            padding: 0;
-          }
+        /* REMOVE HARD DIVIDER */
+        .psl-earn-section {
+          border-right: none;
+        }
 
-          .psl-earn-section {
-            border-right: 1px solid #e5e7eb;
-          }
+        /* SECTION */
+        .psl-section {
+          border: none;
+        }
 
-          .psl-section-header {
-            font-size: 12px;
-            font-weight: 700;
-            padding: 8px 12px;
-            background: #f1f5f9;
-          }
+        /* HEADERS */
+        .psl-section-header {
+          font-size: 12px;
+          font-weight: 700;
+          padding-bottom: 6px;
+          margin-bottom: 10px;
+          border-bottom: 2px solid #000;
+        }
 
-          /* TABLE */
-          table {
-            width: 100%;
-            border-collapse: collapse;
-          }
+        /* TABLE */
+        table {
+          width: 100%;
+          border-collapse: collapse;
+        }
 
-          th, td {
-            border: 1px solid #e5e7eb;
-            padding: 6px 8px;
-            font-size: 12px;
-          }
+        th {
+          font-size: 11px;
+          padding: 6px 4px;
+          text-align: left;
+          border-bottom: 1px solid #ccc;
+        }
 
-          th {
-            background: #f8fafc;
-            font-weight: 600;
-          }
+        td {
+          font-size: 11px;
+          padding: 6px 4px;
+        }
 
-          .psl-right {
-            text-align: right;
-          }
+        /* 🔥 LIGHT ROW SEPARATION (not heavy lines) */
+        tbody tr {
+          border-bottom: 1px dotted #ddd;
+        }
 
-          /* TOTALS */
-          .psl-col-footer {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 12px;
-            font-weight: 700;
-            font-size: 12px;
-            border-top: 1px solid #e5e7eb;
-            background: #f9fafb;
-          }
+        .psl-right {
+          text-align: right;
+        }
 
-          /* ADVANCE */
-          .psl-advance-block {
-            border-top: 1px solid #e5e7eb;
-          }
+        /* TYPE */
+        .psl-chip {
+          all: unset;
+          font-size: 11px;
+          font-weight: 600;
+        }
 
-          .psl-advance-header {
-            padding: 8px 12px;
-            font-weight: 700;
-            font-size: 12px;
-            background: #fef3c7;
-          }
+        /* TOTALS */
+        .psl-col-footer {
+          display: flex;
+          justify-content: space-between;
+          padding-top: 8px;
+          margin-top: 8px;
+          font-weight: 700;
+          font-size: 12px;
+          border-top: 1px solid #000;
+        }
 
-          .psl-adv-footer {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 12px;
-            font-weight: 700;
-            font-size: 12px;
-            border-top: 1px solid #e5e7eb;
-            background: #fef9c3;
-          }
+        /* ADVANCE (separate block properly) */
+        .psl-advance-block {
+          margin: 20px 18px;
+          padding-top: 10px;
+          border-top: 1px solid #ccc;
+        }
 
-          /* NET PAY */
-          .psl-net {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 16px;
-            background: #111827;
-            color: #fff;
-          }
+        .psl-advance-header {
+          font-size: 12px;
+          font-weight: 700;
+          margin-bottom: 8px;
+          border-bottom: 2px solid #000;
+          padding-bottom: 4px;
+        }
 
-          .psl-net-amount {
-            font-size: 18px;
-            font-weight: 800;
-          }
+        .psl-adv-footer {
+          display: flex;
+          justify-content: space-between;
+          margin-top: 8px;
+          font-weight: 700;
+          font-size: 12px;
+        }
 
-          /* SIGNATURE */
-          .psl-sign {
-            display: flex;
-            justify-content: space-between;
-            padding: 20px 30px;
-            font-size: 12px;
-          }
+        /* 🔥 NET PAY (NOW LOOKS PROFESSIONAL) */
+        .psl-net {
+          margin: 20px 18px;
+          padding: 14px 16px;
+          border-top: 2px solid #000;
+          border-bottom: 2px solid #000;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
 
-          .psl-sign-line {
-            width: 150px;
-            border-bottom: 1px solid #000;
-            margin-bottom: 6px;
-          }
+        .psl-net-label {
+          font-size: 14px;
+          font-weight: 700;
+        }
 
+        .psl-net-sub {
+          display: block;
+          font-size: 10px;
+          color: #666;
+        }
+
+        .psl-net-amount {
+          font-size: 22px;
+          font-weight: 900;
+        }
+
+        /* SIGNATURE */
+        .psl-sign {
+          display: flex;
+          justify-content: space-between;
+          padding: 40px 50px 20px;
+        }
+
+        .psl-sign-box {
+          text-align: center;
+          font-size: 11px;
+        }
+
+        .psl-sign-line {
+          width: 180px;
+          border-bottom: 1px solid #000;
+          margin-bottom: 6px;
+        }
         </style>
       </head>
 

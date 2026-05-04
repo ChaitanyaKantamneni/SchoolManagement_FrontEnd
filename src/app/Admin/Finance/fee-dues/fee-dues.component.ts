@@ -17,6 +17,7 @@ interface FeeDuesRow {
   admissionNo?: string;
   className?: string;
   divisionName?: string;
+  classId?: string;
   feeCategoryName?: string;
   pendingAmount?: number;
   schoolName?: string;
@@ -52,6 +53,16 @@ interface TableColumn {
 export class FeeDuesComponent extends BasePermissionComponent {
   pageName = 'Fee Dues';
   hasSubmitted = false;
+
+  // Session helpers for role checking
+  public ss(key: string) {
+    return sessionStorage.getItem(key) || localStorage.getItem(key) || '';
+  }
+
+  get currentRollID(): string { return (this.ss('RollID') || this.ss('rollID') || this.ss('menuRoleId') || this.ss('RoleID') || '').trim(); }
+
+  // Role-based properties
+  override get isAdmin(): boolean { return this.currentRollID === '1'; }
 
   // Filter state
   schoolList: SimpleOption[] = [];
@@ -140,7 +151,16 @@ export class FeeDuesComponent extends BasePermissionComponent {
 
   ngOnInit(): void {
     this.checkViewPermission();
-    this.fetchSchools();
+    if (this.isAdmin) {
+      this.fetchSchools();
+    } else {
+      // For School Admin, auto-set school from session
+      const schoolId = this.ss('SchoolID') || this.ss('schoolId') || '';
+      if (schoolId) {
+        this.selectedSchool = schoolId;
+        this.fetchAcademicYears();
+      }
+    }
   }
 
   private fetchSchools(): void {
@@ -344,7 +364,17 @@ export class FeeDuesComponent extends BasePermissionComponent {
           return;
         }
         const data = response?.data ?? response ?? [];
-        const normalized = this.normalizeFeeDuesRows(Array.isArray(data) ? data : []);
+        let normalized = this.normalizeFeeDuesRows(Array.isArray(data) ? data : []);
+        
+        // Post-process: enrich class names with syllabus from selected class
+        normalized = this.enrichClassNames(normalized);
+        
+        // Filter out rows with no fee category AND no pending amount (empty rows)
+        normalized = normalized.filter(row => 
+          (row.feeCategoryName && row.feeCategoryName !== '') || 
+          (row.pendingAmount && row.pendingAmount > 0)
+        );
+        
         this.tableData = this.applySelectedFeeCategoryFilter(normalized);
         this.applySearchAndSort();
         this.loading = false;
@@ -371,7 +401,17 @@ export class FeeDuesComponent extends BasePermissionComponent {
               return;
             }
             const data2 = response2?.data ?? response2 ?? [];
-            const normalized2 = this.normalizeFeeDuesRows(Array.isArray(data2) ? data2 : []);
+            let normalized2 = this.normalizeFeeDuesRows(Array.isArray(data2) ? data2 : []);
+            
+            // Post-process: enrich class names with syllabus from selected class
+            normalized2 = this.enrichClassNames(normalized2);
+            
+            // Filter out rows with no fee category AND no pending amount (empty rows)
+            normalized2 = normalized2.filter(row => 
+              (row.feeCategoryName && row.feeCategoryName !== '') || 
+              (row.pendingAmount && row.pendingAmount > 0)
+            );
+            
             this.tableData = this.applySelectedFeeCategoryFilter(normalized2);
             this.applySearchAndSort();
             this.loading = false;
@@ -451,7 +491,9 @@ export class FeeDuesComponent extends BasePermissionComponent {
 
       const admissionNo = item.admissionNo ?? item.admission_no ?? item.AdmissionNo;
 
-      const className = item.className ?? item.class_name ?? item.syllabusClassName ?? item.ClassName;
+      // Use basic className from API; enrichClassNames will add syllabus prefix later
+      const className = item.className ?? item.class_name ?? item.syllabusClassName ?? item.ClassName ?? '';
+      const classId = item.classId ?? item.ClassID ?? item.class_id ?? item.class ?? '';
 
       const divisionName =
         item.divisionName ?? item.classDivisionName ?? item.division ?? item.DivisionName ?? item.ClassDivisionName;
@@ -463,9 +505,13 @@ export class FeeDuesComponent extends BasePermissionComponent {
       const busNo = item.busNo ?? item.bus_no ?? item.BusNo;
       const stop = item.stop ?? item.Stop;
       const dueAmount =
-        item.dueAmount ?? item.due_amount ?? item.balanceAmount ?? item.balance_amount ?? item.DueAmount;
-      const pendingAmount = item.pendingAmount ?? item.pending_amount ?? dueAmount;
-      const feeCategoryName = item.feeCategoryName ?? item.fee_category_name ?? item.FeeCategoryName;
+        item.dueAmount ?? item.due_amount ?? item.balanceAmount ?? item.balance_amount ?? item.DueAmount ?? 
+        item.totalDue ?? item.total_due ?? item.TotalDue ?? item.amountDue ?? item.amount_due ?? 0;
+      const pendingAmount = item.pendingAmount ?? item.pending_amount ?? item.PendingAmount ?? 
+        item.pending ?? item.Pending ?? item.balance ?? item.Balance ?? dueAmount ?? 0;
+      const feeCategoryName = item.feeCategoryName ?? item.fee_category_name ?? item.FeeCategoryName ?? 
+        item.feeCategory ?? item.FeeCategory ?? item.categoryName ?? item.category_name ?? 
+        item.CategoryName ?? item.feeType ?? item.fee_type ?? '';
       const feeCategoryId = item.feeCategory ?? item.feeCategoryID ?? item.fee_category_id ?? item.FeeCategoryID;
       const schoolName = item.schoolName ?? item.school_name ?? item.SchoolName;
       const academicYearName = item.academicYearName ?? item.academic_year_name ?? item.AcademicYearName;
@@ -477,12 +523,13 @@ export class FeeDuesComponent extends BasePermissionComponent {
         name: name ? String(name) : '',
         admissionNo: admissionNo ? String(admissionNo) : '',
         className: className ? String(className) : '',
+        classId: classId ? String(classId) : '',
         divisionName: divisionName ? String(divisionName) : '',
         feeCategoryName: feeCategoryName ? String(feeCategoryName) : '',
         pendingAmount:
-          pendingAmount !== undefined && pendingAmount !== null && pendingAmount !== ''
+          pendingAmount !== undefined && pendingAmount !== null && pendingAmount !== '' && !isNaN(Number(pendingAmount))
             ? Number(pendingAmount)
-            : undefined,
+            : 0,
         schoolName: schoolName ? String(schoolName) : '',
         academicYearName: academicYearName ? String(academicYearName) : '',
         phone: phone ? String(phone) : '',
@@ -491,7 +538,9 @@ export class FeeDuesComponent extends BasePermissionComponent {
         route: route ? String(route) : '',
         busNo: busNo ? String(busNo) : '',
         stop: stop ? String(stop) : '',
-        dueAmount: dueAmount !== undefined && dueAmount !== null && dueAmount !== '' ? Number(dueAmount) : undefined,
+        dueAmount: dueAmount !== undefined && dueAmount !== null && dueAmount !== '' && !isNaN(Number(dueAmount))
+            ? Number(dueAmount)
+            : 0,
         raw: item,
       };
     });
@@ -659,6 +708,83 @@ export class FeeDuesComponent extends BasePermissionComponent {
     }
 
     this.filteredData = data;
+  }
+
+  /**
+   * Post-process rows to enrich className with syllabus prefix from classList.
+   * When a specific class is selected, all rows should show the full class name
+   * including syllabus (e.g., "CBSE - 1st" instead of just "1st").
+   */
+  private enrichClassNames(rows: FeeDuesRow[]): FeeDuesRow[] {
+    if (this.classList.length === 0) {
+      return rows;
+    }
+
+    return rows.map(row => {
+      const currentClassName = row.className ?? '';
+      const currentClassId = row.classId ?? '';
+
+      // Skip if className already includes syllabus (has " - ")
+      if (currentClassName.includes(' - ')) {
+        return row;
+      }
+
+      let fullClassName: string | undefined;
+
+      // Case 1: If a specific class is selected, use its full name for all rows
+      if (this.selectedClass) {
+        const selectedClassObj = this.classList.find(c => c.id === this.selectedClass);
+        if (selectedClassObj) {
+          fullClassName = selectedClassObj.name;
+        }
+      } else {
+        // Case 2: No specific class selected - look up each row individually
+
+        // 2a: Try matching by classId from the API response
+        if (currentClassId) {
+          const matchById = this.classList.find(c => c.id === currentClassId);
+          if (matchById) {
+            fullClassName = matchById.name;
+          }
+        }
+
+        // 2b: Try matching by className (extract plain name from "CBSE - 1st" format)
+        if (!fullClassName && currentClassName) {
+          const matchByName = this.classList.find(c => {
+            // The classList name format is "CBSE - 1st", extract "1st" part
+            const plainName = c.name.split(' - ').pop() ?? c.name;
+            return plainName === currentClassName || plainName.toLowerCase() === currentClassName.toLowerCase();
+          });
+          if (matchByName) {
+            fullClassName = matchByName.name;
+          }
+        }
+
+        // 2c: Try getting syllabus from raw data and build the full name
+        if (!fullClassName) {
+          const raw = (row as any)['raw'] ?? {};
+          const syllabus = raw.syllabus ?? raw.Syllabus ?? raw.syllabusName ?? raw.syllabus_name ?? '';
+          if (syllabus && currentClassName) {
+            fullClassName = `${syllabus} - ${currentClassName}`;
+          }
+        }
+      }
+
+      // Apply the full class name if found
+      if (fullClassName) {
+        // For case 1 (specific class selected), only apply if the row's class matches
+        if (this.selectedClass) {
+          const plainClassName = fullClassName.split(' - ')[1] ?? fullClassName;
+          if (currentClassName === plainClassName || currentClassName.toLowerCase() === plainClassName.toLowerCase()) {
+            return { ...row, className: fullClassName };
+          }
+        } else {
+          return { ...row, className: fullClassName };
+        }
+      }
+
+      return row;
+    });
   }
 
   private getSelectedFeeCategoryName(): string {

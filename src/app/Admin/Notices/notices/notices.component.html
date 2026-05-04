@@ -1,0 +1,450 @@
+<div>
+  <app-dashboard-top-nav></app-dashboard-top-nav>
+</div>
+
+<div class="MainContentDiv">
+
+  <!-- ═══════════════════ LIST VIEW ═══════════════════ -->
+  <div *ngIf="!isFormOpen" class="w-100">
+
+    <div class="ComponentTop">
+      <div class="ComponentTopHeader">
+        <h5>Notices</h5>
+        <p>Total {{ noticesCount }} Notices Added</p>
+      </div>
+      <div class="ComponentTopBottom">
+        <button *ngIf="canAdd()" (click)="openAddForm()">
+          <mat-icon>add_circle</mat-icon>Add Notice
+        </button>
+      </div>
+    </div>
+
+    <div class="ComponentRecords">
+      <div class="ComponentRecordsTop">
+        <div class="filterOptions">
+          <div class="searchreview input-container">
+            <input type="text" class="form-control floating-input"
+              [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search..." />
+            <mat-icon style="position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none;">search</mat-icon>
+          </div>
+          <div class="searchreview" *ngIf="isAdmin">
+            <select class="form-control" style="font-size:11px;" (change)="onSchoolFilterChange($event)">
+              <option value="0">-- Select School --</option>
+              <option value="all">All Schools</option>
+              <option *ngFor="let s of schoolList" [value]="s.ID">{{ s.Name }}</option>
+            </select>
+          </div>
+          <div class="searchreview">
+            <select class="form-control" style="font-size:11px;" (change)="onAcademicYearFilterChange($event)">
+              <option value="0">-- All Academic Years --</option>
+              <option *ngFor="let a of academicYearList" [value]="a.ID">{{ a.Name }}</option>
+            </select>
+          </div>
+          <div class="searchreview">
+            <select class="form-control" style="font-size:11px;" (change)="onNoticeTypeFilterChange($event)">
+              <option value="0">-- All Types --</option>
+              <option *ngFor="let t of NOTICE_TYPES" [value]="t">{{ t }}</option>
+            </select>
+          </div>
+          <div class="searchreview">
+            <select class="form-control" style="font-size:11px;" (change)="onAudienceFilterChange($event)">
+              <option value="0">-- All Audience --</option>
+              <option *ngFor="let a of AUDIENCE_TYPES" [value]="a">{{ a }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ TABLE VIEW ══════════ -->
+      <div class="reviewstable">
+        <table *ngIf="noticesList.length > 0" class="table table-bordered">
+          <thead>
+            <tr>
+              <th>SI.No</th>
+              <th (click)="sort('Title')" class="sortable-column">
+                <span class="th-content">
+                  Title
+                  <span class="sort-icons">
+                    <mat-icon [class.active]="sortColumn==='Title' && sortDirection==='asc'">arrow_drop_up</mat-icon>
+                    <mat-icon [class.active]="sortColumn==='Title' && sortDirection==='desc'">arrow_drop_down</mat-icon>
+                  </span>
+                </span>
+              </th>
+              <th>Type</th>
+              <th>Audience</th>
+              <th>Start Date</th>
+              <th>End Date</th>
+              <th *ngIf="isAdmin">School</th>
+              <th>Academic Year</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let n of noticesList; let i = index">
+              <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+              <td data-label="Title">{{ n.Title }}</td>
+              <td data-label="Type">
+                <span class="notice-type-badge" [ngClass]="'type-' + n.NoticeType?.toLowerCase()">{{ n.NoticeType }}</span>
+              </td>
+              <td data-label="Audience">{{ n.Audience }}</td>
+              <td data-label="StartDate">{{ formatDate(n.StartDate) }}</td>
+              <td data-label="EndDate">{{ formatDate(n.EndDate) }}</td>
+              <td data-label="School" *ngIf="isAdmin">{{ n.SchoolName }}</td>
+              <td data-label="AcademicYear">{{ n.AcademicYearName }}</td>
+              <td data-label="Status">
+                <span class="status-pill"
+                  [style.background]="n.IsActive ? 'linear-gradient(135deg,#dcfce7 0%,#bbf7d0 100%)' : 'linear-gradient(135deg,#ffe4e6 0%,#fecdd3 100%)'"
+                  [style.color]="n.IsActive ? '#166534' : '#9f1239'"
+                  [style.borderColor]="n.IsActive ? '#86efac' : '#fda4af'"
+                  [ngClass]="n.IsActive ? 'status-active' : 'status-inactive'">
+                  {{ n.IsActive ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td data-label="Actions">
+                <div class="d-flex justify-content-center align-items-center h-100">
+                  <button *ngIf="canEdit()" class="btn checkbtn edit" data-tooltip="Edit" (click)="fetchByID(n.NoticeId, 'edit')">
+                    <mat-icon class="mat-edit-icon">edit</mat-icon>
+                  </button>
+                  <button *ngIf="canView()" class="btn checkbtn" data-tooltip="View" (click)="fetchByID(n.NoticeId, 'view')">
+                    <mat-icon class="mat-edit-icon">visibility</mat-icon>
+                  </button>
+                  <!-- <button *ngIf="canFee Category()" class="btn checkbtn delete" data-tooltip="Delete" (click)="deleteNotice(n.NoticeId)">
+                    <mat-icon class="mat-edit-icon">delete</mat-icon>
+                  </button> -->
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div *ngIf="noticesList.length === 0" class="NoDataFound">
+          <div class="NoDataFoundImg">
+            <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="" />
+          </div>
+          <p>No data found.</p>
+        </div>
+
+        <div *ngIf="noticesCount > pageSize" class="pagination-controls">
+          <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
+          <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
+          <button *ngFor="let page of getVisiblePageNumbers()" class="page-btn"
+            [ngClass]="{'active': page === currentPage}" (click)="goToPage(page)">{{ page }}</button>
+          <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+          <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════ ADD / EDIT FORM ═══════════════════ -->
+  <div *ngIf="isFormOpen" class="w-100">
+    <div class="AddForm">
+      <div class="AddFormTop">
+        <button (click)="closeForm()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+        <p>{{ isEditMode ? 'Edit Notice' : 'Add Notice' }}</p>
+      </div>
+      <div class="AddFormConatiner">
+        <form [formGroup]="noticesForm">
+          <div class="FormInputRowsContainer">
+
+            <ng-container *ngIf="isAdmin; else schoolLayout">
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">School <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" formControlName="School" (change)="onAdminSchoolFormChange($event)">
+                      <option value="0">-- Select School --</option>
+                      <option *ngFor="let s of schoolList" [value]="s.ID">{{ s.Name }}</option>
+                    </select>
+                    <div *ngIf="noticesForm.get('School')?.hasError('min') && noticesForm.get('School')?.touched" class="text-danger">
+                      <small>Please select a school.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Academic Year <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" formControlName="AcademicYear">
+                      <option value="0">-- Select Academic Year --</option>
+                      <option *ngFor="let a of academicYearList" [value]="a.ID">{{ a.Name }}</option>
+                    </select>
+                    <div *ngIf="noticesForm.get('AcademicYear')?.hasError('min') && noticesForm.get('AcademicYear')?.touched" class="text-danger">
+                      <small>Please select an academic year.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Title <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="Title" placeholder="Enter notice title" />
+                    <div *ngIf="noticesForm.get('Title')?.hasError('required') && noticesForm.get('Title')?.touched" class="text-danger">
+                      <small>Title is required.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Notice Type <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" formControlName="NoticeType">
+                      <option *ngFor="let t of NOTICE_TYPES" [value]="t">{{ t }}</option>
+                    </select>
+                    <div *ngIf="noticesForm.get('NoticeType')?.hasError('required') && noticesForm.get('NoticeType')?.touched" class="text-danger">
+                      <small>Notice type is required.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Audience <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" formControlName="Audience">
+                      <option *ngFor="let a of AUDIENCE_TYPES" [value]="a">{{ a }}</option>
+                    </select>
+                    <div *ngIf="noticesForm.get('Audience')?.hasError('required') && noticesForm.get('Audience')?.touched" class="text-danger">
+                      <small>Audience is required.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Start Date <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <input type="date" class="inputField" formControlName="StartDate" [min]="getMinDate()" />
+                    <div *ngIf="noticesForm.get('StartDate')?.hasError('required') && noticesForm.get('StartDate')?.touched" class="text-danger">
+                      <small>Start Date is required.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">End Date <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <input type="date" class="inputField" formControlName="EndDate" [min]="getMinDate()" />
+                    <div *ngIf="noticesForm.get('EndDate')?.hasError('required') && noticesForm.get('EndDate')?.touched" class="text-danger">
+                      <small>End Date is required.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Description</label>
+                  <div class="input-with-error">
+                    <textarea class="inputField" formControlName="Description" rows="1" placeholder="Enter notice description"></textarea>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <div class="toggle-container" (click)="$event.stopPropagation()">
+                    <label class="switch">
+                      <input type="checkbox" [checked]="IsActiveStatus" (click)="toggleActive()">
+                      <span class="slider">
+                        <span
+                          class="toggle-text"
+                          [ngStyle]="{
+                            left: IsActiveStatus ? '42%' : '60%',
+                            fontSize: IsActiveStatus ? '9px' : '9px'
+                          }"
+                        >
+                          {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <ng-template #schoolLayout>
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Academic Year <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" formControlName="AcademicYear">
+                      <option value="0">-- Select Academic Year --</option>
+                      <option *ngFor="let a of academicYearList" [value]="a.ID">{{ a.Name }}</option>
+                    </select>
+                    <div *ngIf="noticesForm.get('AcademicYear')?.hasError('min') && noticesForm.get('AcademicYear')?.touched" class="text-danger">
+                      <small>Please select an academic year.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Title <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="Title" placeholder="Enter notice title" />
+                    <div *ngIf="noticesForm.get('Title')?.hasError('required') && noticesForm.get('Title')?.touched" class="text-danger">
+                      <small>Title is required.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Notice Type <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" formControlName="NoticeType">
+                      <option *ngFor="let t of NOTICE_TYPES" [value]="t">{{ t }}</option>
+                    </select>
+                    <div *ngIf="noticesForm.get('NoticeType')?.hasError('required') && noticesForm.get('NoticeType')?.touched" class="text-danger">
+                      <small>Notice type is required.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Audience <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" formControlName="Audience">
+                      <option *ngFor="let a of AUDIENCE_TYPES" [value]="a">{{ a }}</option>
+                    </select>
+                    <div *ngIf="noticesForm.get('Audience')?.hasError('required') && noticesForm.get('Audience')?.touched" class="text-danger">
+                      <small>Audience is required.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Start Date <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <input type="date" class="inputField" formControlName="StartDate" [min]="getMinDate()" />
+                    <div *ngIf="noticesForm.get('StartDate')?.hasError('required') && noticesForm.get('StartDate')?.touched" class="text-danger">
+                      <small>Start Date is required.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">End Date <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <input type="date" class="inputField" formControlName="EndDate" [min]="getMinDate()" />
+                    <div *ngIf="noticesForm.get('EndDate')?.hasError('required') && noticesForm.get('EndDate')?.touched" class="text-danger">
+                      <small>End Date is required.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Description</label>
+                  <div class="input-with-error">
+                    <textarea class="inputField" formControlName="Description" rows="1" placeholder="Enter notice description"></textarea>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <div class="toggle-container" (click)="$event.stopPropagation()">
+                    <label class="switch">
+                      <input type="checkbox" [checked]="IsActiveStatus" (click)="toggleActive()">
+                      <span class="slider">
+                        <span
+                          class="toggle-text"
+                          [ngStyle]="{
+                            left: IsActiveStatus ? '42%' : '60%',
+                            fontSize: IsActiveStatus ? '9px' : '9px'
+                          }"
+                        >
+                          {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <span style="visibility: hidden;">placeholder</span>
+                </div>
+              </div>
+            </ng-template>
+
+          </div>
+
+          <div class="ActionButtons">
+            <button type="button" *ngIf="isEditMode && canEdit()" (click)="updateNotice()">Update</button>
+            <button type="button" *ngIf="!isEditMode && canAdd()" (click)="submitNotice()">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ VIEW MODAL ═══════════════════ -->
+  <div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Notice Details</h5>
+          <button type="button" class="close" (click)="closeViewModal()">
+            <span>&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="row mb-2" *ngIf="viewItem?.Title">
+            <div class="col-5">Title</div>
+            <div class="col-7 viewfontsize">{{ viewItem?.Title }}</div>
+          </div>
+          <div class="row mb-2" *ngIf="viewItem?.Description && viewItem.Description.trim() !== ''">
+            <div class="col-5">Description</div>
+            <div class="col-7 viewfontsize">{{ viewItem?.Description }}</div>
+          </div>
+          <div class="row mb-2" *ngIf="viewItem?.NoticeType">
+            <div class="col-5">Notice Type</div>
+            <div class="col-7 viewfontsize">{{ viewItem?.NoticeType }}</div>
+          </div>
+          <div class="row mb-2" *ngIf="viewItem?.Audience">
+            <div class="col-5">Audience</div>
+            <div class="col-7 viewfontsize">{{ viewItem?.Audience }}</div>
+          </div>
+          <div class="row mb-2" *ngIf="viewItem?.StartDate">
+            <div class="col-5">Start Date</div>
+            <div class="col-7 viewfontsize">{{ formatDate(viewItem?.StartDate) }}</div>
+          </div>
+          <div class="row mb-2" *ngIf="viewItem?.EndDate">
+            <div class="col-5">End Date</div>
+            <div class="col-7 viewfontsize">{{ formatDate(viewItem?.EndDate) }}</div>
+          </div>
+          <div class="row mb-2" *ngIf="viewItem?.SchoolName">
+            <div class="col-5">School</div>
+            <div class="col-7 viewfontsize">{{ viewItem?.SchoolName }}</div>
+          </div>
+          <div class="row mb-2" *ngIf="viewItem?.AcademicYearName">
+            <div class="col-5">Academic Year</div>
+            <div class="col-7 viewfontsize">{{ viewItem?.AcademicYearName }}</div>
+          </div>
+          <div class="row mb-2" *ngIf="viewItem?.IsActive !== null">
+            <div class="col-5">Status</div>
+            <div class="col-7">
+              <span class="badge" [ngClass]="viewItem?.IsActive ? 'badge-success' : 'badge-danger'">
+                {{ viewItem?.IsActive ? 'Active' : 'Inactive' }}
+              </span>
+            </div>
+          </div>
+          <div class="row mb-2" *ngIf="viewItem?.CreatedAt">
+            <div class="col-5">Created At</div>
+            <div class="col-7 viewfontsize">{{ formatDateTime(viewItem?.CreatedAt) }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ STATUS MODAL ═══════════════════ -->
+  <div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isStatusModalOpen}" [style.display]="isStatusModalOpen ? 'block' : 'none'">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Status</h5>
+          <button type="button" class="close" (click)="closeStatusModal()">
+            <span>&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>{{ statusMessage }}</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" (click)="handleStatusOk()">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
