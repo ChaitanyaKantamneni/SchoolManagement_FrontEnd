@@ -314,7 +314,9 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
       'advance salary': 'request_quote',
       'salary pay': 'paid',
       'salary issued': 'receipt_long',
-      'leave management': 'event_note'
+      'leave management': 'event_note',
+      homework: 'assignment',
+      'assign homework': 'assignment_turned_in'
     };
     return map[key] || 'menu';
   }
@@ -331,7 +333,8 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
       exam: 'quiz',
       attendance: 'how_to_reg',
       'hr & payroll': 'account_balance',
-      'leave management': 'event_note'
+      'leave management': 'event_note',
+      homework: 'assignment'
     };
 
     return map[key] || 'folder';

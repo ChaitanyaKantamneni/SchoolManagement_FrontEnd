@@ -183,6 +183,27 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
   // Parent-specific properties
   parentChildren: Array<{ ID: string; AdmissionNo: string; Name: string; Class: string; Division: string; SchoolID: string }> = [];
   selectedChildId: string = '';
+  selectedChildIndex: number = 0;
+
+  selectChild(index: number): void {
+    this.selectedChildIndex = index;
+    const child = this.parentChildren[index];
+    if (!child) return;
+    this.selectedChildId = child.ID;
+    this.AdminselectedStudentID = child.ID;
+    this.AdminselectedClassID = child.Class;
+    this.AdminselectedDiviosnID = child.Division;
+    this.SyllabusForm.patchValue({
+      Student: child.ID,
+      Class: child.Class,
+      Divisions: child.Division
+    });
+    this.resetResultView();
+    if (this.AdminselecteExamID) {
+      this.hasSubmittedSearch = true;
+      this.FetchExamResultsList();
+    }
+  }
 
   private initializeUserRole(): void {
     if (this.isParent) {
@@ -237,6 +258,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
           Class: '',
           Divisions: ''
         });
+
+        // Auto-select first child
+        if (this.parentChildren.length > 0) {
+          this.selectChild(0);
+        }
       },
       error: () => { this.parentChildren = []; }
     });
@@ -848,18 +874,31 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
     this.apiurl.post<any>('Tbl_ExamMarks_CRUD_Operations', requestData)
       .subscribe(
         (response: any) => {
-          if (response && Array.isArray(response.data)) {
-            const recordsByAdmission = response.data.reduce((acc: any, item: any) => {
+          const data = Array.isArray(response?.data) ? response.data : [];
+
+          // Check for not-published warning from SP
+          if (data.length === 1 && (
+            data[0]?.message === 'Results are not published yet' ||
+            data[0]?.status === 'Results are not published yet'
+          )) {
+            this.AminityInsStatus = 'Results are not published yet. Please contact your school administrator.';
+            this.isModalOpen = true;
+            this.examResultsList = [];
+            this.SyllabusCount = 0;
+            this.currentPage = 1;
+            return;
+          }
+
+          if (data.length > 0) {
+            const recordsByAdmission = data.reduce((acc: any, item: any) => {
               const key = item.admissionID;
-              if (!acc[key]) {
-                acc[key] = [];
-              }
+              if (!acc[key]) acc[key] = [];
               acc[key].push(item);
               return acc;
             }, {});
 
             const seen = new Set();
-            this.examResultsList = response.data
+            this.examResultsList = data
               .filter((item: any) => {
                 if (seen.has(item.admissionID)) return false;
                 seen.add(item.admissionID);
@@ -880,11 +919,9 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
                 TotalMaxMarks: item.totalMaxMarks,
                 TotalPercentage: item.totalPercentage,
                 Result: this.calculateFinalResult(recordsByAdmission[item.admissionID] || [])
-                })); 
+              }));
             this.SyllabusCount = this.examResultsList.length;
-            if (this.currentPage > this.totalPages()) {
-              this.currentPage = 1;
-            }
+            if (this.currentPage > this.totalPages()) this.currentPage = 1;
           } else {
             this.examResultsList = [];
             this.SyllabusCount = 0;
@@ -1358,6 +1395,10 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
       this.AdminselecteExamID = examId === '0' ? '' : examId;
       this.examResultsList = [];
       this.resetResultView();
+      if (this.isParent && this.selectedChildId && this.AdminselecteExamID) {
+        this.hasSubmittedSearch = true;
+        this.FetchExamResultsList();
+      }
     }
 
 private resetResultView() {

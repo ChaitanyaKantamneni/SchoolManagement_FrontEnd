@@ -9,6 +9,22 @@
         <h5>View Student Attendance</h5>
         <p>Total {{ SyllabusCount }} Students</p>
       </div>
+      
+      <!-- Child Tab Slider for Parent View - Top Right -->
+      <div class="child-tab-slider-top-right" *ngIf="isParent && parentChildren.length > 0">
+        <div class="children-label">Children:</div>
+        <div class="child-tabs-container">
+          <button
+            *ngFor="let child of parentChildren; let i = index"
+            type="button"
+            class="child-tab-btn"
+            [class.active]="selectedChildIndex === i"
+            (click)="selectChild(i)">
+            <mat-icon>person</mat-icon>
+            {{ child.Name }}
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -125,27 +141,12 @@
                   </div>
                 </div>
                 <div class="InputFieldsContainer">
-                  <label class="inputLabel">Select Child <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <select class="inputField" [value]="selectedChildId" (change)="onChildChange($event)">
-                      <option value="">-- Select Child --</option>
-                      <option *ngFor="let child of parentChildren" [value]="child.ID">{{ child.Name }}</option>
-                    </select>
-                    <div *ngIf="!selectedChildId && (SyllabusForm.get('AcademicYear')?.touched || SyllabusForm.get('FromDateTime')?.touched || SyllabusForm.get('ToDateTime')?.touched)" class="text-danger">
-                      <small>Please select Child.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
                   <label class="inputLabel">Session <span class="text-muted">(Optional)</span></label>
                   <select class="inputField" formControlName="Session" (change)="onSessionChange($event)">
                     <option value="0">-- All Sessions --</option>
                     <option *ngFor="let session of sessionList" [value]="session.ID">{{ session.Name }}</option>
                   </select>
                 </div>
-              </div>
-
-              <div class="InputRow" *ngIf="isParent">
                 <div class="InputFieldsContainer">
                   <label class="inputLabel">From Date <span class="required">*</span></label>
                   <div class="input-with-error">
@@ -164,9 +165,9 @@
                     </div>
                   </div>
                 </div>
-                <div class="InputFieldsContainer" aria-hidden="true"></div>
               </div>
 
+              
               <div class="InputRow" *ngIf="!isParent">
                 <div class="InputFieldsContainer">
                   <label class="inputLabel">Academic Year <span class="required">*</span></label>
@@ -261,7 +262,7 @@
                 <div class="InputFieldsContainer" *ngIf="isTeacher" aria-hidden="true"></div>
               </div>
 
-              <div class="ActionButtons">
+              <div class="ActionButtons" *ngIf="!isParent">
                 <button type="button" (click)="SyllabusForm.markAllAsTouched(); loadAttendance()">Search</button>
               </div>
             </div>

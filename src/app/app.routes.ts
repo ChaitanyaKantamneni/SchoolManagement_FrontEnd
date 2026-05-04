@@ -94,6 +94,8 @@ import { ApplyleaveComponent } from './Admin/LeaveManagement/applyleave/applylea
 // import { LeavelistComponent } from './Admin/LeaveManagement/leavelist/leavelist.component';
 import { LeaveapprovalComponent } from './Admin/LeaveManagement/leaveapproval/leaveapproval.component';
 import { LeavedetailsComponent } from './Admin/LeaveManagement/leavedetails/leavedetails.component';
+import { AssignHomewrokComponent } from './Admin/HomeWork/assign-homewrok/assign-homewrok.component';
+import { HomeworkComponent } from './Admin/HomeWork/homework/homework.component';
 
 
 export const routes: Routes = [
@@ -159,6 +161,8 @@ export const routes: Routes = [
       // { path: 'MyLeaves',      component:  LeavelistComponent},
       { path: 'LeaveApproval', component: LeaveapprovalComponent },
       { path: 'LeaveDetails',  component: LeavedetailsComponent },
+      { path: 'AssignHomework',  component: AssignHomewrokComponent },
+      { path: 'HomeWork',  component: HomeworkComponent },
     ]
   },
 
@@ -220,6 +224,8 @@ export const routes: Routes = [
       // { path: 'MyLeaves',      component:  LeavelistComponent},
       { path: 'LeaveApproval', component: LeaveapprovalComponent },
       { path: 'LeaveDetails',  component: LeavedetailsComponent },
+      { path: 'AssignHomework',  component: AssignHomewrokComponent },
+      { path: 'HomeWork',  component: HomeworkComponent },
 
 
 
@@ -291,6 +297,9 @@ export const routes: Routes = [
       { path: 'LeaveApproval', component: LeaveapprovalComponent },
       { path: 'LeaveDetails',  component: LeavedetailsComponent },
       { path: 'LeavePolicy',    component: LeavedetailsComponent },
+      { path: 'AssignHomework',  component: AssignHomewrokComponent },
+      { path: 'HomeWork',  component: HomeworkComponent },
+
     ]
   }
 ];

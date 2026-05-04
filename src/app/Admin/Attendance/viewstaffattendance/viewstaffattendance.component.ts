@@ -67,6 +67,14 @@ export class ViewstaffattendanceComponent extends BasePermissionComponent {
 
   ngOnInit(): void {
     this.checkViewPermission();
+    
+    // Set From Date and To Date to current date for all login types
+    const today = new Date().toISOString().split('T')[0];
+    this.SyllabusForm.patchValue({
+      FromDateTime: today,
+      ToDateTime: today
+    });
+    
     if (!this.isAdmin) {
       this.AdminselectedSchoolID =
         sessionStorage.getItem('SchoolID')?.toString() ||

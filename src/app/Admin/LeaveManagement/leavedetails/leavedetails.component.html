@@ -38,8 +38,8 @@
             <thead>
               <tr>
                 <th>SI.No</th>
-                <th>School</th>
-                <th>Academic Year</th>
+                <th *ngIf="isAdmin">School</th>
+                <th *ngIf="isAdmin">Academic Year</th>
                 <th>Leave Category</th>
                 <th>Allowance</th>
                 <th>Status</th>
@@ -47,10 +47,10 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let p of filteredPolicies; let i = index">
-                <td>{{ i + 1 }}</td>
-                <td>{{ p.schoolName }}</td>
-                <td>{{ p.academicYearName }}</td>
+              <tr *ngFor="let p of PolicyList; let i = index">
+                <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td *ngIf="isAdmin">{{ p.schoolName }}</td>
+                <td *ngIf="isAdmin">{{ p.academicYearName }}</td>
                 <td>{{ p.leaveType }}</td>
                 <td>{{ p.count }} Days</td>
                 <td>
@@ -80,6 +80,19 @@
               <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
             </div>
             <p>No data found.</p>
+          </div>
+          
+          <div *ngIf="PolicyCount > pageSize" class="pagination-controls">
+            <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
+            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
+            <button *ngFor="let page of getVisiblePageNumbers()"
+                    class="page-btn"
+                    [ngClass]="{'active': page === currentPage}"
+                    (click)="goToPage(page)">
+              {{ page }}
+            </button>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
           </div>
         </div>
       </div>
