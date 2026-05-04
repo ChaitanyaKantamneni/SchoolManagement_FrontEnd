@@ -51,6 +51,8 @@ export class SchoolDetailsComponent extends BasePermissionComponent {
   private readonly SEARCH_DEBOUNCE = 300;
   SchoolsList: any[] =[];
   SchoolsCount: number = 0;
+  SchoolsActiveCount:number=0;
+  SchoolsInActiveCount:number=0;
   isViewMode = false;
   viewSyllabus: any = null;
   AminityInsStatus: any = '';
@@ -151,6 +153,8 @@ export class SchoolDetailsComponent extends BasePermissionComponent {
     this.FetchAcademicYearCount(isSearch).subscribe({
       next: (countResp: any) => {
         this.SchoolsCount = countResp?.data?.[0]?.totalcount ?? 0;
+        this.SchoolsActiveCount=countResp?.data?.[0]?.activeCount ?? 0;
+        this.SchoolsInActiveCount=countResp?.data?.[0]?.inactiveCount ?? 0;
 
         const payload: any = {
           Flag: flag,
@@ -583,4 +587,12 @@ export class SchoolDetailsComponent extends BasePermissionComponent {
     this.FetchSyllabusDetByID(SyllabusID,'view');
     this.isViewModalOpen=true;
   };
+
+  pageStartIndex(): number {
+    return this.SchoolsCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
+  }
+
+  pageEndIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.SchoolsCount);
+  }
 }
