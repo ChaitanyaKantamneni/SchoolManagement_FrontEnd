@@ -11,8 +11,9 @@ import { MenuServiceService } from '../../../Services/menu-service.service';
 import { BasePermissionComponent  } from '../../../shared/base-crud.component';
 import { SchoolCacheService } from '../../../Services/school-cache.service';
 import { LoaderService } from '../../../Services/loader.service';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpEventType } from '@angular/common/http';
 import * as XLSX from 'xlsx';
+import { FileService } from '../../../Services/file.service';
 
 @Component({
   selector: 'app-admission',
@@ -32,7 +33,8 @@ export class AdmissionComponent extends BasePermissionComponent {
     public loader: LoaderService,
     private apiurl: ApiServiceService,
     menuService: MenuServiceService,
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
+    private fileService: FileService
   ) {
     super(menuService, router);
   }
@@ -57,6 +59,9 @@ export class AdmissionComponent extends BasePermissionComponent {
   private readonly SEARCH_DEBOUNCE = 300;
   SubjectsList: any[] =[];
   SubjectsCount: number = 0;
+  SubjectsActiveCount: number = 0;
+  SubjectsInActiveCount: number = 0;
+  AcademicYearSelected:string='';
   SyllabusList: any[] =[];
   ClassList: any[] =[];
   DivisionList: any[] =[];
@@ -68,7 +73,7 @@ export class AdmissionComponent extends BasePermissionComponent {
   viewSyllabus: any = null;
   AminityInsStatus: any = '';
   isModalOpen = false;
-  isViewModalOpen= false;  
+  isViewModalOpen= false;
   ActiveUserId:string=sessionStorage.getItem('email')?.toString() || '';
   roleId = sessionStorage.getItem('RollID');
 
@@ -78,7 +83,7 @@ export class AdmissionComponent extends BasePermissionComponent {
 
   currentMode: 'view' | 'edit' = 'edit';
 
-  sortColumn: string = 'AdmissionNo'; 
+  sortColumn: string = 'AdmissionNo';
   sortDirection: 'asc' | 'desc' = 'desc';
   editclicked:boolean=false;
   schoolList: any[] = [];
@@ -269,7 +274,7 @@ export class AdmissionComponent extends BasePermissionComponent {
                 Name: item.name,
                 IsActive: isActiveString
               };
-            });            
+            });
           } else {
             this.schoolList = [];
           }
@@ -294,7 +299,7 @@ export class AdmissionComponent extends BasePermissionComponent {
                 Name: item.name,
                 IsActive: isActiveString
               };
-            });            
+            });
           } else {
             this.academicYearList = [];
           }
@@ -357,7 +362,8 @@ export class AdmissionComponent extends BasePermissionComponent {
     this.FetchAcademicYearCount(isSearch).subscribe({
       next: (countResp: any) => {
         this.SubjectsCount = countResp?.data?.[0]?.totalcount ?? 0;
-
+        this.SubjectsActiveCount=countResp?.data?.[0]?.activeCount ?? 0;
+        this.SubjectsInActiveCount=countResp?.data?.[0]?.inactiveCount ?? 0;
         const payload: any = {
           Flag: flag,
           Limit: this.pageSize,
@@ -366,6 +372,7 @@ export class AdmissionComponent extends BasePermissionComponent {
           LastCreatedDate: cursor?.lastCreatedDate ?? null,
           LastID: cursor?.lastID ?? null,
           SchoolID:SchoolIdSelected,
+          // AcademicYear:this.AcademicYearSelected,
           ...extra
         };
 
@@ -424,8 +431,9 @@ export class AdmissionComponent extends BasePermissionComponent {
       ClassName: item.className,
       SchoolName:item.schoolName,
       AcademicYearName:item.academicYearName,
-      IsActive: item.isActive === '1' ? 'Active' : 'InActive'      
+      IsActive: item.isActive === '1' ? 'Active' : 'InActive'
     }));
+    this.FetchAcademicYearsList();
   };
 
 
@@ -456,7 +464,7 @@ export class AdmissionComponent extends BasePermissionComponent {
   };
 
   FetchClassList() {
-    const requestData = { 
+    const requestData = {
       SchoolID:this.AdminselectedSchoolID,
       AcademicYear:this.AdminselectedAcademivYearID,
       Flag: '9' };
@@ -483,7 +491,7 @@ export class AdmissionComponent extends BasePermissionComponent {
   };
 
   FetchDivisionList() {
-    const requestData = { 
+    const requestData = {
       SchoolID:this.AdminselectedSchoolID,
       AcademicYear:this.AdminselectedAcademivYearID,
       Class:this.ModuleForm.get('Class')?.value,
@@ -511,7 +519,7 @@ export class AdmissionComponent extends BasePermissionComponent {
   };
 
   FetchAdmissionNo(){
-    const requestData = { 
+    const requestData = {
       SchoolID:this.AdminselectedSchoolID,
       AcademicYear:this.AdminselectedAcademivYearID,
       Flag: '9' };
@@ -531,7 +539,7 @@ export class AdmissionComponent extends BasePermissionComponent {
   };
 
   FetchRoutesList() {
-    const requestData = { 
+    const requestData = {
       SchoolID:this.AdminselectedSchoolID,
       AcademicYear:this.AdminselectedAcademivYearID,
       Flag: '3' };
@@ -558,7 +566,7 @@ export class AdmissionComponent extends BasePermissionComponent {
   };
 
   FetchStopsList() {
-    const requestData = { 
+    const requestData = {
       SchoolID:this.AdminselectedSchoolID,
       AcademicYear:this.AdminselectedAcademivYearID,
       Route:this.ModuleForm.get('Route')?.value,
@@ -583,10 +591,10 @@ export class AdmissionComponent extends BasePermissionComponent {
           this.StopsList = [];
         }
       );
-  };  
+  };
 
   FetchBusList() {
-    const requestData = { 
+    const requestData = {
       SchoolID:this.AdminselectedSchoolID,
       AcademicYear:this.AdminselectedAcademivYearID,
       RouteID:this.ModuleForm.get('Route')?.value,
@@ -615,7 +623,7 @@ export class AdmissionComponent extends BasePermissionComponent {
   };
 
   FetchFareList() {
-    const requestData = { 
+    const requestData = {
       SchoolID:this.AdminselectedSchoolID,
       AcademicYear:this.AdminselectedAcademivYearID,
       RouteID:this.ModuleForm.get('Route')?.value,
@@ -664,7 +672,7 @@ export class AdmissionComponent extends BasePermissionComponent {
           AcademicYear: this.ModuleForm.get('AcademicYear')?.value,
           AdmissionNo: this.ModuleForm.get('AdmissionNo')?.value,
           Class: this.ModuleForm.get('Class')?.value,
-          Division: this.ModuleForm.get('Division')?.value,        
+          Division: this.ModuleForm.get('Division')?.value,
           JoinDate:this.ModuleForm.get('JoinDate')?.value,
           FirstName: this.ModuleForm.get('FirstName')?.value,
           MiddleName: this.ModuleForm.get('MiddleName')?.value,
@@ -708,7 +716,7 @@ export class AdmissionComponent extends BasePermissionComponent {
     else if(this.activeTab=="parents"){
       this.ModuleForm.markAllAsTouched();
       const personalFieldKeys = [
-        'FatherName', 'FatherMobile','FatherEmail', 'FatherAadharNo', 'MotherName', 
+        'FatherName', 'FatherMobile','FatherEmail', 'FatherAadharNo', 'MotherName',
         'MotherMobile', 'MotherEmail','MotherAadharNo'
       ];
 
@@ -724,7 +732,7 @@ export class AdmissionComponent extends BasePermissionComponent {
           FatherQualification: this.ModuleForm.get('FatherQualification')?.value,
           AdmissionID: this.ModuleForm.get('AdmissionNo')?.value,
           FatherOccupation: this.ModuleForm.get('FatherOccupation')?.value,
-          FatherContact: this.ModuleForm.get('FatherMobile')?.value,        
+          FatherContact: this.ModuleForm.get('FatherMobile')?.value,
           FatherEmail:this.ModuleForm.get('FatherEmail')?.value,
           FatherAadhar: this.ModuleForm.get('FatherAadharNo')?.value,
           MotherName: this.ModuleForm.get('MotherName')?.value,
@@ -778,7 +786,7 @@ export class AdmissionComponent extends BasePermissionComponent {
           PermanentAddressLine2: this.ModuleForm.get('PermanentAddressLine2')?.value,
           AdmissionID: this.ModuleForm.get('AdmissionNo')?.value,
           PermanentPincode: this.ModuleForm.get('PermanentPincode')?.value,
-          PermanentPlace: this.ModuleForm.get('PermanentPlace')?.value,        
+          PermanentPlace: this.ModuleForm.get('PermanentPlace')?.value,
           PermanentCountry:this.ModuleForm.get('PermanentCountry')?.value,
           PermanentState: this.ModuleForm.get('PermanentState')?.value,
           PermanentDistrict: this.ModuleForm.get('PermanentDistrict')?.value,
@@ -831,7 +839,7 @@ export class AdmissionComponent extends BasePermissionComponent {
           TemporaryAddressLine2: this.ModuleForm.get('TemporaryAddressLine2')?.value,
           AdmissionID: this.ModuleForm.get('AdmissionNo')?.value,
           TemporaryPinCode: this.ModuleForm.get('TemporaryPincode')?.value,
-          TemporaryPlace: this.ModuleForm.get('TemporaryPlace')?.value,        
+          TemporaryPlace: this.ModuleForm.get('TemporaryPlace')?.value,
           TemporaryCountry:this.ModuleForm.get('TemporaryCountry')?.value,
           TemporaryState: this.ModuleForm.get('TemporaryState')?.value,
           TemporaryDistrict: this.ModuleForm.get('TemporaryDistrict')?.value,
@@ -865,7 +873,7 @@ export class AdmissionComponent extends BasePermissionComponent {
         });
       }
     }
-    else if(this.activeTab=="bus"){      
+    else if(this.activeTab=="bus"){
       this.ModuleForm.get('Route')?.setValidators([Validators.required,Validators.min(1)]);
       this.ModuleForm.get('Stop')?.setValidators([Validators.required,Validators.min(1)]);
       this.ModuleForm.get('Bus')?.setValidators([Validators.required,Validators.min(1)]);
@@ -889,7 +897,7 @@ export class AdmissionComponent extends BasePermissionComponent {
           AdmissionID: this.ModuleForm.get('AdmissionNo')?.value,
           Bus: this.ModuleForm.get('Bus')?.value,
           Fare: this.ModuleForm.get('Fare')?.value,
-          StartDate: this.ModuleForm.get('StartDate')?.value,        
+          StartDate: this.ModuleForm.get('StartDate')?.value,
           IsActive:IsActiveStatusNumeric,
           Flag: '1'
         };
@@ -1179,7 +1187,7 @@ export class AdmissionComponent extends BasePermissionComponent {
             MotherMobile: item.motherContact,
             MotherEmail: item.motherEmail,
             MotherAadharNo: item.motherAadhar
-          };         
+          };
         }
 
         if (mode === 'edit') {
@@ -1234,7 +1242,7 @@ export class AdmissionComponent extends BasePermissionComponent {
             PermanentState: this.StateGroups.find(x => x.id === item.permanentState)?.name || '',
             PermanentDistrict: item.permanentDistrict,
             PermanentCity: item.permanentCity
-          };         
+          };
         }
 
         if (mode === 'edit') {
@@ -1285,7 +1293,7 @@ export class AdmissionComponent extends BasePermissionComponent {
             TemporaryState: this.StateGroups.find(x => x.id === item.temporaryState)?.name || '',
             TemporaryDistrict: item.temporaryDistrict,
             TemporaryCity: item.temporaryCity
-          };         
+          };
         }
 
         if (mode === 'edit') {
@@ -1340,7 +1348,7 @@ export class AdmissionComponent extends BasePermissionComponent {
             StopName:item.stopName,
             BusName:item.busName,
             FareName:item.fareName
-          };         
+          };
         }
 
         if (mode === 'edit') {
@@ -1367,6 +1375,33 @@ export class AdmissionComponent extends BasePermissionComponent {
     );
   };
 
+ FetchStudentDocuments(mode: 'view' | 'edit') {
+
+  const admissionId = this.selectedAdmissionID;
+
+  // this.apiurl.get<any>(`get-student-files/${admissionId}`)
+  //   .subscribe(
+  //     (res: any) => {
+
+  //       if (!res || res.length === 0) {
+  //         this.uploadedFiles = [];
+  //         return;
+  //       }
+
+  //       this.uploadedFiles = res.map((x: any) => ({
+  //         name: x.fileName || x.FileName,   // 🔥 FIX
+  //         url: x.filePath || x.FilePath,    // 🔥 FIX
+  //         file: null,                       // 🔥 IMPORTANT
+  //         progress: 100,
+  //         status: 'done'
+  //       }));
+
+  //     },
+  //     err => console.error(err)
+  //   );
+  this.loadStudentFiles();
+}
+
   UpdateModule(){
     if(this.activeTab=="personal"){
       this.ModuleForm.markAllAsTouched();
@@ -1387,7 +1422,7 @@ export class AdmissionComponent extends BasePermissionComponent {
           AcademicYear: this.ModuleForm.get('AcademicYear')?.value,
           AdmissionNo: this.ModuleForm.get('AdmissionNo')?.value,
           Class: this.ModuleForm.get('Class')?.value,
-          Division: this.ModuleForm.get('Division')?.value,        
+          Division: this.ModuleForm.get('Division')?.value,
           JoinDate:this.ModuleForm.get('JoinDate')?.value,
           FirstName: this.ModuleForm.get('FirstName')?.value,
           MiddleName: this.ModuleForm.get('MiddleName')?.value,
@@ -1431,7 +1466,7 @@ export class AdmissionComponent extends BasePermissionComponent {
     else if(this.activeTab=="parents"){
       this.ModuleForm.markAllAsTouched();
       const personalFieldKeys = [
-        'FatherName', 'FatherMobile','FatherEmail', 'FatherAadharNo', 'MotherName', 
+        'FatherName', 'FatherMobile','FatherEmail', 'FatherAadharNo', 'MotherName',
         'MotherMobile', 'MotherEmail','MotherAadharNo'
       ];
 
@@ -1447,7 +1482,7 @@ export class AdmissionComponent extends BasePermissionComponent {
           FatherQualification: this.ModuleForm.get('FatherQualification')?.value,
           AdmissionID: this.ModuleForm.get('AdmissionNo')?.value,
           FatherOccupation: this.ModuleForm.get('FatherOccupation')?.value,
-          FatherContact: this.ModuleForm.get('FatherMobile')?.value,        
+          FatherContact: this.ModuleForm.get('FatherMobile')?.value,
           FatherEmail:this.ModuleForm.get('FatherEmail')?.value,
           FatherAadhar: this.ModuleForm.get('FatherAadharNo')?.value,
           MotherName: this.ModuleForm.get('MotherName')?.value,
@@ -1501,7 +1536,7 @@ export class AdmissionComponent extends BasePermissionComponent {
           PermanentAddressLine2: this.ModuleForm.get('PermanentAddressLine2')?.value,
           AdmissionID: this.ModuleForm.get('AdmissionNo')?.value,
           PermanentPincode: this.ModuleForm.get('PermanentPincode')?.value,
-          PermanentPlace: this.ModuleForm.get('PermanentPlace')?.value,        
+          PermanentPlace: this.ModuleForm.get('PermanentPlace')?.value,
           PermanentCountry:this.ModuleForm.get('PermanentCountry')?.value,
           PermanentState: this.ModuleForm.get('PermanentState')?.value,
           PermanentDistrict: this.ModuleForm.get('PermanentDistrict')?.value,
@@ -1550,7 +1585,7 @@ export class AdmissionComponent extends BasePermissionComponent {
           TemporaryAddressLine2: this.ModuleForm.get('TemporaryAddressLine2')?.value,
           AdmissionID: this.ModuleForm.get('AdmissionNo')?.value,
           TemporaryPinCode: this.ModuleForm.get('TemporaryPincode')?.value,
-          TemporaryPlace: this.ModuleForm.get('TemporaryPlace')?.value,        
+          TemporaryPlace: this.ModuleForm.get('TemporaryPlace')?.value,
           TemporaryCountry:this.ModuleForm.get('TemporaryCountry')?.value,
           TemporaryState: this.ModuleForm.get('TemporaryState')?.value,
           TemporaryDistrict: this.ModuleForm.get('TemporaryDistrict')?.value,
@@ -1603,7 +1638,7 @@ export class AdmissionComponent extends BasePermissionComponent {
           AdmissionID: this.ModuleForm.get('AdmissionNo')?.value,
           Bus: this.ModuleForm.get('Bus')?.value,
           Fare: this.ModuleForm.get('Fare')?.value,
-          StartDate: this.ModuleForm.get('StartDate')?.value,        
+          StartDate: this.ModuleForm.get('StartDate')?.value,
           IsActive:IsActiveStatusNumeric,
           Flag: '5'
         };
@@ -1677,6 +1712,67 @@ export class AdmissionComponent extends BasePermissionComponent {
     return Math.ceil(this.SubjectsCount / this.pageSize);
   };
 
+  isAdmissionActive(module: any): boolean {
+    return module?.IsActive === true || module?.IsActive === 'true' || module?.IsActive === 'Active' || module?.IsActive === 1;
+  }
+
+  getStudentName(module: any): string {
+    const name = `${module?.FirstName ?? ''} ${module?.MiddleName ?? ''} ${module?.LastName ?? ''}`.replace(/\s+/g, ' ').trim();
+    return name || module?.Name || module?.AdmissionNo || 'Student';
+  }
+
+  getStudentInitials(module: any): string {
+    const name = this.getStudentName(module);
+    const parts = name.split(' ').filter(Boolean);
+    const initials = parts.length > 1 ? `${parts[0][0]}${parts[parts.length - 1][0]}` : name.slice(0, 2);
+    return initials.toUpperCase();
+  }
+
+  getAvatarTone(index: number): string {
+    const tones = ['tone-blue', 'tone-green', 'tone-amber', 'tone-purple'];
+    return tones[index % tones.length];
+  }
+
+  formatSerial(value: number, size: number): string {
+    return String(value).padStart(size, '0');
+  }
+
+  getAcademicYearLabel(): string {
+    return this.SubjectsList[0]?.AcademicYearName || this.academicYearList[0]?.Name;
+  }
+
+  getAcademicYearSuffix(module: any): string {
+    const year = String(module?.AcademicYearName || this.getAcademicYearLabel());
+    const match = year.match(/\d{4}/g);
+    return match?.[match.length - 1] || '2026';
+  }
+
+  
+  getActiveAdmissionCount(): number {
+    return this.SubjectsList.filter(user => user.IsActive === 'Active').length;
+  }
+
+  getPendingAdmissionCount(): number {
+    return Math.max(this.SubjectsList.length - this.getActiveAdmissionCount(), 0);
+  }
+
+  getActiveRate(): string {
+    if (!this.SubjectsList.length) return '0%';
+    return `${Math.round((this.getActiveAdmissionCount() / this.SubjectsList.length) * 100)}%`;
+  }
+
+  getCoveredClassCount(): number {
+    return new Set(this.SubjectsList.map((module) => module?.ClassName).filter(Boolean)).size || this.SubjectsList.length;
+  }
+
+  pageStartIndex(): number {
+    return this.SubjectsCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
+  }
+
+  pageEndIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.SubjectsCount);
+  }
+
   getVisiblePageNumbers() {
     const totalPages = this.totalPages();
     const pages = [];
@@ -1704,7 +1800,7 @@ export class AdmissionComponent extends BasePermissionComponent {
       if (value.length < this.SEARCH_MIN_LENGTH) {
         return;
       }
-      
+
       this.currentPage = 1;
       this.pageSize=5;
       this.visiblePageCount=3;
@@ -1791,7 +1887,7 @@ export class AdmissionComponent extends BasePermissionComponent {
       this.selectedSchoolID="";
     }else{
       this.selectedSchoolID = schoolID;
-    }    
+    }
     this.SchoolSelectionChange = true;
     this.FetchInitialData();
   };
@@ -1858,7 +1954,7 @@ export class AdmissionComponent extends BasePermissionComponent {
 
           // Release URL after use
           setTimeout(() => URL.revokeObjectURL(fileURL), 1000);
-        } 
+        }
         else if (type === 'excel') {
           const a = document.createElement('a');
           a.href = URL.createObjectURL(blob);
@@ -1900,54 +1996,60 @@ export class AdmissionComponent extends BasePermissionComponent {
       this.AdminselectedSchoolID="";
     }else{
       this.AdminselectedSchoolID = schoolID;
-    }   
+    }
     this.FetchAcademicYearsList();
   };
 
   onAdminAcademicYearChange(event: Event) {
-    this.ClassList = []; 
+    this.ClassList = [];
     this.ModuleForm.get('Class').patchValue('0');
     const target = event.target as HTMLSelectElement;
-    const schoolID = target.value;    
+    const schoolID = target.value;
     if(schoolID=="0"){
       this.AdminselectedAcademivYearID="";
     }else{
       this.AdminselectedAcademivYearID = schoolID;
-    }  
-    console.log('this.AdminselectedAcademivYearID',this.AdminselectedAcademivYearID);
-    this.FetchAdmissionNo();  
+    }
+    this.FetchAdmissionNo();
     this.FetchClassList();
   };
 
+  
+  onAcademicYearChange(event:Event){
+    const target = event.target as HTMLSelectElement;     
+    this.AcademicYearSelected=target.value;
+    this.FetchInitialData();
+  }
+
   onClassSelectedChange(event: Event) {
-    this.DivisionList = []; 
+    this.DivisionList = [];
     this.ModuleForm.get('Division').patchValue('0');
     const target = event.target as HTMLSelectElement;
-    const schoolID = target.value; 
+    const schoolID = target.value;
     this.FetchDivisionList();
   };
 
   onRouteSelectedChange(event: Event) {
-    this.StopsList = []; 
+    this.StopsList = [];
     this.ModuleForm.get('Stop').patchValue('0');
     const target = event.target as HTMLSelectElement;
-    const schoolID = target.value; 
+    const schoolID = target.value;
     this.FetchStopsList();
   };
 
   onStopSelectedChange(event: Event) {
-    this.BusList = []; 
+    this.BusList = [];
     this.ModuleForm.get('Bus').patchValue('0');
     const target = event.target as HTMLSelectElement;
-    const schoolID = target.value; 
+    const schoolID = target.value;
     this.FetchBusList();
   };
 
   onBusSelectedChange(event: Event) {
-    this.FareList = []; 
+    this.FareList = [];
     this.ModuleForm.get('Fare').patchValue('0');
     const target = event.target as HTMLSelectElement;
-    const schoolID = target.value; 
+    const schoolID = target.value;
     this.FetchFareList();
   };
 
@@ -1959,7 +2061,7 @@ export class AdmissionComponent extends BasePermissionComponent {
   // }
 
   tabChange(tab: string) {
-    this.activeTab = tab;    
+    this.activeTab = tab;
     this.cd.detectChanges();
 
     const mode = this.currentMode;
@@ -1979,6 +2081,9 @@ export class AdmissionComponent extends BasePermissionComponent {
     else if (tab === "bus") {
       this.FetchRoutesList();
       this.FetchTransportationDetByAdmissionID(mode);
+    }
+    else if (tab === "documents") {
+      this.FetchStudentDocuments(mode);
     }
   }
 
@@ -2882,7 +2987,7 @@ export class AdmissionComponent extends BasePermissionComponent {
           MotherAadhar: String(row.MotherAadhar ?? '').trim(),
           MotherEmail: String(row.MotherEmail ?? '').trim(),
           IsActive: '1',
-          Flag: '5'
+          Flag: '1'
         };
         await firstValueFrom(this.apiurl.post<any>('Tbl_StudentParentDetails_CRUD_Operations', parentPayload));
 
@@ -2905,7 +3010,7 @@ export class AdmissionComponent extends BasePermissionComponent {
           TemporaryDistrict: String(row.TemporaryDistrict ?? '').trim() || null,
           TemporaryCity: String(row.TemporaryCity ?? '').trim() || null,
           IsActive: '1',
-          Flag: '5'
+          Flag: '1'
         };
         await firstValueFrom(this.apiurl.post<any>('Tbl_StudentAddressDetails_CRUD_Operations', addressPayload));
 
@@ -2924,7 +3029,7 @@ export class AdmissionComponent extends BasePermissionComponent {
             Fare: fare,
             StartDate: startDate,
             IsActive: '1',
-            Flag: '5'
+            Flag: '1'
           };
           await firstValueFrom(this.apiurl.post<any>('Tbl_StudentTransportationDetails_CRUD_Operations', transportPayload));
         }
@@ -2987,4 +3092,373 @@ export class AdmissionComponent extends BasePermissionComponent {
     const splitIndex = raw.indexOf(' - ');
     return splitIndex > -1 ? raw.slice(0, splitIndex).trim() : raw;
   }
+
+//   uploadedFiles: any[] = [];
+//   isUploading = false;
+
+//   schoolId = this.AdminselectedSchoolID;
+//   admissionId = this.selectedAdmissionID;
+
+//   maxFileSize = 2 * 1024 * 1024; // 2MB
+//   allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+
+//   // 📁 SELECT FILE
+//   onFileSelected(event: any) {
+//     const files = Array.from(event.target.files);
+
+//     files.forEach((file: any) => {
+
+//       if (!this.validateFile(file)) return;
+
+//       this.uploadedFiles.push({
+//         file,
+//         name: file.name,
+//         progress: 0,
+//         status: 'pending'
+//       });
+//     });
+//   }
+
+//   // 📥 DRAG DROP
+//   onDrop(event: DragEvent) {
+//     event.preventDefault();
+
+//     if (event.dataTransfer?.files) {
+//       const files = Array.from(event.dataTransfer.files);
+
+//       files.forEach((file: any) => {
+
+//         if (!this.validateFile(file)) return;
+
+//         this.uploadedFiles.push({
+//           file,
+//           name: file.name,
+//           progress: 0,
+//           status: 'pending'
+//         });
+//       });
+//     }
+//   }
+
+//   onDragOver(event: DragEvent) {
+//     event.preventDefault();
+//   }
+
+//   // 🔍 VALIDATION
+//   validateFile(file: File): boolean {
+
+//     if (!this.allowedTypes.includes(file.type)) {
+//       alert(`${file.name} is not allowed`);
+//       return false;
+//     }
+
+//     if (file.size > this.maxFileSize) {
+//       alert(`${file.name} exceeds 2MB`);
+//       return false;
+//     }
+
+//     return true;
+//   }
+
+//   // 🚀 UPLOAD BUTTON CLICK
+//   uploadFiles() {
+
+//     if (this.uploadedFiles.length === 0) return;
+
+//     // this.isUploading = true;
+
+//     this.uploadedFiles.forEach(fileObj => {
+
+//       if (fileObj.status === 'done') return;
+
+//       const formData = new FormData();
+//       formData.append('Files', fileObj.file);
+//       formData.append('SchoolId', this.AdminselectedSchoolID);
+//       formData.append('AdmissionId', this.selectedAdmissionID);
+
+//       fileObj.status = 'uploading';
+
+//       this.fileService.uploadStudentDocs(formData)
+//         .subscribe({
+//           next: (event: any) => {
+
+//             if (event.type === HttpEventType.UploadProgress && event.total) {
+//               fileObj.progress = Math.round((event.loaded / event.total) * 100);
+//             }
+
+//             if (event.type === HttpEventType.Response) {
+//               fileObj.progress = 100;
+//               fileObj.status = 'done';
+//             }
+//           },
+//           error: () => {
+//             fileObj.status = 'error';
+//             fileObj.progress = 0;
+//           },
+//           complete: () => {
+//             this.checkAllCompleted();
+//           }
+//         });
+//     });
+//   }
+
+//   // ✅ CHECK ALL DONE
+//   checkAllCompleted() {
+//     const done = this.uploadedFiles.every(f => f.status === 'done');
+//     if (done) this.isUploading = false;
+//   }
+
+//   // ❌ REMOVE FILE
+//   removeFile(index: number) {
+//     if (this.isUploading) return;
+//     this.uploadedFiles.splice(index, 1);
+//   }
+
+//   isPreviewOpen = false;
+//   previewUrl: any;
+//   previewType: 'image' | 'pdf' = 'image';
+
+//   // getFileUrl(file: any): string {
+//   //   return `${environment.baseUrl}/student/${this.selectedSchoolID}/${this.selectedAdmissionID}/${encodeURIComponent(file.name)}`;
+//   // }
+
+// previewFile(file: any) {
+
+//   if (file.url) {
+//     this.previewUrl = this.fileService.getFullFileUrl(file.url);
+//   }
+//   else if (file.file) {
+//     this.previewUrl = URL.createObjectURL(file.file);
+//   }
+//   else {
+//     console.error("Invalid file object", file);
+//     return;
+//   }
+
+//   const fileName = file.name?.toLowerCase() || '';
+
+//   this.previewType = fileName.endsWith('.pdf')
+//     ? 'pdf'
+//     : 'image';
+
+//   this.isPreviewOpen = true;
+// }
+
+//   closePreview() {
+//     this.isPreviewOpen = false;
+//   }
+
+  profileImage: any = null;
+pendingDocs: any[] = [];
+
+profileFromDb: any = null;
+documentsFromDb: any[] = [];
+
+isProfileUploading = false;
+isDocsUploading = false;
+
+maxFileSize = 2 * 1024 * 1024;
+
+allowedTypes = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'application/pdf'
+];
+
+
+// ================= LOAD FILES =================
+loadStudentFiles() {
+
+  this.fileService.getStudentFiles(this.selectedAdmissionID)
+    .subscribe((res: any[]) => {
+
+      this.profileFromDb = res.find(x => x.fileType === 'Profile') || null;
+      this.documentsFromDb = res.filter(x => x.fileType === 'Document');
+
+    });
+}
+
+
+// ================= PROFILE =================
+onProfileSelected(event: any) {
+
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (!['image/jpeg','image/png','image/webp'].includes(file.type)) {
+    alert('Only image allowed');
+    return;
+  }
+
+  if (file.size > this.maxFileSize) {
+    alert('Max 2MB');
+    return;
+  }
+
+  this.profileImage = {
+    file,
+    name: file.name,
+    preview: URL.createObjectURL(file)
+  };
+}
+
+
+// ================= DOCUMENTS =================
+onFileSelected(event: any) {
+  const files = Array.from(event.target.files);
+  this.addDocs(files);
+}
+
+onDrop(event: DragEvent) {
+  event.preventDefault();
+  const files = Array.from(event.dataTransfer?.files || []);
+  this.addDocs(files);
+}
+
+addDocs(files: any[]) {
+  files.forEach(file => {
+    if (!this.validateFile(file)) return;
+
+    this.pendingDocs.push({
+      file,
+      name: file.name
+    });
+  });
+}
+
+removePending(index: number) {
+  this.pendingDocs.splice(index, 1);
+}
+
+
+// ================= VALIDATION =================
+validateFile(file: File): boolean {
+
+  if (!this.allowedTypes.includes(file.type)) {
+    alert('Invalid file');
+    return false;
+  }
+
+  if (file.size > this.maxFileSize) {
+    alert('File too large');
+    return false;
+  }
+
+  return true;
+}
+
+
+// ================= UPLOAD PROFILE =================
+async uploadProfile() {
+
+  if (!this.profileImage) {
+    alert('Select profile image');
+    return;
+  }
+
+  this.isProfileUploading = true;
+
+  try {
+
+    const fd = new FormData();
+    fd.append('File', this.profileImage.file);
+    fd.append('FileType', 'Profile');
+    fd.append('SchoolId', this.AdminselectedSchoolID);
+    fd.append('AdmissionId', this.selectedAdmissionID);
+
+    await firstValueFrom(this.fileService.uploadStudentDocs(fd));
+
+    this.profileImage = null;
+    this.loadStudentFiles();
+
+  } catch {
+    alert('Upload failed');
+  }
+
+  this.isProfileUploading = false;
+}
+
+
+// ================= UPLOAD DOCUMENTS =================
+async uploadDocuments() {
+
+  if (this.pendingDocs.length === 0) {
+    alert('No files selected');
+    return;
+  }
+
+  this.isDocsUploading = true;
+
+  try {
+
+    const fd = new FormData();
+
+    this.pendingDocs.forEach(f => {
+      fd.append('Files', f.file);
+    });
+
+    fd.append('FileType', 'Document');
+    fd.append('SchoolId', this.AdminselectedSchoolID);
+    fd.append('AdmissionId', this.selectedAdmissionID);
+
+    await firstValueFrom(this.fileService.uploadStudentDocs(fd));
+
+    this.pendingDocs = [];
+    this.loadStudentFiles();
+
+  } catch {
+    alert('Upload failed');
+  }
+
+  this.isDocsUploading = false;
+}
+
+
+// ================= DELETE =================
+deleteFile(file: any) {
+
+  if (!confirm('Delete this file?')) return;
+
+  const payload = {
+    schoolId: this.AdminselectedSchoolID,
+    admissionId: this.selectedAdmissionID,
+    fileName: file.fileName
+  };
+
+  this.fileService.deleteStudentFile(payload)
+    .subscribe(() => this.loadStudentFiles());
+}
+
+
+// ================= PREVIEW =================
+previewUrl: any = '';
+previewType: 'image' | 'pdf' = 'image';
+isPreviewOpen = false;
+
+previewFile(file: any) {
+
+  this.previewUrl = this.getFileUrl(file.filePath);
+
+  this.previewType = file.fileName.toLowerCase().endsWith('.pdf')
+    ? 'pdf'
+    : 'image';
+
+  this.isPreviewOpen = true;
+}
+
+closePreview() {
+  this.isPreviewOpen = false;
+}
+
+
+// ================= HELPERS =================
+getFileUrl(path: string) {
+  return this.fileService.getFullFileUrl(path);
+}
+
+onDragOver(event: DragEvent) {
+  event.preventDefault();
+}
+
 }

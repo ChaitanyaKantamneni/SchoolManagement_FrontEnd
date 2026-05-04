@@ -2,44 +2,93 @@
   <app-dashboard-top-nav></app-dashboard-top-nav>
 </div>
 <div class="MainContentDiv">
-  <div *ngIf="!IsAddNewClicked" class="w-100">
-    <div class="ComponentTop">
+  <div *ngIf="!IsAddNewClicked" class="w-100 admission-dashboard">
+    <div class="ComponentTop admission-hero">
       <div class="ComponentTopHeader">
+        <div class="admission-breadcrumb">
+          <span>Masters</span>
+          <mat-icon>chevron_right</mat-icon>
+          <strong>Syllabus</strong>
+        </div>
         <h5>Syllabus Management</h5>
         <p>Total {{ SyllabusCount }} Syllabus Added</p>
       </div>
-      <div class="ComponentTopBottom">
-        <button *ngIf="canAdd()" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Syllabus</button>
+      <div class="ComponentTopBottom admission-header-actions">
+        <button *ngIf="canAdd()" type="button" class="admission-btn admission-btn--primary admission-top-action" (click)="AddNewClicked()"><mat-icon>add_circle_outline</mat-icon>Add Syllabus</button>
       </div>
     </div>
-    <div class="ComponentRecords">
-      <div>
-        <div class="ComponentRecordsTop">
-          <div class="filterOptions">
-            <div class="searchreview input-container" >
-              <input type="text" id="searchQuery" class="form-control floating-input"
-                [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search... "  />
-              <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
-              <!-- <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i> -->
-            </div>
-            <div class="searchreview" *ngIf="isAdmin">
-              <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
-                <option value="">-- Select School --</option>
-                <option value="0">All Schools</option>
-                <option *ngFor="let school of schoolList" [value]="school.ID">
-                  {{ school.Name }}
-                </option>
-              </select>
-            </div>
-          </div>
-          <div class="DownloadButtons" *ngIf="SyllabusList.length != 0">
-            <button class="btnHover" (click)="exportSyllabus('pdf')"><mat-icon>picture_as_pdf</mat-icon></button>
-            <button class="btnHover" (click)="exportSyllabus('excel')"><mat-icon>description</mat-icon></button>
-            <button class="btnHover" (click)="exportSyllabus('print')"><mat-icon>print</mat-icon></button>
-          </div>
+    <div class="admission-stats-grid">
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--blue"><mat-icon>person_outline</mat-icon></div>
+        <div>
+          <strong>{{ SyllabusCount }}</strong>
+          <span>Total Syllabus</span>
+          <!-- <small class="admission-stat-positive">+{{ SubjectsList.length }} this month</small> -->
         </div>
-        <div class="reviewstable">
-          <table id="classTable" *ngIf="SyllabusList.length != 0" class="table table-bordered">
+      </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--green"><mat-icon>check</mat-icon></div>
+        <div>
+          <strong>{{ SubjectsActiveCount }}</strong>
+          <span>Active Students</span>
+          <!-- <small class="admission-stat-positive">{{ SubjectsActiveCount }} active rate</small> -->
+        </div>
+      </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--amber"><mat-icon>schedule</mat-icon></div>
+        <div>
+          <strong>{{ SubjectsInActiveCount }}</strong>
+          <span>Pending Review</span>
+          <!-- <small class="admission-stat-warning">Needs action</small> -->
+        </div>
+      </div>
+      <!-- <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--purple"><mat-icon>menu_book</mat-icon></div>
+        <div>
+          <strong>{{ getCoveredClassCount() }}</strong>
+          <span>Classes Covered</span>
+          <small class="admission-stat-link">Class 1&ndash;8</small>
+        </div>
+      </div> -->
+    </div>
+    <div class="admission-filter-row">
+      <div class="admission-searchbox">
+        <mat-icon>search</mat-icon>
+        <input type="text" id="searchQuery" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search by syllabus" />
+      </div>
+      <button type="button" class="admission-chip admission-chip--active">All <span>{{ SyllabusCount }}</span></button>
+      <!-- <button type="button" class="admission-chip">Active</button>
+      <button type="button" class="admission-chip">Pending</button> -->
+      <select class="admission-select" *ngIf="isAdmin" (change)="onSchoolChange($event)">
+        <!-- <option value="">All Classes</option> -->
+        <option value="0">All Schools</option>
+        <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+      </select>
+      <!-- <select class="admission-select" aria-label="Academic year" [(ngModel)]="AcademicYearSelected" (change)="onAcademicYearChange($event)">
+        <option *ngFor="let school of academicYearList" value="{{school.ID}}">{{school.Name}}</option>
+      </select> -->
+    </div>
+    <div class="ComponentRecords admission-record-card">
+      <div>
+        <div class="ComponentRecordsTop admission-record-header">
+          <div>
+            <h5>Syllabus Records</h5>
+            <p>Showing {{ pageEndIndex() }} of {{ SyllabusCount }} records</p>
+          </div>
+          <div class="admission-table-actions DownloadButtons" *ngIf="SyllabusList.length != 0">
+            <button type="button" class="btnHover" (click)="exportSyllabus('pdf')">
+              <mat-icon>picture_as_pdf</mat-icon>
+            </button>
+            <button type="button" class="btnHover" (click)="exportSyllabus('excel')">
+              <mat-icon>description</mat-icon>
+            </button>  
+            <button type="button" class="btnHover" (click)="exportSyllabus('print')">
+              <mat-icon>print</mat-icon>
+            </button>          
+          </div>          
+        </div>
+        <div class="reviewstable admission-table-wrap">
+          <table id="classTable" *ngIf="SyllabusList.length != 0" class="table table-bordered admission-table">
             <thead>
               <tr>
                 <th class="visually-hidden">Academic Year ID</th>
@@ -75,10 +124,10 @@
                 <td data-label="Status">
                   <span
                     class="status-pill"
-                    [style.background]="(Syllabus.IsActive === true || Syllabus.IsActive === 'true' || Syllabus.IsActive === 'Active' || Syllabus.IsActive === 1) ? 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)' : 'linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%)'"
-                    [style.color]="(Syllabus.IsActive === true || Syllabus.IsActive === 'true' || Syllabus.IsActive === 'Active' || Syllabus.IsActive === 1) ? '#166534' : '#9f1239'"
-                    [style.borderColor]="(Syllabus.IsActive === true || Syllabus.IsActive === 'true' || Syllabus.IsActive === 'Active' || Syllabus.IsActive === 1) ? '#86efac' : '#fda4af'">
-                    {{ (Syllabus.IsActive === true || Syllabus.IsActive === 'true' || Syllabus.IsActive === 'Active' || Syllabus.IsActive === 1) ? 'Active' : 'Inactive' }}
+                    [style.background]="(Syllabus.IsActive === true || Syllabus.IsActive === 'true' || Syllabus.IsActive === 'Active' || Syllabus.IsActive === 1) ? '#d9f9e5' : '#fff0bd'"
+                    [style.color]="(Syllabus.IsActive === true || Syllabus.IsActive === 'true' || Syllabus.IsActive === 'Active' || Syllabus.IsActive === 1) ? '#00823a' : '#c25b00'"
+                    [style.borderColor]="(Syllabus.IsActive === true || Syllabus.IsActive === 'true' || Syllabus.IsActive === 'Active' || Syllabus.IsActive === 1) ? '#86efac' : '#f5d77a'">
+                    {{ (Syllabus.IsActive === true || Syllabus.IsActive === 'true' || Syllabus.IsActive === 'Active' || Syllabus.IsActive === 1) ? 'Active' : 'Pending' }}
                   </span>
                 </td>
                 <td data-label="Actions">
@@ -100,6 +149,15 @@
               <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
             </div>
             <p>No data found.</p>
+          </div>
+          <div class="admission-footer-meta">
+            <label>
+              Rows:
+              <select aria-label="Rows per page">
+                <option>{{ pageSize }}</option>
+              </select>
+            </label>
+            <p>{{ pageStartIndex() }}&ndash;{{ pageEndIndex() }} of {{ SyllabusCount }} records</p>
           </div>
           <div *ngIf="SyllabusCount > pageSize" class="pagination-controls">
             <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>

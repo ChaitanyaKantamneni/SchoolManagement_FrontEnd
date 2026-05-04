@@ -2,20 +2,60 @@
   <app-dashboard-top-nav></app-dashboard-top-nav>
 </div>
 <div class="MainContentDiv">
-  <div *ngIf="!IsAddNewClicked" class="w-100">
-    <div class="ComponentTop">
+  <div *ngIf="!IsAddNewClicked" class="w-100 admission-dashboard">
+    <div class="ComponentTop admission-hero">
       <div class="ComponentTopHeader">
+        <div class="admission-breadcrumb">
+          <span>Academic</span>
+          <mat-icon>chevron_right</mat-icon>
+          <strong>Admission</strong>
+        </div>
         <h5>Admission Management</h5>
-        <p>Total {{ SubjectsCount }} Admissions Added</p>
+        <p>Total {{ SubjectsCount }} Admissions Added &mdash; Academic Year {{ getAcademicYearLabel() }}</p>
       </div>
       <div class="ComponentTopBottom admission-header-actions">
-        <button *ngIf="canAdd()" type="button" class="admission-btn admission-btn--primary" (click)="AddNewClicked()">
-          <mat-icon>add_circle</mat-icon>Student Registration
+        <button *ngIf="canAdd()" type="button" class="admission-btn admission-btn--outline admission-top-action" (click)="openBulkUploadModal()">
+          <mat-icon>south</mat-icon>Bulk Upload
         </button>
-        <button *ngIf="canAdd()" type="button" class="admission-btn admission-btn--primary" (click)="openBulkUploadModal()">
-          <mat-icon>cloud_upload</mat-icon>Bulk Upload
+        <button *ngIf="canAdd()" type="button" class="admission-btn admission-btn--primary admission-top-action" (click)="AddNewClicked()">
+          <mat-icon>add_circle_outline</mat-icon>Student Registration
         </button>
       </div>
+    </div>
+
+    <div class="admission-stats-grid">
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--blue"><mat-icon>person_outline</mat-icon></div>
+        <div>
+          <strong>{{ SubjectsCount }}</strong>
+          <span>Total Admissions</span>
+          <!-- <small class="admission-stat-positive">+{{ SubjectsList.length }} this month</small> -->
+        </div>
+      </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--green"><mat-icon>check</mat-icon></div>
+        <div>
+          <strong>{{ SubjectsActiveCount }}</strong>
+          <span>Active Students</span>
+          <!-- <small class="admission-stat-positive">{{ SubjectsActiveCount }} active rate</small> -->
+        </div>
+      </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--amber"><mat-icon>schedule</mat-icon></div>
+        <div>
+          <strong>{{ SubjectsInActiveCount }}</strong>
+          <span>Pending Review</span>
+          <!-- <small class="admission-stat-warning">Needs action</small> -->
+        </div>
+      </div>
+      <!-- <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--purple"><mat-icon>menu_book</mat-icon></div>
+        <div>
+          <strong>{{ getCoveredClassCount() }}</strong>
+          <span>Classes Covered</span>
+          <small class="admission-stat-link">Class 1&ndash;8</small>
+        </div>
+      </div> -->
     </div>
 
     <div *ngIf="isBulkUploadModalOpen" class="bulk-modal-overlay" role="presentation">
@@ -119,52 +159,53 @@
         </div>
       </div>
     </div>
-    <div class="ComponentRecords">
+    <div class="admission-filter-row">
+      <div class="admission-searchbox">
+        <mat-icon>search</mat-icon>
+        <input type="text" id="searchQuery" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search by admission no" />
+      </div>
+      <button type="button" class="admission-chip admission-chip--active">All <span>{{ SubjectsCount }}</span></button>
+      <!-- <button type="button" class="admission-chip">Active</button>
+      <button type="button" class="admission-chip">Pending</button> -->
+      <select class="admission-select" *ngIf="isAdmin" (change)="onSchoolChange($event)">
+        <!-- <option value="">All Classes</option> -->
+        <option value="0">All Schools</option>
+        <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+      </select>
+      <!-- <select class="admission-select" aria-label="Academic year" [(ngModel)]="AcademicYearSelected" (change)="onAcademicYearChange($event)">
+        <option *ngFor="let school of academicYearList" value="{{school.ID}}">{{school.Name}}</option>
+      </select> -->
+    </div>
+
+    <div class="ComponentRecords admission-record-card">
       <div>
-        <div class="ComponentRecordsTop">
-          <div class="filterOptions">
-            <div class="searchreview input-container" >
-              <input type="text" id="searchQuery" class="form-control floating-input"
-                [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search... "  />
-              <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
-              <!-- <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i> -->
-            </div>
-            <div class="searchreview" *ngIf="isAdmin">
-              <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
-                <option value="">-- Select School --</option>
-                <option value="0">All Schools</option>
-                <option *ngFor="let school of schoolList" [value]="school.ID">
-                  {{ school.Name }}
-                </option>
-              </select>
-            </div>
+        <div class="ComponentRecordsTop admission-record-header">
+          <div>
+            <h5>Admission Records</h5>
+            <p>Showing {{ pageEndIndex() }} of {{ SubjectsCount }} records</p>
           </div>
-          <!-- <div class="DownloadButtons" *ngIf="SubjectsList.length != 0">
-            <button class="btnHover" (click)="exportSyllabus('pdf')"><mat-icon>picture_as_pdf</mat-icon></button>
-            <button class="btnHover" (click)="exportSyllabus('excel')"><mat-icon>description</mat-icon></button>
-            <button class="btnHover" (click)="exportSyllabus('print')"><mat-icon>print</mat-icon></button>
-          </div> -->
+          <div class="admission-table-actions">
+            <!-- <button type="button" (click)="exportSyllabus('excel')">
+              <mat-icon>south</mat-icon>
+              Export
+            </button>
+            <button type="button">
+              <mat-icon>filter_list</mat-icon>
+              Filter
+            </button> -->
+          </div>
         </div>
-        <div class="reviewstable">
-          <table *ngIf="SubjectsList.length != 0" class="table table-bordered">
+        <div class="reviewstable admission-table-wrap">
+          <table *ngIf="SubjectsList.length != 0" class="table table-bordered admission-table">
             <thead>
               <tr>
                 <th class="visually-hidden">Academic Year ID</th>
-                <th>SI.No</th>
-                <th (click)="sort('AdmissionNo')" class="sortable-column">
-                  <span class="column-text">Admission No</span>
-                  <span class="arrows">
-                    <mat-icon 
-                      [style.color]="sortColumn === 'AdmissionNo' && sortDirection === 'asc' ? 'red' : 'inherit'">
-                      keyboard_arrow_up
-                    </mat-icon>
-                    <mat-icon 
-                      [style.color]="sortColumn === 'AdmissionNo' && sortDirection === 'desc' ? 'red' : 'inherit'">
-                      keyboard_arrow_down
-                    </mat-icon>
-                  </span>
+                <th>Sl.No</th>
+                <th>Student</th>
+                <th>
+                  Admission No
                 </th>
-                <th *ngIf="isAdmin">School Name</th>
+                <th *ngIf="isAdmin">School</th>
                 <th>Academic Year</th>
                 <th>Class</th>
                 <th>Status</th>
@@ -174,18 +215,29 @@
             <tbody>
               <tr *ngFor="let Module of SubjectsList,let i = index">
                 <td data-label="ID" class="visually-hidden">{{ Module.ID }}</td>
-                <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-                <td data-label="AdmissionNo">{{ Module.AdmissionNo }}</td>
+                <td data-label="SI.No">{{ formatSerial((currentPage - 1) * pageSize + i + 1, 2) }}</td>
+                <td data-label="Student">
+                  <div class="admission-student-cell">
+                    <span class="admission-avatar" [ngClass]="getAvatarTone(i)">{{ getStudentInitials(Module) }}</span>
+                    <div>
+                      <strong>{{ getStudentName(Module) }}</strong>
+                      <small>STU-{{ getAcademicYearSuffix(Module) }}-{{ formatSerial((currentPage - 1) * pageSize + i + 1, 3) }}</small>
+                    </div>
+                  </div>
+                </td>
+                <td data-label="AdmissionNo" class="admission-no">{{ Module.AdmissionNo }}</td>
                 <td data-label="SchoolName" *ngIf="isAdmin">{{ Module.SchoolName }}</td>
                 <td data-label="AcademicYearName">{{ Module.AcademicYearName }}</td>
-                <td data-label="ClassName">{{ Module.ClassName }}</td>
+                <td data-label="ClassName">
+                  <span class="admission-class-pill">{{ Module.ClassName }}</span>
+                </td>
                 <td data-label="Status">
                   <span
                     class="status-pill"
-                    [style.background]="(Module.IsActive === true || Module.IsActive === 'true' || Module.IsActive === 'Active' || Module.IsActive === 1) ? 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)' : 'linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%)'"
-                    [style.color]="(Module.IsActive === true || Module.IsActive === 'true' || Module.IsActive === 'Active' || Module.IsActive === 1) ? '#166534' : '#9f1239'"
-                    [style.borderColor]="(Module.IsActive === true || Module.IsActive === 'true' || Module.IsActive === 'Active' || Module.IsActive === 1) ? '#86efac' : '#fda4af'">
-                    {{ (Module.IsActive === true || Module.IsActive === 'true' || Module.IsActive === 'Active' || Module.IsActive === 1) ? 'Active' : 'Inactive' }}
+                    [style.background]="(Module.IsActive === true || Module.IsActive === 'true' || Module.IsActive === 'Active' || Module.IsActive === 1) ? '#d9f9e5' : '#fff0bd'"
+                    [style.color]="(Module.IsActive === true || Module.IsActive === 'true' || Module.IsActive === 'Active' || Module.IsActive === 1) ? '#00823a' : '#c25b00'"
+                    [style.borderColor]="(Module.IsActive === true || Module.IsActive === 'true' || Module.IsActive === 'Active' || Module.IsActive === 1) ? '#86efac' : '#f5d77a'">
+                    {{ (Module.IsActive === true || Module.IsActive === 'true' || Module.IsActive === 'Active' || Module.IsActive === 1) ? 'Active' : 'Pending' }}
                   </span>
                 </td>
                 <td data-label="Actions">
@@ -197,6 +249,9 @@
                     <button *ngIf="canView()" class="btn checkbtn" data-tooltip="View" (click)="viewReview(Module.AdmissionNo)">
                       <mat-icon class="mat-edit-icon">visibility</mat-icon>
                     </button>
+                    <!-- <button type="button" class="btn checkbtn admission-disabled-action" data-tooltip="Delete" disabled>
+                      <mat-icon class="mat-edit-icon">delete_outline</mat-icon>
+                    </button> -->
                   </div>
                 </td>
               </tr>
@@ -208,16 +263,31 @@
             </div>
             <p>No data found.</p>
           </div>
+          <div class="admission-footer-meta">
+            <label>
+              Rows:
+              <select aria-label="Rows per page">
+                <option>{{ pageSize }}</option>
+              </select>
+            </label>
+            <p>{{ pageStartIndex() }}&ndash;{{ pageEndIndex() }} of {{ SubjectsCount }} records</p>
+          </div>
           <div *ngIf="SubjectsCount > pageSize" class="pagination-controls">
             <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
-            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
+            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
             <button *ngFor="let page of getVisiblePageNumbers()"
                     class="page-btn"
                     [ngClass]="{'active': page === currentPage}"
                     (click)="goToPage(page)">
               {{ page }}
             </button>
-            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+            <span *ngIf="totalPages() > visiblePageCount + 1" class="admission-page-ellipsis">...</span>
+            <button *ngIf="totalPages() > visiblePageCount" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="page-btn">{{ totalPages() }}</button>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
             <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
           </div>
         </div>
@@ -239,6 +309,7 @@
           <!-- <button class="btn" (click)="tabChange('Academic')">Temporary Address</button> -->
           <!-- <button class="btn" (click)="tabChange('login')">Login Details</button> -->
           <button class="btn" [ngClass]="{'active-tab': activeTab === 'bus'}" (click)="tabChange('bus')">Allot Bus</button>
+          <button class="btn" [ngClass]="{'active-tab': activeTab === 'documents'}" (click)="tabChange('documents')">Documents</button>
         </div>
         <form [formGroup]="ModuleForm">
           <div class="FormInputRowsContainer" *ngIf="activeTab === 'personal'">
@@ -254,7 +325,7 @@
                       <small>Please Select School.</small>
                   </div>
                 </div>
-              </div> 
+              </div>
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
                 <div class="input-with-error">
@@ -440,7 +511,7 @@
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Gender <span class="required">*</span></label>                
+                <label class="inputLabel" for="email">Gender <span class="required">*</span></label>
                 <div class="input-with-error">
                   <select class="inputField" type="date" formControlName="Gender" placeholder="Select Start Date" >
                     <option value="0">-- Select Gender --</option>
@@ -451,7 +522,7 @@
                   <div *ngIf="ModuleForm.get('Gender')?.hasError('min') && (ModuleForm.get('Gender')?.touched || ModuleForm.get('Gender')?.dirty)" class="text-danger">
                       <small>Please Select Gender.</small>
                   </div>
-                </div>                
+                </div>
               </div>
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Blood Group </label>
@@ -470,7 +541,7 @@
                     <div *ngIf="ModuleForm.get('BloodGroup')?.hasError('min') && (ModuleForm.get('BloodGroup')?.touched || ModuleForm.get('BloodGroup')?.dirty)" class="text-danger">
                         <small>Please Select Blood Group.</small>
                     </div>
-                </div>  
+                </div>
               </div>
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Nationality <span class="required">*</span></label>
@@ -548,7 +619,7 @@
               </div>
               <div class="InputFieldsContainer" *ngIf="!isAdmin">
                 <span style="visibility: hidden;height: 3px;">hello adding new academic year</span>
-              </div>             
+              </div>
             </div>
             <div class="ActionButtons">
               <button type="button" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
@@ -556,7 +627,7 @@
             </div>
           </div>
           <div class="FormInputRowsContainer" *ngIf="activeTab === 'parents'">
-            <div class="InputRow">              
+            <div class="InputRow">
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Father Name <span class="required">*</span></label>
                 <div class="input-with-error">
@@ -589,7 +660,7 @@
                     </div>
                   </div>
                 </div>
-              </div>              
+              </div>
             </div>
             <div class="InputRow">
               <div class="InputFieldsContainer">
@@ -635,7 +706,7 @@
                 </div>
               </div>
             </div>
-            <div class="InputRow">              
+            <div class="InputRow">
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Mother Name <span class="required">*</span></label>
                 <div class="input-with-error">
@@ -668,7 +739,7 @@
                     </div>
                   </div>
                 </div>
-              </div>              
+              </div>
             </div>
             <div class="InputRow">
               <div class="InputFieldsContainer">
@@ -720,7 +791,7 @@
             </div>
           </div>
           <div class="FormInputRowsContainer" *ngIf="activeTab === 'permanent'">
-            <div class="InputRow">              
+            <div class="InputRow">
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Address Line 1 <span class="required">*</span></label>
                 <div class="input-with-error">
@@ -753,7 +824,7 @@
                     </div>
                   </div>
                 </div>
-              </div>              
+              </div>
             </div>
             <div class="InputRow">
               <div class="InputFieldsContainer">
@@ -795,7 +866,7 @@
                 </div>
               </div>
             </div>
-            <div class="InputRow">              
+            <div class="InputRow">
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">District</label>
                 <div class="input-with-error">
@@ -817,10 +888,10 @@
                     </div>
                   </div>
                 </div>
-              </div>  
+              </div>
               <div class="InputFieldsContainer">
                 <span style="visibility: hidden;height: 3px;">hello adding new academic year</span>
-              </div>           
+              </div>
             </div>
             <div class="ActionButtons">
               <button type="button" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
@@ -828,7 +899,7 @@
             </div>
           </div>
           <div class="FormInputRowsContainer" *ngIf="activeTab === 'temporary'">
-            <div class="InputRow">              
+            <div class="InputRow">
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Address Line 1</label>
                 <div class="input-with-error">
@@ -861,7 +932,7 @@
                     </div>
                   </div>
                 </div>
-              </div>              
+              </div>
             </div>
             <div class="InputRow">
               <div class="InputFieldsContainer">
@@ -903,7 +974,7 @@
                 </div>
               </div>
             </div>
-            <div class="InputRow">              
+            <div class="InputRow">
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">District</label>
                 <div class="input-with-error">
@@ -925,10 +996,10 @@
                     </div>
                   </div>
                 </div>
-              </div> 
+              </div>
               <div class="InputFieldsContainer">
                 <span style="visibility: hidden;height: 3px;">hello adding new academic year</span>
-              </div>            
+              </div>
             </div>
             <div class="ActionButtons">
               <button type="button" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
@@ -936,7 +1007,7 @@
               <button type="button" (click)="SkipButtonClick()">Skip</button>
             </div>
           </div>
-          <div class="FormInputRowsContainer" *ngIf="activeTab === 'bus'">            
+          <div class="FormInputRowsContainer" *ngIf="activeTab === 'bus'">
             <div class="InputRow">
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Route <span class="required">*</span></label>
@@ -975,7 +1046,7 @@
                 </div>
               </div>
             </div>
-            <div class="InputRow">              
+            <div class="InputRow">
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Fare <span class="required">*</span></label>
                 <div class="input-with-error">
@@ -998,10 +1069,10 @@
                     </div>
                   </div>
                 </div>
-              </div> 
+              </div>
               <div class="InputFieldsContainer">
                 <span style="visibility: hidden;height: 3px;">hello adding new academic year</span>
-              </div>            
+              </div>
             </div>
             <div class="ActionButtons">
               <button type="button" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update & Next</button>
@@ -1009,6 +1080,211 @@
               <button type="button" (click)="CancelButtonClick()">Cancel</button>
             </div>
           </div>
+<!-- <div class="FormInputRowsContainer" *ngIf="activeTab === 'documents'">
+
+  <div class="upload-wrapper">
+
+
+    <div class="left-section">
+
+      <div class="upload-box"
+           (click)="fileInput.click()"
+           (dragover)="onDragOver($event)"
+           (drop)="onDrop($event)">
+
+        <input type="file" multiple hidden #fileInput (change)="onFileSelected($event)" />
+
+        <div class="upload-content">
+          <div class="upload-icon">⬆</div>
+
+          <button type="button" class="browse-btn">Browse</button>
+
+          <p class="upload-text">Drop files here or click to upload</p>
+
+          <small class="upload-subtext">
+            <span>*</span> Supported: .jpg, .png, .webp, .pdf
+          </small>
+        </div>
+
+      </div>
+
+
+      <div class="upload-actions">
+        <button class="upload-btn"
+                (click)="uploadFiles()"
+                [disabled]="uploadedFiles.length === 0 || isUploading">
+
+          <span *ngIf="!isUploading">Upload Files</span>
+          <span *ngIf="isUploading">Uploading...</span>
+
+        </button>
+      </div>
+
+    </div>
+
+
+    <div class="right-section">
+
+      <h3 class="section-title">Uploaded Files</h3>
+
+      <div class="file-list">
+
+        <div class="file-card" *ngFor="let file of uploadedFiles; let i = index">
+
+
+          <div class="file-left">
+
+            <div class="file-icon">
+              <span *ngIf="file.name.endsWith('.pdf')">📄</span>
+              <span *ngIf="!file.name.endsWith('.pdf')">🖼</span>
+            </div>
+
+            <div class="file-info">
+              <div class="file-name">{{file.name}}</div>
+              <div class="file-size">{{(file.file?.size / 1024).toFixed(1)}} KB</div>
+            </div>
+
+          </div>
+
+
+          <div class="file-right">
+
+
+
+
+
+            <button class="view-btn" (click)="previewFile(file)">👁</button>
+            <button class="delete-btn" (click)="removeFile(i)">🗑</button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div> -->
+<div class="FormInputRowsContainer" *ngIf="activeTab === 'documents'">
+
+  <div class="upload-wrapper w-100">
+
+    <!-- LEFT -->
+    <div class="d-flex w-100">
+
+      <!-- PROFILE -->
+      <div class="upload-card">
+        <h3 class="section-title">Profile Image</h3>
+
+        <div class="upload-box" (click)="profileInput.click()">
+
+  <input type="file"
+         hidden
+         accept=".jpg,.png,.webp"
+         #profileInput
+         (change)="onProfileSelected($event)" />
+
+  <div class="upload-content">
+
+    <!-- IMAGE WRAPPER -->
+    <div class="image-container"
+         *ngIf="profileImage?.preview || profileFromDb">
+
+      <img
+        [src]="profileImage?.preview || getFileUrl(profileFromDb?.filePath)"
+        class="preview-img"
+      />
+
+    </div>
+
+    <!-- PLACEHOLDER -->
+    <div class="placeholder"
+         *ngIf="!profileImage && !profileFromDb">
+
+      <div class="upload-icon">👤</div>
+      <p>Click to upload profile image</p>
+
+    </div>
+
+  </div>
+
+</div>
+
+        <button class="upload-btn"
+                (click)="uploadProfile()"
+                [disabled]="isProfileUploading">
+          {{ isProfileUploading ? 'Uploading...' : 'Upload Profile' }}
+        </button>
+      </div>
+
+      <!-- DOCUMENTS -->
+      <div class="upload-card">
+        <h3 class="section-title">Documents</h3>
+
+        <div class="upload-box"
+             (click)="fileInput.click()"
+             (dragover)="onDragOver($event)"
+             (drop)="onDrop($event)">
+
+          <input type="file"
+                 multiple
+                 hidden
+                 #fileInput
+                 (change)="onFileSelected($event)" />
+
+          <div class="upload-content">
+            <div class="upload-icon">⬆</div>
+            <p>Drop files here or click to upload</p>
+          </div>
+        </div>
+
+        <button class="upload-btn"
+                (click)="uploadDocuments()"
+                [disabled]="isDocsUploading">
+          {{ isDocsUploading ? 'Uploading...' : 'Upload Documents' }}
+        </button>
+
+        <!-- Selected Files Preview -->
+        <div class="selected-files">
+          <div *ngFor="let f of pendingDocs; let i=index" class="file-chip">
+            {{f.name}}
+            <span (click)="removePending(i)">✖</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- RIGHT -->
+    <div class="right-section w-100">
+
+      <h3>Uploaded Files</h3>
+
+      <!-- PROFILE -->
+      <div *ngIf="profileFromDb" class="file-card">
+        <span>Profile</span>
+        <div class="d-flex" style="gap: 10px;">
+          <button (click)="previewFile(profileFromDb)">👁</button>
+          <button (click)="deleteFile(profileFromDb)">🗑</button>
+        </div>
+      </div>
+
+      <!-- DOCUMENTS -->
+      <div *ngFor="let file of documentsFromDb" class="file-card">
+        <span>{{file.fileName}}</span>
+
+        <button (click)="previewFile(file)">👁</button>
+        <button (click)="deleteFile(file)">🗑</button>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
           <!-- <div class="ActionButtons">
             <button type="button" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update</button>
             <button type="button" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitModule()">Submit</button>
@@ -1400,4 +1676,34 @@
       </div> -->
     </div>
   </div>
+</div>
+<div class="modal" tabindex="-1"
+     [ngClass]="{'show': isPreviewOpen}"
+     [style.display]="isPreviewOpen ? 'block' : 'none'">
+
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">File Preview</h5>
+        <button type="button" class="close" (click)="closePreview()">&times;</button>
+      </div>
+
+      <div class="modal-body preview-body">
+
+        <!-- IMAGE -->
+        <img *ngIf="previewType === 'image'"
+             [src]="previewUrl"
+             class="preview-img" />
+
+        <!-- PDF -->
+        <iframe *ngIf="previewType === 'pdf'"
+                [src]="previewUrl"
+                class="preview-pdf"></iframe>
+
+      </div>
+
+    </div>
+  </div>
+
 </div>
