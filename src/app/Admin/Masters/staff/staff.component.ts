@@ -936,7 +936,10 @@ export class StaffComponent extends BasePermissionComponent {
             let roles = response.data;
 
             if (!this.isAdmin) {
-              roles = roles.filter((item: any) => item.id != "1"); 
+              roles = roles.filter((item: any) => item.id != "1" && item.id != "10");
+            }
+            else {
+              roles = roles.filter((item: any) => item.id != "10");
             }
 
             this.StaffTypeListBySchoolId = roles.map((item: any) => {
