@@ -163,6 +163,27 @@ export class MenuServiceService {
           }))
         }));
 
+        if (roleId === '1') {
+          const hasHostel = modules.some(m => m.moduleName.trim().toLowerCase() === 'hostel management');
+          if (!hasHostel) {
+            modules.push({
+              id: 'hostel_mgr',
+              moduleName: 'Hostel Management',
+              pages: [
+                {
+                  id: 'hostel_master',
+                  pageName: 'Hostel Master',
+                  moduleID: 'hostel_mgr',
+                  canView: '1',
+                  canAdd: '1',
+                  canEdit: '1',
+                  canDelete: '1'
+                }
+              ]
+            });
+          }
+        }
+
         this.setMenu(modules);
         return modules;
       }),

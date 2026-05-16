@@ -105,6 +105,10 @@ import { ParentDashboardComponent } from './Parent/parent-dashboard/parent-dashb
 import { GroupAdminCreationComponent } from './Admin/Masters/group-admin-creation/group-admin-creation.component';
 import { GroupAdminDashboardComponent } from './GroupAdmin/group-admin-dashboard/group-admin-dashboard.component';
 
+import { HostelMasterComponent } from './Admin/hostel-management/hostel-master/hostel-master.component';
+import { RoomMasterComponent } from './Admin/hostel-management/room-master/room-master.component';
+import { RoomAllotmentComponent } from './Admin/hostel-management/room-allotment/room-allotment.component';
+import { OutPassComponent } from './Admin/hostel-management/out-pass/out-pass.component';
 
 export const routes: Routes = [
   { path: '', component: SignInComponent },
@@ -178,6 +182,10 @@ export const routes: Routes = [
       { path: 'StudentReport', redirectTo: 'StudentsReport', pathMatch: 'full' },
       { path: 'FeeReport', component: FeeReportComponent },
       { path: 'GroupAdmin', component: GroupAdminCreationComponent },
+      { path: 'HostelMaster', component: HostelMasterComponent },
+      { path: 'RoomMaster', component: RoomMasterComponent },
+      { path: 'RoomAllotment', component: RoomAllotmentComponent },
+      { path: 'Outpass', component: OutPassComponent },
     ]
   },
 
@@ -247,6 +255,10 @@ export const routes: Routes = [
       { path: 'StudentReport', redirectTo: 'StudentsReport', pathMatch: 'full' },
       { path: 'FeeReports', component: FeeReportComponent },
       { path: 'GroupAdmin', component: GroupAdminCreationComponent },
+      { path: 'HostelMaster', component: HostelMasterComponent },
+      { path: 'RoomMaster', component: RoomMasterComponent },
+      { path: 'RoomAllotment', component: RoomAllotmentComponent },
+      { path: 'Outpass', component: OutPassComponent },
     ]
   },
 
@@ -322,6 +334,10 @@ export const routes: Routes = [
       { path: 'StudentReport', redirectTo: 'StudentsReport', pathMatch: 'full' },
       { path: 'FeeReports', component: FeeReportComponent },
       { path: 'GroupAdmin', component: GroupAdminCreationComponent },
+      { path: 'HostelMaster', component: HostelMasterComponent },
+      { path: 'RoomMaster', component: RoomMasterComponent },
+      { path: 'RoomAllotment', component: RoomAllotmentComponent },
+      { path: 'Outpass', component: OutPassComponent },
     ]
   },
 

@@ -26,16 +26,12 @@ export class LeaveBalancePolicyService {
     try {
       const raw = localStorage.getItem(this.storageKey);
       if (!raw) {
-        const seeded = this.getDefaultPolicies();
-        this.saveAllPolicies(seeded);
-        return seeded;
+        return [];
       }
 
       const parsed = JSON.parse(raw);
       if (!Array.isArray(parsed)) {
-        const seeded = this.getDefaultPolicies();
-        this.saveAllPolicies(seeded);
-        return seeded;
+        return [];
       }
 
       const mapped = parsed
@@ -53,17 +49,9 @@ export class LeaveBalancePolicyService {
         }))
         .filter(item => item.id && item.schoolName && item.academicYearName && item.leaveType);
 
-      if (!mapped.length) {
-        const seeded = this.getDefaultPolicies();
-        this.saveAllPolicies(seeded);
-        return seeded;
-      }
-
       return mapped;
     } catch {
-      const seeded = this.getDefaultPolicies();
-      this.saveAllPolicies(seeded);
-      return seeded;
+      return [];
     }
   }
 
@@ -136,61 +124,5 @@ export class LeaveBalancePolicyService {
 
   private canUseStorage(): boolean {
     return typeof localStorage !== 'undefined';
-  }
-
-  private getDefaultPolicies(): LeaveBalancePolicy[] {
-    const currentYear = new Date().getFullYear();
-    const academicYearName = `${currentYear}-${currentYear + 1}`;
-    const now = new Date().toISOString();
-    const schoolId = '1';
-    const schoolName = 'Smart School Campus';
-    const academicYearId = '1';
-
-    return [
-      {
-        id: 'seed-lb-1',
-        schoolId,
-        schoolName,
-        academicYearId,
-        academicYearName,
-        leaveType: 'Casual Leave',
-        count: 5,
-        isActive: true,
-        updatedAt: now
-      },
-      {
-        id: 'seed-lb-2',
-        schoolId,
-        schoolName,
-        academicYearId,
-        academicYearName,
-        leaveType: 'Sick Leave',
-        count: 8,
-        isActive: true,
-        updatedAt: now
-      },
-      {
-        id: 'seed-lb-3',
-        schoolId,
-        schoolName,
-        academicYearId,
-        academicYearName,
-        leaveType: 'Earned Leave',
-        count: 10,
-        isActive: true,
-        updatedAt: now
-      },
-      {
-        id: 'seed-lb-4',
-        schoolId,
-        schoolName,
-        academicYearId,
-        academicYearName,
-        leaveType: 'Maternity Leave',
-        count: 12,
-        isActive: true,
-        updatedAt: now
-      }
-    ];
   }
 }
