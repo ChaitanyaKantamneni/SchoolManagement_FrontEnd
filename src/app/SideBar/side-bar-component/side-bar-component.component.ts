@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { SideBarServiceService } from '../../Services/side-bar-service.service';
 import { DashboardTopNavComponent } from '../../SignInAndSignUp/dashboard-top-nav/dashboard-top-nav.component';
 import { Subscription, filter } from 'rxjs';
+import { FileService } from '../../Services/file.service';
 
 @Component({
   selector: 'app-side-bar-component',
@@ -41,14 +42,30 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
   private routeSub?: Subscription;
   isParentRole: boolean = false;
 
+  schoolLogoFromDb: any = null;
+  logoUrl: string = 'Images/Logo1.jpg';
+
   constructor(
     public menuService: MenuServiceService,
     private router: Router,
     private route: ActivatedRoute,
-    private sidebarService: SideBarServiceService
+    private sidebarService: SideBarServiceService,
+    private fileService: FileService
   ) {}
 
   ngOnInit(): void {
+    const schoolId = sessionStorage.getItem('SchoolID');
+
+    if (schoolId) {
+      this.fileService.getSchoolLogo(schoolId).subscribe((res: any) => {
+        this.schoolLogoFromDb = res;
+
+        if (res?.filePath) {
+          this.logoUrl = this.fileService.getFullLogoFileUrl(res.filePath);
+        }
+      });
+    }
+
     // Sidebar toggle subscription
     this.sidebarSub = this.sidebarService.isExpanded$.subscribe(value => this.isExpanded = value);
     this.mobileSidebarSub = this.sidebarService.isMobileMenuOpen$.subscribe(value => {

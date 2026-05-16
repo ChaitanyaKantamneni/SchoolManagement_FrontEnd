@@ -496,14 +496,12 @@
   color: #e0e7ff;
 }
 
-
-
 /* SECTION CARD */
-.FormInputRowsContainer {
+/* .FormInputRowsContainer {
   background: #f6f8fc;
   border-radius: 18px;
   padding: 25px;
-}
+} */
 
 /* TITLE */
 .FormInputRowsContainer h3 {
@@ -1017,7 +1015,7 @@
     gap: 18px;
     padding: 15px 20px;
     border-bottom: 1px solid #dce5f2;
-    background: #fff;
+    background:transparent;
 }
 
 .admission-record-header h5 {
@@ -1378,4 +1376,60 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.stepper-container{
+  display:flex;
+  align-items:center;
+  gap:22px;
+  overflow-x:auto;
+}
+
+.step-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding-bottom:16px;
+  cursor:pointer;
+  position:relative;
+  white-space:nowrap;
+  color:#94a3b8;
+  font-weight:500;
+  transition:0.3s;
+}
+
+.step-number{
+  width:20px;
+  height:20px;
+  border-radius:50%;
+  border:2px solid #cbd5e1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+  font-weight:600;
+  background:#fff;
+  color:#94a3b8;
+  transition:0.3s;
+}
+
+.active-step{
+  color:#2563eb;
+}
+
+.active-step .step-number{
+  background:#2563eb;
+  border-color:#2563eb;
+  color:#fff;
+}
+
+.active-step::after{
+  content:'';
+  position:absolute;
+  bottom:0;
+  left:0;
+  width:100%;
+  height:3px;
+  background:#2563eb;
+  border-radius:10px;
 }

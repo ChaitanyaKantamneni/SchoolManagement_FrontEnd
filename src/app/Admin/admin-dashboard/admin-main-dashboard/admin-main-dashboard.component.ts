@@ -273,9 +273,6 @@ console.log('Schools list:', this.schoolList);
 /* ================= LOAD ACADEMIC YEARS ================= */
 
 loadAcademicYears(){
-
-console.log('Loading academic years for school:', this.selectedSchool);
-
 const fetchYears = (flag: '2' | '3') => {
   const req = {
     SchoolID: this.selectedSchool,
@@ -304,9 +301,7 @@ const fetchYears = (flag: '2' | '3') => {
     // Only auto-select if NOT Super Admin (when school is already determined)
     if (this.academicYearList.length > 0 && !this.selectedAcademicYear && !this.showSchoolFilter()) {
       this.selectedAcademicYear = this.academicYearList[0].ID;
-
-      console.log('Default Academic Year selected:', this.selectedAcademicYear);
-
+      sessionStorage.setItem('ActiveAcademicYearID',     this.selectedAcademicYear || '');
       // ✅ LOAD DASHBOARD AFTER YEAR SET
       this.loadDashboard();
     }

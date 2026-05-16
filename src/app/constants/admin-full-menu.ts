@@ -19,7 +19,8 @@ export const FULL_ADMIN_MENU: Module[] = [
       { id: 'modules', pageName: 'Modules', moduleID: 'masters', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
       { id: 'pages', pageName: 'Pages', moduleID: 'masters', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
       { id: 'role', pageName: 'Roles', moduleID: 'masters', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
-      { id: 'staff', pageName: 'Staff', moduleID: 'masters', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
+      { id: 'staff', pageName: 'Staff', moduleID: 'masters', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
+      { id: 'groupadmin', pageName: 'Group Admin', moduleID: 'masters', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
     ]
   },
   {

@@ -2,12 +2,16 @@
   <app-dashboard-top-nav></app-dashboard-top-nav>
 </div>
 <div class="MainContentDiv">
-  <div class="w-100">
-    <div class="ComponentTop">
-        <div class="ComponentTopHeader">
-          <h5>Student Transfer Management</h5>
-        </div>
-    </div> 
+  <div class="w-100 admission-dashboard">
+    <div class="ComponentTopHeader">
+      <div class="admission-breadcrumb">
+        <span>Academic</span>
+        <mat-icon>chevron_right</mat-icon>
+        <strong>Transfer</strong>
+      </div>
+      <h5>Student Transfer Management</h5>
+      <p>Transfer students — Academic Year</p>
+    </div>
     <div class="AddForm">           
       <div class="AddFormConatiner">
         <form [formGroup]="ClassDivisionForm">
@@ -37,22 +41,7 @@
                   </div>
                 </div>
               </div>
-              <div class="InputFieldsContainer" *ngIf="!isAdmin">
-                <label class="inputLabel" for="email">Class <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="Class" placeholder="Select Class" (change)="onAdminClassChange($event)">
-                    <option value="0" disabled>Select Class</option>
-                    <option *ngFor="let Syllabus of SyllabusList" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option>
-                  </select>
-                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
-                  <div *ngIf="ClassDivisionForm.get('Class')?.hasError('min') && (ClassDivisionForm.get('Class')?.touched || ClassDivisionForm.get('Class')?.dirty)" class="text-danger">
-                      <small>Please Select Class.</small>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="InputRow">
-              <div class="InputFieldsContainer" *ngIf="isAdmin">
+              <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Class <span class="required">*</span></label>
                 <div class="input-with-error">
                   <select class="inputField" type="date" formControlName="Class" placeholder="Select Class" (change)="onAdminClassChange($event)">
@@ -78,37 +67,34 @@
                   </div>
                 </div>
               </div>
-              <div class="InputFieldsContainer" *ngIf="!isAdmin">
-                <label class="inputLabel" for="email">Transition Type <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="TransitionType" placeholder="Select Class" (change)="onTransitionChange($event)">
-                    <option value="0" disabled>Select</option>
-                    <option value="1">Transfer</option>
-                  </select>
-                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
-                  <div *ngIf="ClassDivisionForm.get('TransitionType')?.hasError('min') && (ClassDivisionForm.get('TransitionType')?.touched || ClassDivisionForm.get('TransitionType')?.dirty)" class="text-danger">
-                      <small>Please Select Transition Type.</small>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="InputRow" *ngIf="isAdmin">
-              <div class="InputFieldsContainer" *ngIf="isAdmin">
-                <label class="inputLabel" for="email">Transition Type <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="TransitionType" placeholder="Select Class" (change)="onTransitionChange($event)">
-                    <option value="0" disabled>Select</option>
-                    <option value="1">Transfer</option>
-                  </select>
-                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
-                  <div *ngIf="ClassDivisionForm.get('TransitionType')?.hasError('min') && (ClassDivisionForm.get('TransitionType')?.touched || ClassDivisionForm.get('TransitionType')?.dirty)" class="text-danger">
-                      <small>Please Select Transition Type.</small>
-                  </div>
-                </div>
-              </div>
               <div class="InputFieldsContainer">
-                <span style="visibility: hidden;height: 3px;">hello adding new academic year</span>
-              </div>               
+                <label class="inputLabel">
+                  Transition Type <span class="required">*</span>
+                </label>
+                <div class="input-with-error">
+
+                  <!-- Toggle Buttons -->
+                  <div class="transition-type-toggle">
+                    <button
+                      type="button"
+                      class="transition-btn promote"
+                      [class.selected]="ClassDivisionForm.get('TransitionType')?.value === 1"
+                      (click)="onTransitionChange(1)">
+                      <i class="ti ti-arrow-up"></i> Trasfer
+                    </button>
+                  </div>
+
+                  <!-- Validation Error -->
+                  <div
+                    *ngIf="ClassDivisionForm.get('TransitionType')?.hasError('min') &&
+                          (ClassDivisionForm.get('TransitionType')?.touched ||
+                            ClassDivisionForm.get('TransitionType')?.dirty)"
+                    class="text-danger">
+                    <small>Please select a Transition Type.</small>
+                  </div>
+
+                </div>
+              </div>
             </div>
           </div>
           <div class="actionbuttons" *ngIf="selectedStudents.length == 0">
@@ -117,72 +103,213 @@
         </form>
       </div>
     </div>
-    <div class="AddForm" *ngIf="selectedStudents.length != 0">
-      <div *ngIf="selectedStudents.length > 0">
-        <div class="ComponentTop">
-          <div class="ComponentTopHeader">
-            <h5>Selected Students</h5>
+    <div class="selected-students-section" *ngIf="selectedStudents.length > 0">
+      <div class="tbl-card">
+        <div class="tbl-hdr">
+          <div class="tg">
+            <span class="ttl">Selected Students</span>
+            <span class="cnt-b">{{ selectedStudents.length }}</span>
+            <span class="mode-tag"
+              [ngClass]="{
+                'promote-tag':   ClassDivisionForm.get('TransitionType')?.value === 1,
+                'depromote-tag': ClassDivisionForm.get('TransitionType')?.value === 2
+              }">
+              <i class="ti"
+                [ngClass]="{
+                  'ti-arrow-up':   ClassDivisionForm.get('TransitionType')?.value === 1,
+                  'ti-arrow-down': ClassDivisionForm.get('TransitionType')?.value === 2
+                }">
+              </i>
+              {{ SelectedTransitionID }}
+            </span>
           </div>
-        </div> 
-        <table class="table table-bordered">
-          <thead>
-            <tr>
-              <th>SI.No</th>
-              <th>Admission No</th>
-              <th>Name</th>
-              <th>Academic Year</th>
-              <th>Class</th>
-              <th>Division</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let student of selectedStudents; let i = index">
-              <td>{{ i + 1 }}</td>
-              <td>{{ student.AdmissionNo }}</td>
-              <td>{{ student.Name }}</td>
-              <td>{{ student.AcademicYearName }}</td>
-              <td>{{ student.ClassName }}</td>
-              <td>{{ student.ClassDivisionName }}</td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="actionbuttons">
-          <button class="btncancel" (click)="cancelSelectedlist()">Cancel</button>
-          <button class="btnsubmit" (click)="editSelection()">Edit Selection</button>
+          <div class="ta">
+            <button type="button" class="abtn" (click)="cancelSelectedlist()">
+              <i class="ti ti-x"></i> Cancel
+            </button>
+            <button type="button" class="abtn edit" (click)="editSelection()">
+              <i class="ti ti-edit"></i> Edit Selection
+            </button>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="tbl-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:44px">Sl.No</th>
+                <th>Admission No</th>
+                <th>Name</th>
+                <th>Academic Year</th>
+                <th>Class</th>
+                <th>Division</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let student of selectedStudents; let i = index">
+                <td class="sl">{{ (i + 1).toString().padStart(2, '0') }}</td>
+                <td><span class="acode">{{ student.AdmissionNo }}</span></td>
+                <td class="student-name">{{ student.Name }}</td>
+                <td class="yr">{{ student.AcademicYearName }}</td>
+                <td><span class="cpill">{{ student.ClassName }}</span></td>
+                <td class="div-cell">{{ student.ClassDivisionName }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Footer -->
+        <div class="tbl-foot">
+          <span class="fi">{{ selectedStudents.length }} student{{ selectedStudents.length !== 1 ? 's' : '' }} selected</span>
         </div>
       </div>
     </div>
-    <div class="AddForm" *ngIf="SelectedTransitionID"> 
-      <div class="ComponentTop">
-          <div class="ComponentTopHeader">
-            <h5>{{SelectedTransitionID}} To</h5>
-          </div>
-        </div>           
-      <div class="AddFormConatiner">
-        <form [formGroup]="ClassDivisionForm">
-          <div class="FormInputRowsContainer">
-            <div class="InputRow" *ngIf="SelectedTransitionID=='Transfer'">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="Remarks">Remarks <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <textarea class="inputField" formControlName="Remarks" placeholder="Enter Remarks" rows="2"></textarea>
-                  <div *ngIf="(ClassDivisionForm.get('Remarks' ) ?. touched && ClassDivisionForm.get('Remarks' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(ClassDivisionForm.get('Remarks' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Remarks.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <span style="visibility: hidden;height: 3px;">hello adding new academic year</span>
-              </div> 
+    <div class="transition-form-section" *ngIf="SelectedTransitionID == 'Transfer'">
+      <div class="form-card">
+
+        <!-- Header -->
+        <div class="form-hdr">
+          <div>
+            <div class="form-title">
+              Student Transfer
+            </div>
+
+            <div class="form-sub">
+              Transfer selected students out of the school
             </div>
           </div>
-          <div class="ActionButtons">
-            <button type="button" *ngIf="ViewClassDivisionClicked && canEdit()" (click)="UpdateClassDivision()">Update</button>
-            <button type="button" *ngIf="!ViewClassDivisionClicked && canAdd()" (click)="SubmitClassDivision()">Submit</button>
-          </div>
-        </form>
+        </div>
+
+        <!-- Warning -->
+        <div class="warn-note warn-depromote">
+
+          <i class="ti ti-alert-triangle"></i>
+
+          <p>
+            You are about to transfer
+            <strong>
+              {{ selectedStudents.length }}
+              student{{ selectedStudents.length !== 1 ? 's' : '' }}
+            </strong>
+            out of the school.
+
+            Please add remarks before confirming the transfer.
+            This action cannot be undone.
+          </p>
+
+        </div>
+
+        <!-- Body -->
+        <div class="form-body">
+
+          <form [formGroup]="ClassDivisionForm">
+
+            <div class="sect-lbl">
+              Transfer Details
+            </div>
+
+            <div class="FormInputRowsContainer">
+
+              <div class="InputRow">
+
+                <!-- Remarks -->
+                <div class="InputFieldsContainer">
+
+                  <label class="inputLabel">
+                    Remarks <span class="required">*</span>
+                  </label>
+
+                  <div class="input-with-error">
+
+                    <textarea
+                      class="inputField"
+                      formControlName="Remarks"
+                      placeholder="Enter transfer reason / remarks"
+                      rows="3">
+                    </textarea>
+
+                    <div
+                      *ngIf="
+                        ClassDivisionForm.get('Remarks')?.touched &&
+                        ClassDivisionForm.get('Remarks')?.invalid
+                      "
+                      class="text-danger">
+
+                      <div
+                        *ngIf="
+                          ClassDivisionForm.get('Remarks')?.errors?.['required']
+                        ">
+
+                        <small>Please Enter Remarks.</small>
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="form-ftr">
+
+              <span class="rn">
+                Fields marked
+                <span class="req">*</span>
+                are required
+              </span>
+
+              <div class="factions">
+
+                <!-- Cancel -->
+                <button
+                  type="button"
+                  class="btn-c"
+                  (click)="cancelSelectedlist()">
+
+                  Cancel
+
+                </button>
+
+                <!-- Submit -->
+                <button
+                  type="button"
+                  class="btn-s btn-s-transfer"
+                  *ngIf="!ViewClassDivisionClicked && canAdd()"
+                  (click)="SubmitClassDivision()">
+
+                  <i class="ti ti-send"></i>
+
+                  Confirm Transfer
+
+                </button>
+
+                <!-- Update -->
+                <button
+                  type="button"
+                  class="btn-s btn-s-transfer"
+                  *ngIf="ViewClassDivisionClicked && canEdit()"
+                  (click)="UpdateClassDivision()">
+
+                  <i class="ti ti-refresh"></i>
+
+                  Update Transfer
+
+                </button>
+
+              </div>
+
+            </div>
+
+          </form>
+
+        </div>
+
       </div>
     </div>
   </div>
@@ -205,7 +332,7 @@
     </div>
   </div>
 </div>
-<div class="modal viewmodel" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
+<!-- <div class="modal viewmodel" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -278,24 +405,147 @@
             </div>
             <p>No data found.</p>
           </div>
-          <!-- <div *ngIf="ClassDivisionCount > pageSize" class="pagination-controls">
-            <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
-            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
-            <button *ngFor="let page of getVisiblePageNumbers()"
-                    class="page-btn"
-                    [ngClass]="{'active': page === currentPage}"
-                    (click)="goToPage(page)">
-              {{ page }}
-            </button>
-            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
-            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
-          </div> -->
         </div>
         <div class="actionbuttons">
           <button class="btncancel" (click)="cancelSelectedlist()">Cancel</button>
           <button class="btnsubmit" (click)="submitSelection()">Submit Selection</button>
         </div>
       </div>
+    </div>
+  </div>
+</div> -->
+
+<div class="modal viewmodel" tabindex="-1" role="dialog"
+  [ngClass]="{'show': isViewModalOpen}"
+  [style.display]="isViewModalOpen ? 'block' : 'none'">
+
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <div>
+            <h5 class="modal-title">Class Student Details</h5>
+            <p class="modal-sub">Select students to include in this transition</p>
+          </div>
+        </div>
+        <button type="button" class="modal-close" (click)="closeModal('view')" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body">
+
+        <!-- Table -->
+        <div class="tbl-card" *ngIf="StudentsList.length > 0">
+          <div class="tbl-hdr">
+            <div class="tg">
+              <span class="ttl">Students</span>
+              <span class="cnt-b">{{ StudentsList.length }}</span>
+            </div>
+            <div class="selected-count">
+              <i class="ti ti-check"></i>
+              {{ getSelectedCount() }} selected
+            </div>
+          </div>
+
+          <div class="tbl-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:40px">
+                    <input type="checkbox" class="chk"
+                      [checked]="isAllSelected()"
+                      (change)="toggleSelectAll($event)"
+                      aria-label="Select all">
+                  </th>
+                  <th style="width:44px">Sl.No</th>
+                  <th class="sortable" (click)="sort('AdmissionNo')">
+                    Admission No
+                    <span class="sort-icons">
+                      <i class="ti ti-chevron-up"
+                        [class.active]="sortColumn === 'AdmissionNo' && sortDirection === 'asc'">
+                      </i>
+                      <i class="ti ti-chevron-down"
+                        [class.active]="sortColumn === 'AdmissionNo' && sortDirection === 'desc'">
+                      </i>
+                    </span>
+                  </th>
+                  <th>Name</th>
+                  <th *ngIf="isAdmin">School</th>
+                  <th>Academic Year</th>
+                  <th>Class</th>
+                  <th>Division</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let student of StudentsList; let i = index"
+                  [class.row-selected]="student.isSelected"
+                  (click)="student.isSelected = !student.isSelected">
+                  <!-- <td class="visually-hidden">{{ student.ID }}</td> -->
+                  <td (click)="$event.stopPropagation()">
+                    <input type="checkbox" class="chk"
+                      [(ngModel)]="student.isSelected"
+                      (click)="$event.stopPropagation()"
+                      [attr.aria-label]="'Select ' + student.Name">
+                  </td>
+                  <td class="sl">
+  {{ (i + 1).toString().padStart(2, '0') }}
+</td>
+                  <td><span class="acode">{{ student.AdmissionNo }}</span></td>
+                  <td class="student-name">{{ student.Name }}</td>
+                  <td *ngIf="isAdmin" class="yr">{{ student.SchoolName }}</td>
+                  <td class="yr">{{ student.AcademicYearName }}</td>
+                  <td><span class="cpill">{{ student.ClassName }}</span></td>
+                  <td class="div-cell">{{ student.ClassDivisionName }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Table Footer -->
+          <div class="tbl-foot">
+            <span class="fi">
+              Showing {{ StudentsList.length }} record{{ StudentsList.length !== 1 ? 's' : '' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" *ngIf="StudentsList.length === 0">
+          <div class="empty-img">
+            <img src="Images/NoDataFound.jpg" alt="No data found">
+          </div>
+          <p class="empty-title">No Students Found</p>
+          <p class="empty-sub">There are no students available for this class and division.</p>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <span class="selection-hint" *ngIf="StudentsList.length > 0">
+          <i class="ti ti-info-circle"></i>
+          Click a row or use checkboxes to select students
+        </span>
+        <div class="footer-actions">
+          <button type="button" class="btn-c" (click)="cancelSelectedlist()">
+            Cancel
+          </button>
+          <button type="button" class="btn-s"
+            (click)="submitSelection()"
+            [disabled]="getSelectedCount() === 0">
+            <i class="ti ti-check"></i>
+            Submit Selection
+            <span class="sel-badge" *ngIf="getSelectedCount() > 0">
+              {{ getSelectedCount() }}
+            </span>
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>

@@ -37,120 +37,18 @@ export class FareComponent extends BasePermissionComponent{
   ngOnInit(): void {
     this.checkViewPermission();
     this.SchoolSelectionChange=false;
-    this.FetchSchoolsList();
+    this.AdminSelectedActiveAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
+    this.FetchSchoolsList();    
+    this.FetchInitialData(); 
     if (!this.isAdmin) {
-      this.AdminselectedSchoolID = sessionStorage.getItem('SchoolID')?.toString() || '';
-      this.SyllabusForm.get('School')?.patchValue(this.AdminselectedSchoolID || 0);
-      // Load academic years for school login users
-      if (this.AdminselectedSchoolID && this.AdminselectedSchoolID !== '0') {
-        this.FetchAcademicYearsList();
-      }
-    }
-    this.FetchInitialData();    
-  };
-
-  allowOnlyNumbers(event: KeyboardEvent) {
-    if (
-      event.key === 'Backspace' ||
-      event.key === 'Tab' ||
-      event.key === 'ArrowLeft' ||
-      event.key === 'ArrowRight' ||
-      event.key === 'Delete'
-    ) {
-      return;
-    }
-
-    if (!/^[0-9]$/.test(event.key)) {
-      event.preventDefault();
-    }
-  }
-
-  RouteChange(routeId: any) {
-    this.StopList=[];
-    this.SyllabusForm.get('Stop').patchValue('0'); 
-    this.FetchStopsListBySelectedRouteList(routeId);
-  }
-
-
-  FetchRoutesList() {
-    const requestData = { Flag: '3',
-      SchoolID:this.AdminselectedSchoolID||'',
-      AcademicYear:this.AdminselectedAcademivYearID||'' };
-
-    this.apiurl.post<any>('Tbl_Route_CRUD_Operations', requestData)
-      .subscribe(
-        (response: any) => {
-          if (response && Array.isArray(response.data)) {
-            this.RouteList = response.data.map((item: any) => {
-              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
-              return {
-                ID: item.id,
-                Name: item.name,
-                IsActive: isActiveString
-              };
-            });            
-          } else {
-            this.RouteList = [];
-          }
-        },
-        (error) => {
-          this.RouteList = [];
-        }
-      );
-  };
-
-  FetchStopsListBySelectedRouteList(RouteID:any ) {
-    const requestData = { Flag: '3',SchoolID:this.AdminselectedSchoolID||'',
-      AcademicYear:this.AdminselectedAcademivYearID||'',Route:RouteID };
-
-    this.apiurl.post<any>('Tbl_Stops_CRUD_Operations', requestData)
-      .subscribe(
-        (response: any) => {
-          if (response && Array.isArray(response.data)) {
-            this.StopList = response.data.map((item: any) => {
-              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
-              return {
-                ID: item.id,
-                Name: item.stopName,
-                IsActive: isActiveString
-              };
-            });            
-          } else {
-            this.StopList = [];
-          }
-        },
-        (error) => {
-          this.StopList = [];
-        }
-      );
-  };
-
-  FetchBusList() {
-    const requestData = { Flag: '3',
-      SchoolID:this.AdminselectedSchoolID||'',
-      AcademicYear:this.AdminselectedAcademivYearID||''
-     };
-
-    this.apiurl.post<any>('Tbl_Bus_CRUD_Operations', requestData)
-      .subscribe(
-        (response: any) => {
-          if (response && Array.isArray(response.data)) {
-            this.BusList = response.data.map((item: any) => {
-              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
-              return {
-                ID: item.id,
-                Name: item.name,
-                IsActive: isActiveString
-              };
-            });            
-          } else {
-            this.BusList = [];
-          }
-        },
-        (error) => {
-          this.BusList = [];
-        }
-      );
+      this.FetchRoutesList();
+      // this.AdminselectedSchoolID = sessionStorage.getItem('SchoolID')?.toString() || '';
+      // this.SyllabusForm.get('School')?.patchValue(this.AdminselectedSchoolID || 0);
+      // // Load academic years for school login users
+      // if (this.AdminselectedSchoolID && this.AdminselectedSchoolID !== '0') {
+      //   this.FetchAcademicYearsList();
+      // }
+    }   
   };
 
   IsAddNewClicked:boolean=false;
@@ -173,6 +71,8 @@ export class FareComponent extends BasePermissionComponent{
   isModalOpen = false;
   isViewModalOpen= false;
   SyllabusCount: number = 0;
+  SubjectsActiveCount: number = 0;
+  SubjectsInActiveCount: number = 0;
   ActiveUserId:string=localStorage.getItem('email')?.toString() || '';
   roleId = localStorage.getItem('RollID');
 
@@ -185,10 +85,17 @@ export class FareComponent extends BasePermissionComponent{
   editclicked:boolean=false;
   schoolList: any[] = [];
   selectedSchoolID: string = '';
+  selectedAcademicYearID: string = '';
+  selectedClassID: string = '';
+  selectedstopID: string = '';
   SchoolSelectionChange:boolean=false;
+  SchoolAcademicYearChange:boolean=false;
+  SchoolClassChange:boolean=false;
+  SchoolStopChange:boolean=false;
   academicYearList:any[] = [];
   AdminselectedSchoolID:string = '';
   AdminselectedAcademivYearID:string = '';
+  AdminSelectedActiveAcademicYearID:string = sessionStorage.getItem('ActiveAcademicYearID') || '';
 
   SyllabusForm: any = new FormGroup({
     ID: new FormControl(),
@@ -199,8 +106,29 @@ export class FareComponent extends BasePermissionComponent{
     School: new FormControl(0),
     Amount: new FormControl('', [Validators.required,Validators.pattern('^[0-9]+$')]),
     AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
-
   });
+
+  allowOnlyNumbers(event: KeyboardEvent) {
+    if (
+      event.key === 'Backspace' ||
+      event.key === 'Tab' ||
+      event.key === 'ArrowLeft' ||
+      event.key === 'ArrowRight' ||
+      event.key === 'Delete'
+    ) {
+      return;
+    }
+
+    if (!/^[0-9]$/.test(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  RouteChange(routeId: any) {
+    this.StopList=[];
+    this.SyllabusForm.get('Stop').patchValue('0'); 
+    this.FetchStopsListBySelectedRouteList(routeId);
+  }
 
   FetchSchoolsList() {
     const requestData = { Flag: '2' };
@@ -226,8 +154,14 @@ export class FareComponent extends BasePermissionComponent{
         }
       );
   };
-   FetchAcademicYearsList() {
-    const requestData = { SchoolID:this.getCurrentSchoolId(),Flag: '2' };
+
+  FetchAcademicYearsList() {
+    const schoolId =
+    this.SchoolSelectionChange
+      ? this.selectedSchoolID?.trim()
+      : this.AdminselectedSchoolID || '';
+
+    const requestData = { SchoolID:schoolId,Flag: '2' };
 
     this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)
       .subscribe(
@@ -251,32 +185,49 @@ export class FareComponent extends BasePermissionComponent{
       );
   };
 
-
-  // protected override get isAdmin(): boolean {
-  //   return this.roleId === '1';
-  // }
-
   protected override get isAdmin(): boolean {
     const role = sessionStorage.getItem('RollID') || localStorage.getItem('RollID');
     return role === '1';
   }
 
-  private getCurrentSchoolId(): string {
-    return this.AdminselectedSchoolID || sessionStorage.getItem('SchoolID')?.toString() || '';
-  }
-
   FetchAcademicYearCount(isSearch: boolean) {
     let SchoolIdSelected = '';
+    let AcademicYearIdSelected='';
+    let ClassSelected='';
+    let StopSelected='';
 
     if (this.SchoolSelectionChange) {
       SchoolIdSelected = this.selectedSchoolID.trim();
     }
 
-    return this.apiurl.post<any>('Tbl_Fare_CRUD_Operations', {
+    if(this.SchoolAcademicYearChange){
+      AcademicYearIdSelected=this.selectedAcademicYearID.trim();
+    }
+
+    if(this.SchoolClassChange){
+      ClassSelected=this.selectedClassID.trim();
+    }
+
+    if(this.SchoolStopChange){
+      StopSelected=this.selectedstopID.trim();
+    }
+
+    const payload: any = {
       Flag: isSearch ? '8' : '6',
-      SchoolID: this.getCurrentSchoolId() || SchoolIdSelected,
+      SchoolID: SchoolIdSelected,
+      RouteID:ClassSelected,
+      StopID:StopSelected,
       Amount: isSearch ? this.searchQuery.trim() : null
-    });
+    };
+
+    if (!this.isAdmin) {
+      payload.AcademicYear = this.AdminSelectedActiveAcademicYearID;
+    }
+    else if(this.isAdmin && this.SchoolAcademicYearChange){
+      payload.AcademicYear = AcademicYearIdSelected;
+    }
+
+    return this.apiurl.post<any>('Tbl_Fare_CRUD_Operations', payload);
   }
 
   FetchInitialData(extra: any = {}) {
@@ -284,9 +235,24 @@ export class FareComponent extends BasePermissionComponent{
     const flag = isSearch ? '7' : '2';
 
     let SchoolIdSelected = '';
+    let AcademicYearIdSelected='';
+    let ClassSelected='';
+    let StopSelected='';
 
     if (this.SchoolSelectionChange) {
       SchoolIdSelected = this.selectedSchoolID.trim();
+    }
+
+    if(this.SchoolAcademicYearChange){
+      AcademicYearIdSelected=this.selectedAcademicYearID.trim();
+    }
+
+    if(this.SchoolClassChange){
+      ClassSelected=this.selectedClassID.trim();
+    }
+
+    if(this.SchoolStopChange){
+      StopSelected=this.selectedstopID.trim();
     }
 
     const cursor =
@@ -299,6 +265,8 @@ export class FareComponent extends BasePermissionComponent{
     this.FetchAcademicYearCount(isSearch).subscribe({
       next: (countResp: any) => {
         this.SyllabusCount = countResp?.data?.[0]?.totalcount ?? 0;
+        this.SubjectsActiveCount=countResp?.data?.[0]?.activeCount ?? 0;
+        this.SubjectsInActiveCount=countResp?.data?.[0]?.inactiveCount ?? 0;
 
         const payload: any = {
           Flag: flag,
@@ -307,9 +275,18 @@ export class FareComponent extends BasePermissionComponent{
           SortDirection: this.sortDirection,
           LastCreatedDate: cursor?.lastCreatedDate ?? null,
           LastID: cursor?.lastID ?? null,
-          SchoolID: this.getCurrentSchoolId() || SchoolIdSelected,
+          RouteID:ClassSelected,
+          StopID:StopSelected,
+          SchoolID:SchoolIdSelected,
           ...extra
         };
+
+        if (!this.isAdmin) {
+          payload.AcademicYear = this.AdminSelectedActiveAcademicYearID;
+        }
+        else if(this.isAdmin && this.SchoolAcademicYearChange){
+          payload.AcademicYear = AcademicYearIdSelected;
+        }
 
         if (isSearch) payload.Amount = this.searchQuery.trim();
 
@@ -360,25 +337,29 @@ export class FareComponent extends BasePermissionComponent{
     }));
   };
 
-  AddNewClicked(){
-     if (this.isAdmin) {
+   AddNewClicked(){
+    this.SyllabusForm.reset();
+    if (this.isAdmin) {
       this.SyllabusForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+      this.SyllabusForm.get('School').patchValue('0');
+      this.SyllabusForm.get('AcademicYear').patchValue('0');
     } else {
       this.SyllabusForm.get('School')?.clearValidators();
+      this.SyllabusForm.get('AcademicYear')?.disable({ emitEvent: false });
     }
     if(this.AdminselectedSchoolID==''){
       this.FetchAcademicYearsList();
+      if(!this.isAdmin){
+        this.SyllabusForm.get('AcademicYear').patchValue(this.AdminSelectedActiveAcademicYearID);
+        this.FetchRoutesList();
+        this.FetchBusList();
+      } 
     }
-    this.SyllabusForm.reset();
 
-    this.SyllabusForm.get('School').patchValue('0');
-    this.SyllabusForm.get('AcademicYear').patchValue('0');
-    
-    // Only call APIs if we have a school and VALID academic year (not '0')
-    if (this.AdminselectedSchoolID && this.AdminselectedAcademivYearID && this.AdminselectedAcademivYearID !== '0') {
-      this.FetchRoutesList();
-      this.FetchBusList();
-    }
+    // if (this.AdminselectedSchoolID && this.AdminselectedAcademivYearID && this.AdminselectedAcademivYearID !== '0') {
+    //   this.FetchRoutesList();
+    //   this.FetchBusList();
+    // }
 
     this.SyllabusForm.get('Route').patchValue('0');
     this.SyllabusForm.get('Stop').patchValue('0');
@@ -387,6 +368,114 @@ export class FareComponent extends BasePermissionComponent{
     this.IsActiveStatus=true;
     this.ViewSyllabusClicked=false;
   };
+
+  FetchRoutesList() {
+    let AcademicYearIdSelected = '';
+    if (this.isAdmin) {
+      AcademicYearIdSelected = this.SchoolAcademicYearChange
+        ? this.selectedAcademicYearID?.trim() || ''
+        : this.AdminselectedAcademivYearID?.trim() || '';
+    } else {
+      AcademicYearIdSelected =
+        this.AdminSelectedActiveAcademicYearID || '';
+    }
+
+    const requestData = { Flag: '3',
+      SchoolID:this.AdminselectedSchoolID||'',
+      AcademicYear:AcademicYearIdSelected };
+
+    this.apiurl.post<any>('Tbl_Route_CRUD_Operations', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.RouteList = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.id,
+                Name: item.name,
+                IsActive: isActiveString
+              };
+            });            
+          } else {
+            this.RouteList = [];
+          }
+        },
+        (error) => {
+          this.RouteList = [];
+        }
+      );
+  };
+
+  FetchStopsListBySelectedRouteList(RouteID:any ) {
+    const AcademicYearIdSelected =
+    this.isAdmin
+      ? this.AdminselectedAcademivYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
+
+    const requestData = { 
+      Flag: '3',
+      SchoolID:this.AdminselectedSchoolID||'',
+      AcademicYear:AcademicYearIdSelected,
+      Route:RouteID };
+
+    this.apiurl.post<any>('Tbl_Stops_CRUD_Operations', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.StopList = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.id,
+                Name: item.stopName,
+                IsActive: isActiveString
+              };
+            });            
+          } else {
+            this.StopList = [];
+          }
+        },
+        (error) => {
+          this.StopList = [];
+        }
+      );
+  };
+
+  FetchBusList() {
+    const AcademicYearIdSelected =
+    this.isAdmin
+      ? this.AdminselectedAcademivYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
+
+    const requestData = { Flag: '3',
+      SchoolID:this.AdminselectedSchoolID||'',
+      AcademicYear:AcademicYearIdSelected
+     };
+
+    this.apiurl.post<any>('Tbl_Bus_CRUD_Operations', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.BusList = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.id,
+                Name: item.name,
+                IsActive: isActiveString
+              };
+            });            
+          } else {
+            this.BusList = [];
+          }
+        },
+        (error) => {
+          this.BusList = [];
+        }
+      );
+  };
+
+  private getCurrentSchoolId(): string {
+    return this.AdminselectedSchoolID || sessionStorage.getItem('SchoolID')?.toString() || '';
+  }
 
   SubmitSyllabus(){
     if(this.SyllabusForm.invalid){
@@ -696,6 +785,45 @@ export class FareComponent extends BasePermissionComponent{
       this.selectedSchoolID = schoolID;
     }    
     this.SchoolSelectionChange = true;
+    this.FetchAcademicYearsList();
+    this.FetchInitialData();
+  };
+
+  onAcademicYearChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    if(schoolID=="0"){
+      this.selectedAcademicYearID="";
+    }else{
+      this.selectedAcademicYearID = schoolID;
+    }    
+    this.SchoolAcademicYearChange = true;
+    this.FetchRoutesList();
+    this.FetchInitialData();
+  };
+
+  onClassSelectionChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    if(schoolID=="0"){
+      this.selectedClassID="";
+    }else{
+      this.selectedClassID = schoolID;
+    }    
+    this.SchoolClassChange = true;
+    this.FetchStopsListBySelectedRouteList(schoolID);
+    this.FetchInitialData();
+  };
+
+  onStopSelectionChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    if(schoolID=="0"){
+      this.selectedstopID="";
+    }else{
+      this.selectedstopID = schoolID;
+    }    
+    this.SchoolStopChange = true;
     this.FetchInitialData();
   };
 
@@ -779,10 +907,6 @@ export class FareComponent extends BasePermissionComponent{
     });
   };
 
-
-
-  
-
   viewReview(SyllabusID: string): void {
     this.FetchSyllabusDetByID(SyllabusID,'view');
     this.isViewModalOpen=true;
@@ -808,18 +932,33 @@ export class FareComponent extends BasePermissionComponent{
     this.SyllabusForm.get('Route').patchValue('0');
     const target = event.target as HTMLSelectElement;
     const AcademicYearID = target.value;
-    console.log('DEBUG - Selected AcademicYearID:', AcademicYearID);
-    
     if(AcademicYearID=="0"){
       this.AdminselectedAcademivYearID="";
     }else{
       this.AdminselectedAcademivYearID = AcademicYearID;
     }
-    
-    console.log('DEBUG - AdminselectedAcademivYearID set to:', this.AdminselectedAcademivYearID);
-    
     this.FetchBusList();
     this.FetchRoutesList();
   };
 
+  pageStartIndex(): number {
+    return this.SyllabusCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
+  }
+
+  pageEndIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.SyllabusCount);
+  }
+
+  CancelSyllabus(){
+    this.IsAddNewClicked=false;
+    this.AdminselectedSchoolID = '';
+    this.AdminselectedAcademivYearID = '';
+    this.SyllabusForm.reset();
+    this.FetchInitialData();
+  }
+
+  onRowsCountChange() {
+    this.currentPage = 1;
+    this.FetchInitialData();
+  }
 }

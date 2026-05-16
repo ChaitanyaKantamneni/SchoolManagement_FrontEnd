@@ -88,7 +88,9 @@ export class AdmissionComponent extends BasePermissionComponent {
   editclicked:boolean=false;
   schoolList: any[] = [];
   selectedSchoolID: string = '';
+  selectedAcademicYearID: string = '';
   SchoolSelectionChange:boolean=false;
+  SchoolAcademicYearChange:boolean=false;
   bulkUploadRows: any[] = [];
   bulkUploadFileName: string = '';
   bulkUploadStatus: string = '';
@@ -99,6 +101,7 @@ export class AdmissionComponent extends BasePermissionComponent {
   AdminselectedSchoolID:string = '';
   AdminselectedAcademivYearID:string = '';
   selectedAdmissionID:string = '';
+  AdminSelectedActiveAcademicYearID:string = sessionStorage.getItem('ActiveAcademicYearID') || '';
 
   ModuleForm: any = new FormGroup({
     ID: new FormControl(),
@@ -107,31 +110,31 @@ export class AdmissionComponent extends BasePermissionComponent {
     AdmissionNo: new FormControl('',Validators.required),
     Class:new FormControl(0,[Validators.required,Validators.min(1)]),
     Division:new FormControl(0,[Validators.required,Validators.min(1)]),
-    FirstName: new FormControl('',[Validators.required,Validators.pattern('^[a-zA-Z ]+$')]),
-    MiddleName: new FormControl('',[Validators.pattern('^[a-zA-Z ]+$')]),
-    LastName: new FormControl('',[Validators.pattern('^[a-zA-Z ]+$')]),
+    FirstName: new FormControl('',[Validators.required,Validators.pattern('^[a-zA-Z. ]+$')]),
+    MiddleName: new FormControl('',[Validators.pattern('^[a-zA-Z. ]+$')]),
+    LastName: new FormControl('',[Validators.pattern('^[a-zA-Z. ]+$')]),
     JoinDate: new FormControl('', [Validators.required]),
-    AadharNo: new FormControl('',[Validators.required,Validators.pattern(/^[2-9]{1}[0-9]{11}$/)]),
+    AadharNo: new FormControl('',[Validators.pattern(/^[2-9]{1}[0-9]{11}$/)]),
     MobileNo: new FormControl('',[Validators.required,Validators.pattern(/^[6-9]{1}[0-9]{9}$/)]),
-    Email: new FormControl('', [Validators.required,Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]),
-    DOB: new FormControl('', [Validators.required,this.noFutureDateValidator]),
+    Email: new FormControl('', [Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]),
+    DOB: new FormControl('', [this.noFutureDateValidator]),
     Gender:new FormControl(0,[Validators.required,Validators.min(1)]),
     BloodGroup: new FormControl(),
     Nationality:new FormControl(0,[Validators.required,Validators.min(1)]),
     Religion:new FormControl(0,[Validators.required,Validators.min(1)]),
     Caste: new FormControl(),
-    FatherName: new FormControl('',[Validators.required,Validators.pattern('^[a-zA-Z ]+$')]),
+    FatherName: new FormControl('',[Validators.required,Validators.pattern('^[a-zA-Z. ]+$')]),
     FatherQualification: new FormControl(),
     FatherOccupation: new FormControl(),
     FatherMobile: new FormControl('',[Validators.required,Validators.pattern(/^[6-9]{1}[0-9]{9}$/)]),
     FatherEmail: new FormControl('', [Validators.required,Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]),
-    FatherAadharNo: new FormControl('',[Validators.required,Validators.pattern(/^[2-9]{1}[0-9]{11}$/)]),
-    MotherName: new FormControl('',[Validators.required,Validators.pattern('^[a-zA-Z ]+$')]),
+    FatherAadharNo: new FormControl('',[Validators.pattern(/^[2-9]{1}[0-9]{11}$/)]),
+    MotherName: new FormControl('',[Validators.required,Validators.pattern('^[a-zA-Z. ]+$')]),
     MotherQualification: new FormControl(),
     MotherOccupation: new FormControl(),
-    MotherMobile: new FormControl('',[Validators.required,Validators.pattern(/^[6-9]{1}[0-9]{9}$/)]),
-    MotherEmail: new FormControl('', [Validators.required,Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]),
-    MotherAadharNo: new FormControl('',[Validators.required,Validators.pattern(/^[2-9]{1}[0-9]{11}$/)]),
+    MotherMobile: new FormControl('',[Validators.pattern(/^[6-9]{1}[0-9]{9}$/)]),
+    MotherEmail: new FormControl('', [Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]),
+    MotherAadharNo: new FormControl('',[Validators.pattern(/^[2-9]{1}[0-9]{11}$/)]),
     PermanentAddressLine1: new FormControl('',Validators.required),
     PermanentAddressLine2: new FormControl(),
     PermanentPincode: new FormControl('',[Validators.required,Validators.pattern(/^[1-9]{1}[0-9]{5}$/)]),
@@ -286,7 +289,12 @@ export class AdmissionComponent extends BasePermissionComponent {
   };
 
   FetchAcademicYearsList() {
-    const requestData = { SchoolID:this.AdminselectedSchoolID||'',Flag: '2' };
+    const schoolId =
+    this.SchoolSelectionChange
+      ? this.selectedSchoolID?.trim()
+      : this.AdminselectedSchoolID || '';
+
+    const requestData = { SchoolID:schoolId,Flag: '2' };
 
     this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)
       .subscribe(
@@ -330,16 +338,30 @@ export class AdmissionComponent extends BasePermissionComponent {
 
   FetchAcademicYearCount(isSearch: boolean) {
     let SchoolIdSelected = '';
+    let AcademicYearIdSelected='';
 
     if (this.SchoolSelectionChange) {
       SchoolIdSelected = this.selectedSchoolID.trim();
     }
 
-    return this.apiurl.post<any>('Tbl_StudentDetails_CRUD_Operations', {
+    if(this.SchoolAcademicYearChange){
+      AcademicYearIdSelected=this.selectedAcademicYearID.trim();
+    }
+
+    const payload: any = {
       Flag: isSearch ? '8' : '6',
-      SchoolID:SchoolIdSelected,
+      SchoolID: SchoolIdSelected,
       AdmissionNo: isSearch ? this.searchQuery.trim() : null
-    });
+    };
+
+    if (!this.isAdmin) {
+      payload.AcademicYear = this.AdminSelectedActiveAcademicYearID;
+    }
+    else if(this.isAdmin && this.SchoolAcademicYearChange){
+      payload.AcademicYear = AcademicYearIdSelected;
+    }
+
+    return this.apiurl.post<any>('Tbl_StudentDetails_CRUD_Operations', payload);
   }
 
   FetchInitialData(extra: any = {}) {
@@ -347,9 +369,14 @@ export class AdmissionComponent extends BasePermissionComponent {
     const flag = isSearch ? '7' : '2';
 
     let SchoolIdSelected = '';
+    let AcademicYearIdSelected='';
 
     if (this.SchoolSelectionChange) {
       SchoolIdSelected = this.selectedSchoolID.trim();
+    }
+
+    if(this.SchoolAcademicYearChange){
+      AcademicYearIdSelected=this.selectedAcademicYearID.trim();
     }
 
     const cursor =
@@ -364,6 +391,7 @@ export class AdmissionComponent extends BasePermissionComponent {
         this.SubjectsCount = countResp?.data?.[0]?.totalcount ?? 0;
         this.SubjectsActiveCount=countResp?.data?.[0]?.activeCount ?? 0;
         this.SubjectsInActiveCount=countResp?.data?.[0]?.inactiveCount ?? 0;
+
         const payload: any = {
           Flag: flag,
           Limit: this.pageSize,
@@ -375,6 +403,13 @@ export class AdmissionComponent extends BasePermissionComponent {
           // AcademicYear:this.AcademicYearSelected,
           ...extra
         };
+
+        if (!this.isAdmin) {
+          payload.AcademicYear = this.AdminSelectedActiveAcademicYearID;
+        }
+        else if(this.isAdmin && this.SchoolAcademicYearChange){
+          payload.AcademicYear = AcademicYearIdSelected;
+        }
 
         if (isSearch) payload.AdmissionNo = this.searchQuery.trim();
 
@@ -438,20 +473,27 @@ export class AdmissionComponent extends BasePermissionComponent {
 
 
   AddNewClicked(){
+    this.ModuleForm.reset();
+    this.activeTab="personal";
     if (this.isAdmin) {
       this.ModuleForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+      this.ModuleForm.get('School').patchValue('0');
+      this.ModuleForm.get('AcademicYear').patchValue('0');
     } else {
       this.ModuleForm.get('School')?.clearValidators();
+      this.ModuleForm.get('AcademicYear')?.disable({ emitEvent: false });
     }
     if(this.AdminselectedSchoolID==''){
       this.FetchAcademicYearsList();
+      if(!this.isAdmin){
+        this.ModuleForm.get('AcademicYear').patchValue(this.AdminSelectedActiveAcademicYearID);
+        this.FetchAdmissionNo();
+        this.FetchClassList();
+      }  
     }
     this.categories=[];
     this.selectedCategories=[];
-    this.FetchClassList();
-    this.ModuleForm.reset();
-    this.ModuleForm.get('School').patchValue('0');
-    this.ModuleForm.get('AcademicYear').patchValue('0');
+    this.FetchClassList(); 
     this.ModuleForm.get('Class').patchValue('0');
     this.ModuleForm.get('Division').patchValue('0');
     this.ModuleForm.get('Gender').patchValue('0');
@@ -464,9 +506,14 @@ export class AdmissionComponent extends BasePermissionComponent {
   };
 
   FetchClassList() {
+    const AcademicYearIdSelected =
+    this.isAdmin
+      ? this.AdminselectedAcademivYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
+
     const requestData = {
       SchoolID:this.AdminselectedSchoolID,
-      AcademicYear:this.AdminselectedAcademivYearID,
+      AcademicYear:AcademicYearIdSelected,
       Flag: '9' };
 
     this.apiurl.post<any>('Tbl_ClassDivision_CRUD_Operations', requestData)
@@ -519,9 +566,14 @@ export class AdmissionComponent extends BasePermissionComponent {
   };
 
   FetchAdmissionNo(){
+    const AcademicYearIdSelected =
+    this.isAdmin
+      ? this.AdminselectedAcademivYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
+
     const requestData = {
       SchoolID:this.AdminselectedSchoolID,
-      AcademicYear:this.AdminselectedAcademivYearID,
+      AcademicYear:AcademicYearIdSelected,
       Flag: '9' };
 
     this.apiurl.post<any>("Tbl_StudentDetails_CRUD_Operations", requestData).subscribe(
@@ -656,8 +708,8 @@ export class AdmissionComponent extends BasePermissionComponent {
     if(this.activeTab=="personal"){
       this.ModuleForm.markAllAsTouched();
       const personalFieldKeys = [
-        'School', 'AcademicYear','AdmissionNo', 'Class', 'Division', 'FirstName', 'AadharNo', 'MobileNo', 'Email',
-        'DOB', 'Gender', 'Nationality', 'Religion', 'Caste'
+        'School', 'AcademicYear','AdmissionNo', 'Class', 'Division', 'FirstName', 'MobileNo',
+        'Gender', 'Nationality', 'Religion'
       ];
 
       const isPersonalValid = personalFieldKeys.every(key => this.ModuleForm.get(key)?.valid);
@@ -694,7 +746,7 @@ export class AdmissionComponent extends BasePermissionComponent {
         this.apiurl.post("Tbl_StudentDetails_CRUD_Operations", data).subscribe({
           next: (response: any) => {
             if (response.statusCode === 200) {
-              this.SubmitUser();
+              // this.SubmitUser();
               this.tabChange('parents');
             }
           },
@@ -716,8 +768,7 @@ export class AdmissionComponent extends BasePermissionComponent {
     else if(this.activeTab=="parents"){
       this.ModuleForm.markAllAsTouched();
       const personalFieldKeys = [
-        'FatherName', 'FatherMobile','FatherEmail', 'FatherAadharNo', 'MotherName',
-        'MotherMobile', 'MotherEmail','MotherAadharNo'
+        'FatherName', 'FatherMobile','FatherEmail',  'MotherName'
       ];
 
       const isPersonalValid = personalFieldKeys.every(key => this.ModuleForm.get(key)?.valid);
@@ -936,7 +987,7 @@ export class AdmissionComponent extends BasePermissionComponent {
       formData.append('LastName', this.ModuleForm.get('LastName')?.value ?? '');
       formData.append('MobileNo', this.ModuleForm.get('MobileNo')?.value ?? '');
       formData.append('Email', this.ModuleForm.get('Email')?.value ?? '');
-      formData.append('RollId', '5'); // Role 5 = Student
+      formData.append('RollId', '5');
       formData.append('Password', 'Welcome@2025');
       formData.append('IsActive', IsActiveStatusNumeric);
       formData.append('Flag', '1');
@@ -1038,6 +1089,8 @@ export class AdmissionComponent extends BasePermissionComponent {
       formData.append('FirstName', this.ModuleForm.get('FatherName')?.value ?? '');
       formData.append('MobileNo', this.ModuleForm.get('FatherMobile')?.value ?? '');
       formData.append('Email', this.ModuleForm.get('FatherEmail')?.value ?? '');
+      formData.append('RollId', '6'); // Role 6 = Parent
+      formData.append('Password', 'Welcome@2025');
       formData.append('IsActive', IsActiveStatusNumeric);
       formData.append('Flag', '7');
 
@@ -1084,6 +1137,7 @@ export class AdmissionComponent extends BasePermissionComponent {
         const classArray = item.class? item.class.split(',').map((x: string) => x.trim()): [];
 
         if (mode === 'view') {
+          this.activeTab="personal";
           this.isViewMode = true;
           this.viewSyllabus = {
             ID: item.id,
@@ -1406,8 +1460,8 @@ export class AdmissionComponent extends BasePermissionComponent {
     if(this.activeTab=="personal"){
       this.ModuleForm.markAllAsTouched();
       const personalFieldKeys = [
-        'School', 'AcademicYear','AdmissionNo', 'Class', 'Division', 'FirstName', 'AadharNo', 'MobileNo', 'Email',
-        'DOB', 'Gender', 'Nationality', 'Religion', 'Caste'
+        'School', 'AcademicYear','AdmissionNo', 'Class', 'Division', 'FirstName', 'MobileNo',
+        'Gender', 'Nationality', 'Religion'
       ];
 
       const isPersonalValid = personalFieldKeys.every(key => this.ModuleForm.get(key)?.valid);
@@ -1444,7 +1498,7 @@ export class AdmissionComponent extends BasePermissionComponent {
         this.apiurl.post("Tbl_StudentDetails_CRUD_Operations", data).subscribe({
           next: (response: any) => {
             if (response.statusCode === 200) {
-              this.UpdateUser();
+              // this.UpdateUser();
               this.tabChange('parents');
             }
           },
@@ -1466,8 +1520,7 @@ export class AdmissionComponent extends BasePermissionComponent {
     else if(this.activeTab=="parents"){
       this.ModuleForm.markAllAsTouched();
       const personalFieldKeys = [
-        'FatherName', 'FatherMobile','FatherEmail', 'FatherAadharNo', 'MotherName',
-        'MotherMobile', 'MotherEmail','MotherAadharNo'
+        'FatherName', 'FatherMobile','FatherEmail', 'MotherName'
       ];
 
       const isPersonalValid = personalFieldKeys.every(key => this.ModuleForm.get(key)?.valid);
@@ -3052,37 +3105,88 @@ export class AdmissionComponent extends BasePermissionComponent {
   }
 
   private async createBulkUsers(student: any, parent: any) {
-    const studentUserForm = new FormData();
-    studentUserForm.append('SchoolID', student.SchoolID ?? '');
-    studentUserForm.append('FirstName', student.FirstName ?? '');
-    studentUserForm.append('LastName', student.LastName ?? '');
-    studentUserForm.append('MobileNo', student.MobileNo ?? '');
-    studentUserForm.append('Email', student.EmailID ?? '');
-    studentUserForm.append('RollId', '8');
-    studentUserForm.append('Password', 'Welcome@2025');
-    studentUserForm.append('IsActive', '1');
-    studentUserForm.append('Flag', '1');
+    // const studentUserForm = new FormData();
+    // studentUserForm.append('SchoolID', student.SchoolID ?? '');
+    // studentUserForm.append('FirstName', student.FirstName ?? '');
+    // studentUserForm.append('LastName', student.LastName ?? '');
+    // studentUserForm.append('MobileNo', student.MobileNo ?? '');
+    // studentUserForm.append('Email', student.EmailID ?? '');
+    // studentUserForm.append('RollId', '8');
+    // studentUserForm.append('Password', 'Welcome@2025');
+    // studentUserForm.append('IsActive', '1');
+    // studentUserForm.append('Flag', '1');
+
+    // const parentUserForm = new FormData();
+    // parentUserForm.append('SchoolID', student.SchoolID ?? '');
+    // parentUserForm.append('FirstName', parent.FatherName ?? '');
+    // parentUserForm.append('MobileNo', parent.FatherContact ?? '');
+    // parentUserForm.append('Email', parent.FatherEmail ?? '');
+    // parentUserForm.append('RollId', '7');
+    // parentUserForm.append('Password', 'Welcome@2025');
+    // parentUserForm.append('IsActive', '1');
+    // parentUserForm.append('Flag', '1');
+
+    // try {
+    //   await firstValueFrom(this.apiurl.post<any>('Tbl_Users_CRUD_Operations', studentUserForm));
+    // } catch {
+    //   // ignore user creation errors to avoid rolling back admission flow
+    // }
+
+    // try {
+    //   await firstValueFrom(this.apiurl.post<any>('Tbl_Users_CRUD_Operations', parentUserForm));
+    // } catch {
+    //   // ignore user creation errors to avoid rolling back admission flow
+    // }
+
+    const effectiveSchoolID = this.isAdmin
+    ? (student.SchoolID ?? '')
+    : (
+        sessionStorage.getItem('SchoolID') ||
+        localStorage.getItem('SchoolID') ||
+        ''
+      );
 
     const parentUserForm = new FormData();
-    parentUserForm.append('SchoolID', student.SchoolID ?? '');
-    parentUserForm.append('FirstName', parent.FatherName ?? '');
-    parentUserForm.append('MobileNo', parent.FatherContact ?? '');
-    parentUserForm.append('Email', parent.FatherEmail ?? '');
-    parentUserForm.append('RollId', '7');
-    parentUserForm.append('Password', 'Welcome@2025');
+
+    parentUserForm.append('SchoolID', effectiveSchoolID);
+
+    parentUserForm.append(
+      'FirstName',
+      parent.FatherName ?? ''
+    );
+
+    parentUserForm.append(
+      'MobileNo',
+      parent.FatherContact ?? ''
+    );
+
+    parentUserForm.append(
+      'Email',
+      parent.FatherEmail ?? ''
+    );
+
+    parentUserForm.append('RollId', '6');
+
+    parentUserForm.append(
+      'Password',
+      'Welcome@2025'
+    );
+
     parentUserForm.append('IsActive', '1');
+
     parentUserForm.append('Flag', '1');
 
     try {
-      await firstValueFrom(this.apiurl.post<any>('Tbl_Users_CRUD_Operations', studentUserForm));
-    } catch {
-      // ignore user creation errors to avoid rolling back admission flow
-    }
 
-    try {
-      await firstValueFrom(this.apiurl.post<any>('Tbl_Users_CRUD_Operations', parentUserForm));
+      await firstValueFrom(
+        this.apiurl.post<any>(
+          'Tbl_Users_CRUD_Operations',
+          parentUserForm
+        )
+      );
+
     } catch {
-      // ignore user creation errors to avoid rolling back admission flow
+      // ignore parent user creation errors
     }
   }
 

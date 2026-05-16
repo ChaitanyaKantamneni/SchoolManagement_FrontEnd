@@ -36,6 +36,7 @@ export class SyllabusComponent extends BasePermissionComponent  {
   ngOnInit(): void {
     this.checkViewPermission();
     this.SchoolSelectionChange=false;
+    this.AdminSelectedAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
     this.FetchSchoolsList();
     this.FetchInitialData();
   };
@@ -73,6 +74,7 @@ export class SyllabusComponent extends BasePermissionComponent  {
   academicYearList:any[] = [];
   selectedSchoolID: string = '';
   AdminselectedSchoolID:string = '';
+  AdminSelectedAcademicYearID:string = sessionStorage.getItem('ActiveAcademicYearID') || '';
   SchoolSelectionChange:boolean=false;
 
   SyllabusForm: any = new FormGroup({
@@ -146,11 +148,18 @@ export class SyllabusComponent extends BasePermissionComponent  {
       SchoolIdSelected = this.selectedSchoolID.trim();
     }
 
-    return this.apiurl.post<any>('Tbl_Syllabus_CRUD_Operations', {
+    const payload: any = {
       Flag: isSearch ? '8' : '6',
-      SchoolID:SchoolIdSelected,
+      SchoolID: SchoolIdSelected,
       Name: isSearch ? this.searchQuery.trim() : null
-    });
+    };
+
+    // ✅ add only for admin
+    if (!this.isAdmin) {
+      payload.AcademicYear = this.AdminSelectedAcademicYearID;
+    }
+
+    return this.apiurl.post<any>('Tbl_Syllabus_CRUD_Operations', payload);
   }
 
   FetchInitialData(extra: any = {}) {
@@ -186,6 +195,10 @@ export class SyllabusComponent extends BasePermissionComponent  {
           SchoolID:SchoolIdSelected,
           ...extra
         };
+
+        if (!this.isAdmin) {
+          payload.AcademicYear = this.AdminSelectedAcademicYearID;
+        }
 
         if (isSearch) payload.Name = this.searchQuery.trim();
 
@@ -231,17 +244,21 @@ export class SyllabusComponent extends BasePermissionComponent  {
   };
 
   AddNewClicked(){
+    this.SyllabusForm.reset();  
     if (this.isAdmin) {
       this.SyllabusForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+      this.SyllabusForm.get('School').patchValue('0');
+      this.SyllabusForm.get('AcademicYear').patchValue('0');
     } else {
       this.SyllabusForm.get('School')?.clearValidators();
+      this.SyllabusForm.get('AcademicYear')?.disable({ emitEvent: false });
     }
     if(this.AdminselectedSchoolID==''){
       this.FetchAcademicYearsList();
-    }
-    this.SyllabusForm.reset();    
-    this.SyllabusForm.get('School').patchValue('0');
-    this.SyllabusForm.get('AcademicYear').patchValue('0');
+      if(!this.isAdmin){
+        this.SyllabusForm.get('AcademicYear').patchValue(this.AdminSelectedAcademicYearID);
+      }            
+    }          
     this.IsAddNewClicked=!this.IsAddNewClicked;
     this.IsActiveStatus=true;
     this.ViewSyllabusClicked=false;
@@ -642,5 +659,15 @@ export class SyllabusComponent extends BasePermissionComponent  {
 
   pageEndIndex(): number {
     return Math.min(this.currentPage * this.pageSize, this.SyllabusCount);
+  }
+
+  CancelSyllabus(){
+    this.IsAddNewClicked=false;
+    this.FetchInitialData();
+  }
+
+  onRowsCountChange() {
+    this.currentPage = 1;
+    this.FetchInitialData();
   }
 }
