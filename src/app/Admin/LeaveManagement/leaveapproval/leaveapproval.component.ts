@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { BasePermissionComponent } from '../../../shared/base-crud.component';
 import { DashboardTopNavComponent } from '../../../SignInAndSignUp/dashboard-top-nav/dashboard-top-nav.component';
 import { LoaderService } from '../../../Services/loader.service';
+import { FileService } from '../../../Services/file.service';
 
 interface LeaveRequest {
   id: string;
@@ -28,6 +29,7 @@ interface LeaveRequest {
   className?: string;
   divisionName?: string;
   role?: string;
+  attachmentURL?: string;
 }
 
 @Component({
@@ -148,7 +150,7 @@ export class LeaveapprovalComponent extends BasePermissionComponent implements O
   AminityInsStatus = ''; // Mimics modal status message in Buses
   isModalOpen      = false;
 
-  constructor(menu: MenuServiceService, router: Router, private api: ApiServiceService, public loader: LoaderService) {
+  constructor(menu: MenuServiceService, router: Router, private api: ApiServiceService, public loader: LoaderService, public fileService: FileService) {
     super(menu, router);
   }
 
@@ -185,8 +187,7 @@ export class LeaveapprovalComponent extends BasePermissionComponent implements O
       this.selectedSchoolId = this.schoolId;
       this.selectedAcademicYearId = '';
       this.fetchAcademicYears();
-      this.resolveStaffIdentity(); // Resolve StaffID before fetching leaves
-      this.fetchLeaveRequests(); // Auto-fetch on load
+      this.resolveStaffIdentity(); // Will call fetchLeaveRequests() after StaffID is resolved
     }
   }
 
@@ -300,7 +301,8 @@ console.log('[LEAVE APPROVAL] Teacher payload - currentUserId:', this.currentUse
             divisionName:     item.divisionName || item.DivisionName || '',
             admissionNo:      item.admissionNo || item.AdmissionNo || '',
             currentApproverID: '',
-            role:             this.userTypeFilter === 'Staff' ? this.getResolvedRole(item) : undefined
+            role:             this.userTypeFilter === 'Staff' ? this.getResolvedRole(item) : undefined,
+            attachmentURL:    item.attachmentURL || item.AttachmentURL || ''
           } as LeaveRequest;
         });
         this.RequestCount = this.RequestList.length;
@@ -439,13 +441,15 @@ console.log('[LEAVE APPROVAL] Teacher payload - currentUserId:', this.currentUse
       ApplicationStatus:  status,
       AdminRemarks: this.actionRemarks.trim() || `${status} by ${approverDisplayName}`,
       ApprovedByName: approverDisplayName,
-      fee: "0" 
+      AttachmentURL: req.attachmentURL || '',
+      fee: "0"
     }).subscribe({
       next: (res) => {
         this.isSubmitting = false;
         this.loader.hide();
-        if (res?.statusCode === 200 || res?.StatusCode === 200) {
-          this.isViewModalOpen = false;
+        this.isViewModalOpen = false;
+        const sc = res?.statusCode ?? res?.StatusCode;
+        if (sc === 200 || sc === '200') {
           this.AminityInsStatus = `Leave ${status} successfully.`;
           this.isModalOpen = true;
         } else {
@@ -453,7 +457,7 @@ console.log('[LEAVE APPROVAL] Teacher payload - currentUserId:', this.currentUse
           this.isModalOpen = true;
         }
       },
-      error: () => { this.isSubmitting = false; this.loader.hide(); this.AminityInsStatus = 'Error occurred.'; this.isModalOpen = true; }
+      error: () => { this.isSubmitting = false; this.loader.hide(); this.isViewModalOpen = false; this.AminityInsStatus = 'Error occurred.'; this.isModalOpen = true; }
     });
   }
 
@@ -555,7 +559,8 @@ console.log('[LEAVE APPROVAL] Teacher payload - currentUserId:', this.currentUse
         divisionName:     item.divisionName || item.DivisionName || '',
         admissionNo:      item.admissionNo || item.AdmissionNo || '',
         currentApproverID: '',
-        role:             this.userTypeFilter === 'Staff' ? this.getResolvedRole(item) : undefined
+        role:             this.userTypeFilter === 'Staff' ? this.getResolvedRole(item) : undefined,
+        attachmentURL:    item.attachmentURL || item.AttachmentURL || ''
       } as LeaveRequest;
     });
     this.applyFilters();
@@ -673,6 +678,24 @@ console.log('[LEAVE APPROVAL] Teacher payload - currentUserId:', this.currentUse
   }
 
   // ── staff role name resolution (like viewstaffattendance) ─────────────────────
+  // ── file helpers ────────────────────────────────────────────────────────────
+  getFileName(url?: string): string {
+    if (!url) return '';
+    return url.split('/').pop() || '';
+  }
+
+  viewAttachment(url?: string): void {
+    if (!url) return;
+    const fullUrl = this.fileService.getFullFileUrl(url);
+    window.open(fullUrl, '_blank');
+  }
+
+  downloadAttachment(url?: string): void {
+    if (!url) return;
+    const filename = this.getFileName(url);
+    this.fileService.downloadFile(url, filename);
+  }
+
   getStaffRoleName(req: LeaveRequest): string {
     // First try to use already resolved role from request data
     if (req.role && req.role !== '-' && !/^\d+$/.test(String(req.role).trim())) {

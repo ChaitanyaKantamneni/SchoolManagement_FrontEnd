@@ -275,7 +275,7 @@
                 <td data-label="Class">{{ Syllabus.Class }}</td>
                 <td data-label="Division">{{ Syllabus.Division }}</td>
                 <td data-label="TotalMarks">{{ Syllabus.TotalMarks ? Syllabus.TotalMarks : 'Absent' }}</td>
-                <td data-label="TotalMaxMarks">{{ Syllabus.TotalMarks ? Syllabus.TotalMarks : 'Absent'}}</td>
+                <td data-label="TotalMaxMarks">{{ Syllabus.TotalMarks ? Syllabus.TotalMaxMarks : 'Absent'}}</td>
                 <td data-label="TotalPercentage">{{ Syllabus.TotalPercentage ? (Syllabus.TotalPercentage + '%') : 'Absent' }}</td>
                 <td data-label="Result">
                   <span
@@ -398,6 +398,7 @@
         <th>#</th>
         <th>Subject</th>
         <th>Max Marks</th>
+        <th>Pass Marks</th>
         <th>Marks Obtained</th>
         <th>Percentage</th>
         <th>Result</th>
@@ -413,6 +414,7 @@
         </td>
 
         <td>{{ subject.MaxMarks }}</td>
+        <td>{{ subject.PassMarks }}</td>
 
         <!-- MARKS / ABSENT -->
         <td>

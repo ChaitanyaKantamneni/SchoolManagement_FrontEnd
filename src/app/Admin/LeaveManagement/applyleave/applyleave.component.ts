@@ -1,5 +1,5 @@
 import { NgClass, NgFor, NgIf, UpperCasePipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -8,6 +8,7 @@ import { ApiServiceService } from '../../../Services/api-service.service';
 import { MenuServiceService } from '../../../Services/menu-service.service';
 import { BasePermissionComponent } from '../../../shared/base-crud.component';
 import { LoaderService } from '../../../Services/loader.service';
+import { FileService } from '../../../Services/file.service';
 
 type LeaveStatus = 'Approved' | 'Pending' | 'Rejected' | 'Cancelled';
 
@@ -27,6 +28,7 @@ interface LeaveHistoryItem {
   applicantName?: string;
   className?: string;
   divisionName?: string;
+  attachmentURL?: string;
 }
 
 interface LeavePolicyData {
@@ -205,6 +207,14 @@ export class ApplyleaveComponent extends BasePermissionComponent implements OnIn
   selectedFile: File | null = null;
   maxFileSize = 5 * 1024 * 1024; // 5MB
 
+  // Extended file upload state (mirrors assign-homework)
+  isUploading: boolean = false;
+  uploadProgress: number = 0;
+  uploadedFileUrl: string = '';          // URL returned from server or loaded from DB
+  filePreviewUrl: string | null = null;
+  filePreviewType: 'image' | 'document' | null = null;
+  isPreviewVisible: boolean = false;
+
   leaveForm = new FormGroup({
     staffId: new FormControl(''),
     fromDate: new FormControl(this.today, [Validators.required]),
@@ -247,7 +257,7 @@ export class ApplyleaveComponent extends BasePermissionComponent implements OnIn
   }
   get selectedLeaveType() { return this.leaveForm.get('leaveType')?.value || '—'; }
 
-  constructor(menu: MenuServiceService, router: Router, private api: ApiServiceService, public loader: LoaderService) {
+  constructor(menu: MenuServiceService, router: Router, private api: ApiServiceService, public loader: LoaderService, public fileService: FileService, private cdr: ChangeDetectorRef) {
     super(menu, router);
   }
 
@@ -546,69 +556,372 @@ if (!this.isActuallyStudent && !this.isParent) {
       payload.LeavePolicyID = policyId;
     }
 
+    // ── Branch: upload file first if selected, then submit ───────────────────
+    if (this.selectedFile) {
+      this.isSubmitting = true;
+      this.isUploading = true;
+      this.loader.show();
+
+      const formData = new FormData();
+      formData.append('File', this.selectedFile);
+      formData.append('SchoolId', this.selectedSchoolId || this.resolvedSchoolId);
+      formData.append('LeaveId', 'temp');
+
+      this.fileService.uploadLeaveDoc(formData).subscribe({
+        next: (uploadRes: any) => {
+          console.log('[LEAVE] File uploaded to temp:', uploadRes);
+          this.isUploading = false;
+          this.uploadedFileUrl = uploadRes.url;
+          payload.AttachmentURL = uploadRes.url; // backend moves to final on Flag=1
+          this.doSubmit(payload);
+        },
+        error: (err) => {
+          this.isUploading = false;
+          this.isSubmitting = false;
+          this.loader.hide();
+          this.openModal(err?.error?.message || 'File upload failed. Please try again.');
+        }
+      });
+    } else {
+      this.doSubmit(payload);
+    }
+  }
+
+  private doSubmit(payload: any): void {
     this.isSubmitting = true;
     this.loader.show();
     this.api.post<any>('Tbl_LeaveApplication_Operations', payload).subscribe({
       next: (res) => {
         this.isSubmitting = false;
         this.loader.hide();
-        if (res?.statusCode === 200 || res?.StatusCode === 200) {
-          this.openModal('Leave applied successfully.');
+
+        const status = res?.Message || res?.message || '';
+        const data = res?.Data || res?.data || [];
+        const hasId = data.length > 0 && (data[0].id || data[0].ID);
+        const sc = res?.statusCode ?? res?.StatusCode;
+        // Some API responses don't include statusCode; treat valid data/ID as success
+        const isSuccess = (sc === 200 || sc === '200') || (!sc && hasId);
+
+        console.log('[APPLY LEAVE] doSubmit response:', { statusCode: res?.statusCode, StatusCode: res?.StatusCode, hasId, data, isSuccess });
+
+        if (isSuccess) {
+          this.closeDetail();
           this.resetForm();
           this.fetchHistory();
           this.loadBalances();
+          this.openModal(hasId ? 'Leave applied successfully.' : status || 'Leave applied successfully.');
         } else {
-          this.openModal(res?.message || res?.Message || 'Failed to apply leave.');
+          // If we uploaded a file but the DB didn't save the record (validation error),
+          // we must delete the orphaned file from the server's temp folder.
+          if (this.uploadedFileUrl) {
+            this.deleteTempFileOnFailure();
+          }
+          this.openModal(status || 'Failed to apply leave. Please check validation.');
         }
       },
       error: (err) => {
         this.isSubmitting = false;
         this.loader.hide();
+        if (this.uploadedFileUrl) {
+          this.deleteTempFileOnFailure();
+        }
         this.openModal(err?.error?.message || err?.error?.Message || 'Error applying leave.');
       }
     });
   }
 
-  resetForm(): void {
-    this.leaveForm.reset({ fromDate: this.today, toDate: this.today, leaveType: '', reason: '' });
-    this.selectedFileName = '';
-    this.selectedFile = null;
+  private deleteTempFileOnFailure(): void {
+    const schoolId = this.selectedSchoolId || this.resolvedSchoolId;
+    const fileName = this.uploadedFileUrl.split('/').pop() || '';
+    if (schoolId && fileName) {
+      console.log('[LEAVE] Deleting orphaned temp file due to application failure:', fileName);
+      this.fileService.deleteLeaveFile({
+        SchoolId: schoolId,
+        LeaveId: 'temp',
+        FileName: fileName,
+        ModifiedBy: this.ss('email') || 'System'
+      }).subscribe({
+        next: () => {
+          this.uploadedFileUrl = '';
+          console.log('[LEAVE] Orphaned file cleaned up.');
+        },
+        error: (e) => console.warn('[LEAVE] Cleanup failed:', e)
+      });
+    }
   }
 
-  // File handling methods
+
+  resetForm(): void {
+    console.log('Resetting form...');
+
+    // Use Angular's built-in reset for reliable form clearing
+    this.leaveForm.reset({
+      staffId: '',
+      fromDate: this.today,
+      toDate: this.today,
+      leaveType: '',
+      reason: ''
+    });
+
+    // Reset ngModel-bound dropdowns (not part of leaveForm)
+    // Only clear class/division if NOT in student mode — preserve student selection context
+    if (!this.isActuallyStudent && !this.isParent) {
+      this.selectedClassId = '';
+      this.selectedDivisionId = '';
+    }
+    this.leaveTypes = [];
+    this.leaveBalances = [];
+    this.leavePoliciesData = [];
+
+    if (this.isAdmin) {
+      // Admin: only clear the form input fields, keep all context selections intact
+      this.leaveForm.get('leaveType')?.patchValue('');
+    } else if (this.isSchoolAdmin) {
+      // School Admin: keep school, year, userType, staff/student lists & selection — only clear form fields
+      this.leaveForm.get('leaveType')?.patchValue('');
+    } else if (this.isParent) {
+      // Parent: keep year, clear child/form data
+      this.selectedChildIndex = -1;
+      this.parentChildren = [];
+    } else {
+      // Teacher / Staff: keep school, year & self context, just clear form data
+      this.selectedStaffId = this.sessionApplicantId;
+      this.selectedStaffName = this.sessionApplicantName;
+    }
+
+    // Clear all file-related state explicitly
+    this.uploadedFileUrl = '';
+    this.selectedFile = null;
+    this.selectedFileName = '';
+    this.uploadProgress = 0;
+    this.isUploading = false;
+    this.isPreviewVisible = false;
+    this.filePreviewUrl = null;
+    this.filePreviewType = null;
+    this.isSubmitting = false;
+
+    // Reset file input elements in the DOM
+    setTimeout(() => {
+      ['documentUpload', 'documentUploadReplace'].forEach(id => {
+        const el = document.getElementById(id) as HTMLInputElement;
+        if (el) { el.value = ''; }
+      });
+    }, 0);
+
+    // Force change detection after reset
+    this.cdr.detectChanges();
+    setTimeout(() => this.cdr.detectChanges(), 0);
+
+    console.log('Form reset complete');
+  }
+
+  // ── File Handling (mirrors assign-homework) ───────────────────────────────────
   onFileSelect(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      const file = input.files[0];
-      
-      // Validate file size
-      if (file.size > this.maxFileSize) {
-        this.openModal('File size exceeds 5MB limit. Please choose a smaller file.');
-        input.value = '';
-        return;
-      }
-      
-      // Validate file type
-      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/jpg', 'image/png'];
-      if (!allowedTypes.includes(file.type)) {
-        this.openModal('Invalid file type. Please upload PDF, DOC, DOCX, JPG, JPEG, or PNG files only.');
-        input.value = '';
-        return;
-      }
-      
-      this.selectedFile = file;
-      this.selectedFileName = file.name;
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+
+    if (file.size > this.maxFileSize) {
+      this.openModal('File size exceeds 5MB limit. Please choose a smaller file.');
+      input.value = ''; return;
     }
+    const allowedTypes = [
+      'application/pdf', 'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'image/jpeg', 'image/jpg', 'image/png'
+    ];
+    if (!allowedTypes.includes(file.type)) {
+      this.openModal('Invalid file type. Allowed: PDF, DOC, DOCX, JPG, JPEG, PNG.');
+      input.value = ''; return;
+    }
+
+    this.selectedFile = file;
+    this.selectedFileName = file.name;
+    this.generateFilePreview(file);
+  }
+
+  generateFilePreview(file: File): void {
+    this.isPreviewVisible = true;
+    if (file.type.startsWith('image/')) {
+      this.filePreviewType = 'image';
+      const reader = new FileReader();
+      reader.onload = (e: any) => { this.filePreviewUrl = e.target?.result || null; };
+      reader.readAsDataURL(file);
+    } else {
+      this.filePreviewType = 'document';
+      this.filePreviewUrl = null;
+    }
+  }
+
+  clearFileSelection(): void {
+    this.selectedFile = null;
+    this.selectedFileName = '';
+    this.uploadProgress = 0;
+    this.isUploading = false;
+    this.isPreviewVisible = false;
+    this.filePreviewUrl = null;
+    this.filePreviewType = null;
+
+    // Reset all file input elements in the DOM - use setTimeout to ensure DOM is ready
+    setTimeout(() => {
+      ['documentUpload', 'documentUploadReplace'].forEach(id => {
+        const el = document.getElementById(id) as HTMLInputElement;
+        if (el) {
+          el.value = '';
+          console.log(`Cleared file input: ${id}`);
+        } else {
+          console.warn(`File input not found: ${id}`);
+        }
+      });
+    }, 0);
   }
 
   removeFile(): void {
-    this.selectedFile = null;
-    this.selectedFileName = '';
-    // Clear the file input
-    const fileInput = document.getElementById('documentUpload') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.value = '';
+    // If the file is already uploaded to server, delete it
+    if (this.uploadedFileUrl) {
+      const schoolId = this.selectedSchoolId || this.resolvedSchoolId;
+      const fileName = this.uploadedFileUrl.split('/').pop() || '';
+      if (schoolId && fileName) {
+        this.fileService.deleteLeaveFile({
+          SchoolId: schoolId,
+          LeaveId: 'temp',
+          FileName: fileName,
+          ModifiedBy: this.ss('email') || ''
+        }).subscribe({
+          next: () => console.log('[LEAVE] Temp file deleted from server'),
+          error: (e) => console.warn('[LEAVE] Could not delete temp file:', e)
+        });
+      }
+      this.uploadedFileUrl = '';
     }
+    this.clearFileSelection();
+  }
+
+  // ── File View Helpers ─────────────────────────────────────────────────────────
+  getFileViewUrl(): string {
+    const url = this.uploadedFileUrl;
+    if (!url) return '';
+    return this.fileService.getFullFileUrl(url);
+  }
+
+  isImageFile(): boolean {
+    return this.fileService.isImageFile(this.uploadedFileUrl || this.selectedFileName);
+  }
+
+  isPdfFile(path?: string): boolean {
+    return this.fileService.isPdfFile(path || this.uploadedFileUrl || this.selectedFileName);
+  }
+
+  getFileIcon(): string {
+    return this.fileService.getFileIcon(this.uploadedFileUrl || this.selectedFileName);
+  }
+
+  downloadAttachment(): void {
+    if (this.uploadedFileUrl) {
+      const filename = this.uploadedFileUrl.split('/').pop() || 'download';
+      this.fileService.downloadFile(this.uploadedFileUrl, filename);
+    }
+  }
+
+  downloadHistoryAttachment(url: string): void {
+    if (url) {
+      const filename = url.split('/').pop() || 'download';
+      this.fileService.downloadFile(url, filename);
+    }
+  }
+
+  getFileName(url?: string): string {
+    if (!url) return '';
+    return url.split('/').pop() || '';
+  }
+
+  removeHistoryAttachment(l: LeaveHistoryItem): void {
+    if (!confirm('Are you sure you want to remove this attachment?')) return;
+
+    this.loader.show();
+    // 1. Delete file from server
+    const schoolId = this.selectedSchoolId || this.resolvedSchoolId;
+    const fileName = l.attachmentURL?.split('/').pop() || '';
+    
+    this.fileService.deleteLeaveFile({
+      SchoolId: schoolId,
+      LeaveId: l.id,
+      FileName: fileName,
+      ModifiedBy: this.ss('email') || ''
+    }).subscribe({
+      next: () => {
+        // 2. Update DB record (Clear AttachmentURL)
+        this.api.post<any>('Tbl_LeaveApplication_Operations', {
+          Flag: '5',
+          ID: l.id,
+          AttachmentURL: '',
+          ModifiedBy: this.ss('email') || ''
+        }).subscribe({
+          next: (res) => {
+            this.loader.hide();
+            if (res?.statusCode === 200 || res?.StatusCode === 200) {
+              // Update the local selectedLeave object if it's the same record
+              if (this.selectedLeave && this.selectedLeave.id === l.id) {
+                this.selectedLeave.attachmentURL = '';
+              }
+              this.fetchHistory();
+              this.openModal('Attachment removed successfully.');
+            }
+          },
+          error: () => { this.loader.hide(); this.openModal('Database update failed.'); }
+        });
+      },
+      error: () => { this.loader.hide(); this.openModal('File deletion failed.'); }
+    });
+  }
+
+  onHistoryFileChange(event: Event, l: LeaveHistoryItem): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+
+    if (file.size > this.maxFileSize) {
+      this.openModal('File size exceeds 5MB limit.');
+      return;
+    }
+
+    this.loader.show();
+    const formData = new FormData();
+    formData.append('File', file);
+    formData.append('SchoolId', this.selectedSchoolId || this.resolvedSchoolId);
+    formData.append('LeaveId', l.id);
+
+    this.fileService.uploadLeaveDoc(formData).subscribe({
+      next: (uploadRes: any) => {
+        // ✅ Update selectedLeave immediately so modal reflects the new file right away
+        l.attachmentURL = uploadRes.url;
+        if (this.selectedLeave && this.selectedLeave.id === l.id) {
+          this.selectedLeave = { ...this.selectedLeave, attachmentURL: uploadRes.url };
+        }
+        this.cdr.detectChanges();
+
+        // Persist to DB
+        this.api.post<any>('Tbl_LeaveApplication_Operations', {
+          Flag: '5',
+          ID: l.id,
+          AttachmentURL: uploadRes.url,
+          ModifiedBy: this.ss('email') || ''
+        }).subscribe({
+          next: (res) => {
+            this.loader.hide();
+            const sc = res?.statusCode ?? res?.StatusCode;
+            const hasData = (res?.data?.length > 0) || (res?.Data?.length > 0);
+            if (sc === 200 || sc === '200' || hasData || !sc) {
+              this.fetchHistory();
+            } else {
+              this.openModal('File saved but database update may have failed.');
+            }
+          },
+          error: () => { this.loader.hide(); this.openModal('Database update failed.'); }
+        });
+      },
+      error: () => { this.loader.hide(); this.openModal('File upload failed.'); }
+    });
   }
 
   // ── modal helpers ─────────────────────────────────────────────────────────────
@@ -618,6 +931,7 @@ if (!this.isActuallyStudent && !this.isParent) {
   }
   handleOk() {
     this.isModalOpen = false;
+    this.fetchHistory();
   }
   closeModal() {
     this.isModalOpen = false;
@@ -628,6 +942,7 @@ if (!this.isActuallyStudent && !this.isParent) {
   }
   closeDetail() {
     this.isDetailOpen = false;
+    this.selectedLeave = null;
     this.actionRemarks = '';
     this.showCancelRemarks = false;
     this.cancelRemarks = '';
@@ -666,7 +981,7 @@ if (!this.isActuallyStudent && !this.isParent) {
       approverDisplayName = 'Admin'; // Super admin always shows as "Admin"
     }
     
-    const payload = {
+    const payload: any = {
       Flag: '5',
       ID: this.selectedLeave.id,
       ApprovedBy: String(this.ss('StaffID') || this.ss('UserID') || '1'),
@@ -675,12 +990,22 @@ if (!this.isActuallyStudent && !this.isParent) {
       ApprovedByName: approverDisplayName
     };
 
+    // Preserve attachment URL on status update (including cancel)
+    if (this.selectedLeave.attachmentURL) {
+      payload.AttachmentURL = this.selectedLeave.attachmentURL;
+    }
+
+    this.proceedWithStatusUpdate(payload, status);
+  }
+
+  private proceedWithStatusUpdate(payload: any, status: string): void {
     this.api.post<any>('Tbl_LeaveApplication_Operations', payload).subscribe({
       next: (res) => {
         this.isSubmittingAction = false;
         this.loader.hide();
-        if (res?.statusCode === 200 || res?.StatusCode === 200) {
-          this.isDetailOpen = false;
+        this.closeDetail();
+        const sc = res?.statusCode ?? res?.StatusCode;
+        if (sc === 200 || sc === '200') {
           this.openModal(`Leave ${status} successfully.`);
           this.fetchHistory();
         } else {
@@ -690,6 +1015,7 @@ if (!this.isActuallyStudent && !this.isParent) {
       error: () => {
         this.isSubmittingAction = false;
         this.loader.hide();
+        this.closeDetail();
         this.openModal('Error updating status.');
       }
     });
@@ -917,14 +1243,15 @@ private checkAndLoad(): void {
           days: Number(item.noOfDays || item.NoOfDays || 0),
           leaveType: item.leaveType || item.LeaveType || '—',
           reason: item.reason || item.Reason || '—',
-          status: item.applicationStatus || item.ApplicationStatus || 'Pending',
+          status: (item.applicationStatus || item.ApplicationStatus || 'Pending').toString().trim(),
           approvalRemarks: remarks,
           approvedByName: item.approvedByName || item.ApprovedByName || extractedName,
           approvedById: approvedByEmail,
           admissionNo: item.admissionNo || item.AdmissionNo || '',
           applicantName: item.applicantName || item.ApplicantName || '',
           className: item.className || item.ClassName || '',
-          divisionName: item.divisionName || item.DivisionName || ''
+          divisionName: item.divisionName || item.DivisionName || '',
+          attachmentURL: item.attachmentURL || item.AttachmentURL || ''
         };
       });
         this.isLoadingLeaves = false;

@@ -149,6 +149,32 @@
           <div class="col-5 viewHeadingfontsize">Reason</div>
           <div class="col-7" style="background: #f8fafc; padding: 12px; border-radius: 8px; font-size: 12px; border: 1px solid #e2e8f0;">{{ selectedRequest?.reason }}</div>
         </div>
+
+        <!-- Attachment Section -->
+        <div class="row mb-3" *ngIf="selectedRequest?.attachmentURL">
+          <div class="col-5 viewHeadingfontsize">Attachment</div>
+          <div class="col-7">
+            <!-- Image Preview -->
+            <div *ngIf="fileService.isImageFile(selectedRequest?.attachmentURL || '')" style="margin-bottom: 10px; text-align: center;">
+              <img [src]="fileService.getFullFileUrl(selectedRequest?.attachmentURL || '')" alt="Attachment"
+                   style="max-width: 100%; max-height: 180px; border-radius: 8px; border: 1px solid #e2e8f0; object-fit: contain;">
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 10px; background: #f0f9ff; padding: 10px 12px; border-radius: 8px; border: 1px solid #bae6fd;">
+              <mat-icon style="color: #0ea5e9;">{{ fileService.getFileIcon(selectedRequest?.attachmentURL || '') }}</mat-icon>
+              <span style="flex: 1; font-size: 12px; color: #334155; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                {{ getFileName(selectedRequest?.attachmentURL) }}
+              </span>
+              <button class="btn" style="background: white; color: #0ea5e9; border: 1px solid #bae6fd; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500;" (click)="viewAttachment(selectedRequest?.attachmentURL)">
+                <mat-icon style="font-size: 14px; vertical-align: middle; margin-right: 2px;">visibility</mat-icon> View
+              </button>
+              <button class="btn" style="background: white; color: #10b981; border: 1px solid #86efac; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500;" (click)="downloadAttachment(selectedRequest?.attachmentURL)">
+                <mat-icon style="font-size: 14px; vertical-align: middle; margin-right: 2px;">download</mat-icon> Download
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div class="form-group mt-4">
           <label class="inputLabel" style="font-size: 11px; font-weight: 700; color: #64748b; letter-spacing: 0.5px;">REVIEWER REMARKS</label>
           <textarea class="form-control" style="font-size: 12px; border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px;" rows="3" [(ngModel)]="remarks" placeholder="Add approval/rejection notes..."></textarea>

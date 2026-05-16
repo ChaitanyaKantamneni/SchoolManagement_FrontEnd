@@ -1,0 +1,373 @@
+<app-dashboard-top-nav></app-dashboard-top-nav>
+
+<div class="MainContentDiv">
+  <!-- List View -->
+  <div *ngIf="!IsAddNewClicked" class="w-100">
+    <div class="ComponentTop">
+      <div class="ComponentTopHeader">
+        <h5>Suppliers Management</h5>
+        <p>Total {{ SuppliersCount }} Suppliers Added</p>
+      </div>
+      <div class="ComponentTopBottom">
+        <button *ngIf="canAdd()" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Supplier</button>
+      </div>
+    </div>
+
+    <div class="ComponentRecords">
+      <div>
+        <div class="ComponentRecordsTop">
+          <div class="filterOptions">
+            <div class="searchreview input-container">
+              <input type="text" class="form-control floating-input" [(ngModel)]="searchQuery"
+                (ngModelChange)="onSearchChange()" placeholder="Search..." />
+              <mat-icon
+                style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
+            </div>
+            <div class="searchreview" *ngIf="isAdmin">
+              <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
+                <option value="">-- Select School --</option>
+                <option value="0">All Schools</option>
+                <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="reviewstable">
+          <table class="table table-bordered" *ngIf="SuppliersList.length != 0">
+            <thead>
+              <tr>
+                <th>SI.No</th>
+                <th>Supplier Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th *ngIf="isAdmin">School</th>
+                <th *ngIf="isAdmin">Academic Year</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of SuppliersList; let i = index">
+                <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td>{{ s.supplierName }}</td>
+                <td>{{ s.emailAddress }}</td>
+                <td>{{ s.phoneNumber }}</td>
+                <td>{{ s.address }}</td>
+                <td *ngIf="isAdmin">{{ s.schoolName }}</td>
+                <td *ngIf="isAdmin">{{ s.academicYearName }}</td>
+                <td>
+                  <span class="status-pill"
+                    [style.background]="s.isActive ? 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)' : 'linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%)'"
+                    [style.color]="s.isActive ? '#166534' : '#9f1239'"
+                    [style.borderColor]="s.isActive ? '#86efac' : '#fda4af'">
+                    {{ s.isActive ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="d-flex justify-content-center align-items-center h-100" style="gap: 5px;">
+                    <button *ngIf="canEdit()" class="btn checkbtn edit" data-tooltip="Edit" (click)="editreview(s.id)">
+                      <mat-icon class="mat-edit-icon">edit</mat-icon>
+                    </button>
+                    <button *ngIf="canView()" class="btn checkbtn" data-tooltip="View" (click)="viewReview(s.id)">
+                      <mat-icon class="mat-edit-icon">visibility</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div *ngIf="SuppliersList.length === 0" class="NoDataFound">
+            <div class="NoDataFoundImg">
+              <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
+            </div>
+            <p>No data found.</p>
+          </div>
+
+          <div *ngIf="SuppliersCount > pageSize" class="pagination-controls">
+            <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1"
+              class="arrow-btn FirstandLastButton">First</button>
+            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
+            <button *ngFor="let page of getVisiblePageNumbers()"
+              class="page-btn"
+              [ngClass]="{'active': page === currentPage}"
+              (click)="goToPage(page)">
+              {{ page }}
+            </button>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()"
+              class="arrow-btn FirstandLastButton">Last</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit View -->
+  <div *ngIf="IsAddNewClicked" class="w-100">
+    <div class="AddForm">
+      <div class="AddFormTop">
+        <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+        <p>{{ editingId ? 'Update Supplier' : 'Add Supplier' }}</p>
+      </div>
+      <div class="AddFormConatiner">
+        <form [formGroup]="supplierForm">
+          <div class="FormInputRowsContainer">
+
+            <!-- Admin Layout -->
+            <ng-container *ngIf="isAdmin; else schoolWiseLayout">
+
+              <!-- Admin Row 1: School, Academic Year, Supplier Name -->
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">School <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" formControlName="schoolId" (change)="onAdminSchoolChange($event)">
+                      <option value="">-- Select School --</option>
+                      <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+                    </select>
+                    <div *ngIf="supplierForm.get('schoolId')?.touched && supplierForm.get('schoolId')?.invalid"
+                      class="text-danger">
+                      <small>Please Select School.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Academic Year <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" formControlName="academicYearId">
+                      <option value="">-- Select Academic Year --</option>
+                      <option *ngFor="let year of academicYearList" [value]="year.ID">{{ year.Name }}</option>
+                    </select>
+                    <div *ngIf="supplierForm.get('academicYearId')?.touched && supplierForm.get('academicYearId')?.invalid"
+                      class="text-danger">
+                      <small>Please Select Academic Year.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Supplier Name <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="supplierName" placeholder="Enter Supplier Name" />
+                    <div *ngIf="supplierForm.get('supplierName')?.touched && supplierForm.get('supplierName')?.invalid"
+                      class="text-danger">
+                      <small *ngIf="supplierForm.get('supplierName')?.errors?.['required']">Please Enter Supplier Name.</small>
+                      <small *ngIf="supplierForm.get('supplierName')?.errors?.['minlength']">Minimum 2 characters required.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Admin Row 2: Email, Phone, Address -->
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Email Address</label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="emailAddress" placeholder="Enter Email Address"
+                      type="email" />
+                    <div *ngIf="supplierForm.get('emailAddress')?.touched && supplierForm.get('emailAddress')?.invalid"
+                      class="text-danger">
+                      <small *ngIf="supplierForm.get('emailAddress')?.errors?.['email']">Please Enter a Valid Email Address.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Phone Number</label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="phoneNumber" placeholder="Enter Phone Number"
+                      type="tel" maxlength="15" />
+                    <div *ngIf="supplierForm.get('phoneNumber')?.touched && supplierForm.get('phoneNumber')?.invalid"
+                      class="text-danger">
+                      <small *ngIf="supplierForm.get('phoneNumber')?.errors?.['pattern']">Please Enter a Valid Phone Number (10–15 digits).</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Address</label>
+                  <div class="input-with-error">
+                    <textarea class="inputField" formControlName="address" placeholder="Enter Address" rows="2"></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Admin Row 3: Toggle -->
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <div class="toggle-container" (click)="$event.stopPropagation()" style="margin-top: 20px;">
+                    <label class="switch">
+                      <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (change)="toggleChange()">
+                      <span class="slider">
+                        <span class="toggle-text"
+                          [ngStyle]="{ left: IsActiveStatus ? '42%' : '60%', fontSize: '9px' }">
+                          {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer"></div>
+                <div class="InputFieldsContainer"></div>
+              </div>
+
+            </ng-container>
+
+            <!-- Non-Admin Layout -->
+            <ng-template #schoolWiseLayout>
+
+              <!-- Non-Admin Row 1: Academic Year, Supplier Name, Email -->
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Academic Year <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" formControlName="academicYearId">
+                      <option value="">-- Select Academic Year --</option>
+                      <option *ngFor="let year of academicYearList" [value]="year.ID">{{ year.Name }}</option>
+                    </select>
+                    <div *ngIf="supplierForm.get('academicYearId')?.touched && supplierForm.get('academicYearId')?.invalid"
+                      class="text-danger">
+                      <small>Please Select Academic Year.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Supplier Name <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="supplierName" placeholder="Enter Supplier Name" />
+                    <div *ngIf="supplierForm.get('supplierName')?.touched && supplierForm.get('supplierName')?.invalid"
+                      class="text-danger">
+                      <small *ngIf="supplierForm.get('supplierName')?.errors?.['required']">Please Enter Supplier Name.</small>
+                      <small *ngIf="supplierForm.get('supplierName')?.errors?.['minlength']">Minimum 2 characters required.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Email Address</label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="emailAddress" placeholder="Enter Email Address"
+                      type="email" />
+                    <div *ngIf="supplierForm.get('emailAddress')?.touched && supplierForm.get('emailAddress')?.invalid"
+                      class="text-danger">
+                      <small *ngIf="supplierForm.get('emailAddress')?.errors?.['email']">Please Enter a Valid Email Address.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Non-Admin Row 2: Phone, Address, Toggle -->
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Phone Number</label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="phoneNumber" placeholder="Enter Phone Number"
+                      type="tel" maxlength="15" />
+                    <div *ngIf="supplierForm.get('phoneNumber')?.touched && supplierForm.get('phoneNumber')?.invalid"
+                      class="text-danger">
+                      <small *ngIf="supplierForm.get('phoneNumber')?.errors?.['pattern']">Please Enter a Valid Phone Number (10–15 digits).</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Address</label>
+                  <div class="input-with-error">
+                    <textarea class="inputField" formControlName="address" placeholder="Enter Address" rows="2"></textarea>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <div class="toggle-container" (click)="$event.stopPropagation()" style="margin-top: 25px;">
+                    <label class="switch">
+                      <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (change)="toggleChange()">
+                      <span class="slider">
+                        <span class="toggle-text"
+                          [ngStyle]="{ left: IsActiveStatus ? '42%' : '60%', fontSize: '9px' }">
+                          {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+            </ng-template>
+          </div>
+
+          <div class="ActionButtons" style="display: flex; justify-content: center; margin-top: 40px;">
+            <button type="button" *ngIf="editingId && canEdit()" (click)="UpdateSupplier()">Update</button>
+            <button type="button" *ngIf="!editingId && canAdd()" (click)="SubmitSupplier()">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Status Modal -->
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isModalOpen}"
+  [style.display]="isModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Application Status</h5>
+        <button type="button" class="close" (click)="closeModal('status')">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>{{ SupplierInsStatus }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="handleOk()">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- View Modal -->
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}"
+  [style.display]="isViewModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog modal-md" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Supplier Details</h5>
+        <button type="button" class="close" (click)="closeModal('view')">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-2">
+          <div class="col-6 viewHeadingfontsize">Supplier Name</div>
+          <div class="col-6 viewfontsize">{{ viewSupplier?.supplierName }}</div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-6 viewHeadingfontsize">Email Address</div>
+          <div class="col-6 viewfontsize">{{ viewSupplier?.emailAddress }}</div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-6 viewHeadingfontsize">Phone Number</div>
+          <div class="col-6 viewfontsize">{{ viewSupplier?.phoneNumber }}</div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-6 viewHeadingfontsize">Address</div>
+          <div class="col-6 viewfontsize">{{ viewSupplier?.address }}</div>
+        </div>
+        <div class="row mb-2" *ngIf="isAdmin">
+          <div class="col-6 viewHeadingfontsize">School</div>
+          <div class="col-6 viewfontsize">{{ viewSupplier?.schoolName }}</div>
+        </div>
+        <div class="row mb-2" *ngIf="isAdmin">
+          <div class="col-6 viewHeadingfontsize">Academic Year</div>
+          <div class="col-6 viewfontsize">{{ viewSupplier?.academicYearName }}</div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-6 viewHeadingfontsize">Status</div>
+          <div class="col-6">
+            <span class="badge" [ngClass]="viewSupplier?.isActive ? 'badge-success' : 'badge-danger'">
+              {{ viewSupplier?.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
