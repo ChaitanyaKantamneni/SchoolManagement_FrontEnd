@@ -328,12 +328,6 @@ export const routes: Routes = [
       { path: 'RoomMaster', component: RoomMasterComponent },
       { path: 'RoomAllotment', component: RoomAllotmentComponent },
       { path: 'Outpass', component: OutPassComponent },
-    ]
-  },
-
-  {
-    path: 'GroupAdmin', component: GroupAdminDashboardComponent, canActivate: [AuthMfaGuard],
-    children: [{ path: 'GroupAdminDashboard', component: GroupAdminDashboardComponent }]
       { path: 'Units',  component: UnitsComponent },
       { path: 'Categories',  component: CategoriesComponent },
       { path: 'Items',  component: ItemsComponent },
@@ -341,8 +335,11 @@ export const routes: Routes = [
       { path: 'Purchase',  component: PurchaseComponent },
       { path: 'Sales',  component: SalesComponent },
       { path: 'SalesReport',  component: SalesReportComponent },
-
-
     ]
+  },
+
+  {
+    path: 'GroupAdmin', component: GroupAdminDashboardComponent, canActivate: [AuthMfaGuard],
+    children: [{ path: 'GroupAdminDashboard', component: GroupAdminDashboardComponent }]
   }
 ];
