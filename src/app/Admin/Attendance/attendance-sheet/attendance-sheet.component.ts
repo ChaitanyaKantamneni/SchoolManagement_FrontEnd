@@ -29,6 +29,13 @@ export class AttendanceSheetComponent extends BasePermissionComponent{
   }
 
   ngOnInit(): void {
+     const today = new Date();
+
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+
+  this.todayDate = `${year}-${month}-${day}`;
     this.checkViewPermission();
     this.SchoolSelectionChange = false;
 
@@ -68,6 +75,8 @@ export class AttendanceSheetComponent extends BasePermissionComponent{
       .replace(/\D/g, '')
       .slice(0, 3);
   }
+  readonly today = new Date().toISOString().split('T')[0];
+
   IsAddNewClicked: boolean = false;
   isAttendanceSubmitted: boolean = false;
   IsActiveStatus: boolean = false;
@@ -115,6 +124,12 @@ export class AttendanceSheetComponent extends BasePermissionComponent{
   selectedExamIDForAttendance!: number;
   selectedSubjectID!: number;
   attendanceMode: 'add' | 'view' = 'add';
+  todayDate: string = '';
+
+  
+  // Teacher-specific properties (from teacher allocation)
+  teacherAssignedClassID: string = '';
+  teacherAssignedDivisionID: string = '';
 
   SyllabusForm :any= new FormGroup({
     ID: new FormControl(''),
@@ -263,7 +278,85 @@ export class AttendanceSheetComponent extends BasePermissionComponent{
         if (match) {
           this.resolvedStaffId = String(match.id || match.ID);
           console.log('[ATTENDANCE SHEET] Resolved Teacher StaffID:', this.resolvedStaffId);
+          // Only sync teacher allocation if academic year is already selected
+          if (this.AdminselectedAcademivYearID) {
+            this.syncTeacherClassDivisionFromAllocation();
+          }
         }
+      }
+    });
+  }
+  
+  // Sync teacher class/division from class teacher allocation (same as homework component)
+  private syncTeacherClassDivisionFromAllocation(): void {
+    if (!this.currentUserId || !this.AdminselectedSchoolID) {
+      console.log('[ATTENDANCE SHEET] Cannot sync allocation - missing user/school ID');
+      return;
+    }
+
+    const requestData = {
+      SchoolID: this.AdminselectedSchoolID,
+      ClassTeacher: this.currentUserId, // Use teacher ID
+      Flag: '9' // Fetch by School + ClassTeacher
+    };
+
+    console.log('[ATTENDANCE SHEET] Calling teacher allocation API:', requestData);
+    
+    this.apiurl.post<any>('Tbl_AllotClassTeacher_CRUD_Operations', requestData).subscribe({
+      next: (response: any) => {
+        console.log('[ATTENDANCE SHEET] Teacher allocation API response:', response);
+        const allocation = response?.data?.[0];
+        
+        if (allocation) {
+          const classId = allocation.class || allocation.Class || allocation.classID || allocation.ClassID;
+          const divisionId = allocation.division || allocation.Division || allocation.divisionID || allocation.DivisionID;
+          const className = allocation.className || allocation.ClassName || '';
+          const divisionName = allocation.divisionName || allocation.DivisionName || '';
+
+          if (classId) {
+            this.teacherAssignedClassID = String(classId);
+            this.AdminselectedClassID = String(classId);
+            this.classLists = [{
+              ID: String(classId),
+              Name: className || `Class ${classId}`,
+              Division: divisionName || `Division ${divisionId}`
+            }];
+            console.log('[ATTENDANCE SHEET] Set teacher assigned class:', classId);
+          }
+
+          if (divisionId) {
+            this.teacherAssignedDivisionID = String(divisionId);
+            this.AdminselectedDiviosnID = String(divisionId);
+            this.divisionsList = [{
+              ID: String(divisionId),
+              Name: divisionName || `Division ${divisionId}`
+            }];
+            console.log('[ATTENDANCE SHEET] Set teacher assigned division:', divisionId);
+          }
+
+          // Update form
+          this.SyllabusForm.patchValue({
+            Class: String(classId || '0'),
+            Divisions: String(divisionId || '0')
+          });
+
+          console.log('[ATTENDANCE SHEET] Teacher allocation synced:', {
+            classId: this.teacherAssignedClassID,
+            divisionId: this.teacherAssignedDivisionID,
+            className,
+            divisionName
+          });
+          
+          // After getting class/division, fetch students using FLAG 3
+          if (this.teacherAssignedClassID && this.teacherAssignedDivisionID) {
+            console.log('[ATTENDANCE SHEET] Class/Division available - ready to fetch students');
+            // Fetch students
+            this.FetchInitialData();
+          }
+        }
+      },
+      error: (error) => {
+        console.error('[ATTENDANCE SHEET] Error syncing teacher allocation:', error);
       }
     });
   }
@@ -598,120 +691,64 @@ private resetPaginationAndFetch() {
 }
 
   FetchInitialData() {
-  const isSearch = !!this.searchQuery?.trim();
-  let flag = isSearch ? '7' : '3';
+    const isSearch = !!this.searchQuery?.trim();
+    let flag = isSearch ? '7' : '3';
 
-  // 👉 If Teacher → use Flag 11 (fetch students by class teacher)
-  if (this.isTeacher) {
-    flag = '11';
-  }
-
-  this.loader.show();
+    this.loader.show();
 
     this.FetchAcademicYearCount(isSearch).subscribe({
-    next: (countResp: any) => {
-      this.SyllabusCount = countResp?.data?.[0]?.totalcount ?? 0;
+      next: (countResp: any) => {
+        this.SyllabusCount = countResp?.data?.[0]?.totalcount ?? 0;
 
-      const payload: any = {
-        Flag: flag,
-        SortColumn: this.sortColumn,
-        SortDirection: this.sortDirection,
-        SchoolID:this.AdminselectedSchoolID || '',
-        AcademicYear:this.AdminselectedAcademivYearID || '',
-        Class:this.AdminselectedClassID || '',
-        Division:this.AdminselectedDiviosnID || ''
-      };
+        const payload: any = {
+          Flag: flag,
+          SortColumn: this.sortColumn,
+          SortDirection: this.sortDirection,
+          SchoolID: this.AdminselectedSchoolID || '',
+          AcademicYear: this.AdminselectedAcademivYearID || '',
+          Class: this.AdminselectedClassID || '',
+          Division: this.AdminselectedDiviosnID || ''
+        };
 
-      // 👉 For teachers, pass StaffID as CreatedBy for FLAG 11
-      if (this.isTeacher) {
-        payload.CreatedBy = this.currentUserId;
-        console.log('[ATTENDANCE SHEET] Teacher payload - currentUserId:', this.currentUserId, 'Flag:', flag);
-      }
+        if (isSearch) payload.AdmissionNo = this.searchQuery.trim();
 
-      if (isSearch) payload.AdmissionNo = this.searchQuery.trim();
+        console.log('[ATTENDANCE SHEET] FetchInitialData payload:', payload);
 
-      const apiUrl = this.isTeacher ? 'Tbl_StudentDetails_CRUD_Operations' : 'Tbl_StudentDetails_CRUD_Operations';
-
-      this.apiurl.post<any>(apiUrl, payload).subscribe({
-        next: (response: any) => {
-          // 👉 For teachers, FLAG 11 returns student list, not attendance data
-          if (this.isTeacher && flag === '11') {
-            if (response?.data?.length > 0) {
+        this.apiurl.post<any>('Tbl_StudentDetails_CRUD_Operations', payload).subscribe({
+          next: (response: any) => {
+            // For teachers with empty class/division, extract from first student
+            if (this.isTeacher && !this.AdminselectedClassID && response?.data?.length > 0) {
               const firstStudent = response.data[0];
               const classId = firstStudent.class;
               const divisionId = firstStudent.division;
-              const className = firstStudent.className;
-              const divisionName = firstStudent.classDivisionName;
-
+              
               if (classId && divisionId) {
                 this.AdminselectedClassID = String(classId);
                 this.AdminselectedDiviosnID = String(divisionId);
-                console.log('[ATTENDANCE SHEET] Teacher class/division from FLAG 11:', {
+                this.teacherAssignedClassID = String(classId);
+                this.teacherAssignedDivisionID = String(divisionId);
+                console.log('[ATTENDANCE SHEET] Teacher class/division from student data:', {
                   classId: this.AdminselectedClassID,
-                  divisionId: this.AdminselectedDiviosnID,
-                  className,
-                  divisionName
-                });
-
-                // Populate class list with the assigned class
-                this.classLists = [{
-                  ID: String(classId),
-                  Name: className || `Class ${classId}`,
-                  Division: divisionName || `Division ${divisionId}`
-                }];
-
-                // Populate division list with the assigned division
-                this.divisionsList = [{
-                  ID: String(divisionId),
-                  Name: divisionName || `Division ${divisionId}`
-                }];
-
-                // Update form values
-                this.SyllabusForm.patchValue({
-                  Class: String(classId),
-                  Divisions: String(divisionId)
+                  divisionId: this.AdminselectedDiviosnID
                 });
               }
-
-              // Map FLAG 11 student list to component format
-              this.SyllabusList = response.data.map((item: any) => ({
-                ID: item.admissionNo,
-                School: this.AdminselectedSchoolID,
-                AcademicYear: this.AdminselectedAcademivYearID,
-                AdmissionNo: item.admissionNo,
-                Class: item.class,
-                Division: item.division,
-                ClassName: item.className,
-                DivisionName: item.classDivisionName,
-                Name: `${item.firstName || ''} ${item.middleName || ''} ${item.lastName || ''}`.trim(),
-                IsActive: true,
-                IsPresent: true,
-                Marks: '',
-                Remarks: '',
-                StartTime: '',
-                EndTime: ''
-              }));
-              this.applySelectedSessionTimes();
-            } else {
-              this.SyllabusList = [];
             }
-          } else {
-            // For non-teachers, use normal mapping
+            
+            // Use normal mapping for all users
             this.mapAcademicYears(response);
+            this.loader.hide();
+          },
+          error: () => {
+            this.SyllabusList = [];
+            this.loader.hide();
           }
-          this.loader.hide();
-        },
-        error: () => {
-          this.SyllabusList = [];
-          this.loader.hide();
-        }
-      });
-    },
-    error: () => {
-      this.SyllabusList = [];
-      this.SyllabusCount = 0;
-      this.loader.hide();
-    }
+        });
+      },
+      error: () => {
+        this.SyllabusList = [];
+        this.SyllabusCount = 0;
+        this.loader.hide();
+      }
   });
 }
 
@@ -795,14 +832,18 @@ formatDateYYYYMMDD(dateStr: string | null) {
 
   private isAttendanceFilterReady(): boolean {
     const hasSchool = !this.isAdmin || !!this.AdminselectedSchoolID;
-    // For teachers, class/division are auto-filtered by FLAG 10, so only check academic year
+    const hasDate = !!this.SyllabusForm.get('AttendanceDateTime')?.value;
+    const hasSession = !!this.AdminSelectedSessionID && this.AdminSelectedSessionID !== '0';
+
     if (this.isTeacher) {
-      return hasSchool && !!this.AdminselectedAcademivYearID;
+      return hasSchool && !!this.AdminselectedAcademivYearID && hasDate && hasSession;
     }
     return hasSchool &&
       !!this.AdminselectedAcademivYearID &&
       !!this.AdminselectedClassID &&
-      !!this.AdminselectedDiviosnID;
+      !!this.AdminselectedDiviosnID &&
+      hasDate &&
+      hasSession;
   }
 
   private resetAttendanceTableState() {
@@ -813,6 +854,21 @@ formatDateYYYYMMDD(dateStr: string | null) {
 
   private loadAttendanceTableIfReady() {
     if (!this.isAttendanceFilterReady()) {
+      // Show specific message about what's missing
+      const hasDate = !!this.SyllabusForm.get('AttendanceDateTime')?.value;
+      const hasSession = !!this.AdminSelectedSessionID && this.AdminSelectedSessionID !== '0';
+
+      if (!hasDate && !hasSession) {
+        this.AminityInsStatus = '⚠️ Please select Attendance Date and Session before proceeding.';
+      } else if (!hasDate) {
+        this.AminityInsStatus = '⚠️ Please select Attendance Date before proceeding.';
+      } else if (!hasSession) {
+        this.AminityInsStatus = '⚠️ Please select a Session before proceeding.';
+      } else {
+        this.AminityInsStatus = '⚠️ Please fill all required fields before proceeding.';
+      }
+      this.statusModalTitle = 'Validation';
+      this.isModalOpen = true;
       this.resetAttendanceTableState();
       return;
     }
@@ -1191,8 +1247,15 @@ onSessionChange(event: any) {
  onAdminAcademicYearchange(event: Event) {
   const academicyearId = (event.target as HTMLSelectElement).value;
   this.AdminselectedAcademivYearID = academicyearId === "0" ? "" : academicyearId;
-  this.resetFilters('academic');  
-  this.FetchClassList();
+  this.resetFilters('academic');
+  
+  // For teachers, fetch class/division from teacher allocation
+  if (this.isTeacher && this.AdminselectedAcademivYearID) {
+    this.syncTeacherClassDivisionFromAllocation();
+  } else {
+    this.FetchClassList();
+  }
+  
   this.FetchSessionsList();
  }
   

@@ -1,0 +1,558 @@
+<div>
+  <app-dashboard-top-nav></app-dashboard-top-nav>
+</div>
+<div class="MainContentDiv">
+  <div *ngIf="!IsAddNewClicked" class="w-100">
+    <div class="ComponentTop">
+      <div class="ComponentTopHeader">
+        <h5>Items Management</h5>
+        <p>Total {{ ItemsCount }} Items Added</p>
+      </div>
+      <div class="ComponentTopBottom">
+        <button *ngIf="canAdd()" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Item</button>
+      </div>
+    </div>
+    <div class="ComponentRecords">
+      <div>
+        <div class="ComponentRecordsTop">
+          <div class="filterOptions">
+            <div class="searchreview input-container">
+              <input type="text" id="searchQuery" class="form-control floating-input"
+                [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search..." />
+              <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
+            </div>
+            <div class="searchreview" *ngIf="isAdmin && ItemsList.length != 0">
+              <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
+                <option value="">-- Select School --</option>
+                <option value="0">All Schools</option>
+                <option *ngFor="let school of schoolList" [value]="school.ID">
+                  {{ school.Name }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="reviewstable">
+          <table id="itemsTable" *ngIf="ItemsList.length != 0" class="table table-bordered">
+            <thead>
+              <tr>
+                <th class="visually-hidden">Item ID</th>
+                <th>SI.No</th>
+                <th (click)="sort('ItemName')" class="sortable-column">
+                  <span class="column-text">Item Name</span>
+                  <span class="arrows">
+                    <mat-icon
+                      [style.color]="sortColumn === 'ItemName' && sortDirection === 'asc' ? 'red' : 'inherit'">
+                      keyboard_arrow_up
+                    </mat-icon>
+                    <mat-icon
+                      [style.color]="sortColumn === 'ItemName' && sortDirection === 'desc' ? 'red' : 'inherit'">
+                      keyboard_arrow_down
+                    </mat-icon>
+                  </span>
+                </th>
+                <th>Category</th>
+                <th>Unit</th>
+                <th>Purchasing Price</th>
+                <th>Selling Price</th>
+                <th>Opening Stock</th>
+                <th>Reorder Level</th>
+                <th *ngIf="isAdmin">School Name</th>
+                <th *ngIf="isAdmin">Academic Year</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of ItemsList; let i = index">
+                <td data-label="ID" class="visually-hidden">{{ item.ID }}</td>
+                <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td data-label="ItemName">{{ item.ItemName }}</td>
+                <td data-label="CategoryName">{{ item.CategoryName }}</td>
+                <td data-label="UnitName">{{ item.UnitName }}</td>
+                <td data-label="PurchasePrice">{{ item.PurchasePrice }}</td>
+                <td data-label="SellingPrice">{{ item.SellingPrice }}</td>
+                <td data-label="OpeningStock">{{ item.OpeningStock }}</td>
+                <td data-label="ReorderLevel">{{ item.ReorderLevel }}</td>
+                <td data-label="SchoolName" *ngIf="isAdmin">{{ item.SchoolName }}</td>
+                <td data-label="AcademicYearName" *ngIf="isAdmin">{{ item.AcademicYearName }}</td>
+                <td data-label="Status">
+                  <span
+                    class="status-pill"
+                    [style.background]="(item.IsActive === true || item.IsActive === 'true' || item.IsActive === 'Active' || item.IsActive === 1) ? 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)' : 'linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%)'"
+                    [style.color]="(item.IsActive === true || item.IsActive === 'true' || item.IsActive === 'Active' || item.IsActive === 1) ? '#166534' : '#9f1239'"
+                    [style.borderColor]="(item.IsActive === true || item.IsActive === 'true' || item.IsActive === 'Active' || item.IsActive === 1) ? '#86efac' : '#fda4af'"
+                    [ngClass]="(item.IsActive === true || item.IsActive === 'true' || item.IsActive === 'Active' || item.IsActive === 1) ? 'status-active' : 'status-inactive'">
+                    {{ (item.IsActive === true || item.IsActive === 'true' || item.IsActive === 'Active' || item.IsActive === 1) ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+                <td data-label="Actions">
+                  <div class="d-flex justify-content-center align-items-center h-100">
+                    <button *ngIf="canEdit()" class="btn checkbtn edit" data-tooltip="Edit" (click)="editreview(item.ID)">
+                      <mat-icon class="mat-edit-icon">edit</mat-icon>
+                    </button>
+                    <button *ngIf="canView()" class="btn checkbtn" data-tooltip="View" (click)="viewReview(item.ID)">
+                      <mat-icon class="mat-edit-icon">visibility</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div *ngIf="ItemsList.length === 0" class="NoDataFound">
+            <div class="NoDataFoundImg">
+              <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
+            </div>
+            <p>No data found.</p>
+          </div>
+          <div *ngIf="ItemsCount > pageSize" class="pagination-controls">
+            <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
+            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
+            <button *ngFor="let page of getVisiblePageNumbers()"
+                    class="page-btn"
+                    [ngClass]="{'active': page === currentPage}"
+                    (click)="goToPage(page)">
+              {{ page }}
+            </button>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add / Edit Form -->
+  <div *ngIf="IsAddNewClicked" class="w-100">
+    <div class="AddForm">
+      <div class="AddFormTop">
+        <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+        <p>{{ ViewItemClicked ? 'Edit Item' : 'Add Item' }}</p>
+      </div>
+      <div class="AddFormConatiner">
+        <form [formGroup]="ItemsForm">
+          <div class="FormInputRowsContainer">
+            <ng-container *ngIf="isAdmin; else schoolWiseLayout">
+
+              <!-- Admin Row 1: School, Academic Year, Category -->
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">School <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" formControlName="School" (change)="onAdminSchoolChange($event)">
+                      <option value="0">-- Select School --</option>
+                      <option *ngFor="let school of schoolList" value="{{school.ID}}">{{school.Name}}</option>
+                    </select>
+                    <div *ngIf="ItemsForm.get('School')?.hasError('min') && (ItemsForm.get('School')?.touched || ItemsForm.get('School')?.dirty)" class="text-danger">
+                      <small>Please Select School.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Academic Year <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" formControlName="AcademicYear" (change)="onAdminAcademicYearChange($event)">
+                      <option value="0">-- Select Academic Year --</option>
+                      <option *ngFor="let ay of academicYearList" value="{{ay.ID}}">{{ay.Name}}</option>
+                    </select>
+                    <div *ngIf="ItemsForm.get('AcademicYear')?.hasError('min') && (ItemsForm.get('AcademicYear')?.touched || ItemsForm.get('AcademicYear')?.dirty)" class="text-danger">
+                      <small>Please Select Academic Year.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Category <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" formControlName="CategoryID">
+                      <option value="0">-- Select Category --</option>
+                      <option *ngFor="let cat of categoriesList" value="{{cat.ID}}">{{cat.Name}}</option>
+                    </select>
+                    <div *ngIf="ItemsForm.get('CategoryID')?.hasError('min') && (ItemsForm.get('CategoryID')?.touched || ItemsForm.get('CategoryID')?.dirty)" class="text-danger">
+                      <small>Please Select Category.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Admin Row 2: Unit, Item Name, Purchase Price -->
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Unit <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" formControlName="UnitID">
+                      <option value="0">-- Select Unit --</option>
+                      <option *ngFor="let unit of unitsList" value="{{unit.ID}}">{{unit.Name}}</option>
+                    </select>
+                    <div *ngIf="ItemsForm.get('UnitID')?.hasError('min') && (ItemsForm.get('UnitID')?.touched || ItemsForm.get('UnitID')?.dirty)" class="text-danger">
+                      <small>Please Select Unit.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Item Name <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="ItemName" placeholder="Enter Item Name" />
+                    <div *ngIf="ItemsForm.get('ItemName')?.touched && ItemsForm.get('ItemName')?.invalid" class="text-danger">
+                      <small *ngIf="ItemsForm.get('ItemName')?.errors?.['required']">Please Enter Item Name.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Purchase Price <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="PurchasePrice" placeholder="Enter Purchase Price"
+                      type="number" min="0" (keydown)="allowDecimalNumbers($event)" />
+                    <div *ngIf="ItemsForm.get('PurchasePrice')?.touched && ItemsForm.get('PurchasePrice')?.invalid" class="text-danger">
+                      <small *ngIf="ItemsForm.get('PurchasePrice')?.errors?.['required']">Please Enter Purchase Price.</small>
+                      <small *ngIf="ItemsForm.get('PurchasePrice')?.errors?.['min']">Purchase Price cannot be negative.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Admin Row 3: Selling Price, Opening Stock, Reorder Level -->
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Selling Price <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="SellingPrice" placeholder="Enter Selling Price"
+                      type="number" min="0" (keydown)="allowDecimalNumbers($event)" />
+                    <div *ngIf="ItemsForm.get('SellingPrice')?.touched && ItemsForm.get('SellingPrice')?.invalid" class="text-danger">
+                      <small *ngIf="ItemsForm.get('SellingPrice')?.errors?.['required']">Please Enter Selling Price.</small>
+                      <small *ngIf="ItemsForm.get('SellingPrice')?.errors?.['min']">Selling Price cannot be negative.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Opening Stock</label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="OpeningStock" placeholder="Enter Opening Stock"
+                      type="number" min="0" (keydown)="allowDecimalNumbers($event)" />
+                    <div *ngIf="ItemsForm.get('OpeningStock')?.touched && ItemsForm.get('OpeningStock')?.invalid" class="text-danger">
+                      <small *ngIf="ItemsForm.get('OpeningStock')?.errors?.['min']">Opening Stock cannot be negative.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Reorder Level</label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="ReorderLevel" placeholder="Enter Reorder Level"
+                      type="number" min="0" (keydown)="allowDecimalNumbers($event)" />
+                    <div *ngIf="ItemsForm.get('ReorderLevel')?.touched && ItemsForm.get('ReorderLevel')?.invalid" class="text-danger">
+                      <small *ngIf="ItemsForm.get('ReorderLevel')?.errors?.['min']">Reorder Level cannot be negative.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Admin Row 4: CGST, SGST, Description -->
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Tax CGST (%)</label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="TaxCGST" placeholder="Enter CGST %"
+                      type="number" min="0" max="100" (keydown)="allowDecimalNumbers($event)" />
+                    <div *ngIf="ItemsForm.get('TaxCGST')?.touched && ItemsForm.get('TaxCGST')?.invalid" class="text-danger">
+                      <small *ngIf="ItemsForm.get('TaxCGST')?.errors?.['min']">CGST cannot be negative.</small>
+                      <small *ngIf="ItemsForm.get('TaxCGST')?.errors?.['max']">CGST cannot exceed 100%.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Tax SGST (%)</label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="TaxSGST" placeholder="Enter SGST %"
+                      type="number" min="0" max="100" (keydown)="allowDecimalNumbers($event)" />
+                    <div *ngIf="ItemsForm.get('TaxSGST')?.touched && ItemsForm.get('TaxSGST')?.invalid" class="text-danger">
+                      <small *ngIf="ItemsForm.get('TaxSGST')?.errors?.['min']">SGST cannot be negative.</small>
+                      <small *ngIf="ItemsForm.get('TaxSGST')?.errors?.['max']">SGST cannot exceed 100%.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Description</label>
+                  <div class="input-with-error">
+                    <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="2"></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Admin Row 5: Toggle -->
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <div class="toggle-container" (click)="$event.stopPropagation()">
+                    <label class="switch">
+                      <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
+                      <span class="slider">
+                        <span
+                          class="toggle-text"
+                          [ngStyle]="{
+                            left: IsActiveStatus ? '42%' : '60%',
+                            fontSize: '9px'
+                          }">
+                          {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+            </ng-container>
+
+            <!-- Non-Admin Layout -->
+            <ng-template #schoolWiseLayout>
+
+              <!-- Non-Admin Row 1: Academic Year, Category, Unit -->
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Academic Year <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" formControlName="AcademicYear" (change)="onAdminAcademicYearChange($event)">
+                      <option value="0">-- Select Academic Year --</option>
+                      <option *ngFor="let ay of academicYearList" value="{{ay.ID}}">{{ay.Name}}</option>
+                    </select>
+                    <div *ngIf="ItemsForm.get('AcademicYear')?.hasError('min') && (ItemsForm.get('AcademicYear')?.touched || ItemsForm.get('AcademicYear')?.dirty)" class="text-danger">
+                      <small>Please Select Academic Year.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Category <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" formControlName="CategoryID">
+                      <option value="0">-- Select Category --</option>
+                      <option *ngFor="let cat of categoriesList" value="{{cat.ID}}">{{cat.Name}}</option>
+                    </select>
+                    <div *ngIf="ItemsForm.get('CategoryID')?.hasError('min') && (ItemsForm.get('CategoryID')?.touched || ItemsForm.get('CategoryID')?.dirty)" class="text-danger">
+                      <small>Please Select Category.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Unit <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" formControlName="UnitID">
+                      <option value="0">-- Select Unit --</option>
+                      <option *ngFor="let unit of unitsList" value="{{unit.ID}}">{{unit.Name}}</option>
+                    </select>
+                    <div *ngIf="ItemsForm.get('UnitID')?.hasError('min') && (ItemsForm.get('UnitID')?.touched || ItemsForm.get('UnitID')?.dirty)" class="text-danger">
+                      <small>Please Select Unit.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Non-Admin Row 2: Item Name, Purchase Price, Selling Price -->
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Item Name <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="ItemName" placeholder="Enter Item Name" />
+                    <div *ngIf="ItemsForm.get('ItemName')?.touched && ItemsForm.get('ItemName')?.invalid" class="text-danger">
+                      <small *ngIf="ItemsForm.get('ItemName')?.errors?.['required']">Please Enter Item Name.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Purchase Price <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="PurchasePrice" placeholder="Enter Purchase Price"
+                      type="number" min="0" (keydown)="allowDecimalNumbers($event)" />
+                    <div *ngIf="ItemsForm.get('PurchasePrice')?.touched && ItemsForm.get('PurchasePrice')?.invalid" class="text-danger">
+                      <small *ngIf="ItemsForm.get('PurchasePrice')?.errors?.['required']">Please Enter Purchase Price.</small>
+                      <small *ngIf="ItemsForm.get('PurchasePrice')?.errors?.['min']">Purchase Price cannot be negative.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Selling Price <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="SellingPrice" placeholder="Enter Selling Price"
+                      type="number" min="0" (keydown)="allowDecimalNumbers($event)" />
+                    <div *ngIf="ItemsForm.get('SellingPrice')?.touched && ItemsForm.get('SellingPrice')?.invalid" class="text-danger">
+                      <small *ngIf="ItemsForm.get('SellingPrice')?.errors?.['required']">Please Enter Selling Price.</small>
+                      <small *ngIf="ItemsForm.get('SellingPrice')?.errors?.['min']">Selling Price cannot be negative.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Non-Admin Row 3: Opening Stock, Reorder Level, CGST -->
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Opening Stock</label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="OpeningStock" placeholder="Enter Opening Stock"
+                      type="number" min="0" (keydown)="allowDecimalNumbers($event)" />
+                    <div *ngIf="ItemsForm.get('OpeningStock')?.touched && ItemsForm.get('OpeningStock')?.invalid" class="text-danger">
+                      <small *ngIf="ItemsForm.get('OpeningStock')?.errors?.['min']">Opening Stock cannot be negative.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Reorder Level</label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="ReorderLevel" placeholder="Enter Reorder Level"
+                      type="number" min="0" (keydown)="allowDecimalNumbers($event)" />
+                    <div *ngIf="ItemsForm.get('ReorderLevel')?.touched && ItemsForm.get('ReorderLevel')?.invalid" class="text-danger">
+                      <small *ngIf="ItemsForm.get('ReorderLevel')?.errors?.['min']">Reorder Level cannot be negative.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Tax CGST (%)</label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="TaxCGST" placeholder="Enter CGST %"
+                      type="number" min="0" max="100" (keydown)="allowDecimalNumbers($event)" />
+                    <div *ngIf="ItemsForm.get('TaxCGST')?.touched && ItemsForm.get('TaxCGST')?.invalid" class="text-danger">
+                      <small *ngIf="ItemsForm.get('TaxCGST')?.errors?.['min']">CGST cannot be negative.</small>
+                      <small *ngIf="ItemsForm.get('TaxCGST')?.errors?.['max']">CGST cannot exceed 100%.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Non-Admin Row 4: SGST, Description, Toggle -->
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Tax SGST (%)</label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="TaxSGST" placeholder="Enter SGST %"
+                      type="number" min="0" max="100" (keydown)="allowDecimalNumbers($event)" />
+                    <div *ngIf="ItemsForm.get('TaxSGST')?.touched && ItemsForm.get('TaxSGST')?.invalid" class="text-danger">
+                      <small *ngIf="ItemsForm.get('TaxSGST')?.errors?.['min']">SGST cannot be negative.</small>
+                      <small *ngIf="ItemsForm.get('TaxSGST')?.errors?.['max']">SGST cannot exceed 100%.</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">Description</label>
+                  <div class="input-with-error">
+                    <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="2"></textarea>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <div class="toggle-container" (click)="$event.stopPropagation()">
+                    <label class="switch">
+                      <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
+                      <span class="slider">
+                        <span
+                          class="toggle-text"
+                          [ngStyle]="{
+                            left: IsActiveStatus ? '42%' : '60%',
+                            fontSize: '9px'
+                          }">
+                          {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+            </ng-template>
+          </div>
+
+          <div class="ActionButtons">
+            <button type="button" *ngIf="ViewItemClicked && canEdit()" (click)="UpdateItem()">Update</button>
+            <button type="button" *ngIf="!ViewItemClicked && canAdd()" (click)="SubmitItem()">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Status Modal -->
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isModalOpen}" [style.display]="isModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Application Status</h5>
+        <button type="button" class="close" aria-label="Close" (click)="closeModal('status')">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>{{ ItemInsStatus }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="handleOk()">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- View Modal -->
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Item Details</h5>
+        <button type="button" class="close" (click)="closeModal('view')">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-2">
+          <div class="col-4">Item Name</div>
+          <div class="col-8">{{ viewItem?.ItemName }}</div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-4">Category</div>
+          <div class="col-8">{{ viewItem?.CategoryName }}</div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-4">Unit</div>
+          <div class="col-8">{{ viewItem?.UnitName }}</div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-4">Purchase Price</div>
+          <div class="col-8">{{ viewItem?.PurchasePrice }}</div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-4">Selling Price</div>
+          <div class="col-8">{{ viewItem?.SellingPrice }}</div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-4">Opening Stock</div>
+          <div class="col-8">{{ viewItem?.OpeningStock }}</div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-4">Reorder Level</div>
+          <div class="col-8">{{ viewItem?.ReorderLevel }}</div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-4">Tax CGST (%)</div>
+          <div class="col-8">{{ viewItem?.TaxCGST }}</div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-4">Tax SGST (%)</div>
+          <div class="col-8">{{ viewItem?.TaxSGST }}</div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-4">Description</div>
+          <div class="col-8">{{ viewItem?.Description }}</div>
+        </div>
+        <div class="row mb-2" *ngIf="viewItem?.SchoolName">
+          <div class="col-4">School Name</div>
+          <div class="col-8 viewfontsize">{{ viewItem?.SchoolName }}</div>
+        </div>
+        <div class="row mb-2" *ngIf="viewItem?.AcademicYearName">
+          <div class="col-4">Academic Year</div>
+          <div class="col-8 viewfontsize">{{ viewItem?.AcademicYearName }}</div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-4">Status</div>
+          <div class="col-8">
+            <span class="badge"
+                  [ngClass]="viewItem?.IsActive ? 'badge-success' : 'badge-danger'">
+              {{ viewItem?.IsActive ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

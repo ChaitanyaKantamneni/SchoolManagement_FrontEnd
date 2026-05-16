@@ -302,12 +302,12 @@
                     </div>
                   </div>
                 </div>
-                <div class="InputFieldsContainer">
+                <!-- <div class="InputFieldsContainer">
                   <label class="inputLabel" for="email">Attachment URL</label>
                   <div class="input-with-error">
-                    <input class="inputField" formControlName="AttachmentURL" placeholder="Enter Attachment URL (optional)" />
+                    <input class="inputField" formControlName="AttachmentURL" placeholder="Enter Attachment URL (optional)" readonly />
                   </div>
-                </div>
+                </div> -->
               </div>
               <div class="InputRow">
                 <div class="InputFieldsContainer">
@@ -324,7 +324,81 @@
                 <div class="InputFieldsContainer">
                   <label class="inputLabel">Upload File</label>
                   <div class="input-with-error">
-                    <input type="file" class="inputField" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.txt" />
+                    <input #homeworkFileInput type="file" class="inputField" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.txt" (change)="onFileSelected($event)" [disabled]="isUploading || HomeworkForm.get('AttachmentURL')?.value" />
+
+                    <!-- File Preview Section -->
+                    <div *ngIf="isPreviewVisible && !HomeworkForm.get('AttachmentURL')?.value" class="file-preview-container mt-2 p-2 border rounded" style="background-color: #f8f9fa;">
+                      <!-- Image Preview -->
+                      <div *ngIf="filePreviewType === 'image' && filePreviewUrl" class="text-center">
+                        <img [src]="filePreviewUrl" alt="Preview" style="max-width: 200px; max-height: 150px; object-fit: contain; border-radius: 4px;" />
+                      </div>
+
+                      <!-- PDF Preview -->
+                      <div *ngIf="filePreviewType === 'document' && isPdfFile()" class="text-center p-3">
+                        <mat-icon style="font-size: 48px; color: #dc3545;">picture_as_pdf</mat-icon>
+                        <p class="mb-1 mt-2" style="font-size: 14px; color: #495057;">{{ uploadedFileName }}</p>
+                        <small class="text-muted">{{ selectedFile?.size | number }} bytes</small>
+                      </div>
+
+                      <!-- Document Preview (DOC/TXT) -->
+                      <div *ngIf="filePreviewType === 'document' && !isPdfFile()" class="text-center p-3">
+                        <mat-icon style="font-size: 48px; color: #6c757d;">description</mat-icon>
+                        <p class="mb-1 mt-2" style="font-size: 14px; color: #495057;">{{ uploadedFileName }}</p>
+                        <small class="text-muted">{{ selectedFile?.size | number }} bytes</small>
+                      </div>
+
+                      <!-- Preview Actions -->
+                      <div class="d-flex justify-content-center gap-2 mt-2">
+                        <button type="button" class="btn btn-sm btn-success" (click)="confirmUpload()" [disabled]="isUploading">
+                          <mat-icon style="font-size:14px;vertical-align:middle;">check</mat-icon> Confirm Upload
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="cancelPreview()" [disabled]="isUploading">
+                          <mat-icon style="font-size:14px;vertical-align:middle;">close</mat-icon> Cancel
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Upload Progress -->
+                    <div *ngIf="isUploading" class="mt-2">
+                      <div class="progress" style="height: 20px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" [style.width.%]="uploadProgress">
+                          {{ uploadProgress }}%
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Uploaded File Display with Preview -->
+                    <div *ngIf="HomeworkForm.get('AttachmentURL')?.value" class="mt-2 p-2 border rounded bg-light">
+                      <!-- Image Preview -->
+                      <div *ngIf="isImageFile()" class="text-center mb-2">
+                        <img [src]="getFileViewUrl()" alt="Homework attachment" style="max-width: 200px; max-height: 150px; object-fit: contain; border-radius: 4px; border: 1px solid #ddd;" />
+                      </div>
+
+                      <!-- PDF Icon -->
+                      <div *ngIf="isPdfFile()" class="text-center mb-2 p-2">
+                        <mat-icon style="font-size: 48px; color: #dc3545;">picture_as_pdf</mat-icon>
+                        <p class="mb-1 mt-2" style="font-size: 14px; color: #495057;">{{ uploadedFileName || 'PDF uploaded' }}</p>
+                      </div>
+
+                      <!-- DOC/TXT Icon -->
+                      <div *ngIf="!isImageFile() && !isPdfFile()" class="text-center mb-2 p-2">
+                        <mat-icon style="font-size: 48px; color: #6c757d;">{{ getFileIcon() }}</mat-icon>
+                        <p class="mb-1 mt-2" style="font-size: 14px; color: #495057;">{{ uploadedFileName || 'File uploaded' }}</p>
+                      </div>
+
+                      <!-- Action Buttons -->
+                      <div class="d-flex justify-content-center gap-2">
+                        <a [href]="getFileViewUrl()" target="_blank" class="btn btn-sm btn-outline-primary">
+                          <mat-icon style="font-size:14px;vertical-align:middle;">visibility</mat-icon> View
+                        </a>
+                        <button type="button" (click)="downloadAttachment()" class="btn btn-sm btn-outline-success">
+                          <mat-icon style="font-size:14px;vertical-align:middle;">download</mat-icon> Download
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeAttachment()">
+                          <mat-icon style="font-size:14px;">delete</mat-icon> Remove
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div class="InputFieldsContainer">
@@ -445,12 +519,12 @@
                     </div>
                   </div>
                 </div>
-                <div class="InputFieldsContainer">
+                <!-- <div class="InputFieldsContainer">
                   <label class="inputLabel" for="email">Attachment URL</label>
                   <div class="input-with-error">
-                    <input class="inputField" formControlName="AttachmentURL" placeholder="Enter Attachment URL (optional)" />
+                    <input class="inputField" formControlName="AttachmentURL" placeholder="Enter Attachment URL (optional)" readonly />
                   </div>
-                </div>
+                </div> -->
                 <div class="InputFieldsContainer">
                   <label class="inputLabel" for="email">Description</label>
                   <div class="input-with-error">
@@ -468,7 +542,81 @@
                 <div class="InputFieldsContainer">
                   <label class="inputLabel">Upload File</label>
                   <div class="input-with-error">
-                    <input type="file" class="inputField" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.txt" />
+                    <input #homeworkFileInput type="file" class="inputField" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.txt" (change)="onFileSelected($event)" [disabled]="isUploading || HomeworkForm.get('AttachmentURL')?.value" />
+
+                    <!-- File Preview Section -->
+                    <div *ngIf="isPreviewVisible && !HomeworkForm.get('AttachmentURL')?.value" class="file-preview-container mt-2 p-2 border rounded" style="background-color: #f8f9fa;">
+                      <!-- Image Preview -->
+                      <div *ngIf="filePreviewType === 'image' && filePreviewUrl" class="text-center">
+                        <img [src]="filePreviewUrl" alt="Preview" style="max-width: 200px; max-height: 150px; object-fit: contain; border-radius: 4px;" />
+                      </div>
+
+                      <!-- PDF Preview -->
+                      <div *ngIf="filePreviewType === 'document' && isPdfFile()" class="text-center p-3">
+                        <mat-icon style="font-size: 48px; color: #dc3545;">picture_as_pdf</mat-icon>
+                        <p class="mb-1 mt-2" style="font-size: 14px; color: #495057;">{{ uploadedFileName }}</p>
+                        <small class="text-muted">{{ selectedFile?.size | number }} bytes</small>
+                      </div>
+
+                      <!-- Document Preview (DOC/TXT) -->
+                      <div *ngIf="filePreviewType === 'document' && !isPdfFile()" class="text-center p-3">
+                        <mat-icon style="font-size: 48px; color: #6c757d;">description</mat-icon>
+                        <p class="mb-1 mt-2" style="font-size: 14px; color: #495057;">{{ uploadedFileName }}</p>
+                        <small class="text-muted">{{ selectedFile?.size | number }} bytes</small>
+                      </div>
+
+                      <!-- Preview Actions -->
+                      <div class="d-flex justify-content-center gap-2 mt-2">
+                        <button type="button" class="btn btn-sm btn-success" (click)="confirmUpload()" [disabled]="isUploading">
+                          <mat-icon style="font-size:14px;vertical-align:middle;">check</mat-icon> Confirm Upload
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="cancelPreview()" [disabled]="isUploading">
+                          <mat-icon style="font-size:14px;vertical-align:middle;">close</mat-icon> Cancel
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Upload Progress -->
+                    <div *ngIf="isUploading" class="mt-2">
+                      <div class="progress" style="height: 20px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" [style.width.%]="uploadProgress">
+                          {{ uploadProgress }}%
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Uploaded File Display with Preview -->
+                    <div *ngIf="HomeworkForm.get('AttachmentURL')?.value" class="mt-2 p-2 border rounded bg-light">
+                      <!-- Image Preview -->
+                      <div *ngIf="isImageFile()" class="text-center mb-2">
+                        <img [src]="getFileViewUrl()" alt="Homework attachment" style="max-width: 200px; max-height: 150px; object-fit: contain; border-radius: 4px; border: 1px solid #ddd;" />
+                      </div>
+
+                      <!-- PDF Icon -->
+                      <div *ngIf="isPdfFile()" class="text-center mb-2 p-2">
+                        <mat-icon style="font-size: 48px; color: #dc3545;">picture_as_pdf</mat-icon>
+                        <p class="mb-1 mt-2" style="font-size: 14px; color: #495057;">{{ uploadedFileName || 'PDF uploaded' }}</p>
+                      </div>
+
+                      <!-- DOC/TXT Icon -->
+                      <div *ngIf="!isImageFile() && !isPdfFile()" class="text-center mb-2 p-2">
+                        <mat-icon style="font-size: 48px; color: #6c757d;">{{ getFileIcon() }}</mat-icon>
+                        <p class="mb-1 mt-2" style="font-size: 14px; color: #495057;">{{ uploadedFileName || 'File uploaded' }}</p>
+                      </div>
+
+                      <!-- Action Buttons -->
+                      <div class="d-flex justify-content-center gap-2">
+                        <a [href]="getFileViewUrl()" target="_blank" class="btn btn-sm btn-outline-primary">
+                          <mat-icon style="font-size:14px;vertical-align:middle;">visibility</mat-icon> View
+                        </a>
+                        <button type="button" (click)="downloadAttachment()" class="btn btn-sm btn-outline-success">
+                          <mat-icon style="font-size:14px;vertical-align:middle;">download</mat-icon> Download
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeAttachment()">
+                          <mat-icon style="font-size:14px;">delete</mat-icon> Remove
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div class="InputFieldsContainer">
@@ -553,9 +701,12 @@
         <div class="row mb-3" *ngIf="selectedSubmissionView.attachmentURL">
           <div class="col-12">
             <label class="inputLabel">Attachment</label><br>
-            <a [href]="selectedSubmissionView.attachmentURL" target="_blank" class="btn btn-sm btn-outline-primary">
-              <mat-icon style="font-size:16px;vertical-align:middle;">download</mat-icon> Download
+            <a [href]="fileService.getFullFileUrl(selectedSubmissionView.attachmentURL)" target="_blank" class="btn btn-sm btn-outline-primary me-2">
+              <mat-icon style="font-size:16px;vertical-align:middle;">visibility</mat-icon> View
             </a>
+            <button type="button" (click)="downloadSubmissionAttachment()" class="btn btn-sm btn-outline-success">
+              <mat-icon style="font-size:16px;vertical-align:middle;">download</mat-icon> Download
+            </button>
           </div>
         </div>
         <!-- Remarks if evaluated -->
@@ -666,7 +817,25 @@
         <div class="row mb-2" *ngIf="viewSyllabus?.AttachmentURL">
           <div class="col-4">Attachment</div>
           <div class="col-8">
-            <a href="{{ viewSyllabus?.AttachmentURL }}" target="_blank">{{ viewSyllabus?.AttachmentURL }}</a>
+            <!-- Image Preview in Modal -->
+            <div *ngIf="fileService.isImageFile(viewSyllabus?.AttachmentURL)" class="mb-2">
+              <img [src]="fileService.getFullFileUrl(viewSyllabus?.AttachmentURL)" alt="Attachment" style="max-width: 150px; max-height: 100px; object-fit: contain; border-radius: 4px; border: 1px solid #ddd;" />
+            </div>
+
+            <!-- PDF/DOC Icon -->
+            <div *ngIf="!fileService.isImageFile(viewSyllabus?.AttachmentURL)" class="mb-2">
+              <mat-icon style="font-size: 36px; color: #6c757d;">{{ fileService.getFileIcon(viewSyllabus?.AttachmentURL) }}</mat-icon>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex gap-2">
+              <a [href]="fileService.getFullFileUrl(viewSyllabus?.AttachmentURL)" target="_blank" class="btn btn-sm btn-outline-primary">
+                <mat-icon style="font-size:14px;vertical-align:middle;">visibility</mat-icon> View
+              </a>
+              <button type="button" (click)="downloadViewSyllabusAttachment()" class="btn btn-sm btn-outline-success">
+                <mat-icon style="font-size:14px;vertical-align:middle;">download</mat-icon> Download
+              </button>
+            </div>
           </div>
         </div>
         <div class="row mb-2">

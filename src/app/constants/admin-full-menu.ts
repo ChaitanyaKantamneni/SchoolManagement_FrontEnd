@@ -114,5 +114,18 @@ export const FULL_ADMIN_MENU: Module[] = [
       { id: 'homework', pageName: 'HomeWork', moduleID: 'homework', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
       { id: 'assignhomework', pageName: 'Assign Homework', moduleID: 'homework', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
     ]
+  },
+   {
+    id: 'store',
+    moduleName: 'Store',
+    pages: [
+      { id: 'units', pageName: 'Units', moduleID: 'store', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
+      { id: 'categories', pageName: 'Categories', moduleID: 'store', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
+      { id : 'items', pageName: 'Items', moduleID: 'store', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
+      { id : 'suppliers', pageName: 'Suppliers', moduleID: 'store', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
+      { id : 'purchase', pageName: 'Purchase', moduleID: 'store', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
+      { id : 'sales', pageName: 'Sales', moduleID: 'store', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
+      { id : 'salesreport', pageName: 'Sales Report', moduleID: 'store', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
+    ]
   }
 ];

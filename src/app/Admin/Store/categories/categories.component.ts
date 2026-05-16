@@ -11,14 +11,14 @@ import { LoaderService } from '../../../Services/loader.service';
 import { HttpClient } from '@angular/common/http';
 
 @Component({
-  selector: 'app-exam-type',
+  selector: 'app-categories',
   standalone: true,
   imports: [NgIf, NgFor, NgClass, NgStyle, MatIconModule, DashboardTopNavComponent, ReactiveFormsModule, FormsModule],
-  templateUrl: './exam-type.component.html',
-  styleUrl: './exam-type.component.css'
+  templateUrl: './categories.component.html',
+  styleUrl: './categories.component.css'
 })
-export class ExamTypeComponent extends BasePermissionComponent {
-  pageName = 'Exam Type';
+export class CategoriesComponent extends BasePermissionComponent {
+  pageName = 'Categories';
 
   constructor(
     private http: HttpClient,
@@ -47,7 +47,6 @@ export class ExamTypeComponent extends BasePermissionComponent {
     ) {
       return;
     }
-
     if (!/^[0-9]$/.test(event.key)) {
       event.preventDefault();
     }
@@ -55,7 +54,7 @@ export class ExamTypeComponent extends BasePermissionComponent {
 
   IsAddNewClicked: boolean = false;
   IsActiveStatus: boolean = false;
-  ViewSyllabusClicked: boolean = false;
+  ViewCategoryClicked: boolean = false;
   currentPage = 1;
   pageSize = 5;
   visiblePageCount: number = 3;
@@ -63,13 +62,13 @@ export class ExamTypeComponent extends BasePermissionComponent {
   private searchTimer: any;
   private readonly SEARCH_MIN_LENGTH = 3;
   private readonly SEARCH_DEBOUNCE = 300;
-  SyllabusList: any[] = [];
+  CategoriesList: any[] = [];
   isViewMode = false;
-  viewSyllabus: any = null;
+  viewCategory: any = null;
   AminityInsStatus: any = '';
   isModalOpen = false;
   isViewModalOpen = false;
-  SyllabusCount: number = 0;
+  CategoriesCount: number = 0;
   ActiveUserId: string = localStorage.getItem('email')?.toString() || '';
   roleId = localStorage.getItem('RollID');
 
@@ -77,29 +76,23 @@ export class ExamTypeComponent extends BasePermissionComponent {
   lastCreatedDate: string | null = null;
   lastID: number | null = null;
 
-  sortColumn: string = 'ExamTypeName';
+  sortColumn: string = 'CategoryName';
   sortDirection: 'asc' | 'desc' = 'desc';
   editclicked: boolean = false;
   schoolList: any[] = [];
   selectedSchoolID: string = '';
   SchoolSelectionChange: boolean = false;
-  academicYearList:any[] = [];
-  AdminselectedSchoolID:string = '';
-  AdminselectedAcademivYearID:string = '';
+  academicYearList: any[] = [];
+  AdminselectedSchoolID: string = '';
+  AdminselectedAcademicYearID: string = '';
 
-  SyllabusForm :any= new FormGroup({
+  CategoriesForm: any = new FormGroup({
     ID: new FormControl(''),
-    SchoolID:new FormControl(''),
-    ExamTypeName: new FormControl(null, [Validators.required]),
-    Priority: new FormControl(null, Validators.required),
-    ExamType: new FormControl(0,[Validators.required,Validators.min(1)]),
-    MaxMark: new FormControl('', [Validators.required, Validators.pattern('^[0-9]{1,3}$')]),
-    PassMarks: new FormControl('', [Validators.required, Validators.pattern('^[0-9]{1,3}$')]),
-    ExamDuration: new FormControl('', [Validators.required, Validators.pattern('^[0-9]{1,3}$')]),
-    NoofQuestion: new FormControl('', [Validators.required, Validators.pattern('^[0-9]{1,3}$')]),
-    Instructions: new FormControl(''),
+    SchoolID: new FormControl(''),
+    CategoryName: new FormControl(null, [Validators.required]),
+    Description: new FormControl(''),
     School: new FormControl(),
-    AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
+    AcademicYear: new FormControl(0, [Validators.required, Validators.min(1)])
   });
 
   FetchSchoolsList() {
@@ -126,8 +119,9 @@ export class ExamTypeComponent extends BasePermissionComponent {
         }
       );
   };
-FetchAcademicYearsList() {
-    const requestData = { SchoolID:this.AdminselectedSchoolID||'',Flag: '2' };
+
+  FetchAcademicYearsList() {
+    const requestData = { SchoolID: this.AdminselectedSchoolID || '', Flag: '2' };
 
     this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)
       .subscribe(
@@ -140,7 +134,7 @@ FetchAcademicYearsList() {
                 Name: item.name,
                 IsActive: isActiveString
               };
-            });            
+            });
           } else {
             this.academicYearList = [];
           }
@@ -156,17 +150,18 @@ FetchAcademicYearsList() {
     return role === '1';
   }
 
-  FetchAcademicYearCount(isSearch: boolean) {
+  FetchCategoriesCount(isSearch: boolean) {
     let SchoolIdSelected = '';
 
     if (this.SchoolSelectionChange) {
       SchoolIdSelected = this.selectedSchoolID.trim();
     }
 
-    return this.apiurl.post<any>('Tbl_Examtype_CRUD_Operations', {
+    return this.apiurl.post<any>('Tbl_Categories_CRUD_Operations', {
       Flag: isSearch ? '8' : '6',
       SchoolID: SchoolIdSelected,
-      ExamTypeName: isSearch ? this.searchQuery.trim() : null
+      AcademicYear: this.AdminselectedAcademicYearID || null,
+      CategoryName: isSearch ? this.searchQuery.trim() : null
     });
   }
 
@@ -187,9 +182,9 @@ FetchAcademicYearsList() {
 
     this.loader.show();
 
-    this.FetchAcademicYearCount(isSearch).subscribe({
+    this.FetchCategoriesCount(isSearch).subscribe({
       next: (countResp: any) => {
-        this.SyllabusCount = countResp?.data?.[0]?.totalcount ?? 0;
+        this.CategoriesCount = countResp?.data?.[0]?.totalcount ?? 0;
 
         const payload: any = {
           Flag: flag,
@@ -199,16 +194,16 @@ FetchAcademicYearsList() {
           LastCreatedDate: cursor?.lastCreatedDate ?? null,
           LastID: cursor?.lastID ?? null,
           SchoolID: SchoolIdSelected,
-          AcademicYear: this.AdminselectedAcademivYearID || null,
+          AcademicYear: this.AdminselectedAcademicYearID || null,
           ...extra
         };
 
-        if (isSearch) payload.ExamTypeName = this.searchQuery.trim();
+        if (isSearch) payload.CategoryName = this.searchQuery.trim();
 
-        this.apiurl.post<any>('Tbl_Examtype_CRUD_Operations', payload).subscribe({
+        this.apiurl.post<any>('Tbl_Categories_CRUD_Operations', payload).subscribe({
           next: (response: any) => {
             const data = response?.data || [];
-            this.mapAcademicYears(response);
+            this.mapCategories(response);
 
             if (data.length > 0 && !this.pageCursors[this.currentPage - 1]) {
               const lastRow = data[data.length - 1];
@@ -221,135 +216,111 @@ FetchAcademicYearsList() {
             this.loader.hide();
           },
           error: () => {
-            this.SyllabusList = [];
+            this.CategoriesList = [];
             this.loader.hide();
           }
         });
       },
       error: () => {
-        this.SyllabusList = [];
-        this.SyllabusCount = 0;
+        this.CategoriesList = [];
+        this.CategoriesCount = 0;
         this.loader.hide();
       }
     });
   };
 
-  mapAcademicYears(response: any) {
-    this.SyllabusList = (response.data || []).map((item: any) => ({
+  mapCategories(response: any) {
+    this.CategoriesList = (response.data || []).map((item: any) => ({
       ID: item.id,
-      SchoolID:item.schoolID,
-      AcademicYear:item.academicYear,
+      SchoolID: item.schoolID,
+      AcademicYear: item.academicYear,
       SchoolName: item.schoolName,
-      ExamTypeName: item.examTypeName,
-      Priority: item.priority,
-      ExamType: item.examType,
-      MaxMark: item.maxMark,
-      PassMarks: item.passMarks,
-      ExamDuration: item.examDuration,
-      NoofQuestion: item.noofQuestion,
-      Instructions: item.instructions,
-      IsActive: item.isActive === "True" ? 'Active' : 'InActive',
-      AcademicYearName: item.academicYearName
+      AcademicYearName: item.academicYearName,
+      CategoryName: item.categoryName,
+      Description: item.description,
+      IsActive: item.isActive === "True" ? 'Active' : 'InActive'
     }));
   };
 
   AddNewClicked() {
-      if (this.isAdmin) {
-      this.SyllabusForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+    if (this.isAdmin) {
+      this.CategoriesForm.get('School')?.setValidators([Validators.required, Validators.min(1)]);
     } else {
-      this.SyllabusForm.get('School')?.clearValidators();
+      this.CategoriesForm.get('School')?.clearValidators();
     }
-    if(this.AdminselectedSchoolID==''){
+    if (this.AdminselectedSchoolID == '') {
       const schoolFromSession = sessionStorage.getItem('SchoolID') || localStorage.getItem('SchoolID') || '';
       this.AdminselectedSchoolID = schoolFromSession;
       this.FetchAcademicYearsList();
     }
-    this.SyllabusForm.reset();
-    this.SyllabusForm.get('School').patchValue('0');
-    this.SyllabusForm.get('AcademicYear').patchValue('0');
+    this.CategoriesForm.reset();
+    this.CategoriesForm.get('School').patchValue('0');
+    this.CategoriesForm.get('AcademicYear').patchValue('0');
     this.IsAddNewClicked = !this.IsAddNewClicked;
     this.IsActiveStatus = true;
-    this.ViewSyllabusClicked = false;
+    this.ViewCategoryClicked = false;
   };
 
-  SubmitSyllabus() {
-    if (this.SyllabusForm.invalid) {
-      this.SyllabusForm.markAllAsTouched();
-      return;
-    }
-
-    const maxMark = Number(this.SyllabusForm.get('MaxMark')?.value);
-    const passMarks = Number(this.SyllabusForm.get('PassMarks')?.value);
-    if (passMarks >= maxMark) {
-      this.AminityInsStatus = '⚠️ Max Marks must be greater than Pass Marks.';
-      this.isModalOpen = true;
+  SubmitCategory() {
+    if (this.CategoriesForm.invalid) {
+      this.CategoriesForm.markAllAsTouched();
       return;
     }
 
     const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
     const data = {
-      ExamTypeName: this.SyllabusForm.get('ExamTypeName')?.value,
-      Priority: this.SyllabusForm.get('Priority')?.value,
-      ExamType: this.SyllabusForm.get('ExamType')?.value,
-      MaxMark: this.SyllabusForm.get('MaxMark')?.value,
-      PassMarks: this.SyllabusForm.get('PassMarks')?.value,
-      ExamDuration: this.SyllabusForm.get('ExamDuration')?.value,
-      NoofQuestion: this.SyllabusForm.get('NoofQuestion')?.value,
-      Instructions: this.SyllabusForm.get('Instructions')?.value,
-      SchoolID: this.SyllabusForm.get('School')?.value,
-      AcademicYear: this.SyllabusForm.get('AcademicYear')?.value,
+      CategoryName: this.CategoriesForm.get('CategoryName')?.value,
+      Description: this.CategoriesForm.get('Description')?.value,
+      SchoolID: this.CategoriesForm.get('School')?.value,
+      AcademicYear: this.CategoriesForm.get('AcademicYear')?.value,
       IsActive: IsActiveStatusNumeric,
       Flag: '1'
     };
 
-    console.log('Submitting data:', data);
-
-    this.apiurl.post("Tbl_Examtype_CRUD_Operations", data).subscribe({
+    this.apiurl.post("Tbl_Categories_CRUD_Operations", data).subscribe({
       next: (response: any) => {
-        console.log('Response:', response);
         if (response.statusCode === 200) {
           this.IsAddNewClicked = !this.IsAddNewClicked;
           this.isModalOpen = true;
-          this.AminityInsStatus = "Exam Type Details Submitted!";
-          this.SyllabusForm.reset();
-          this.SyllabusForm.markAsPristine();
+          this.AminityInsStatus = "Category Details Submitted!";
+          this.CategoriesForm.reset();
+          this.CategoriesForm.markAsPristine();
           this.currentPage = 1;
           this.pageCursors = [];
           this.sortColumn = 'CreatedDate';
           this.sortDirection = 'desc';
           this.FetchInitialData();
         } else {
-          this.AminityInsStatus = response.message || "Error Submitting Exam Type.";
+          this.AminityInsStatus = response.message || "Error Submitting Category.";
           this.isModalOpen = true;
         }
       },
-      error: (err:any) => {
-            if (err.status === 400 && err.error?.message) {
-              this.AminityInsStatus = err.error.message;  // School Name Already Exists!
-            } else if (err.status === 500 && err.error?.Message) {
-              this.AminityInsStatus = err.error.Message;  // Database or internal error
-            } else {
-              this.AminityInsStatus = "Unexpected error occurred.";
-            }
-            this.isModalOpen = true;
-          },
-          complete: () => {
-          }
+      error: (err: any) => {
+        if (err.status === 400 && err.error?.message) {
+          this.AminityInsStatus = err.error.message;
+        } else if (err.status === 500 && err.error?.Message) {
+          this.AminityInsStatus = err.error.Message;
+        } else {
+          this.AminityInsStatus = "Unexpected error occurred.";
+        }
+        this.isModalOpen = true;
+      },
+      complete: () => { }
     });
   };
 
-  FetchSyllabusDetByID(SyllabusID: string, mode: 'view' | 'edit') {
+  FetchCategoryByID(CategoryID: string, mode: 'view' | 'edit') {
     const data = {
-      ID: SyllabusID,
+      ID: CategoryID,
       Flag: "4"
     };
 
-    this.apiurl.post<any>("Tbl_Examtype_CRUD_Operations", data).subscribe(
+    this.apiurl.post<any>("Tbl_Categories_CRUD_Operations", data).subscribe(
       (response: any) => {
         const item = response?.data?.[0];
         if (!item) {
-          this.SyllabusForm.reset();
-          this.viewSyllabus = null;
+          this.CategoriesForm.reset();
+          this.viewCategory = null;
           return;
         }
 
@@ -357,20 +328,14 @@ FetchAcademicYearsList() {
 
         if (mode === 'view') {
           this.isViewMode = true;
-          this.viewSyllabus = {
+          this.viewCategory = {
             ID: item.id,
-            SchoolID:item.schoolID,
-            AcademicYear:item.academicYear,
+            SchoolID: item.schoolID,
+            AcademicYear: item.academicYear,
             SchoolName: item.schoolName,
-            ExamTypeName: item.examTypeName,
-            Priority: item.priority,
-            ExamType: item.examType,
-            MaxMark: item.maxMark,
-            PassMarks: item.passMarks,
-            ExamDuration: item.examDuration,
-            NoofQuestion: item.noofQuestion,
-            Instructions: item.instructions,
             AcademicYearName: item.academicYearName,
+            CategoryName: item.categoryName,
+            Description: item.description,
             IsActive: isActive
           };
           this.isViewModalOpen = true;
@@ -378,21 +343,15 @@ FetchAcademicYearsList() {
 
         if (mode === 'edit') {
           this.isViewMode = false;
-          this.SyllabusForm.patchValue({
+          this.CategoriesForm.patchValue({
             ID: item.id,
-            School:item.schoolID,
-            AcademicYear:item.academicYear,
-            ExamTypeName: item.examTypeName,
-            Priority: item.priority,
-            ExamType: item.examType,
-            MaxMark: item.maxMark,
-            PassMarks: item.passMarks,
-            ExamDuration: item.examDuration,
-            NoofQuestion: item.noofQuestion,
-            Instructions: item.instructions
+            School: item.schoolID,
+            AcademicYear: item.academicYear,
+            CategoryName: item.categoryName,
+            Description: item.description
           });
-          this.AdminselectedSchoolID=item.schoolID;
-          this.AdminselectedAcademivYearID=item.academicYear;
+          this.AdminselectedSchoolID = item.schoolID;
+          this.AdminselectedAcademicYearID = item.academicYear;
           this.FetchAcademicYearsList();
           this.IsActiveStatus = isActive;
           this.IsAddNewClicked = true;
@@ -404,62 +363,46 @@ FetchAcademicYearsList() {
     );
   };
 
-  UpdateSyllabus() {
-    if (this.SyllabusForm.invalid) {
-      this.SyllabusForm.markAllAsTouched();
+  UpdateCategory() {
+    if (this.CategoriesForm.invalid) {
+      this.CategoriesForm.markAllAsTouched();
       return;
     }
 
-    const maxMark = Number(this.SyllabusForm.get('MaxMark')?.value);
-    const passMarks = Number(this.SyllabusForm.get('PassMarks')?.value);
-    if (passMarks >= maxMark) {
-      this.AminityInsStatus = '⚠️ Max Marks must be greater than Pass Marks.';
-      this.isModalOpen = true;
-      return;
-    }
-else{
     const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
     const data = {
-      ID: this.SyllabusForm.get('ID')?.value || '',
-      SchoolID: this.SyllabusForm.get('School')?.value,
-      AcademicYear: this.SyllabusForm.get('AcademicYear')?.value || '',
-      ExamTypeName: this.SyllabusForm.get('ExamTypeName')?.value || '',
-      Priority: this.SyllabusForm.get('Priority')?.value || '',
-      ExamType: this.SyllabusForm.get('ExamType')?.value || '',
-      MaxMark: this.SyllabusForm.get('MaxMark')?.value || '',
-      PassMarks: this.SyllabusForm.get('PassMarks')?.value || '',
-      ExamDuration: this.SyllabusForm.get('ExamDuration')?.value || '',
-      NoofQuestion: this.SyllabusForm.get('NoofQuestion')?.value || '',
-      Instructions: this.SyllabusForm.get('Instructions')?.value || '',
+      ID: this.CategoriesForm.get('ID')?.value || '',
+      SchoolID: this.CategoriesForm.get('School')?.value,
+      AcademicYear: this.CategoriesForm.get('AcademicYear')?.value || '',
+      CategoryName: this.CategoriesForm.get('CategoryName')?.value || '',
+      Description: this.CategoriesForm.get('Description')?.value || '',
       IsActive: IsActiveStatusNumeric,
       Flag: '5'
     };
 
-    this.apiurl.post("Tbl_Examtype_CRUD_Operations", data).subscribe({
+    this.apiurl.post("Tbl_Categories_CRUD_Operations", data).subscribe({
       next: (response: any) => {
         if (response.statusCode === 200) {
           this.IsAddNewClicked = !this.IsAddNewClicked;
           this.isModalOpen = true;
-          this.AminityInsStatus = "Exam Type Details Updated!";
-          this.SyllabusForm.reset();
-          this.SyllabusForm.markAsPristine();
+          this.AminityInsStatus = "Category Details Updated!";
+          this.CategoriesForm.reset();
+          this.CategoriesForm.markAsPristine();
           this.FetchInitialData();
         }
       },
-      error: (err:any) => {
-            if (err.status === 400 && err.error?.message) {
-              this.AminityInsStatus = err.error.message;
-            } else if (err.status === 500 && err.error?.Message) {
-              this.AminityInsStatus = err.error.Message;
-            } else {
-              this.AminityInsStatus = "Unexpected error occurred.";
-            }
-            this.isModalOpen = true;
-          },
-          complete: () => {
-          }
+      error: (err: any) => {
+        if (err.status === 400 && err.error?.message) {
+          this.AminityInsStatus = err.error.message;
+        } else if (err.status === 500 && err.error?.Message) {
+          this.AminityInsStatus = err.error.Message;
+        } else {
+          this.AminityInsStatus = "Unexpected error occurred.";
+        }
+        this.isModalOpen = true;
+      },
+      complete: () => { }
     });
-  }
   };
 
   previousPage() {
@@ -504,7 +447,7 @@ else{
   };
 
   totalPages() {
-    return Math.ceil(this.SyllabusCount / this.pageSize);
+    return Math.ceil(this.CategoriesCount / this.pageSize);
   };
 
   getVisiblePageNumbers() {
@@ -548,9 +491,8 @@ else{
   closeModal(type: 'view' | 'status') {
     if (type === 'view') {
       this.isViewModalOpen = false;
-      this.viewSyllabus = null;
+      this.viewCategory = null;
     }
-
     if (type === 'status') {
       this.isModalOpen = false;
     }
@@ -561,10 +503,10 @@ else{
     this.FetchInitialData();
   };
 
-  editreview(SyllabusID: string): void {
+  editreview(CategoryID: string): void {
     this.editclicked = true;
-    this.FetchSyllabusDetByID(SyllabusID, 'edit');
-    this.ViewSyllabusClicked = true;
+    this.FetchCategoryByID(CategoryID, 'edit');
+    this.ViewCategoryClicked = true;
   };
 
   toggleChange() {
@@ -595,22 +537,22 @@ else{
     this.FetchInitialData();
   };
 
-  exportSyllabus(type: 'pdf' | 'excel' | 'print') {
+  exportCategories(type: 'pdf' | 'excel' | 'print') {
     const isSearch = !!this.searchQuery?.trim();
     const flag = isSearch ? '7' : '2';
     const payload: any = {
       Flag: flag,
       SchoolID: this.selectedSchoolID || null,
-      ExamTypeName: isSearch ? this.searchQuery.trim() : null
+      CategoryName: isSearch ? this.searchQuery.trim() : null
     };
 
     this.loader.show();
 
-    const url = `${this.apiurl.api_url}/ExportExamType?type=${type}`;
+    const url = `${this.apiurl.api_url}/ExportCategories?type=${type}`;
 
     this.http.post(url, payload, { responseType: 'blob' }).subscribe({
       next: (blob: Blob) => {
-        const fileNameBase = `ExamType_${new Date().toISOString().replace(/[:.]/g, '')}`;
+        const fileNameBase = `Categories_${new Date().toISOString().replace(/[:.]/g, '')}`;
 
         if (type === 'pdf' || type === 'print') {
           const fileURL = URL.createObjectURL(blob);
@@ -627,8 +569,7 @@ else{
           }
 
           setTimeout(() => URL.revokeObjectURL(fileURL), 1000);
-        }
-        else if (type === 'excel') {
+        } else if (type === 'excel') {
           const a = document.createElement('a');
           a.href = URL.createObjectURL(blob);
           a.download = `${fileNameBase}.xlsx`;
@@ -645,20 +586,21 @@ else{
     });
   };
 
-  viewReview(SyllabusID: string): void {
-    this.FetchSyllabusDetByID(SyllabusID, 'view');
+  viewReview(CategoryID: string): void {
+    this.FetchCategoryByID(CategoryID, 'view');
     this.isViewModalOpen = true;
   };
+
   onAdminSchoolChange(event: Event) {
-    this.academicYearList=[];
-    this.SyllabusForm.get('AcademicYear').patchValue('0');
+    this.academicYearList = [];
+    this.CategoriesForm.get('AcademicYear').patchValue('0');
     const target = event.target as HTMLSelectElement;
     const schoolID = target.value;
-    if(schoolID=="0"){
-      this.AdminselectedSchoolID="";
-    }else{
+    if (schoolID == "0") {
+      this.AdminselectedSchoolID = "";
+    } else {
       this.AdminselectedSchoolID = schoolID;
-    }   
+    }
     this.FetchAcademicYearsList();
   };
 }

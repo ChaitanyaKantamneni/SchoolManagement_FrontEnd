@@ -105,6 +105,10 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
   AdminSelectedSessionID = '';
   AdminselectedStudentID = '';
 
+  // Teacher-specific properties (from teacher allocation)
+  teacherAssignedClassID: string = '';
+  teacherAssignedDivisionID: string = '';
+
   currentPage = 1;
   pageSize = 5;
   visiblePageCount: number = 3;
@@ -241,35 +245,6 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
     );
   }
 
-  private applyTeacherAssignedClassDivision(students: any[]) {
-    if (!this.isTeacher || students.length === 0) return;
-
-    const firstStudent = students[0];
-    const classId = firstStudent.class;
-    const divisionId = firstStudent.division;
-    const className = firstStudent.className;
-    const divisionName = firstStudent.classDivisionName;
-
-    if (!classId || !divisionId) return;
-
-    this.AdminselectedClassID = String(classId);
-    this.AdminselectedDiviosnID = String(divisionId);
-
-    this.classLists = [{
-      ID: String(classId),
-      Name: className || `Class ${classId}`
-    }];
-
-    this.divisionsList = [{
-      ID: String(divisionId),
-      Name: divisionName || `Division ${divisionId}`
-    }];
-
-    this.SyllabusForm.patchValue({
-      Class: String(classId),
-      Divisions: String(divisionId)
-    });
-  }
 
   private fetchParentChildren(): void {
     const parentEmail = (this.ss('email') || this.ss('Email') || '').toString().trim();
@@ -407,7 +382,76 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
         if (match) {
           this.resolvedStaffId = String(match.id || match.ID);
           console.log('[VIEW ATTENDANCE] Resolved Teacher StaffID:', this.resolvedStaffId);
+          // If academic year is already selected, sync class/division from allocation
+          if (this.AdminselectedAcademivYearID) {
+            this.syncTeacherClassDivisionFromAllocation();
+          }
         }
+      }
+    });
+  }
+
+  // Sync teacher class/division from class teacher allocation (mirrors attendance-sheet)
+  private syncTeacherClassDivisionFromAllocation(): void {
+    if (!this.currentUserId || !this.AdminselectedSchoolID) {
+      console.log('[VIEW ATTENDANCE] Cannot sync allocation - missing user/school ID');
+      return;
+    }
+
+    const requestData = {
+      SchoolID: this.AdminselectedSchoolID,
+      ClassTeacher: this.currentUserId,
+      Flag: '9'
+    };
+
+    console.log('[VIEW ATTENDANCE] Calling teacher allocation API:', requestData);
+
+    this.apiurl.post<any>('Tbl_AllotClassTeacher_CRUD_Operations', requestData).subscribe({
+      next: (response: any) => {
+        console.log('[VIEW ATTENDANCE] Teacher allocation API response:', response);
+        const allocation = response?.data?.[0];
+
+        if (allocation) {
+          const classId = allocation.class || allocation.Class || allocation.classID || allocation.ClassID;
+          const divisionId = allocation.division || allocation.Division || allocation.divisionID || allocation.DivisionID;
+          const className = allocation.className || allocation.ClassName || '';
+          const divisionName = allocation.divisionName || allocation.DivisionName || '';
+
+          if (classId) {
+            this.teacherAssignedClassID = String(classId);
+            this.AdminselectedClassID = String(classId);
+            this.classLists = [{
+              ID: String(classId),
+              Name: className || `Class ${classId}`
+            }];
+            console.log('[VIEW ATTENDANCE] Set teacher assigned class:', classId);
+          }
+
+          if (divisionId) {
+            this.teacherAssignedDivisionID = String(divisionId);
+            this.AdminselectedDiviosnID = String(divisionId);
+            this.divisionsList = [{
+              ID: String(divisionId),
+              Name: divisionName || `Division ${divisionId}`
+            }];
+            console.log('[VIEW ATTENDANCE] Set teacher assigned division:', divisionId);
+          }
+
+          this.SyllabusForm.patchValue({
+            Class: String(classId || '0'),
+            Divisions: String(divisionId || '0')
+          });
+
+          console.log('[VIEW ATTENDANCE] Teacher allocation synced:', {
+            classId: this.teacherAssignedClassID,
+            divisionId: this.teacherAssignedDivisionID,
+            className,
+            divisionName
+          });
+        }
+      },
+      error: (error: any) => {
+        console.error('[VIEW ATTENDANCE] Error syncing teacher allocation:', error);
       }
     });
   }
@@ -474,6 +518,7 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
     this.classLists = []; this.divisionsList = []; this.sessionList = [];
     this.SyllabusForm.patchValue({ Class: 0, Divisions: 0, Session: 0 });
     this.AdminselectedClassID = ''; this.AdminselectedDiviosnID = ''; this.AdminSelectedSessionID = '';
+    this.teacherAssignedClassID = ''; this.teacherAssignedDivisionID = '';
     this.AdminselectedStudentID = '';
     this.selectedChildId = '';
     this.resetAttendanceView();
@@ -481,6 +526,9 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
       this.FetchSessionsList();
       if (this.isParent) {
         this.fetchParentChildren();
+      } else if (this.isTeacher) {
+        // For teachers, fetch class/division from teacher allocation (same as attendance-sheet)
+        this.syncTeacherClassDivisionFromAllocation();
       } else {
         this.FetchClassList();
       }
@@ -649,88 +697,27 @@ updateStudentAttendance() {
 
     this.loader.show();
 
-    // 👉 For teachers, first fetch their assigned students using FLAG 11
-    if (this.isTeacher) {
-      const studentPayload: any = {
-        Flag: '11',
-        SchoolID: this.getCurrentSchoolId(),
-        AcademicYear: this.AdminselectedAcademivYearID || '',
-        CreatedBy: this.currentUserId,
-        Limit: '10000'
-      };
-
-      this.apiurl.post<any>('Tbl_StudentDetails_CRUD_Operations', studentPayload).subscribe({
-        next: (studentRes: any) => {
-          const students = studentRes?.data || [];
-          const admissionNos = students.map((s: any) => s.admissionNo);
-          this.applyTeacherAssignedClassDivision(students);
-
-          if (admissionNos.length > 0) {
-            // Fetch attendance for these students
-            this.fetchAttendanceForStudents(admissionNos, fromDate, toDate);
-          } else {
-            this.rawData = [];
-            this.studentSummaries = [];
-            this.SyllabusCount = 0;
-            this.isTableVisible = true;
-            this.loader.hide();
-          }
-        },
-        error: () => {
-          this.rawData = [];
-          this.studentSummaries = [];
-          this.SyllabusCount = 0;
-          this.isTableVisible = true;
-          this.loader.hide();
-        }
-      });
-    } else {
-      // For non-teachers, use normal attendance fetch
-      const body: any = {
-        Flag: '2',
-        SchoolID: this.getCurrentSchoolId(),
-        AcademicYear: this.AdminselectedAcademivYearID,
-        Class: this.AdminselectedClassID,
-        Division: this.AdminselectedDiviosnID,
-        Limit: '10000'
-      };
-
-      if (this.AdminSelectedSessionID) body.Session = this.AdminSelectedSessionID;
-
-      this.apiurl.post<any>('Tbl_StudentAttendance_CRUD_Operations', body).subscribe(
-        (response: any) => {
-          this.rawData = Array.isArray(response?.data) ? response.data : [];
-          this.processData(this.rawData);
-          this.loader.hide();
-        },
-        () => {
-          this.rawData = [];
-          this.studentSummaries = [];
-          this.SyllabusCount = 0;
-          this.isTableVisible = true;
-          this.loader.hide();
-        }
-      );
-    }
-  }
-
-  private fetchAttendanceForStudents(admissionNos: string[], fromDate: string, toDate: string) {
+    // For all roles (including teachers), fetch attendance directly using
+    // Tbl_StudentAttendance_CRUD_Operations Flag 2 with Class + Division.
+    // Teachers have AdminselectedClassID / AdminselectedDiviosnID already
+    // populated by syncTeacherClassDivisionFromAllocation() — same pattern
+    // as attendance-sheet which uses Flag '3' on Tbl_StudentDetails_CRUD_Operations.
     const body: any = {
       Flag: '2',
       SchoolID: this.getCurrentSchoolId(),
-      AcademicYear: this.AdminselectedAcademivYearID || '',
-      Class: this.AdminselectedClassID || '',
-      Division: this.AdminselectedDiviosnID || '',
+      AcademicYear: this.AdminselectedAcademivYearID,
+      Class: this.AdminselectedClassID,
+      Division: this.AdminselectedDiviosnID,
       Limit: '10000'
     };
 
     if (this.AdminSelectedSessionID) body.Session = this.AdminSelectedSessionID;
 
+    console.log('[VIEW ATTENDANCE] loadAttendance payload:', body);
+
     this.apiurl.post<any>('Tbl_StudentAttendance_CRUD_Operations', body).subscribe(
       (response: any) => {
-        const allAttendance = Array.isArray(response?.data) ? response.data : [];
-        // Filter attendance to only include teacher's students
-        this.rawData = allAttendance.filter((row: any) => admissionNos.includes(row.admissionID));
+        this.rawData = Array.isArray(response?.data) ? response.data : [];
         this.processData(this.rawData);
         this.loader.hide();
       },
@@ -743,6 +730,7 @@ updateStudentAttendance() {
       }
     );
   }
+
 
   private processData(rawData: any[]) {
     const formValue = this.SyllabusForm.getRawValue();

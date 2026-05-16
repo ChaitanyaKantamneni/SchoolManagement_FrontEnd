@@ -193,21 +193,113 @@
 
               <div class="InputFieldsContainer full-width">
                 <label class="inputLabel">UPLOAD DOCUMENT</label>
-                <div class="file-upload-container">
-                  <input type="file" class="file-input" id="documentUpload" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" (change)="onFileSelect($event)">
-                  <label for="documentUpload" class="file-upload-label">
-                    <mat-icon>cloud_upload</mat-icon>
-                    <span>{{ selectedFileName || 'Choose file or drag and drop' }}</span>
-                  </label>
-                  <div *ngIf="selectedFileName" class="file-info">
-                    <span class="file-name">{{ selectedFileName }}</span>
-                    <button type="button" class="remove-file" (click)="removeFile()">
-                      <mat-icon>close</mat-icon>
-                    </button>
+
+                <!-- Upload progress bar -->
+                <div *ngIf="isUploading" style="margin-bottom: 8px;">
+                  <div style="background:#e2e8f0;border-radius:4px;height:6px;">
+                    <div style="background:#6366f1;height:6px;border-radius:4px;transition:width .3s;" [style.width]="uploadProgress+'%'"></div>
+                  </div>
+                  <small style="color:#6366f1;">Uploading file, please wait...</small>
+                </div>
+
+                <!-- Existing / already-uploaded file -->
+                <div *ngIf="uploadedFileUrl && !selectedFile"
+                     style="display:flex; flex-direction: column; gap:8px; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:8px;">
+                  
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <mat-icon style="color:#6366f1;">{{ getFileIcon() }}</mat-icon>
+                    <span style="flex:1; font-size:13px; color:#334155; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                      {{ getFileName(uploadedFileUrl) }}
+                    </span>
+                    <a [href]="getFileViewUrl()" target="_blank" title="View">
+                      <mat-icon style="font-size:18px; color:#6366f1; cursor:pointer;">visibility</mat-icon>
+                    </a>
+                    <mat-icon style="font-size:18px; color:#6366f1; cursor:pointer;" title="Download" (click)="downloadAttachment()">download</mat-icon>
+                    <mat-icon style="font-size:18px; color:#ef4444; cursor:pointer;" title="Remove" (click)="removeFile()">delete</mat-icon>
+                  </div>
+
+                  <!-- File Preview Display (Already Uploaded) -->
+                  <div class="mt-2 text-center" style="background: white; border-radius: 4px; padding: 8px; border: 1px dashed #e2e8f0;">
+                    <!-- Image Preview -->
+                    <div *ngIf="isImageFile()">
+                      <img [src]="getFileViewUrl()" alt="Attachment Preview" style="max-width: 100%; max-height: 150px; object-fit: contain; border-radius: 4px;">
+                    </div>
+                    
+                    <!-- PDF Icon -->
+                    <div *ngIf="isPdfFile()">
+                      <mat-icon style="font-size: 48px; height: 48px; width: 48px; color: #ef4444;">picture_as_pdf</mat-icon>
+                      <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">PDF Document</p>
+                    </div>
+
+                    <!-- Other Document Icon -->
+                    <div *ngIf="!isImageFile() && !isPdfFile()">
+                      <mat-icon style="font-size: 48px; height: 48px; width: 48px; color: #64748b;">description</mat-icon>
+                      <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">Document</p>
+                    </div>
                   </div>
                 </div>
+
+                <!-- Local file selected (not yet uploaded – will upload on Submit) -->
+                <div *ngIf="selectedFile"
+                     style="display:flex; flex-direction: column; gap:8px; padding:12px; background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; margin-bottom:8px;">
+                  
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <mat-icon style="color:#0ea5e9;">
+                      {{ isPdfFile(selectedFile.name) ? 'picture_as_pdf' : isImageFile() ? 'image' : 'insert_drive_file' }}
+                    </mat-icon>
+                    <span style="flex:1; font-size:13px; color:#334155; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                      {{ selectedFileName }}
+                    </span>
+                    <small style="color:#64748b; white-space:nowrap; font-size:11px;">Will upload on Submit</small>
+                    <mat-icon style="font-size:18px; color:#ef4444; cursor:pointer;" title="Cancel" (click)="removeFile()">close</mat-icon>
+                  </div>
+
+                  <!-- File Preview Display -->
+                  <div *ngIf="isPreviewVisible" class="mt-2 text-center" style="background: white; border-radius: 4px; padding: 8px; border: 1px dashed #bae6fd;">
+                    <!-- Image Preview -->
+                    <div *ngIf="filePreviewType === 'image' && filePreviewUrl">
+                      <img [src]="filePreviewUrl" alt="Preview" style="max-width: 100%; max-height: 150px; object-fit: contain; border-radius: 4px;">
+                    </div>
+                    
+                    <!-- PDF Preview Icon -->
+                    <div *ngIf="filePreviewType === 'document' && isPdfFile(selectedFile.name)">
+                      <mat-icon style="font-size: 48px; height: 48px; width: 48px; color: #ef4444;">picture_as_pdf</mat-icon>
+                      <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">PDF Document</p>
+                    </div>
+
+                    <!-- Other Document Icon -->
+                    <div *ngIf="filePreviewType === 'document' && !isPdfFile(selectedFile.name)">
+                      <mat-icon style="font-size: 48px; height: 48px; width: 48px; color: #64748b;">description</mat-icon>
+                      <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">Word/Text Document</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- File chooser (only when nothing selected/uploaded) -->
+                <div *ngIf="!selectedFile && !uploadedFileUrl" class="file-upload-container">
+                  <input type="file" class="file-input" id="documentUpload"
+                         accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                         (change)="onFileSelect($event)">
+                  <label for="documentUpload" class="file-upload-label">
+                    <mat-icon>cloud_upload</mat-icon>
+                    <span>Choose file or drag and drop</span>
+                  </label>
+                </div>
+
+                <!-- Replace file link (when file already selected or uploaded) -->
+                <div *ngIf="selectedFile || uploadedFileUrl" style="margin-top:6px;">
+                  <input type="file" class="file-input" id="documentUploadReplace"
+                         accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                         (change)="onFileSelect($event)" style="display:none;">
+                  <label for="documentUploadReplace"
+                         style="cursor:pointer;font-size:12px;color:#6366f1;text-decoration:underline;">
+                    Replace file
+                  </label>
+                </div>
+
                 <small class="text-muted">Supported formats: PDF, DOC, DOCX, JPG, JPEG, PNG (Max: 5MB)</small>
               </div>
+
 
               <!-- Form Level Validation Errors -->
               <div class="InputFieldsContainer full-width" *ngIf="leaveForm.errors && (leaveForm.touched || leaveForm.dirty)">
@@ -289,7 +381,9 @@
                     </span>
                   </td>
                   <td>
-                    <button class="btn" style="color: #6366f1; background: #eef2ff; border: none; padding: 6px; border-radius: 6px;" (click)="viewLeave(l)"><mat-icon style="font-size: 18px;">visibility</mat-icon></button>
+                    <button class="btn" style="color: #6366f1; background: #eef2ff; border: none; padding: 6px; border-radius: 6px;" (click)="viewLeave(l)" title="View Details">
+                      <mat-icon style="font-size: 18px;">visibility</mat-icon>
+                    </button>
                   </td>
                 </tr>
               </tbody>
@@ -418,10 +512,60 @@
           </div>
         </div>
 
+        <div *ngIf="selectedLeave?.attachmentURL" style="margin-bottom: 24px;">
+          <div class="inputLabel">Attachment</div>
+          
+          <!-- Photo Preview (only if it is an image) -->
+          <div *ngIf="fileService.isImageFile(selectedLeave?.attachmentURL || '')" style="margin-bottom: 12px; text-align: center;">
+            <img [src]="fileService.getFullFileUrl(selectedLeave?.attachmentURL || '')" alt="Attachment" 
+                 style="max-width: 100%; max-height: 200px; border-radius: 12px; border: 1px solid #e2e8f0; object-fit: contain; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 12px; background: #f0f9ff; padding: 12px; border-radius: 12px; border: 1px solid #bae6fd;">
+            <mat-icon style="color: #0ea5e9;">{{ fileService.getFileIcon(selectedLeave?.attachmentURL || "") }}</mat-icon>
+            <div style="flex: 1; font-size: 13px; color: #334155; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              {{ getFileName(selectedLeave?.attachmentURL) }}
+            </div>
+            
+            <div style="display: flex; gap: 6px;">
+              <button class="btn" style="background: white; color: #0ea5e9; border: 1px solid #bae6fd; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;" (click)="downloadHistoryAttachment(selectedLeave!.attachmentURL!)">
+                Download
+              </button>
+              
+              <!-- Remove (Pending only) -->
+              <!-- <button *ngIf="!isAdmin && selectedLeave?.status === 'Pending'" 
+                      class="btn" style="background: white; color: #ef4444; border: 1px solid #fda4af; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;" 
+                      (click)="removeHistoryAttachment(selectedLeave!)">
+                Remove
+              </button> -->
+            </div>
+          </div>
+          
+          <!-- Replace Link (Pending only)
+          <div *ngIf="selectedLeave?.status === 'Pending'" style="margin-top: 8px;">
+            <label class="replace-link" style="color: #536ff7; font-size: 12px; cursor: pointer; text-decoration: underline; font-weight: 500;" (click)="historyFileInput.click()">
+               Replace File
+            </label>
+            <input #historyFileInput type="file" style="display:none" (change)="onHistoryFileChange($event, selectedLeave!)">
+          </div>
+        -->
+        </div>
+
+        <!-- If no attachment but Pending, allow adding one -->
+        <div *ngIf="selectedLeave?.status === 'Pending' && !selectedLeave?.attachmentURL" style="margin-bottom: 24px;">
+          <div class="inputLabel">Attachment</div>
+          <div style="border: 2px dashed #e2e8f0; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: all .2s;"
+               (click)="historyFileInput.click()" onmouseover="this.style.borderColor='#536ff7';this.style.background='#f8faff'" onmouseout="this.style.borderColor='#e2e8f0';this.style.background='transparent'">
+            <mat-icon style="color: #94a3b8; font-size: 32px; height: 32px; width: 32px;">cloud_upload</mat-icon>
+            <p style="margin: 8px 0 0; color: #64748b; font-size: 13px;">Add Attachment</p>
+          </div>
+          <input #historyFileInput type="file" style="display:none" (change)="onHistoryFileChange($event, selectedLeave!)">
+        </div>
+
         <div *ngIf="selectedLeave?.approvalRemarks" style="margin-bottom: 24px;">
-          <div class="inputLabel">Admin Feedback</div>
-          <div style="color: #ef4444; font-weight: 600; font-size: 13px;">{{ selectedLeave?.approvalRemarks }}</div>
-          <div *ngIf="isParent && selectedLeave?.approvedByName" style="color: #64748b; font-size: 12px; margin-top: 4px; font-style: italic;">
+          <div class="inputLabel">{{ selectedLeave?.status === 'Cancelled' ? 'Cancellation Reason' : 'Admin Feedback' }}</div>
+          <div [style.color]="selectedLeave?.status === 'Cancelled' ? '#6b7280' : '#ef4444'" style="font-weight: 600; font-size: 13px;">{{ selectedLeave?.approvalRemarks }}</div>
+          <div *ngIf="isParent && selectedLeave?.approvedByName && selectedLeave?.status !== 'Cancelled'" style="color: #64748b; font-size: 12px; margin-top: 4px; font-style: italic;">
             - {{ selectedLeave?.approvedByName }}
           </div>
         </div>
@@ -446,7 +590,7 @@
         </div>
 
         <!-- Applicant Cancel Action -->
-        <div *ngIf="!isAdmin && selectedLeave?.status === 'Pending'" style="border-top: 1px solid #f1f5f9; padding-top: 24px; margin-top: 8px;">
+        <div *ngIf="selectedLeave?.status === 'Pending'" style="border-top: 1px solid #f1f5f9; padding-top: 24px; margin-top: 8px;">
           <div *ngIf="showCancelRemarks">
             <div class="inputLabel">CANCEL REASON</div>
             <textarea class="inputField" [(ngModel)]="cancelRemarks" rows="2" style="margin-bottom: 20px;" placeholder="Please provide a reason for canceling this leave request..."></textarea>

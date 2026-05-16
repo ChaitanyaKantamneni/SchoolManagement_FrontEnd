@@ -1,0 +1,261 @@
+<app-dashboard-top-nav></app-dashboard-top-nav>
+
+<div class="MainContentDiv">
+  <div class="w-100">
+
+    <!-- ═══════════════════════════════════════════
+         TOP BAR
+    ════════════════════════════════════════════ -->
+    <div class="report-topbar">
+      <div class="report-topbar-left">
+        <div class="report-icon-wrap">
+          <mat-icon>assessment</mat-icon>
+        </div>
+        <div>
+          <h5 class="report-title">Sales Report</h5>
+          <span class="report-subtitle">
+            <span class="dot-active"></span>
+            FILTER & GENERATE REPORT
+          </span>
+        </div>
+      </div>
+      <div class="report-topbar-right" *ngIf="hasSearched && ReportList.length > 0">
+        <button class="export-btn pdf-btn" (click)="exportReport('pdf')">
+          <mat-icon>picture_as_pdf</mat-icon> PDF
+        </button>
+        <button class="export-btn excel-btn" (click)="exportReport('excel')">
+          <mat-icon>description</mat-icon> Excel
+        </button>
+        <button class="export-btn print-btn" (click)="exportReport('print')">
+          <mat-icon>print</mat-icon> Print
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         FILTER SECTION
+    ════════════════════════════════════════════ -->
+    <div class="report-section">
+      <div class="report-section-header">
+        <mat-icon>filter_list</mat-icon>
+        <span>FILTER OPTIONS</span>
+        <span class="filter-hint">Select filters to narrow the report — all filters are optional except School</span>
+      </div>
+
+      <div class="filter-grid">
+
+        <!-- School (admin only) -->
+        <div class="filter-field" *ngIf="isAdmin">
+          <label class="filter-label">SCHOOL</label>
+          <select class="filter-select" [(ngModel)]="selectedSchoolID" (change)="onSchoolChange($event)">
+            <option value="">-- All Schools --</option>
+            <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+          </select>
+        </div>
+
+        <!-- Academic Year -->
+        <div class="filter-field">
+          <label class="filter-label">ACADEMIC YEAR</label>
+          <select class="filter-select" [(ngModel)]="selectedAcademicYearID"
+            (change)="onAcademicYearChange($event)"
+            [disabled]="isAdmin && !selectedSchoolID">
+            <option value="">-- All Years --</option>
+            <option *ngFor="let ay of academicYearList" [value]="ay.ID">{{ ay.Name }}</option>
+          </select>
+        </div>
+
+        <!-- Class -->
+        <div class="filter-field">
+          <label class="filter-label">CLASS</label>
+          <select class="filter-select" [(ngModel)]="selectedClassID"
+            (change)="onClassChange($event)"
+            [disabled]="!selectedAcademicYearID">
+            <option value="">-- All Classes --</option>
+            <option *ngFor="let cls of classLists" [value]="cls.ID">{{ cls.Name }}</option>
+          </select>
+        </div>
+
+        <!-- Division -->
+        <div class="filter-field">
+          <label class="filter-label">DIVISION</label>
+          <select class="filter-select" [(ngModel)]="selectedDivisionID"
+            (change)="onDivisionChange($event)"
+            [disabled]="!selectedClassID">
+            <option value="">-- All Divisions --</option>
+            <option *ngFor="let div of divisionsList" [value]="div.ID">{{ div.Name }}</option>
+          </select>
+        </div>
+
+        <!-- Student -->
+        <div class="filter-field">
+          <label class="filter-label">STUDENT</label>
+          <select class="filter-select" [(ngModel)]="selectedAdmissionNo"
+            (change)="onStudentChange($event)"
+            [disabled]="!selectedDivisionID">
+            <option value="">-- All Students --</option>
+            <option *ngFor="let stu of studentsList" [value]="stu.AdmissionNo">{{ stu.Name }}</option>
+          </select>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="filter-field filter-actions">
+          <button class="generate-btn" (click)="onGenerateReport()">
+            <mat-icon>search</mat-icon> Generate
+          </button>
+          <button class="clear-btn" (click)="onClearFilters()">
+            <mat-icon>refresh</mat-icon> Clear
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         SUMMARY CARDS
+    ════════════════════════════════════════════ -->
+    <div class="summary-cards" *ngIf="hasSearched">
+      <div class="summary-card card-total">
+        <div class="card-icon-wrap">
+          <mat-icon>receipt_long</mat-icon>
+        </div>
+        <div class="card-info">
+          <span class="card-label">TOTAL SALES</span>
+          <span class="card-value">{{ totalSalesCount }}</span>
+        </div>
+      </div>
+      <div class="summary-card card-revenue">
+        <div class="card-icon-wrap">
+          <mat-icon>currency_rupee</mat-icon>
+        </div>
+        <div class="card-info">
+          <span class="card-label">TOTAL REVENUE</span>
+          <span class="card-value">₹{{ totalRevenue | number:'1.2-2' }}</span>
+        </div>
+      </div>
+      <div class="summary-card card-tax">
+        <div class="card-icon-wrap">
+          <mat-icon>account_balance</mat-icon>
+        </div>
+        <div class="card-info">
+          <span class="card-label">TOTAL TAX</span>
+          <span class="card-value">₹{{ totalTax | number:'1.2-2' }}</span>
+        </div>
+      </div>
+      <div class="summary-card card-net">
+        <div class="card-icon-wrap">
+          <mat-icon>trending_up</mat-icon>
+        </div>
+        <div class="card-info">
+          <span class="card-label">NET AMOUNT</span>
+          <span class="card-value">₹{{ (totalRevenue - totalTax) | number:'1.2-2' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         REPORT TABLE
+    ════════════════════════════════════════════ -->
+    <div class="report-section" *ngIf="hasSearched">
+      <div class="report-section-header" style="justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <mat-icon>table_chart</mat-icon>
+          <span>REPORT RESULTS</span>
+        </div>
+        <span class="result-count">{{ ReportCount }} record(s) found</span>
+      </div>
+
+      <!-- Table -->
+      <div class="report-table-wrap" *ngIf="ReportList.length > 0">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>SI.No</th>
+              <th *ngIf="isAdmin">School</th>
+              <th *ngIf="isAdmin">Academic Year</th>
+              <th>Class</th>
+              <th>Division</th>
+              <th>Admission No</th>
+              <th>Student Name</th>
+              <th>Sale Date</th>
+              <th>Payment Mode</th>
+              <th>Total Tax (₹)</th>
+              <th>Grand Total (₹)</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of ReportList; let i = index">
+              <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+              <td *ngIf="isAdmin">{{ row.schoolName }}</td>
+              <td *ngIf="isAdmin">{{ row.academicYearName }}</td>
+              <td>{{ row.className }}</td>
+              <td>{{ row.divisionName }}</td>
+              <td>
+                <span class="admission-badge">{{ row.admissionNo }}</span>
+              </td>
+              <td>{{ row.studentName }}</td>
+              <td>{{ row.saleDate }}</td>
+              <td>
+                <span class="payment-badge">{{ row.paymentMode }}</span>
+              </td>
+              <td class="tax-cell">₹{{ row.totalTaxAmount | number:'1.2-2' }}</td>
+              <td class="total-cell"><strong>₹{{ row.grandTotalAmount | number:'1.2-2' }}</strong></td>
+              <td>
+                <span class="status-pill"
+                  [style.background]="row.isActive ? 'linear-gradient(135deg,#dcfce7 0%,#bbf7d0 100%)' : 'linear-gradient(135deg,#ffe4e6 0%,#fecdd3 100%)'"
+                  [style.color]="row.isActive ? '#166534' : '#9f1239'"
+                  [style.borderColor]="row.isActive ? '#86efac' : '#fda4af'">
+                  {{ row.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+          <!-- Grand footer row -->
+          <tfoot>
+            <tr class="footer-row">
+              <td [attr.colspan]="isAdmin ? 9 : 7" style="text-align:right;font-weight:700;font-size:12px;color:#475569;">
+                PAGE TOTAL
+              </td>
+              <td class="tax-cell">
+                <strong>₹{{ totalTax | number:'1.2-2' }}</strong>
+              </td>
+              <td class="total-cell">
+                <strong>₹{{ totalRevenue | number:'1.2-2' }}</strong>
+              </td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- No data -->
+      <div *ngIf="ReportList.length === 0" class="NoDataFound">
+        <div class="NoDataFoundImg">
+          <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
+        </div>
+        <p>No sales found for the selected filters.</p>
+      </div>
+
+      <!-- Pagination -->
+      <div *ngIf="ReportCount > pageSize" class="pagination-controls">
+        <button *ngIf="totalPages() > 3" (click)="goToPage(1)"
+          [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
+        <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
+        <button *ngFor="let page of getVisiblePageNumbers()"
+          class="page-btn" [ngClass]="{'active': page === currentPage}"
+          (click)="goToPage(page)">{{ page }}</button>
+        <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+        <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())"
+          [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
+      </div>
+
+    </div>
+
+    <!-- Initial state — before generate clicked -->
+    <div class="empty-state" *ngIf="!hasSearched">
+      <mat-icon>bar_chart</mat-icon>
+      <p>Select your filters above and click <strong>Generate</strong> to view the sales report.</p>
+    </div>
+
+  </div>
+</div>

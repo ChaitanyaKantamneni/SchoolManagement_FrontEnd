@@ -1,38 +1,3 @@
-// import { Routes } from '@angular/router';
-// import { SignInComponent } from './SignInAndSignUp/sign-in/sign-in.component';
-// import { AdminDashboardComponent } from './Admin/admin-dashboard/admin-dashboard.component';
-// import { AdminMainDashboardComponent } from './Admin/admin-dashboard/admin-main-dashboard/admin-main-dashboard.component';
-// import { SchoolDetailsComponent } from './Admin/Masters/school-details/school-details.component';
-// import { AcademicYearComponent } from './Admin/Masters/academic-year/academic-year.component';
-// import { SyllabusComponent } from './Admin/Masters/syllabus/syllabus.component';
-// import { ClassComponent } from './Admin/Masters/class/class.component';
-// import { ClassDivisionComponent } from './Admin/Masters/class-division/class-division.component';
-// import { RolesComponent } from './Admin/Masters/roles/roles.component';
-// import { ModulesComponent } from './Admin/Masters/modules/modules.component';
-// import { PagesComponent } from './Admin/Masters/pages/pages.component';
-// import { StaffComponent } from './Admin/Masters/staff/staff.component';
-// import { SideBarComponentComponent } from './SideBar/side-bar-component/side-bar-component.component';
-
-// export const routes: Routes = [
-//   {path:'',component:SignInComponent},
-//   {path:'signin',component:SignInComponent},
-//   {path:'Admin',component:AdminDashboardComponent,
-//     children:[
-//       {path:'',component:AdminMainDashboardComponent},
-//       {path:'Dashboad',component:AdminMainDashboardComponent},
-//       {path:'Masters/Staff',component:StaffComponent},
-//       {path:'Masters/SchoolDetails',component:SchoolDetailsComponent},
-//       {path:'Masters/AcademicYear',component:AcademicYearComponent},
-//       {path:'Masters/Syllabus',component:SyllabusComponent},
-//       {path:'Masters/Class',component:ClassComponent},
-//       {path:'Masters/Division',component:ClassDivisionComponent},
-//       {path:'Masters/Modules',component:ModulesComponent},
-//       {path:'Masters/Pages',component:PagesComponent},
-//       {path:'Masters/Role',component:RolesComponent}
-//     ]
-//   },
-//   {path:'OthersSideBar',component:SideBarComponentComponent}
-// ];
 
 
 import { Routes } from '@angular/router';
@@ -96,6 +61,14 @@ import { LeaveapprovalComponent } from './Admin/LeaveManagement/leaveapproval/le
 import { LeavedetailsComponent } from './Admin/LeaveManagement/leavedetails/leavedetails.component';
 import { AssignHomewrokComponent } from './Admin/HomeWork/assign-homewrok/assign-homewrok.component';
 import { HomeworkComponent } from './Admin/HomeWork/homework/homework.component';
+import { UnitsComponent} from './Admin/Store/units/units.component';
+import { CategoriesComponent} from './Admin/Store/categories/categories.component';
+import { ItemsComponent} from './Admin/Store/items/items.component';
+import { SuppliersComponent} from './Admin/Store/suppliers/suppliers.component';
+import { PurchaseComponent} from './Admin/Store/purchase/purchase.component';
+import { SalesComponent} from './Admin/Store/sales/sales.component';
+import { SalesReportComponent} from './Admin/Store/sales-report/sales-report.component';
+
 
 
 export const routes: Routes = [
@@ -163,6 +136,14 @@ export const routes: Routes = [
       { path: 'LeaveDetails',  component: LeavedetailsComponent },
       { path: 'AssignHomework',  component: AssignHomewrokComponent },
       { path: 'HomeWork',  component: HomeworkComponent },
+      { path: 'Units',  component: UnitsComponent },
+      { path: 'Categories',  component: CategoriesComponent },
+      { path: 'Items',  component: ItemsComponent },
+      { path: 'Suppliers',  component: SuppliersComponent },
+      { path: 'Purchase',  component: PurchaseComponent },
+      { path: 'Sales',  component: SalesComponent },
+      { path: 'SalesReport',  component: SalesReportComponent },
+      
     ]
   },
 
@@ -226,7 +207,13 @@ export const routes: Routes = [
       { path: 'LeaveDetails',  component: LeavedetailsComponent },
       { path: 'AssignHomework',  component: AssignHomewrokComponent },
       { path: 'HomeWork',  component: HomeworkComponent },
-
+      { path: 'Units',  component: UnitsComponent },
+      { path: 'Categories',  component: CategoriesComponent },
+      { path: 'Items',  component: ItemsComponent },
+      { path: 'Suppliers',  component: SuppliersComponent },
+      { path: 'Purchase',  component: PurchaseComponent },
+      { path: 'Sales',  component: SalesComponent },
+      { path: 'SalesReport',  component: SalesReportComponent },
 
 
     ]
@@ -299,6 +286,14 @@ export const routes: Routes = [
       { path: 'LeavePolicy',    component: LeavedetailsComponent },
       { path: 'AssignHomework',  component: AssignHomewrokComponent },
       { path: 'HomeWork',  component: HomeworkComponent },
+      { path: 'Units',  component: UnitsComponent },
+      { path: 'Categories',  component: CategoriesComponent },
+      { path: 'Items',  component: ItemsComponent },
+      { path: 'Suppliers',  component: SuppliersComponent },
+      { path: 'Purchase',  component: PurchaseComponent },
+      { path: 'Sales',  component: SalesComponent },
+      { path: 'SalesReport',  component: SalesReportComponent },
+
 
     ]
   }

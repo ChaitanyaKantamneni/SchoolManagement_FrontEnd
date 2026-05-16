@@ -27,8 +27,16 @@ export class StaffattendanceComponent extends BasePermissionComponent {
   ){
     super(menuService, router);
   }
+  todayDate: string = '';
 
   ngOnInit(): void {
+     const today = new Date();
+
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+
+  this.todayDate = `${year}-${month}-${day}`;
     this.checkViewPermission();
     this.SchoolSelectionChange = false;
     this.FetchSchoolsList();
@@ -752,6 +760,35 @@ export class StaffattendanceComponent extends BasePermissionComponent {
   }
 
   onSubmit() {
+    const selectedSessionId = this.SyllabusForm.get('Session')?.value;
+    this.AdminSelectedSessionID =
+      selectedSessionId && selectedSessionId !== '0' ? String(selectedSessionId) : '';
+
+    const hasSession = !!this.AdminSelectedSessionID;
+    const hasDate = !!this.SyllabusForm.get('AttendanceDateTime')?.value;
+
+    if (!hasSession && !hasDate) {
+      this.AminityInsStatus = '⚠️ Please select Attendance Date and Session before proceeding.';
+      this.statusModalTitle = 'Validation';
+      this.isModalOpen = true;
+      this.resetAttendanceTableState();
+      return;
+    }
+    if (!hasSession) {
+      this.AminityInsStatus = '⚠️ Please select a Session before proceeding.';
+      this.statusModalTitle = 'Validation';
+      this.isModalOpen = true;
+      this.resetAttendanceTableState();
+      return;
+    }
+    if (!hasDate) {
+      this.AminityInsStatus = '⚠️ Please select Attendance Date before proceeding.';
+      this.statusModalTitle = 'Validation';
+      this.isModalOpen = true;
+      this.resetAttendanceTableState();
+      return;
+    }
+
     this.loadAttendanceTableIfReady();
   }
 
@@ -1151,9 +1188,14 @@ export class StaffattendanceComponent extends BasePermissionComponent {
   };
 
 
+  readonly today = new Date().toISOString().split('T')[0];
+
   onSessionChange(event: any) {
     const selectedSessionId = event.target.value;
     this.AdminSelectedSessionID = selectedSessionId === '0' ? '' : selectedSessionId;
+    if (this.AdminSelectedSessionID) {
+      this.SyllabusForm.get('AttendanceDateTime')?.setValue(this.today);
+    }
     this.applySelectedSessionTimes();
   }
   FetchSessionsList() {
@@ -1206,8 +1248,6 @@ export class StaffattendanceComponent extends BasePermissionComponent {
 
     this.FetchClassList();
     this.FetchSessionsList();
-    const today = new Date().toISOString().split('T')[0];
-    this.SyllabusForm.get('AttendanceDateTime')?.setValue(today);
   }
 
   //   onAdminClasschange(event: Event) {
