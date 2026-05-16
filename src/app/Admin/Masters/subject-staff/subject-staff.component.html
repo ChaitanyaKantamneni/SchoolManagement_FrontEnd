@@ -2,44 +2,55 @@
   <app-dashboard-top-nav></app-dashboard-top-nav>
 </div>
 <div class="MainContentDiv">
-  <div *ngIf="!IsAddNewClicked" class="w-100">
-    <div class="ComponentTop">
+  <div *ngIf="!IsAddNewClicked" class="w-100 admission-dashboard">
+    <div class="ComponentTop admission-hero">
       <div class="ComponentTopHeader">
+        <div class="admission-breadcrumb">
+          <span>Masters</span>
+          <mat-icon>chevron_right</mat-icon>
+          <strong>Subject staff</strong>
+        </div>
         <h5>Subject Staff Management</h5>
-        <p>Total {{ SyllabusCount }} Subject Staff Added</p>
+        <!-- <p>Total {{ SyllabusCount }} Subject Staff Added</p> -->
       </div>
-      <div class="ComponentTopBottom">
-        <button *ngIf="canAdd()" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Subject Staff</button>
+      <div class="ComponentTopBottom admission-header-actions">
+        <button *ngIf="canAdd()" type="button" class="admission-btn admission-btn--primary admission-top-action" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Subject Staff</button>
       </div>
     </div>
-    <div class="ComponentRecords">
+    <div class="admission-filter-row">
+      <div class="admission-searchbox">
+        <mat-icon>search</mat-icon>
+        <input type="text" id="searchQuery" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search by staff name" />
+      </div>
+      <button type="button" class="admission-chip admission-chip--active">All <span>{{ SyllabusCount }}</span></button>
+      <!-- <button type="button" class="admission-chip">Active</button>
+      <button type="button" class="admission-chip">Pending</button> -->
+      <select class="admission-select" *ngIf="isAdmin" (change)="onSchoolChange($event)">
+        <!-- <option value="">All Classes</option> -->
+        <option value="0">All Schools</option>
+        <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+      </select>
+      <select class="admission-select" *ngIf="isAdmin" (change)="onAcademicYearChange($event)">
+        <!-- <option value="">All Classes</option> -->
+        <option value="0">All Academic Year</option>
+        <option *ngFor="let school of academicYearList" [value]="school.ID">{{ school.Name }}</option>
+      </select>
+      <select class="admission-select" (change)="onClassSelectionChange($event)">
+        <!-- <option value="">All Classes</option> -->
+        <option value="0">All Staff</option>
+        <option *ngFor="let school of StaffListNotAssigned" [value]="school.ID">{{ school.Name }}</option>
+      </select>
+    </div>
+    <div class="ComponentRecords admission-record-card">
       <div>
-        <div class="ComponentRecordsTop">
-          <div class="filterOptions">
-            <div class="searchreview input-container" >
-              <input type="text" id="searchQuery" class="form-control floating-input"
-                [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search... "  />
-              <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
-              <!-- <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i> -->
-            </div>
-            <div class="searchreview" *ngIf="isAdmin">
-              <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
-                <option value="" disabled>-- Select School --</option>
-                <option value="0">All Schools</option>
-                <option *ngFor="let school of schoolList" [value]="school.ID">
-                  {{ school.Name }}
-                </option>
-              </select>
-            </div>
+        <div class="ComponentRecordsTop admission-record-header">
+          <div>
+            <h5>Subject staff allocated Records</h5>
+            <p>Showing {{ pageEndIndex() }} of {{ SyllabusCount }} records</p>
           </div>
-          <!-- <div class="DownloadButtons" *ngIf="SubjectsList.length != 0">
-            <button class="btnHover" (click)="exportSyllabus('pdf')"><mat-icon>picture_as_pdf</mat-icon></button>
-            <button class="btnHover" (click)="exportSyllabus('excel')"><mat-icon>description</mat-icon></button>
-            <button class="btnHover" (click)="exportSyllabus('print')"><mat-icon>print</mat-icon></button>
-          </div> -->
         </div>
-        <div class="reviewstable">
-          <table *ngIf="SyllabusList.length != 0" class="table table-bordered">
+        <div class="reviewstable admission-table-wrap">
+          <table *ngIf="SyllabusList.length != 0" class="table table-bordered admission-table">
             <thead>
               <tr>
                 <th class="visually-hidden">Academic Year ID</th>
@@ -79,6 +90,19 @@
             </div>
             <p>No data found.</p>
           </div>
+          <div class="admission-footer-meta">
+            <label>
+              Rows:
+              <select aria-label="Rows per page" [(ngModel)]="pageSize"
+            (ngModelChange)="onRowsCountChange()">
+                <option [ngValue]="5">5</option>
+                <option [ngValue]="10">10</option>
+                <option [ngValue]="25">25</option>
+                <option [ngValue]="50">50</option>
+              </select>
+            </label>
+            <p>{{ pageStartIndex() }}&ndash;{{ pageEndIndex() }} of {{ SyllabusCount }} records</p>
+          </div>
           <div *ngIf="SyllabusCount > pageSize" class="pagination-controls">
             <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
             <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
@@ -96,10 +120,32 @@
     </div>
   </div>
   <div *ngIf="IsAddNewClicked" class="w-100">
+    <div class="admission-breadcrumb">
+          <span>Masters</span>
+          <mat-icon>chevron_right</mat-icon>
+          <span>Subject Staff</span>
+          <mat-icon>chevron_right</mat-icon>
+          <strong>Allot Subjects Staff</strong>
+        </div>
+    <div class="AddFormTop">
+          <button (click)="CancelSyllabus()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+          <div class="admission-record-header p-0">
+            <div>
+              <h5>Allot Subjects Staff</h5>
+              <p>Allot subjects to staff for Academic year</p>
+            </div>
+          </div>
+        </div>
     <div class="AddForm">
-      <div class="AddFormTop">
-        <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
-        <p>Add Subject</p>
+      <div class="form-top">
+        <p class="cc-title">Allot subjects to staff</p>
+        <!-- <span
+                    class="status-pill"
+                    [style.background]="(School.IsActive === true || School.IsActive === 'true' || School.IsActive === 'Active' || School.IsActive === 1) ? '#d9f9e5' : '#fff0bd'"
+                    [style.color]="(School.IsActive === true || School.IsActive === 'true' || School.IsActive === 'Active' || School.IsActive === 1) ? '#00823a' : '#c25b00'"
+                    [style.borderColor]="(School.IsActive === true || School.IsActive === 'true' || School.IsActive === 'Active' || School.IsActive === 1) ? '#86efac' : '#f5d77a'">
+                    {{ (School.IsActive === true || School.IsActive === 'true' || School.IsActive === 'Active' || School.IsActive === 1) ? 'Active' : 'Pending' }}
+                  </span>      -->
       </div>
       <div class="AddFormConatiner">
         <form [formGroup]="ModuleForm">
@@ -129,71 +175,120 @@
                   </div>
                 </div>
               </div>
-              <div class="InputFieldsContainer" *ngIf="!isAdmin">
-                <label class="inputLabel" for="email">Staff <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="Name" placeholder="Select Class">
-                    <option value="0" disabled>Select Staff</option>
-                    <option *ngFor="let Syllabus of StaffListNotAssigned" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option>
-                  </select>
-                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
-                  <div *ngIf="ModuleForm.get('Name')?.hasError('min') && (ModuleForm.get('Name')?.touched || ModuleForm.get('Name')?.dirty)" class="text-danger">
-                    <small>Please Select Staff.</small>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="InputRow">
-              <div class="InputFieldsContainer" *ngIf="isAdmin">
-                <label class="inputLabel" for="email">Staff <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="Name" placeholder="Select Class">
-                    <option value="0" disabled>Select Staff</option>
-                    <option *ngFor="let Syllabus of StaffListNotAssigned" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option>
-                    <!-- <option *ngFor="let Syllabus of (StaffListNotAssigned && StaffListNotAssigned.length > 0 ? StaffListNotAssigned : StaffList)" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option> -->
-                    <!-- <option *ngFor="let Syllabus of (IsAddNewClicked ? StaffList : StaffListNotAssigned)" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option> -->
-                  </select>
-                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
-                  <div *ngIf="ModuleForm.get('Name')?.hasError('min') && (ModuleForm.get('Name')?.touched || ModuleForm.get('Name')?.dirty)" class="text-danger">
-                    <small>Please Select Staff.</small>
-                  </div>
-                </div>
-              </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Subject <span class="required">*</span></label>
-                <div class="custom-multiselect">
-                  <div class="select-box" (click)="dropdownOpen = !dropdownOpen">
-                    {{ selectedCategories.length ? selectedCategories.length + ' selected' : 'Select Subject' }}
-                    <span class="arrow">{{ dropdownOpen ? '▲' : '▼' }}</span>
+                <label class="inputLabel" for="email">Staff <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="Name" placeholder="Select Class">
+                    <option value="0" disabled>Select Staff</option>
+                    <option *ngFor="let Syllabus of StaffListNotAssigned" value="{{Syllabus.ID}}">{{Syllabus.Name}}</option>
+                  </select>
+                  <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                  <div *ngIf="ModuleForm.get('Name')?.hasError('min') && (ModuleForm.get('Name')?.touched || ModuleForm.get('Name')?.dirty)" class="text-danger">
+                    <small>Please Select Staff.</small>
                   </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <label class="inputLabel" for="email">
+                  Subject <span class="required">*</span>
+                </label>
 
+                <div class="custom-multiselect" #dropdownContainer>
+                  
+                  <div class="select-box" (click)="toggleDropdown($event)">
+                    {{ selectedCategories.length 
+                        ? selectedCategories.length + ' selected' 
+                        : 'Select Subject' }}
+
+                    <span class="arrow">
+                      {{ dropdownOpen ? '▲' : '▼' }}
+                    </span>
+                  </div>
 
                   <div class="options" *ngIf="dropdownOpen">
                     <label *ngFor="let cat of categories">
+                      
                       <input type="checkbox"
                             [checked]="selectedCategories.includes(cat.UniqueID)"
                             (change)="toggleSelection(cat.UniqueID)">
-                      {{cat.Name}}
+
+                      {{ cat.Name }}
                     </label>
                   </div>
                 </div>
-                <div *ngIf="(ModuleForm.get('Class' ) ?. touched && ModuleForm.get('Class' ) ?. invalid)" class="text-danger">
-                  <div *ngIf="(ModuleForm.get('Class' ) ?. errors ?. ['required' ]) ">
-                    <small>Please Select Sibject.</small>
+
+                <div *ngIf="ModuleForm.get('Class')?.touched && ModuleForm.get('Class')?.invalid"
+                    class="text-danger">
+
+                  <div *ngIf="ModuleForm.get('Class')?.errors?.['required']">
+                    <small>Please Select Subject.</small>
                   </div>
                 </div>
               </div>
-              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+            </div>
+            <div class="InputRow" *ngIf="isAdmin">
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">
+                  Subject <span class="required">*</span>
+                </label>
+
+                <div class="custom-multiselect" #dropdownContainer>
+                  
+                  <div class="select-box" (click)="toggleDropdown($event)">
+                    {{ selectedCategories.length 
+                        ? selectedCategories.length + ' selected' 
+                        : 'Select Subject' }}
+
+                    <span class="arrow">
+                      {{ dropdownOpen ? '▲' : '▼' }}
+                    </span>
+                  </div>
+
+                  <div class="options" *ngIf="dropdownOpen">
+                    <label *ngFor="let cat of categories">
+                      
+                      <input type="checkbox"
+                            [checked]="selectedCategories.includes(cat.UniqueID)"
+                            (change)="toggleSelection(cat.UniqueID)">
+
+                      {{ cat.Name }}
+                    </label>
+                  </div>
+                </div>
+
+                <div *ngIf="ModuleForm.get('Class')?.touched && ModuleForm.get('Class')?.invalid"
+                    class="text-danger">
+
+                  <div *ngIf="ModuleForm.get('Class')?.errors?.['required']">
+                    <small>Please Select Subject.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <span style="visibility: hidden;height: 3px;">hello adding new academic year</span>
               </div>
-
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <span style="visibility: hidden;height: 3px;">hello adding new academic year</span>
+              </div>
+            </div>
+            <div class="InputRow">
+              <div class="noteActiveCard">
+                <div class="noteSection">
+                  <span>Note</span>
+                  <p>Multiple subjects can be allotted to a staff member for an academic year. Subject allotment helps manage teaching responsibilities, timetable scheduling, and academic activities efficiently.</p>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="ActionButtons">
-            <button type="button" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update</button>
-            <button type="button" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitModule()">Submit</button>
-          </div>
         </form>
+      </div>
+      <div class="form-bottom">
+        <span class="footer-hint">Fields marked <span class="required">*</span> are required</span>
+        <div class="ActionButtons footer-actions">
+            <button type="button" class="cancelbtn" (click)="CancelSyllabus()">Cancel</button>
+            <button type="button" class="submitbtn" *ngIf="ViewModuleClicked && canEdit()" (click)="UpdateModule()">Update</button>
+            <button type="button" class="submitbtn" *ngIf="!ViewModuleClicked && canAdd()" (click)="SubmitModule()">Submit</button>
+          </div>
       </div>
     </div>
   </div>

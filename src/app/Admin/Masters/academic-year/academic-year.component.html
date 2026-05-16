@@ -142,8 +142,12 @@
           <div class="admission-footer-meta">
             <label>
               Rows:
-              <select aria-label="Rows per page">
-                <option>{{ pageSize }}</option>
+              <select aria-label="Rows per page" [(ngModel)]="pageSize"
+            (ngModelChange)="onRowsCountChange()">
+                <option [ngValue]="5">5</option>
+                <option [ngValue]="10">10</option>
+                <option [ngValue]="25">25</option>
+                <option [ngValue]="50">50</option>
               </select>
             </label>
             <p>{{ pageStartIndex() }}&ndash;{{ pageEndIndex() }} of {{ AcademicYearCount }} records</p>
@@ -165,15 +169,49 @@
     </div>
   </div>
   <div *ngIf="IsAddNewClicked" class="w-100">
-    <div class="AddForm">
-      <div class="AddFormTop">
+    <div class="admission-breadcrumb">
+          <span>Masters</span>
+          <mat-icon>chevron_right</mat-icon>
+          <span>Academic Year</span>
+          <mat-icon>chevron_right</mat-icon>
+          <strong>Add Academic Year</strong>
+        </div>
+    <div class="AddFormTop">
         <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
-        <p>Add Academic Year</p>
+        <div class="admission-record-header p-0">
+          <div>
+            <h5>Add Academic Year</h5>
+            <p>Configure a new academic year</p>
+          </div>
+        </div>
+      </div>
+    <div class="AddForm">
+      <div class="form-top">
+        <p class="cc-title">Academic Year Details</p>
+        <!-- <span
+                    class="status-pill"
+                    [style.background]="(School.IsActive === true || School.IsActive === 'true' || School.IsActive === 'Active' || School.IsActive === 1) ? '#d9f9e5' : '#fff0bd'"
+                    [style.color]="(School.IsActive === true || School.IsActive === 'true' || School.IsActive === 'Active' || School.IsActive === 1) ? '#00823a' : '#c25b00'"
+                    [style.borderColor]="(School.IsActive === true || School.IsActive === 'true' || School.IsActive === 'Active' || School.IsActive === 1) ? '#86efac' : '#f5d77a'">
+                    {{ (School.IsActive === true || School.IsActive === 'true' || School.IsActive === 'Active' || School.IsActive === 1) ? 'Active' : 'Pending' }}
+                  </span>      -->
       </div>
       <div class="AddFormConatiner">
         <form [formGroup]="AcademicYearForm">
           <div class="FormInputRowsContainer">
             <div class="InputRow">
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">School <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="School" placeholder="Select Start Date">
+                    <option value="0">-- Select School --</option>
+                    <option *ngFor="let school of schoolList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="AcademicYearForm.get('School')?.hasError('min') && (AcademicYearForm.get('School')?.touched || AcademicYearForm.get('School')?.dirty)" class="text-danger">
+                      <small>Please Select School.</small>
+                  </div>
+                </div>
+              </div>
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="Name">Academic Year Name  <span class="required">*</span></label>
                 <div class="input-with-error">
@@ -196,9 +234,24 @@
                   </div>
                 </div>
               </div>
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <label class="inputLabel" for="EndDate">End Date <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" type="date" formControlName="EndDate" placeholder="Select End Date" />
+                  <div *ngIf="(AcademicYearForm.get('EndDate' ) ?. touched && AcademicYearForm.get('EndDate' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(AcademicYearForm.get('EndDate' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Select End Date.</small>
+                    </div>
+                  </div>
+                  <div *ngIf="AcademicYearForm.errors?.['dateRangeInvalid'] && AcademicYearForm.get('EndDate')?.touched" class="text-danger">
+                    <small>End Date cannot be earlier than Start Date.</small>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="InputRow" [class.inputrowdescription]="!isAdmin">
-              <div class="InputFieldsContainer">
+            <!-- [class.inputrowdescription]="isAdmin" -->
+            <div class="InputRow" >
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <label class="inputLabel" for="EndDate">End Date <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" type="date" formControlName="EndDate" placeholder="Select End Date" />
@@ -213,59 +266,69 @@
                 </div>
               </div>
               <div class="InputFieldsContainer" *ngIf="isAdmin">
-                <label class="inputLabel" for="email">School <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="School" placeholder="Select Start Date">
-                    <option value="0">-- Select School --</option>
-                    <option *ngFor="let school of schoolList" value="{{school.ID}}">{{school.Name}}</option>
-                  </select>
-                  <div *ngIf="AcademicYearForm.get('School')?.hasError('min') && (AcademicYearForm.get('School')?.touched || AcademicYearForm.get('School')?.dirty)" class="text-danger">
-                      <small>Please Select School.</small>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <span style="visibility: hidden;">hello adding new academic year</span>
+              </div> 
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <span style="visibility: hidden;">hello adding new academic year</span>
+              </div>             
+              <!-- <div class="InputFieldsContainer" *ngIf="!isAdmin">
                 <label class="inputLabel" for="email">Description</label>
                 <div class="input-with-error">
                   <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="2"></textarea>                  
                 </div>
-              </div>
+              </div> -->
             </div>
             <div class="InputRow">
-              <div class="InputFieldsContainer" *ngIf="isAdmin">
+              <!-- <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <label class="inputLabel" for="email">Description</label>
                 <div class="input-with-error">
                   <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="2"></textarea>                  
                 </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <div class="toggle-container" (click)="$event.stopPropagation()">
-                  <label class="switch">
-                    <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
-                    <span class="slider">
-                      <span
-                        class="toggle-text"
-                        [ngStyle]="{
-                          left: IsActiveStatus ? '42%' : '60%',
-                          fontSize: IsActiveStatus ? '9px' : '9px'
-                        }"
-                      >
-                        {{ IsActiveStatus ? 'Active' : 'Inactive' }}
-                      </span>
-                    </span>
-                  </label>
+              </div> -->
+              <div class="noteActiveCard">
+                <div class="noteSection">
+                  <span>Note</span>
+                  <p>Only one academic year can be active per school. Activating this will automatically deactivate any previously active academic year.</p>
                 </div>
+                <div class="InputFieldsContainer">
+                  <div class="toggle-container" (click)="$event.stopPropagation()">
+                    <label class="switch">
+                      <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
+                      <span class="slider">
+                        <span
+                          class="toggle-text"
+                          [ngStyle]="{
+                            left: IsActiveStatus ? '42%' : '60%',
+                            fontSize: IsActiveStatus ? '9px' : '9px'
+                          }"
+                        >
+                          {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              </div>               
+              <!-- <div class="InputFieldsContainer">
+                <span style="visibility: hidden;">hello adding new academic year</span>
+              </div> 
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <span style="visibility: hidden;">hello adding new academic year</span>
               </div>  
               <div class="InputFieldsContainer" *ngIf="!isAdmin">
                 <span style="visibility: hidden;">hello adding new academic year</span>
-              </div>            
+              </div>             -->
             </div>
-          </div>
-          <div class="ActionButtons">
-            <button type="button" *ngIf="ViewAcademicYearClicked && canEdit()" (click)="UpdateAcademicYear()">Update</button>
-            <button type="button" *ngIf="!ViewAcademicYearClicked && canAdd()" (click)="SubmitAcademicYear()">Submit</button>
-          </div>
+          </div>          
         </form>
+      </div>
+      <div class="form-bottom">
+        <span class="footer-hint">Fields marked <span class="required">*</span> are required</span>
+        <div class="ActionButtons footer-actions">
+            <button type="button" class="cancelbtn" (click)="CancelSyllabus()">Cancel</button>
+            <button type="button" class="submitbtn" *ngIf="ViewAcademicYearClicked && canEdit()" (click)="UpdateAcademicYear()">Update</button>
+            <button type="button" class="submitbtn" *ngIf="!ViewAcademicYearClicked && canAdd()" (click)="SubmitAcademicYear()">Submit</button>
+          </div>
       </div>
     </div>
   </div>

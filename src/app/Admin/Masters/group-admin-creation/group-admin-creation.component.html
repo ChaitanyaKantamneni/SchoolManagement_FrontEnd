@@ -8,13 +8,13 @@
         <div class="admission-breadcrumb">
           <span>Masters</span>
           <mat-icon>chevron_right</mat-icon>
-          <strong>Staff</strong>
+          <strong>Group Admin</strong>
         </div>
-        <h5>Staff Management</h5>
-        <p>Total {{ StaffCount}} Staff Added</p>
+        <h5>Group Admin Management</h5>
+        <p>Total {{ StaffCount}} Group Admins Added</p>
       </div>
       <div class="ComponentTopBottom admission-header-actions">
-        <button *ngIf="canAdd()" type="button" class="admission-btn admission-btn--primary admission-top-action" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Staff</button>
+        <button *ngIf="canAdd()" type="button" class="admission-btn admission-btn--primary admission-top-action" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Group Admin</button>
       </div>
     </div>
     <div class="admission-stats-grid">
@@ -22,7 +22,7 @@
         <div class="admission-stat-icon admission-stat-icon--blue"><mat-icon>person_outline</mat-icon></div>
         <div>
           <strong>{{ StaffCount }}</strong>
-          <span>Total Staff</span>
+          <span>Total Group Admins</span>
           <!-- <small class="admission-stat-positive">+{{ SubjectsList.length }} this month</small> -->
         </div>
       </div>
@@ -30,7 +30,7 @@
         <div class="admission-stat-icon admission-stat-icon--green"><mat-icon>check</mat-icon></div>
         <div>
           <strong>{{ SubjectsActiveCount }}</strong>
-          <span>Active Divisions</span>
+          <span>Active Group Admins</span>
           <!-- <small class="admission-stat-positive">{{ SubjectsActiveCount }} active rate</small> -->
         </div>
       </div>
@@ -54,31 +54,29 @@
     <div class="admission-filter-row">
       <div class="admission-searchbox">
         <mat-icon>search</mat-icon>
-        <input type="text" id="searchQuery" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search by staff name" />
+        <input type="text" id="searchQuery" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search by name" />
       </div>
       <button type="button" class="admission-chip admission-chip--active">All <span>{{ StaffCount }}</span></button>
       <!-- <button type="button" class="admission-chip">Active</button>
       <button type="button" class="admission-chip">Pending</button> -->
-      <select class="admission-select" *ngIf="isAdmin" (change)="onSchoolChange($event)">
-        <!-- <option value="">All Classes</option> -->
+      <!-- <select class="admission-select" *ngIf="isAdmin" (change)="onSchoolChange($event)">
         <option value="0">All Schools</option>
         <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
       </select>
       <select class="admission-select" *ngIf="isAdmin" (change)="onAcademicYearChange($event)">
-        <!-- <option value="">All Classes</option> -->
         <option value="0">All Academic Year</option>
         <option *ngFor="let school of academicYearList" [value]="school.ID">{{ school.Name }}</option>
       </select>
       <select class="admission-select" (change)="onClassSelectionChange($event)">
         <option value="0">All Staff</option>
         <option *ngFor="let school of DefaultstaffList" [value]="school.ID">{{ school.Name }}</option>
-      </select>
+      </select> -->
     </div>
     <div class="ComponentRecords admission-record-card">
       <div>
         <div class="ComponentRecordsTop admission-record-header">
           <div>
-            <h5>Staff Records</h5>
+            <h5>Group Admin Records</h5>
             <p>Showing {{ pageEndIndex() }} of {{ StaffCount }} records</p>
           </div>
         </div>
@@ -89,11 +87,11 @@
                 <th class="visually-hidden">Academic Year ID</th>
                 <th>SI.No</th>
                 <th class="StaffTypeClass">Staff Type</th>
-                <th>Employee Name</th>                
+                <th>Name</th>                
                 <th>Email</th>
                 <th>MobileNumber</th>
-                <th *ngIf="isAdmin">School Name</th>
-                <th>Academic Year</th>
+                <!-- <th *ngIf="isAdmin">School Name</th>
+                <th>Academic Year</th> -->
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -116,8 +114,8 @@
                 <td data-label="Name">{{ Class.Name }}</td>                
                 <td data-label="Email">{{ Class.Email }}</td>
                 <td data-label="MobileNumber">{{ Class.MobileNumber }}</td>
-                <td data-label="SchoolName" *ngIf="isAdmin">{{ Class.Schoolname }}</td>
-                <td data-label="AcademicYearName">{{ Class.AcademicYearName }}</td>
+                <!-- <td data-label="SchoolName" *ngIf="isAdmin">{{ Class.Schoolname }}</td>
+                <td data-label="AcademicYearName">{{ Class.AcademicYearName }}</td> -->
                 <td data-label="Status">
                   <span
                     class="status-pill"
@@ -179,22 +177,22 @@
     <div class="admission-breadcrumb">
           <span>Masters</span>
           <mat-icon>chevron_right</mat-icon>
-          <span>Staff</span>
+          <span>Group Admin</span>
           <mat-icon>chevron_right</mat-icon>
-          <strong>Add Staff</strong>
+          <strong>Create Group Admin</strong>
         </div>
     <div class="AddFormTop">
           <button (click)="CancelSyllabus()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
           <div class="admission-record-header p-0">
             <div>
-              <h5>Add Staff</h5>
-              <p>Configure a new Staff for Academic year</p>
+              <h5>Create Group Admin</h5>
+              <p>Configure a new Group Admin for Academic year</p>
             </div>
           </div>
         </div>
     <div class="AddForm">
       <div class="form-top">
-        <p class="cc-title">Staff Details</p>
+        <p class="cc-title">Group Admin Details</p>
         <!-- <span
                     class="status-pill"
                     [style.background]="(School.IsActive === true || School.IsActive === 'true' || School.IsActive === 'Active' || School.IsActive === 1) ? '#d9f9e5' : '#fff0bd'"
@@ -207,7 +205,33 @@
         <form [formGroup]="StaffForm">
           <div class="FormInputRowsContainer">
             <div class="InputRow">
-              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">School <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <div class="custom-multiselect" #dropdownContainer>
+                    <div class="select-box" (click)="toggleDropdown($event)">
+                      {{ selectedCategories.length ? selectedCategories.length + ' selected' : 'Select Category' }}
+                      <span class="arrow">{{ dropdownOpen ? '▲' : '▼' }}</span>
+                    </div>
+
+                    <div class="options" *ngIf="dropdownOpen">
+                      <label *ngFor="let cat of schoolList">
+                        <input type="checkbox"
+                              [checked]="selectedCategories.includes(cat.ID)"
+                              (change)="toggleSelection(cat.ID)">
+                        {{cat.Name}}
+                      </label>
+                    </div>
+                  </div>
+
+                  <div *ngIf="(StaffForm.get('StaffType' ) ?. touched && StaffForm.get('StaffType' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(StaffForm.get('StaffType' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Select StaffType.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <label class="inputLabel" for="email">School <span class="required">*</span></label>
                 <div class="input-with-error">
                   <select class="inputField" type="date" formControlName="School" placeholder="Select Start Date" (change)="onAdminSchoolChange($event)" >
@@ -218,8 +242,8 @@
                       <small>Please Select School.</small>
                   </div>
                 </div>
-              </div>
-              <div class="InputFieldsContainer">
+              </div> -->
+              <!-- <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
                 <div class="input-with-error">
                   <select class="inputField" type="date" formControlName="AcademicYear" placeholder="Select Start Date" >
@@ -230,8 +254,8 @@
                       <small>Please Select Academic Year.</small>
                   </div>
                 </div>
-              </div>
-              <div class="InputFieldsContainer">
+              </div> -->
+              <!-- <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Staff Type <span class="required">*</span></label>
                 <div class="input-with-error">
                   <div class="custom-multiselect" #dropdownContainer>
@@ -254,6 +278,18 @@
                     <div *ngIf="(StaffForm.get('StaffType' ) ?. errors ?. ['required' ]) ">
                       <small>Please Select StaffType.</small>
                     </div>
+                  </div>
+                </div>
+              </div> -->
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="email">Role <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" type="date" formControlName="School" placeholder="Select Start Date">
+                    <option value="0">-- Select Role --</option>
+                    <option *ngFor="let school of StaffTypeListBySchoolId" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div *ngIf="StaffForm.get('School')?.hasError('min') && (StaffForm.get('School')?.touched || StaffForm.get('School')?.dirty)" class="text-danger">
+                      <small>Please Select School.</small>
                   </div>
                 </div>
               </div>

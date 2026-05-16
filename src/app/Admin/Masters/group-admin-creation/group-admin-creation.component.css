@@ -1,0 +1,100 @@
+.FormInputRowsContainer{
+  flex-direction: column;
+}
+
+.InputRow{
+  flex-direction: row !important;
+  width: 100% !important;
+}
+
+.AddForm .AddFormConatiner .ToggleFormInputRowsContainer .ToggleInputRow .InputFieldsContainer .toggle-container {
+  display: flex;
+  align-items: center;
+  font-family: Arial, sans-serif;
+  font-size: 18px;
+}
+
+.AddForm .AddFormConatiner .ToggleFormInputRowsContainer .ToggleInputRow .InputFieldsContainer .toggle-container .switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 20px;
+}
+
+.AddForm .AddFormConatiner .ToggleFormInputRowsContainer .ToggleInputRow .InputFieldsContainer .toggle-container .switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.AddForm .AddFormConatiner .ToggleFormInputRowsContainer .ToggleInputRow .InputFieldsContainer .toggle-container .switch .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.AddForm .AddFormConatiner .ToggleFormInputRowsContainer .ToggleInputRow .InputFieldsContainer .toggle-container .switch .slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: 0.4s;
+}
+
+.AddForm .AddFormConatiner .ToggleFormInputRowsContainer .ToggleInputRow .InputFieldsContainer .toggle-container .switch input:checked + .slider {
+  background-color: #4CAF50;
+}
+
+.AddForm .AddFormConatiner .ToggleFormInputRowsContainer .ToggleInputRow .InputFieldsContainer .toggle-container .switch input:checked + .slider:before {
+  transform: translateX(40px);
+}
+
+.AddForm .AddFormConatiner .ToggleFormInputRowsContainer .ToggleInputRow .InputFieldsContainer .toggle-container .switch .toggle-text {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  color: white;
+  font-weight: bold;
+  line-height: 20px;
+  pointer-events: none;
+}
+
+.StaffTypeClass{
+  width: 85px;
+}
+
+.staff-type-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+.staff-type-item {
+  width: 100%;        
+  white-space: nowrap;
+}
+
+
+.sortable-column .column-text{
+  margin-right: 15px;
+}
+
+.arrows{
+    display: flex;
+    flex-direction: row;
+    position: absolute;
+    right: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    gap: 0px;
+}

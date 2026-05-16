@@ -38,6 +38,8 @@ export class AcademicYearComponent extends BasePermissionComponent {
    isViewModalOpen= false;
 
   AcademicYearList: any[] = [];
+  ActiveacademicYearList:any[]=[];
+  selectedActiveAcademicYear:any=null
   AminityInsStatus = '';
   isModalOpen = false;
   AcademicYearCount = 0;
@@ -205,6 +207,7 @@ export class AcademicYearComponent extends BasePermissionComponent {
         this.loader.hide();
       }
     });
+    this.loadAcademicYears();
   }
 
   mapAcademicYears(response: any) {
@@ -218,6 +221,45 @@ export class AcademicYearComponent extends BasePermissionComponent {
       EndDate: this.formatDateDDMMYYYY(item.endDate),
       IsActive: item.isActive === '1' ? 'Active' : 'InActive'
     }));
+  }
+
+  loadAcademicYears(){
+    const fetchYears = (flag: '3') => {
+      const req = {
+        SchoolID: this.AcademicYearForm.get('School')?.value,
+        Flag: flag
+      }
+
+      console.log('Academic years API request:', req);
+
+      this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', req).subscribe(res => {
+        console.log('Academic years API response:', res);
+
+        const list = (res?.data || []).map((x: any) => ({
+          ID: x.id,
+          Name: x.name
+        }))
+
+        // if (list.length === 0 && flag === '3') {
+        //   console.log('No academic years found with flag 3, trying flag 2');
+        //   fetchYears('2')
+        //   return
+        // }
+
+        this.ActiveacademicYearList = list
+        
+        // ✅ SET DEFAULT ACADEMIC YEAR (IMPORTANT FIX)
+        // Only auto-select if NOT Super Admin (when school is already determined)
+        if (this.ActiveacademicYearList.length > 0) {
+          this.selectedActiveAcademicYear = this.ActiveacademicYearList[0].ID;
+          sessionStorage.setItem('ActiveAcademicYearID',     this.selectedActiveAcademicYear || '');
+          console.log('this.selectedActiveAcademicYear',this.selectedActiveAcademicYear);
+        }
+      })
+    }
+
+    fetchYears('3')
+
   }
 
   AddNewClicked() {
@@ -529,6 +571,16 @@ export class AcademicYearComponent extends BasePermissionComponent {
 
   pageEndIndex(): number {
     return Math.min(this.currentPage * this.pageSize, this.AcademicYearCount);
+  }
+  
+  CancelSyllabus(){
+    this.IsAddNewClicked=false;
+    this.FetchInitialData();
+  }
+
+  onRowsCountChange() {
+    this.currentPage = 1;
+    this.FetchInitialData();
   }
 }
 

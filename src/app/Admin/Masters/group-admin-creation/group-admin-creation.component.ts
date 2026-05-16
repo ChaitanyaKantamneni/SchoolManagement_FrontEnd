@@ -14,14 +14,14 @@ import { LoaderService } from '../../../Services/loader.service';
 import { HttpClient } from '@angular/common/http';
 
 @Component({
-  selector: 'app-staff',
+  selector: 'app-group-admin-creation',
   standalone:true,
   imports: [NgIf,NgFor,NgClass,NgStyle,MatIconModule,DashboardTopNavComponent,ReactiveFormsModule,FormsModule],
-  templateUrl: './staff.component.html',
-  styleUrl: './staff.component.css'
+  templateUrl: './group-admin-creation.component.html',
+  styleUrl: './group-admin-creation.component.css'
 })
-export class StaffComponent extends BasePermissionComponent {
-  pageName = 'Staff';
+export class GroupAdminCreationComponent extends BasePermissionComponent {
+  pageName = 'Group Admin';
 
   constructor(
     private http: HttpClient,
@@ -98,7 +98,7 @@ export class StaffComponent extends BasePermissionComponent {
     DateOfBirth:new FormControl('', Validators.required),
     Qualification: new FormControl('', Validators.required),
     School:new FormControl(),
-    AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
+    AcademicYear: new FormControl(0)
   });
 
   allowAlphaAndSpecial(event: KeyboardEvent) {
@@ -206,35 +206,14 @@ export class StaffComponent extends BasePermissionComponent {
 
   FetchAcademicYearCount(isSearch: boolean) {
     let SchoolIdSelected = '';
-    let AcademicYearIdSelected='';
-    let ClassSelected='';
-
-
-    if (this.SchoolSelectionChange) {
-      SchoolIdSelected = this.selectedSchoolID.trim();
-    }
-
-    if(this.SchoolAcademicYearChange){
-      AcademicYearIdSelected=this.selectedAcademicYearID.trim();
-    }
-
-    if(this.SchoolClassChange){
-      ClassSelected=this.selectedClassID.trim();
-    }
+    if (this.SchoolSelectionChange) SchoolIdSelected = this.selectedSchoolID.trim();
 
     const payload: any = {
       Flag: isSearch ? '8' : '6',
-      SchoolID: SchoolIdSelected,
-      Class:ClassSelected,
+      SchoolID: SchoolIdSelected || null,
+      StaffType: '10',   // Group Admin role ID — hardcoded, safe
       Name: isSearch ? this.searchQuery.trim() : null
     };
-
-    if (!this.isAdmin) {
-      payload.AcademicYear = this.AdminSelectedActiveAcademicYearID;
-    }
-    else if(this.isAdmin && this.SchoolAcademicYearChange){
-      payload.AcademicYear = AcademicYearIdSelected;
-    }
 
     return this.apiurl.post<any>('Tbl_Staff_CRUD_Operations', payload);
   }
@@ -244,20 +223,8 @@ export class StaffComponent extends BasePermissionComponent {
     const flag = isSearch ? '7' : '2';
 
     let SchoolIdSelected = '';
-    let AcademicYearIdSelected='';
-    let ClassSelected='';
 
-    if (this.SchoolSelectionChange) {
-      SchoolIdSelected = this.selectedSchoolID.trim();
-    }
-
-    if(this.SchoolAcademicYearChange){
-      AcademicYearIdSelected=this.selectedAcademicYearID.trim();
-    }
-
-    if(this.SchoolClassChange){
-      ClassSelected=this.selectedClassID.trim();
-    }
+    if (this.SchoolSelectionChange) SchoolIdSelected = this.selectedSchoolID.trim();
 
     const cursor =
       !extra.offset && this.currentPage > 1
@@ -268,9 +235,9 @@ export class StaffComponent extends BasePermissionComponent {
 
     this.FetchAcademicYearCount(isSearch).subscribe({
       next: (countResp: any) => {
-        this.StaffCount = countResp?.data?.[0]?.totalCount ?? 0;
-        this.SubjectsActiveCount=countResp?.data?.[0]?.activeCount ?? 0;
-        this.SubjectsInActiveCount=countResp?.data?.[0]?.inactiveCount ?? 0;
+        this.StaffCount            = countResp?.data?.[0]?.totalCount   ?? 0;
+        this.SubjectsActiveCount   = countResp?.data?.[0]?.activeCount  ?? 0;
+        this.SubjectsInActiveCount = countResp?.data?.[0]?.inactiveCount ?? 0;
 
         const payload: any = {
           Flag: flag,
@@ -279,17 +246,13 @@ export class StaffComponent extends BasePermissionComponent {
           SortDirection: this.sortDirection,
           LastCreatedDate: cursor?.lastCreatedDate ?? null,
           LastID: cursor?.lastID ?? null,
-          ID:ClassSelected,
-          SchoolID:SchoolIdSelected,
+          SchoolID: SchoolIdSelected || null,
+          // ── KEY FIX: filter by Group Admin role ID (hardcoded as "10" from your roles data) ──
+          // Using hardcoded "10" is safe since role IDs don't change once created
+          StaffType: '10',
+          // ── REMOVED: ID: ClassSelected — was conflicting with p_ID (staff ID param) ──
           ...extra
         };
-
-         if (!this.isAdmin) {
-          payload.AcademicYear = this.AdminSelectedActiveAcademicYearID;
-        }
-        else if(this.isAdmin && this.SchoolAcademicYearChange){
-          payload.AcademicYear = AcademicYearIdSelected;
-        }
 
         if (isSearch) payload.Name = this.searchQuery.trim();
 
@@ -305,7 +268,6 @@ export class StaffComponent extends BasePermissionComponent {
                 lastID: Number(lastRow.id)
               };
             }
-
             this.loader.hide();
           },
           error: () => {
@@ -320,7 +282,7 @@ export class StaffComponent extends BasePermissionComponent {
         this.loader.hide();
       }
     });
-  };
+  }
 
   mapAcademicYears(response: any) {
     this.StaffList = (response.data || []).map((item: any) => {
@@ -397,9 +359,9 @@ export class StaffComponent extends BasePermissionComponent {
     else{
       const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
       const data = {
-        SchoolID: this.currentSchoolId,
-        AcademicYear:this.StaffForm.get('AcademicYear')?.value,
-        StaffType: this.StaffForm.get('StaffType')?.value.join(','),
+        SchoolIDs: this.StaffForm.get('StaffType')?.value.join(','),
+        AcademicYear: null,
+        StaffType: this.StaffForm.get('School')?.value,  
         FirstName: this.StaffForm.get('FirstName')?.value,
         MiddleName: this.StaffForm.get('MiddleName')?.value,
         LastName: this.StaffForm.get('LastName')?.value,
@@ -441,127 +403,152 @@ export class StaffComponent extends BasePermissionComponent {
   };
 
   FetchSyllabusDetByID(SyllabusID: string, mode: 'view' | 'edit') {
-    const data = {
-      ID: SyllabusID,
-      Flag: "4"
-    };
-
-    this.apiurl.post<any>("Tbl_Staff_CRUD_Operations", data).subscribe(
-      (response: any) => {
-
-        const item = response?.data?.[0];
-        if (!item) {
-          this.StaffForm.reset();
-          this.viewSyllabus = null;
-          return;
-        }
-
-        const isActive = item.isActive === '1';
-        const staffTypeArray = item.staffType ? item.staffType.split(',').map((id: string) => id.trim()) : [];
-        this.selectedCategories = item.staffType ? item.staffType.split(',').map((id: string) => id.trim()) : [];
-
-        if (mode === 'view') {
-          this.isViewMode = true;
-          this.viewSyllabus = {
-            ID: item.id,
-            StaffType: staffTypeArray,
-            Name: item.firstName + ' ' + item.middleName + ' ' + item.lastName,
-            FirstName: item.firstName,
-            MiddleName: item.middleName,
-            LastName: item.lastName,
-            MobileNumber: item.mobileNumber,
-            Email: item.email,
-            DateOfBirth: this.formatDateDDMMYYYY(item.dateOfBirth),
-            Qualification: item.qualification,
-            SchoolName: item.schoolName,
-            AcademicYearName: item.academicYearName,
-            IsActive: isActive
-          };
-          this.isViewModalOpen = true;
-        }
-
-        if (mode === 'edit') {
-          this.isViewMode = false;
-          this.StaffForm.patchValue({
-            ID: item.id,
-            StaffType: this.selectedCategories,
-            FirstName: item.firstName,
-            MiddleName: item.middleName,
-            LastName: item.lastName,
-            MobileNumber: item.mobileNumber,
-            Email: item.email,
-            DateOfBirth: this.formatDateYYYYMMDD(item.dateOfBirth),
-            Qualification: item.qualification,
-            School:item.schoolID,
-            AcademicYear:item.academicYear
-          });
-          this.AdminselectedSchoolID=item.schoolID;
-          this.AdminselectedAcademivYearID=item.academicYear;
-          this.FetchAcademicYearsList();
-          this.FetchRoleListBySchoolID();
-          this.IsActiveStatus = isActive;
-          this.IsAddNewClicked = true;
-        }
-
-      },
-      error => {
-        console.error(error);
-      }
-    );
+  const data = {
+    ID: SyllabusID,
+    Flag: '4'
   };
 
-  UpdateStaff(){
-    if(this.StaffForm.invalid){
+  this.apiurl.post<any>('Tbl_Staff_CRUD_Operations', data).subscribe(
+    (response: any) => {
+      const item = response?.data?.[0];
+      if (!item) {
+        this.StaffForm.reset();
+        this.viewSyllabus = null;
+        return;
+      }
+
+      const isActive = item.isActive === '1';
+
+      // item.staffType is the Role ID (e.g. "10") — single value for group admin
+      // We display it as an array for getSyllabusName() compatibility
+      const staffTypeArray = item.staffType
+        ? item.staffType.split(',').map((id: string) => id.trim())
+        : [];
+
+      if (mode === 'view') {
+        this.isViewMode = true;
+        this.viewSyllabus = {
+          ID: item.id,
+          StaffType: staffTypeArray,
+          Name: [item.firstName, item.middleName, item.lastName].filter(Boolean).join(' '),
+          FirstName: item.firstName,
+          MiddleName: item.middleName,
+          LastName: item.lastName,
+          MobileNumber: item.mobileNumber,
+          Email: item.email,
+          DateOfBirth: this.formatDateDDMMYYYY(item.dateOfBirth),
+          Qualification: item.qualification,
+          SchoolName: item.schoolName,
+          AcademicYearName: item.academicYearName,
+          IsActive: isActive
+        };
+        this.isViewModalOpen = true;
+      }
+
+      if (mode === 'edit') {
+        this.isViewMode = false;
+
+        this.StaffForm.patchValue({
+          ID: item.id,
+          School: item.staffType,   // Role ID (e.g. "10") → Role dropdown
+          StaffType: [],
+          FirstName: item.firstName,
+          MiddleName: item.middleName,
+          LastName: item.lastName,
+          MobileNumber: item.mobileNumber,
+          Email: item.email,
+          DateOfBirth: this.formatDateYYYYMMDD(item.dateOfBirth),
+          Qualification: item.qualification
+        });
+
+        this.selectedCategories = [];
+        this.dropdownOpen = false;
+
+        // Fetch tagged schools via Flag 14
+        this.apiurl.post<any>('Tbl_Staff_CRUD_Operations', {
+          ID: item.id,
+          Flag: '14'
+        }).subscribe({
+          next: (res: any) => {
+            // DAL returns tblStaff with SchoolIDs property
+            const raw = res?.data?.[0]?.schoolIDs   // matches C# property name camelCased by JSON
+                    ?? res?.data?.[0]?.SchoolIDs
+                    ?? null;
+
+            if (raw && raw.trim() !== '') {
+              this.selectedCategories = raw
+                .split(',')
+                .map((s: string) => s.trim())
+                .filter((s: string) => s !== '');
+
+              this.StaffForm.get('StaffType')?.setValue([...this.selectedCategories]);
+            }
+          },
+          error: () => {
+            this.selectedCategories = [];
+          }
+        });
+
+        this.FetchRoleListBySchoolID();
+        this.IsActiveStatus = isActive;
+        this.IsAddNewClicked = true;
+      }
+    },
+    error => {
+      console.error('FetchSyllabusDetByID error:', error);
+    }
+  );
+}
+
+  UpdateStaff() {
+    if (this.StaffForm.invalid) {
       this.StaffForm.markAllAsTouched();
       return;
     }
-    else{
-      const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
-      const data = {
-        ID:this.StaffForm.get('ID')?.value,
-        SchoolID: this.currentSchoolId,
-        AcademicYear:this.StaffForm.get('AcademicYear')?.value,
-        StaffType: this.StaffForm.get('StaffType')?.value.join(','),
-        FirstName: this.StaffForm.get('FirstName')?.value,
-        MiddleName: this.StaffForm.get('MiddleName')?.value,
-        LastName: this.StaffForm.get('LastName')?.value,
-        MobileNumber: this.StaffForm.get('MobileNumber')?.value,
-        Email: this.StaffForm.get('Email')?.value,
-        DateOfBirth: this.StaffForm.get('DateOfBirth')?.value,
-        Qualification: this.StaffForm.get('Qualification')?.value,
-        IsActive:IsActiveStatusNumeric,
-        Flag: '5'
-      };
 
-      console.log('data',data);
-      this.apiurl.post("Tbl_Staff_CRUD_Operations", data).subscribe({
-        next: (response: any) => {
-          if (response.statusCode === 200) {
-            this.UpdateUser();
-            this.IsAddNewClicked=!this.IsAddNewClicked;
-            // this.AminityInsStatus = response.status;
-            this.isModalOpen = true;
-            this.AminityInsStatus = "Staff Details Updated!";
-            this.currentPage=1;
-            this.StaffForm.reset();
-            this.StaffForm.markAsPristine();
-          }
-        },
-        error: (err:any) => {
-          if (err.status === 400 && err.error?.message) {
-            this.AminityInsStatus = err.error.message;  // School Name Already Exists!
-          } else if (err.status === 500 && err.error?.Message) {
-            this.AminityInsStatus = err.error.Message;  // Database or internal error
-          } else {
-            this.AminityInsStatus = "Unexpected error occurred.";
-          }
+    const IsActiveStatusNumeric = this.IsActiveStatus ? '1' : '0';
+
+    const data = {
+      ID: this.StaffForm.get('ID')?.value,
+      SchoolIDs: this.selectedCategories.join(','),       // ── FIXED
+      StaffType: this.StaffForm.get('School')?.value,    // ── FIXED
+      AcademicYear: null,
+      FirstName: this.StaffForm.get('FirstName')?.value,
+      MiddleName: this.StaffForm.get('MiddleName')?.value,
+      LastName: this.StaffForm.get('LastName')?.value,
+      MobileNumber: this.StaffForm.get('MobileNumber')?.value,
+      Email: this.StaffForm.get('Email')?.value,
+      DateOfBirth: this.StaffForm.get('DateOfBirth')?.value,
+      Qualification: this.StaffForm.get('Qualification')?.value,
+      IsActive: IsActiveStatusNumeric,
+      Flag: '5'
+    };
+
+    this.apiurl.post('Tbl_Staff_CRUD_Operations', data).subscribe({
+      next: (response: any) => {
+        if (response.statusCode === 200) {
+          this.UpdateUser();
+          this.IsAddNewClicked = !this.IsAddNewClicked;
           this.isModalOpen = true;
-        },
-        complete: () => {
+          this.AminityInsStatus = 'Group Admin Updated Successfully!';
+          this.currentPage = 1;
+          this.StaffForm.reset();
+          this.StaffForm.markAsPristine();
+          this.selectedCategories = [];
         }
-      });
-    }
-  };
+      },
+      error: (err: any) => {
+        if (err.status === 400 && err.error?.message) {
+          this.AminityInsStatus = err.error.message;
+        } else if (err.status === 500 && err.error?.Message) {
+          this.AminityInsStatus = err.error.Message;
+        } else {
+          this.AminityInsStatus = 'Unexpected error occurred.';
+        }
+        this.isModalOpen = true;
+      }
+    });
+  }
 
 
   previousPage() {
@@ -960,12 +947,12 @@ export class StaffComponent extends BasePermissionComponent {
   SubmitUser(){
     const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
     const formData = new FormData();
-    formData.append('SchoolID', this.currentSchoolId);
+    formData.append('SchoolID', '');
     formData.append('FirstName', this.StaffForm.get('FirstName')?.value ?? '');
     formData.append('LastName', this.StaffForm.get('LastName')?.value ?? '');
     formData.append('MobileNo', this.StaffForm.get('MobileNumber')?.value ?? '');
     formData.append('Email', this.StaffForm.get('Email')?.value ?? '');
-    formData.append('RollId', this.StaffForm.get('StaffType')?.value.join(','));
+    formData.append('RollId', this.StaffForm.get('School')?.value ?? '');
     formData.append('Password', 'Welcome@2025');
     formData.append('IsActive', IsActiveStatusNumeric);
     formData.append('Flag', '1');
@@ -995,12 +982,12 @@ export class StaffComponent extends BasePermissionComponent {
   UpdateUser(){
     const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
     const formData = new FormData();
-    formData.append('SchoolID', this.currentSchoolId);
+    formData.append('SchoolID', '');   // ── FIXED: no single school for group admin
     formData.append('FirstName', this.StaffForm.get('FirstName')?.value ?? '');
     formData.append('LastName', this.StaffForm.get('LastName')?.value ?? '');
     formData.append('MobileNo', this.StaffForm.get('MobileNumber')?.value ?? '');
     formData.append('Email', this.StaffForm.get('Email')?.value ?? '');
-    formData.append('RollId', this.StaffForm.get('StaffType')?.value.join(','));
+    formData.append('RollId', this.StaffForm.get('School')?.value ?? '');  // ── FIXED
     formData.append('IsActive', IsActiveStatusNumeric);
     formData.append('Flag', '7');
 

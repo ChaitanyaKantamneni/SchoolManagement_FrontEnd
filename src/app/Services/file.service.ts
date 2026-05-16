@@ -193,4 +193,35 @@ export class FileService {
   private getFileNameFromPath(path: string): string {
     return path.split('/').pop() || 'download';
   }
+
+// getFullFileUrl(path: string): string {
+
+//     if (!path) return '';
+
+//     // 🔥 Fix wrong stored path
+//     let fixedPath = path;
+
+//     if (path.includes('api/files')) {
+//       fixedPath = path.replace('api/files', 'api/SchoolManagement');
+//     }
+
+//     // 🔥 Ensure no double slashes
+//     return `${environment.imgUrl.replace(/\/$/, '')}/${fixedPath.replace(/^\//, '')}`;
+//   }
+
+getFullLogoFileUrl(path: string): string {
+
+    if (!path) return '';
+
+    // always build full API path
+    return `${environment.imgUrl.replace(/\/$/, '')}/api/SchoolManagement/${path.replace(/^\//, '')}`;
+  }
+
+  uploadSchoolLogo(fd: FormData) {
+    return this.http.post(`${this.baseUrl}/upload-school-logo`, fd);
+  }
+
+  getSchoolLogo(schoolId: string) {
+    return this.http.get(`${this.baseUrl}/get-school-logo/${schoolId}`);
+  }
 }

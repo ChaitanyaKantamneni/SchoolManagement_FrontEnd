@@ -30,7 +30,7 @@
         <div class="admission-stat-icon admission-stat-icon--green"><mat-icon>check</mat-icon></div>
         <div>
           <strong>{{ SubjectsActiveCount }}</strong>
-          <span>Active Students</span>
+          <span>Active Syllabus</span>
           <!-- <small class="admission-stat-positive">{{ SubjectsActiveCount }} active rate</small> -->
         </div>
       </div>
@@ -75,7 +75,7 @@
             <h5>Syllabus Records</h5>
             <p>Showing {{ pageEndIndex() }} of {{ SyllabusCount }} records</p>
           </div>
-          <div class="admission-table-actions DownloadButtons" *ngIf="SyllabusList.length != 0">
+          <!-- <div class="admission-table-actions DownloadButtons" *ngIf="SyllabusList.length != 0">
             <button type="button" class="btnHover" (click)="exportSyllabus('pdf')">
               <mat-icon>picture_as_pdf</mat-icon>
             </button>
@@ -85,7 +85,7 @@
             <button type="button" class="btnHover" (click)="exportSyllabus('print')">
               <mat-icon>print</mat-icon>
             </button>          
-          </div>          
+          </div>           -->
         </div>
         <div class="reviewstable admission-table-wrap">
           <table id="classTable" *ngIf="SyllabusList.length != 0" class="table table-bordered admission-table">
@@ -93,7 +93,7 @@
               <tr>
                 <th class="visually-hidden">Academic Year ID</th>
                 <th>SI.No</th>
-                <th (click)="sort('Name')" class="sortable-column">
+                <!-- <th (click)="sort('Name')" class="sortable-column">
                   <span class="column-text">Syllabus</span>
                   <span class="arrows">
                     <mat-icon 
@@ -105,7 +105,8 @@
                       keyboard_arrow_down
                     </mat-icon>
                   </span>
-                </th>
+                </th> -->
+                <th>Syllabus</th>
                 <th>Available From</th>
                 <th>Academic Year</th>
                 <th *ngIf="isAdmin">School Name</th>
@@ -153,8 +154,12 @@
           <div class="admission-footer-meta">
             <label>
               Rows:
-              <select aria-label="Rows per page">
-                <option>{{ pageSize }}</option>
+              <select aria-label="Rows per page" [(ngModel)]="pageSize"
+            (ngModelChange)="onRowsCountChange()">
+                <option [ngValue]="5">5</option>
+                <option [ngValue]="10">10</option>
+                <option [ngValue]="25">25</option>
+                <option [ngValue]="50">50</option>
               </select>
             </label>
             <p>{{ pageStartIndex() }}&ndash;{{ pageEndIndex() }} of {{ SyllabusCount }} records</p>
@@ -176,10 +181,32 @@
     </div>
   </div>
   <div *ngIf="IsAddNewClicked" class="w-100">
-    <div class="AddForm">
-      <div class="AddFormTop">
+    <div class="admission-breadcrumb">
+          <span>Masters</span>
+          <mat-icon>chevron_right</mat-icon>
+          <span>Syllabus</span>
+          <mat-icon>chevron_right</mat-icon>
+          <strong>Add Syllabus</strong>
+        </div>
+    <div class="AddFormTop">
         <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
-        <p>Add Syllabus</p>
+        <div class="admission-record-header p-0">
+          <div>
+            <h5>Add Syllabus</h5>
+            <p>Configure a new Syllabus for Academic year</p>
+          </div>
+        </div>
+      </div>
+    <div class="AddForm">
+      <div class="form-top">
+        <p class="cc-title">Syllabus Details</p>
+        <!-- <span
+                    class="status-pill"
+                    [style.background]="(School.IsActive === true || School.IsActive === 'true' || School.IsActive === 'Active' || School.IsActive === 1) ? '#d9f9e5' : '#fff0bd'"
+                    [style.color]="(School.IsActive === true || School.IsActive === 'true' || School.IsActive === 'Active' || School.IsActive === 1) ? '#00823a' : '#c25b00'"
+                    [style.borderColor]="(School.IsActive === true || School.IsActive === 'true' || School.IsActive === 'Active' || School.IsActive === 1) ? '#86efac' : '#f5d77a'">
+                    {{ (School.IsActive === true || School.IsActive === 'true' || School.IsActive === 'Active' || School.IsActive === 1) ? 'Active' : 'Pending' }}
+                  </span>      -->
       </div>
       <div class="AddFormConatiner">
         <form [formGroup]="SyllabusForm">
@@ -209,20 +236,7 @@
                   </div>
                 </div>
               </div>
-              <div class="InputFieldsContainer" *ngIf="!isAdmin">
-                <label class="inputLabel" for="email">Syllabus Name <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter Syllabus Name" />
-                  <div *ngIf="(SyllabusForm.get('Name' ) ?. touched && SyllabusForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(SyllabusForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>                          
-            </div>
-            <div class="InputRow" [class.inputrowdescription]="!isAdmin">
-               <div class="InputFieldsContainer" *ngIf="isAdmin">
+              <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Syllabus Name <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" formControlName="Name" placeholder="Enter Syllabus Name" />
@@ -233,7 +247,21 @@
                   </div>
                 </div>
               </div>
-              <div class="InputFieldsContainer">
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <label class="inputLabel" for="email">Available From <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" />
+                  <div *ngIf="(SyllabusForm.get('AvailableFrom' ) ?. touched && SyllabusForm.get('AvailableFrom' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(SyllabusForm.get('AvailableFrom' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Select Available From.</small>
+                    </div>
+                  </div>
+                </div>
+              </div>                          
+            </div>
+            <!-- [class.inputrowdescription]="!isAdmin" -->
+            <div class="InputRow">               
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <label class="inputLabel" for="email">Available From <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" />
@@ -244,48 +272,61 @@
                   </div>
                 </div>
               </div>
-              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <span style="visibility: hidden;">hello adding new academic year</span>
+              </div> 
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <span style="visibility: hidden;">hello adding new academic year</span>
+              </div>
+              <!-- <div class="InputFieldsContainer" *ngIf="!isAdmin">
                 <label class="inputLabel" for="email">Description</label>
                 <div class="input-with-error">
                   <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="2"></textarea>                  
                 </div>
-              </div>
+              </div> -->
             </div>
             <div class="InputRow">
-              <div class="InputFieldsContainer" *ngIf="isAdmin">
+              <!-- <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <label class="inputLabel" for="email">Description</label>
                 <div class="input-with-error">
                   <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="2"></textarea>                  
                 </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <div class="toggle-container" (click)="$event.stopPropagation()">
-                  <label class="switch">
-                    <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
-                    <span class="slider">
-                      <span
-                        class="toggle-text"
-                        [ngStyle]="{
-                          left: IsActiveStatus ? '42%' : '60%',
-                          fontSize: IsActiveStatus ? '9px' : '9px'
-                        }"
-                      >
-                        {{ IsActiveStatus ? 'Active' : 'Inactive' }}
-                      </span>
-                    </span>
-                  </label>
+              </div> -->
+              <div class="noteActiveCard">
+                <div class="noteSection">
+                  <span>Note</span>
+                  <p>Multiple syllabuses can be created for an academic year. Mark a syllabus as Active to make it available for academic activities and student records.</p>
                 </div>
-              </div>   
-              <div class="InputFieldsContainer" *ngIf="!isAdmin">
-                <span style="visibility: hidden;">hello adding new academic year</span>
-              </div>               
+                <div class="InputFieldsContainer">
+                  <div class="toggle-container" (click)="$event.stopPropagation()">
+                    <label class="switch">
+                      <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
+                      <span class="slider">
+                        <span
+                          class="toggle-text"
+                          [ngStyle]="{
+                            left: IsActiveStatus ? '42%' : '60%',
+                            fontSize: IsActiveStatus ? '9px' : '9px'
+                          }"
+                        >
+                          {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                </div>  
+              </div>             
             </div>
           </div>
-          <div class="ActionButtons">
-            <button type="button" *ngIf="ViewSyllabusClicked && canEdit()" (click)="UpdateSyllabus()">Update</button>
-            <button type="button" *ngIf="!ViewSyllabusClicked && canAdd()" (click)="SubmitSyllabus()">Submit</button>
-          </div>
         </form>
+      </div>
+      <div class="form-bottom">
+        <span class="footer-hint">Fields marked <span class="required">*</span> are required</span>
+        <div class="ActionButtons footer-actions">
+            <button type="button" class="cancelbtn" (click)="CancelSyllabus()">Cancel</button>
+            <button type="button" class="submitbtn" *ngIf="ViewSyllabusClicked && canEdit()" (click)="UpdateSyllabus()">Update</button>
+            <button type="button" class="submitbtn" *ngIf="!ViewSyllabusClicked && canAdd()" (click)="SubmitSyllabus()">Submit</button>
+          </div>
       </div>
     </div>
   </div>
