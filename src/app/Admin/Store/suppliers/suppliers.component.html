@@ -105,201 +105,128 @@
     </div>
   </div>
 
-  <!-- Add/Edit View -->
+  <!-- ═══════════════════════════════════════════
+       ADD / EDIT VIEW
+  ════════════════════════════════════════════ -->
   <div *ngIf="IsAddNewClicked" class="w-100">
-    <div class="AddForm">
-      <div class="AddFormTop">
-        <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
-        <p>{{ editingId ? 'Update Supplier' : 'Add Supplier' }}</p>
+
+    <!-- Top bar -->
+    <div class="sale-topbar">
+      <div class="sale-topbar-left">
+        <button class="back-btn" (click)="AddNewClicked()" title="Back">
+          <mat-icon>arrow_circle_left</mat-icon>
+        </button>
+        <div class="sale-title-block">
+          <div class="sale-icon-wrap">
+            <mat-icon>local_shipping</mat-icon>
+          </div>
+          <div>
+            <h5 class="sale-title">Suppliers Management</h5>
+            <span class="sale-subtitle">
+              <span class="dot-active"></span>
+              {{ editingId ? 'UPDATE SUPPLIER' : 'REGISTER SUPPLIER' }}
+            </span>
+          </div>
+        </div>
       </div>
-      <div class="AddFormConatiner">
-        <form [formGroup]="supplierForm">
-          <div class="FormInputRowsContainer">
-
-            <!-- Admin Layout -->
-            <ng-container *ngIf="isAdmin; else schoolWiseLayout">
-
-              <!-- Admin Row 1: School, Academic Year, Supplier Name -->
-              <div class="InputRow">
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">School <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <select class="inputField" formControlName="schoolId" (change)="onAdminSchoolChange($event)">
-                      <option value="">-- Select School --</option>
-                      <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
-                    </select>
-                    <div *ngIf="supplierForm.get('schoolId')?.touched && supplierForm.get('schoolId')?.invalid"
-                      class="text-danger">
-                      <small>Please Select School.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Academic Year <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <select class="inputField" formControlName="academicYearId">
-                      <option value="">-- Select Academic Year --</option>
-                      <option *ngFor="let year of academicYearList" [value]="year.ID">{{ year.Name }}</option>
-                    </select>
-                    <div *ngIf="supplierForm.get('academicYearId')?.touched && supplierForm.get('academicYearId')?.invalid"
-                      class="text-danger">
-                      <small>Please Select Academic Year.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Supplier Name <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="supplierName" placeholder="Enter Supplier Name" />
-                    <div *ngIf="supplierForm.get('supplierName')?.touched && supplierForm.get('supplierName')?.invalid"
-                      class="text-danger">
-                      <small *ngIf="supplierForm.get('supplierName')?.errors?.['required']">Please Enter Supplier Name.</small>
-                      <small *ngIf="supplierForm.get('supplierName')?.errors?.['minlength']">Minimum 2 characters required.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Admin Row 2: Email, Phone, Address -->
-              <div class="InputRow">
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Email Address</label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="emailAddress" placeholder="Enter Email Address"
-                      type="email" />
-                    <div *ngIf="supplierForm.get('emailAddress')?.touched && supplierForm.get('emailAddress')?.invalid"
-                      class="text-danger">
-                      <small *ngIf="supplierForm.get('emailAddress')?.errors?.['email']">Please Enter a Valid Email Address.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Phone Number</label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="phoneNumber" placeholder="Enter Phone Number"
-                      type="tel" maxlength="15" />
-                    <div *ngIf="supplierForm.get('phoneNumber')?.touched && supplierForm.get('phoneNumber')?.invalid"
-                      class="text-danger">
-                      <small *ngIf="supplierForm.get('phoneNumber')?.errors?.['pattern']">Please Enter a Valid Phone Number (10–15 digits).</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Address</label>
-                  <div class="input-with-error">
-                    <textarea class="inputField" formControlName="address" placeholder="Enter Address" rows="2"></textarea>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Admin Row 3: Toggle -->
-              <div class="InputRow">
-                <div class="InputFieldsContainer">
-                  <div class="toggle-container" (click)="$event.stopPropagation()" style="margin-top: 20px;">
-                    <label class="switch">
-                      <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (change)="toggleChange()">
-                      <span class="slider">
-                        <span class="toggle-text"
-                          [ngStyle]="{ left: IsActiveStatus ? '42%' : '60%', fontSize: '9px' }">
-                          {{ IsActiveStatus ? 'Active' : 'Inactive' }}
-                        </span>
-                      </span>
-                    </label>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer"></div>
-                <div class="InputFieldsContainer"></div>
-              </div>
-
-            </ng-container>
-
-            <!-- Non-Admin Layout -->
-            <ng-template #schoolWiseLayout>
-
-              <!-- Non-Admin Row 1: Academic Year, Supplier Name, Email -->
-              <div class="InputRow">
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Academic Year <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <select class="inputField" formControlName="academicYearId">
-                      <option value="">-- Select Academic Year --</option>
-                      <option *ngFor="let year of academicYearList" [value]="year.ID">{{ year.Name }}</option>
-                    </select>
-                    <div *ngIf="supplierForm.get('academicYearId')?.touched && supplierForm.get('academicYearId')?.invalid"
-                      class="text-danger">
-                      <small>Please Select Academic Year.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Supplier Name <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="supplierName" placeholder="Enter Supplier Name" />
-                    <div *ngIf="supplierForm.get('supplierName')?.touched && supplierForm.get('supplierName')?.invalid"
-                      class="text-danger">
-                      <small *ngIf="supplierForm.get('supplierName')?.errors?.['required']">Please Enter Supplier Name.</small>
-                      <small *ngIf="supplierForm.get('supplierName')?.errors?.['minlength']">Minimum 2 characters required.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Email Address</label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="emailAddress" placeholder="Enter Email Address"
-                      type="email" />
-                    <div *ngIf="supplierForm.get('emailAddress')?.touched && supplierForm.get('emailAddress')?.invalid"
-                      class="text-danger">
-                      <small *ngIf="supplierForm.get('emailAddress')?.errors?.['email']">Please Enter a Valid Email Address.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Non-Admin Row 2: Phone, Address, Toggle -->
-              <div class="InputRow">
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Phone Number</label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="phoneNumber" placeholder="Enter Phone Number"
-                      type="tel" maxlength="15" />
-                    <div *ngIf="supplierForm.get('phoneNumber')?.touched && supplierForm.get('phoneNumber')?.invalid"
-                      class="text-danger">
-                      <small *ngIf="supplierForm.get('phoneNumber')?.errors?.['pattern']">Please Enter a Valid Phone Number (10–15 digits).</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Address</label>
-                  <div class="input-with-error">
-                    <textarea class="inputField" formControlName="address" placeholder="Enter Address" rows="2"></textarea>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <div class="toggle-container" (click)="$event.stopPropagation()" style="margin-top: 25px;">
-                    <label class="switch">
-                      <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (change)="toggleChange()">
-                      <span class="slider">
-                        <span class="toggle-text"
-                          [ngStyle]="{ left: IsActiveStatus ? '42%' : '60%', fontSize: '9px' }">
-                          {{ IsActiveStatus ? 'Active' : 'Inactive' }}
-                        </span>
-                      </span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-            </ng-template>
-          </div>
-
-          <div class="ActionButtons" style="display: flex; justify-content: center; margin-top: 40px;">
-            <button type="button" *ngIf="editingId && canEdit()" (click)="UpdateSupplier()">Update</button>
-            <button type="button" *ngIf="!editingId && canAdd()" (click)="SubmitSupplier()">Submit</button>
-          </div>
-        </form>
+      <div class="sale-topbar-right">
+        <button class="save-btn" (click)="editingId ? UpdateSupplier() : SubmitSupplier()">
+          <mat-icon>save</mat-icon> SAVE
+        </button>
       </div>
     </div>
+
+    <form [formGroup]="supplierForm" class="sale-form-wrap">
+
+      <!-- SUPPLIER DETAILS section -->
+      <div class="sale-section">
+        <div class="sale-section-header">
+          <mat-icon>info</mat-icon>
+          <span>SUPPLIER DETAILS</span>
+        </div>
+
+        <div class="sale-details-grid">
+
+          <!-- Admin: School -->
+          <div class="sale-field" *ngIf="isAdmin">
+            <label class="sale-label">SELECT SCHOOL <span class="required">*</span></label>
+            <select class="sale-select" formControlName="schoolId" (change)="onAdminSchoolChange($event)">
+              <option value="">-- Select School --</option>
+              <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+            </select>
+            <div *ngIf="supplierForm.get('schoolId')?.touched && supplierForm.get('schoolId')?.invalid" class="sale-error">
+              <small>Please Select School.</small>
+            </div>
+          </div>
+
+          <!-- Academic Year -->
+          <div class="sale-field">
+            <label class="sale-label">ACADEMIC YEAR <span class="required">*</span></label>
+            <select class="sale-select" formControlName="academicYearId">
+              <option value="">-- Select Academic Year --</option>
+              <option *ngFor="let year of academicYearList" [value]="year.ID">{{ year.Name }}</option>
+            </select>
+            <div *ngIf="supplierForm.get('academicYearId')?.touched && supplierForm.get('academicYearId')?.invalid" class="sale-error">
+              <small>Please Select Academic Year.</small>
+            </div>
+          </div>
+
+          <!-- Supplier Name -->
+          <div class="sale-field">
+            <label class="sale-label">SUPPLIER NAME <span class="required">*</span></label>
+            <input class="sale-input" formControlName="supplierName" placeholder="Enter Supplier Name" />
+            <div *ngIf="supplierForm.get('supplierName')?.touched && supplierForm.get('supplierName')?.invalid" class="sale-error">
+              <small *ngIf="supplierForm.get('supplierName')?.errors?.['required']">Please Enter Supplier Name.</small>
+              <small *ngIf="supplierForm.get('supplierName')?.errors?.['minlength']">Minimum 2 characters required.</small>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="sale-field">
+            <label class="sale-label">EMAIL ADDRESS</label>
+            <input class="sale-input" formControlName="emailAddress" placeholder="Enter Email Address" type="email" />
+            <div *ngIf="supplierForm.get('emailAddress')?.touched && supplierForm.get('emailAddress')?.invalid" class="sale-error">
+              <small *ngIf="supplierForm.get('emailAddress')?.errors?.['email']">Please Enter a Valid Email Address.</small>
+            </div>
+          </div>
+
+          <!-- Phone -->
+          <div class="sale-field">
+            <label class="sale-label">PHONE NUMBER</label>
+            <input class="sale-input" formControlName="phoneNumber" placeholder="Enter Phone Number" type="tel" maxlength="15" />
+            <div *ngIf="supplierForm.get('phoneNumber')?.touched && supplierForm.get('phoneNumber')?.invalid" class="sale-error">
+              <small *ngIf="supplierForm.get('phoneNumber')?.errors?.['pattern']">Please Enter a Valid Phone Number (10–15 digits).</small>
+            </div>
+          </div>
+
+          <!-- Address -->
+          <div class="sale-field">
+            <label class="sale-label">ADDRESS</label>
+            <input class="sale-input" formControlName="address" placeholder="Enter Address" />
+          </div>
+
+          <!-- Status Toggle -->
+          <div class="sale-field">
+            <label class="sale-label">STATUS</label>
+            <div class="toggle-container" (click)="$event.stopPropagation()">
+              <label class="switch">
+                <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (change)="toggleChange()">
+                <span class="slider">
+                  <span class="toggle-text"
+                    [ngStyle]="{ left: IsActiveStatus ? '42%' : '60%', fontSize: '9px' }">
+                    {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                  </span>
+                </span>
+              </label>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </form>
   </div>
+
 </div>
 
 <!-- Status Modal -->

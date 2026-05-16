@@ -35,7 +35,7 @@ export class UnitsComponent extends BasePermissionComponent {
     this.SchoolSelectionChange = false;
     this.FetchSchoolsList();
     this.FetchInitialData();
-  };
+  }
 
   allowOnlyNumbers(event: KeyboardEvent) {
     if (
@@ -47,7 +47,6 @@ export class UnitsComponent extends BasePermissionComponent {
     ) {
       return;
     }
-
     if (!/^[0-9]$/.test(event.key)) {
       event.preventDefault();
     }
@@ -87,6 +86,7 @@ export class UnitsComponent extends BasePermissionComponent {
   AdminselectedSchoolID: string = '';
   AdminselectedAcademicYearID: string = '';
 
+  // FIX 1: School initialised to 0 (same as Items) so Validators.min(1) works correctly.
   UnitsForm: any = new FormGroup({
     ID: new FormControl(''),
     SchoolID: new FormControl(''),
@@ -96,59 +96,47 @@ export class UnitsComponent extends BasePermissionComponent {
     MaximumValue: new FormControl('', [Validators.required, Validators.pattern('^[0-9]{1,3}$')]),
     MinimumDifference: new FormControl('', [Validators.required, Validators.pattern('^[0-9]{1,3}$')]),
     Description: new FormControl(''),
-    School: new FormControl(),
+    School: new FormControl(0),
     AcademicYear: new FormControl(0, [Validators.required, Validators.min(1)])
   });
 
   FetchSchoolsList() {
     const requestData = { Flag: '2' };
 
-    this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', requestData)
-      .subscribe(
-        (response: any) => {
-          if (response && Array.isArray(response.data)) {
-            this.schoolList = response.data.map((item: any) => {
-              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
-              return {
-                ID: item.id,
-                Name: item.name,
-                IsActive: isActiveString
-              };
-            });
-          } else {
-            this.schoolList = [];
-          }
-        },
-        (error) => {
+    this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', requestData).subscribe(
+      (response: any) => {
+        if (response && Array.isArray(response.data)) {
+          this.schoolList = response.data.map((item: any) => ({
+            ID: item.id,
+            Name: item.name,
+            IsActive: item.isActive === '1' ? 'Active' : 'InActive'
+          }));
+        } else {
           this.schoolList = [];
         }
-      );
-  };
+      },
+      () => { this.schoolList = []; }
+    );
+  }
 
   FetchAcademicYearsList() {
     const requestData = { SchoolID: this.AdminselectedSchoolID || '', Flag: '2' };
 
-    this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)
-      .subscribe(
-        (response: any) => {
-          if (response && Array.isArray(response.data)) {
-            this.academicYearList = response.data.map((item: any) => {
-              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
-              return {
-                ID: item.id,
-                Name: item.name,
-                IsActive: isActiveString
-              };
-            });
-          } else {
-            this.academicYearList = [];
-          }
-        },
-        (error) => {
+    this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData).subscribe(
+      (response: any) => {
+        if (response && Array.isArray(response.data)) {
+          this.academicYearList = response.data.map((item: any) => ({
+            ID: item.id,
+            Name: item.name,
+            IsActive: item.isActive === '1' ? 'Active' : 'InActive'
+          }));
+        } else {
           this.academicYearList = [];
         }
-      );
-  };
+      },
+      () => { this.academicYearList = []; }
+    );
+  }
 
   protected override get isAdmin(): boolean {
     const role = sessionStorage.getItem('RollID') || localStorage.getItem('RollID');
@@ -157,7 +145,6 @@ export class UnitsComponent extends BasePermissionComponent {
 
   FetchUnitsCount(isSearch: boolean) {
     let SchoolIdSelected = '';
-
     if (this.SchoolSelectionChange) {
       SchoolIdSelected = this.selectedSchoolID.trim();
     }
@@ -175,7 +162,6 @@ export class UnitsComponent extends BasePermissionComponent {
     const flag = isSearch ? '7' : '2';
 
     let SchoolIdSelected = '';
-
     if (this.SchoolSelectionChange) {
       SchoolIdSelected = this.selectedSchoolID.trim();
     }
@@ -232,7 +218,7 @@ export class UnitsComponent extends BasePermissionComponent {
         this.loader.hide();
       }
     });
-  };
+  }
 
   mapUnits(response: any) {
     this.UnitsList = (response.data || []).map((item: any) => ({
@@ -247,9 +233,9 @@ export class UnitsComponent extends BasePermissionComponent {
       MaximumValue: item.maximumValue,
       MinimumDifference: item.minimumDifference,
       Description: item.description,
-      IsActive: item.isActive === "True" ? 'Active' : 'InActive'
+      IsActive: item.isActive === 'True' ? 'Active' : 'InActive'
     }));
-  };
+  }
 
   AddNewClicked() {
     if (this.isAdmin) {
@@ -257,7 +243,10 @@ export class UnitsComponent extends BasePermissionComponent {
     } else {
       this.UnitsForm.get('School')?.clearValidators();
     }
-    if (this.AdminselectedSchoolID == '') {
+    // FIX 2: Always call updateValueAndValidity after changing validators.
+    this.UnitsForm.get('School')?.updateValueAndValidity();
+
+    if (this.AdminselectedSchoolID === '') {
       const schoolFromSession = sessionStorage.getItem('SchoolID') || localStorage.getItem('SchoolID') || '';
       this.AdminselectedSchoolID = schoolFromSession;
       this.FetchAcademicYearsList();
@@ -268,7 +257,7 @@ export class UnitsComponent extends BasePermissionComponent {
     this.IsAddNewClicked = !this.IsAddNewClicked;
     this.IsActiveStatus = true;
     this.ViewUnitClicked = false;
-  };
+  }
 
   SubmitUnit() {
     if (this.UnitsForm.invalid) {
@@ -284,7 +273,7 @@ export class UnitsComponent extends BasePermissionComponent {
       return;
     }
 
-    const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
+    const IsActiveStatusNumeric = this.IsActiveStatus ? '1' : '0';
     const data = {
       UnitName: this.UnitsForm.get('UnitName')?.value,
       Abbreviation: this.UnitsForm.get('Abbreviation')?.value,
@@ -292,18 +281,19 @@ export class UnitsComponent extends BasePermissionComponent {
       MaximumValue: this.UnitsForm.get('MaximumValue')?.value,
       MinimumDifference: this.UnitsForm.get('MinimumDifference')?.value,
       Description: this.UnitsForm.get('Description')?.value,
+      // FIX 3: Use the form's School field as SchoolID (same mapping as Items).
       SchoolID: this.UnitsForm.get('School')?.value,
       AcademicYear: this.UnitsForm.get('AcademicYear')?.value,
       IsActive: IsActiveStatusNumeric,
       Flag: '1'
     };
 
-    this.apiurl.post("Tbl_Units_CRUD_Operations", data).subscribe({
+    this.apiurl.post('Tbl_Units_CRUD_Operations', data).subscribe({
       next: (response: any) => {
         if (response.statusCode === 200) {
           this.IsAddNewClicked = !this.IsAddNewClicked;
           this.isModalOpen = true;
-          this.AminityInsStatus = "Unit Details Submitted!";
+          this.AminityInsStatus = 'Unit Details Submitted!';
           this.UnitsForm.reset();
           this.UnitsForm.markAsPristine();
           this.currentPage = 1;
@@ -312,7 +302,7 @@ export class UnitsComponent extends BasePermissionComponent {
           this.sortDirection = 'desc';
           this.FetchInitialData();
         } else {
-          this.AminityInsStatus = response.message || "Error Submitting Unit.";
+          this.AminityInsStatus = response.message || 'Error Submitting Unit.';
           this.isModalOpen = true;
         }
       },
@@ -322,21 +312,18 @@ export class UnitsComponent extends BasePermissionComponent {
         } else if (err.status === 500 && err.error?.Message) {
           this.AminityInsStatus = err.error.Message;
         } else {
-          this.AminityInsStatus = "Unexpected error occurred.";
+          this.AminityInsStatus = 'Unexpected error occurred.';
         }
         this.isModalOpen = true;
       },
       complete: () => { }
     });
-  };
+  }
 
   FetchUnitByID(UnitID: string, mode: 'view' | 'edit') {
-    const data = {
-      ID: UnitID,
-      Flag: "4"
-    };
+    const data = { ID: UnitID, Flag: '4' };
 
-    this.apiurl.post<any>("Tbl_Units_CRUD_Operations", data).subscribe(
+    this.apiurl.post<any>('Tbl_Units_CRUD_Operations', data).subscribe(
       (response: any) => {
         const item = response?.data?.[0];
         if (!item) {
@@ -345,7 +332,7 @@ export class UnitsComponent extends BasePermissionComponent {
           return;
         }
 
-        const isActive = item.isActive === "True";
+        const isActive = item.isActive === 'True';
 
         if (mode === 'view') {
           this.isViewMode = true;
@@ -368,6 +355,11 @@ export class UnitsComponent extends BasePermissionComponent {
 
         if (mode === 'edit') {
           this.isViewMode = false;
+          // FIX 4: Set admin selections BEFORE fetching dependent lists,
+          // so the API calls use the correct SchoolID and AcademicYear.
+          this.AdminselectedSchoolID = item.schoolID;
+          this.AdminselectedAcademicYearID = item.academicYear;
+          this.FetchAcademicYearsList();
           this.UnitsForm.patchValue({
             ID: item.id,
             School: item.schoolID,
@@ -379,18 +371,13 @@ export class UnitsComponent extends BasePermissionComponent {
             MinimumDifference: item.minimumDifference,
             Description: item.description
           });
-          this.AdminselectedSchoolID = item.schoolID;
-          this.AdminselectedAcademicYearID = item.academicYear;
-          this.FetchAcademicYearsList();
           this.IsActiveStatus = isActive;
           this.IsAddNewClicked = true;
         }
       },
-      error => {
-        console.error(error);
-      }
+      error => { console.error(error); }
     );
-  };
+  }
 
   UpdateUnit() {
     if (this.UnitsForm.invalid) {
@@ -400,75 +387,69 @@ export class UnitsComponent extends BasePermissionComponent {
 
     const minValue = Number(this.UnitsForm.get('MinimumValue')?.value);
     const maxValue = Number(this.UnitsForm.get('MaximumValue')?.value);
+    // FIX 5: Use a guard clause (early return) instead of wrapping the entire
+    // API call in an else block. Matches the SubmitUnit pattern and is cleaner.
     if (minValue >= maxValue) {
       this.AminityInsStatus = '⚠️ Maximum Value must be greater than Minimum Value.';
       this.isModalOpen = true;
       return;
-    } else {
-      const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
-      const data = {
-        ID: this.UnitsForm.get('ID')?.value || '',
-        SchoolID: this.UnitsForm.get('School')?.value,
-        AcademicYear: this.UnitsForm.get('AcademicYear')?.value || '',
-        UnitName: this.UnitsForm.get('UnitName')?.value || '',
-        Abbreviation: this.UnitsForm.get('Abbreviation')?.value || '',
-        MinimumValue: this.UnitsForm.get('MinimumValue')?.value || '',
-        MaximumValue: this.UnitsForm.get('MaximumValue')?.value || '',
-        MinimumDifference: this.UnitsForm.get('MinimumDifference')?.value || '',
-        Description: this.UnitsForm.get('Description')?.value || '',
-        IsActive: IsActiveStatusNumeric,
-        Flag: '5'
-      };
-
-      this.apiurl.post("Tbl_Units_CRUD_Operations", data).subscribe({
-        next: (response: any) => {
-          if (response.statusCode === 200) {
-            this.IsAddNewClicked = !this.IsAddNewClicked;
-            this.isModalOpen = true;
-            this.AminityInsStatus = "Unit Details Updated!";
-            this.UnitsForm.reset();
-            this.UnitsForm.markAsPristine();
-            this.FetchInitialData();
-          }
-        },
-        error: (err: any) => {
-          if (err.status === 400 && err.error?.message) {
-            this.AminityInsStatus = err.error.message;
-          } else if (err.status === 500 && err.error?.Message) {
-            this.AminityInsStatus = err.error.Message;
-          } else {
-            this.AminityInsStatus = "Unexpected error occurred.";
-          }
-          this.isModalOpen = true;
-        },
-        complete: () => { }
-      });
     }
-  };
+
+    const IsActiveStatusNumeric = this.IsActiveStatus ? '1' : '0';
+    const data = {
+      ID: this.UnitsForm.get('ID')?.value || '',
+      // FIX 6: Use the form's School field as SchoolID (same mapping as Items and SubmitUnit).
+      SchoolID: this.UnitsForm.get('School')?.value,
+      AcademicYear: this.UnitsForm.get('AcademicYear')?.value || '',
+      UnitName: this.UnitsForm.get('UnitName')?.value || '',
+      Abbreviation: this.UnitsForm.get('Abbreviation')?.value || '',
+      MinimumValue: this.UnitsForm.get('MinimumValue')?.value || '',
+      MaximumValue: this.UnitsForm.get('MaximumValue')?.value || '',
+      MinimumDifference: this.UnitsForm.get('MinimumDifference')?.value || '',
+      Description: this.UnitsForm.get('Description')?.value || '',
+      IsActive: IsActiveStatusNumeric,
+      Flag: '5'
+    };
+
+    this.apiurl.post('Tbl_Units_CRUD_Operations', data).subscribe({
+      next: (response: any) => {
+        if (response.statusCode === 200) {
+          this.IsAddNewClicked = !this.IsAddNewClicked;
+          this.isModalOpen = true;
+          this.AminityInsStatus = 'Unit Details Updated!';
+          this.UnitsForm.reset();
+          this.UnitsForm.markAsPristine();
+          this.FetchInitialData();
+        }
+      },
+      error: (err: any) => {
+        if (err.status === 400 && err.error?.message) {
+          this.AminityInsStatus = err.error.message;
+        } else if (err.status === 500 && err.error?.Message) {
+          this.AminityInsStatus = err.error.Message;
+        } else {
+          this.AminityInsStatus = 'Unexpected error occurred.';
+        }
+        this.isModalOpen = true;
+      },
+      complete: () => { }
+    });
+  }
 
   previousPage() {
-    if (this.currentPage > 1) {
-      this.goToPage(this.currentPage - 1);
-    }
-  };
+    if (this.currentPage > 1) this.goToPage(this.currentPage - 1);
+  }
 
   nextPage() {
-    if (this.currentPage < this.totalPages()) {
-      this.goToPage(this.currentPage + 1);
-    }
-  };
+    if (this.currentPage < this.totalPages()) this.goToPage(this.currentPage + 1);
+  }
 
-  firstPage() {
-    this.goToPage(1);
-  };
+  firstPage() { this.goToPage(1); }
 
-  lastPage() {
-    this.goToPage(this.totalPages());
-  };
+  lastPage() { this.goToPage(this.totalPages()); }
 
   goToPage(pageNumber: number) {
     const total = this.totalPages();
-
     if (pageNumber < 1) pageNumber = 1;
     if (pageNumber > total) pageNumber = total;
 
@@ -485,11 +466,11 @@ export class UnitsComponent extends BasePermissionComponent {
     } else {
       this.FetchInitialData();
     }
-  };
+  }
 
   totalPages() {
     return Math.ceil(this.UnitsCount / this.pageSize);
-  };
+  }
 
   getVisiblePageNumbers() {
     const totalPages = this.totalPages();
@@ -499,7 +480,7 @@ export class UnitsComponent extends BasePermissionComponent {
     if (end - start < this.visiblePageCount - 1) start = Math.max(end - this.visiblePageCount + 1, 1);
     for (let i = start; i <= end; i++) pages.push(i);
     return pages;
-  };
+  }
 
   onSearchChange() {
     clearTimeout(this.searchTimer);
@@ -516,44 +497,40 @@ export class UnitsComponent extends BasePermissionComponent {
         return;
       }
 
-      if (value.length < this.SEARCH_MIN_LENGTH) {
-        return;
-      }
+      if (value.length < this.SEARCH_MIN_LENGTH) return;
 
       this.currentPage = 1;
       this.pageSize = 5;
       this.visiblePageCount = 3;
       this.pageCursors = [];
       this.FetchInitialData();
-
     }, this.SEARCH_DEBOUNCE);
-  };
+  }
 
   closeModal(type: 'view' | 'status') {
     if (type === 'view') {
       this.isViewModalOpen = false;
       this.viewUnit = null;
     }
-
     if (type === 'status') {
       this.isModalOpen = false;
     }
-  };
+  }
 
   handleOk() {
     this.isModalOpen = false;
     this.FetchInitialData();
-  };
+  }
 
   editreview(UnitID: string): void {
     this.editclicked = true;
     this.FetchUnitByID(UnitID, 'edit');
     this.ViewUnitClicked = true;
-  };
+  }
 
   toggleChange() {
     this.IsActiveStatus = !this.IsActiveStatus;
-  };
+  }
 
   sort(column: string) {
     if (this.sortColumn === column) {
@@ -565,19 +542,27 @@ export class UnitsComponent extends BasePermissionComponent {
     this.currentPage = 1;
     this.pageCursors = [];
     this.FetchInitialData();
-  };
+  }
 
   onSchoolChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     const schoolID = target.value;
-    if (schoolID == "0") {
-      this.selectedSchoolID = "";
-    } else {
-      this.selectedSchoolID = schoolID;
-    }
+    this.selectedSchoolID = schoolID === '0' ? '' : schoolID;
     this.SchoolSelectionChange = true;
     this.FetchInitialData();
-  };
+  }
+
+  onAdminSchoolChange(event: Event) {
+    this.academicYearList = [];
+    // FIX 7: Reset AdminselectedAcademicYearID when school changes so stale
+    // year IDs don't leak into FetchUnitsCount / FetchInitialData.
+    this.AdminselectedAcademicYearID = '';
+    this.UnitsForm.get('AcademicYear').patchValue('0');
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    this.AdminselectedSchoolID = schoolID === '0' ? '' : schoolID;
+    this.FetchAcademicYearsList();
+  }
 
   exportUnits(type: 'pdf' | 'excel' | 'print') {
     const isSearch = !!this.searchQuery?.trim();
@@ -598,7 +583,6 @@ export class UnitsComponent extends BasePermissionComponent {
 
         if (type === 'pdf' || type === 'print') {
           const fileURL = URL.createObjectURL(blob);
-
           if (type === 'print') {
             const printWindow = window.open(fileURL);
             printWindow?.focus();
@@ -609,10 +593,8 @@ export class UnitsComponent extends BasePermissionComponent {
             a.download = `${fileNameBase}.pdf`;
             a.click();
           }
-
           setTimeout(() => URL.revokeObjectURL(fileURL), 1000);
-        }
-        else if (type === 'excel') {
+        } else if (type === 'excel') {
           const a = document.createElement('a');
           a.href = URL.createObjectURL(blob);
           a.download = `${fileNameBase}.xlsx`;
@@ -627,23 +609,10 @@ export class UnitsComponent extends BasePermissionComponent {
         this.loader.hide();
       }
     });
-  };
+  }
 
   viewReview(UnitID: string): void {
     this.FetchUnitByID(UnitID, 'view');
     this.isViewModalOpen = true;
-  };
-
-  onAdminSchoolChange(event: Event) {
-    this.academicYearList = [];
-    this.UnitsForm.get('AcademicYear').patchValue('0');
-    const target = event.target as HTMLSelectElement;
-    const schoolID = target.value;
-    if (schoolID == "0") {
-      this.AdminselectedSchoolID = "";
-    } else {
-      this.AdminselectedSchoolID = schoolID;
-    }
-    this.FetchAcademicYearsList();
-  };
+  }
 }
