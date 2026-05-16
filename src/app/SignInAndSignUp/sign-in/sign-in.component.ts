@@ -621,6 +621,7 @@ interface PendingLoginState {
   role: string;
   schoolId: string;
   schoolName: string;
+  schoolIds?: string;
 }
 
 @Component({
@@ -878,7 +879,8 @@ export class SignInComponent implements OnInit, OnDestroy {
             email: res.email,
             role: res.role,
             schoolId: res.schoolId || '',
-            schoolName: res.schoolName || ''
+            schoolName: res.schoolName || '',
+            schoolIds: res.schoolIds || ''
           };
 
           this.persistSession(res.accessToken, res.refreshToken);
@@ -980,7 +982,8 @@ export class SignInComponent implements OnInit, OnDestroy {
           email: res.email,
           role: (res as any).menuRoleId || res.role,
           schoolId: res.schoolId || '',
-          schoolName: res.schoolRouteName || ''
+          schoolName: res.schoolRouteName || '',
+          schoolIds: (res as any).schoolIds || '' 
         };
 
         this.persistSession(res.accessToken, res.refreshToken!);
@@ -1005,6 +1008,7 @@ export class SignInComponent implements OnInit, OnDestroy {
     sessionStorage.setItem('schoolId',   this.pendingLoginData?.schoolId || '');
     sessionStorage.setItem('UserID',     this.pendingLoginData?.email || '');
     sessionStorage.setItem('StaffID',    this.pendingLoginData?.email || '');
+    sessionStorage.setItem('schoolIds',  this.pendingLoginData?.schoolIds || '');
 
     const role = this.pendingLoginData?.role;
     const schoolName = this.pendingLoginData?.schoolName;
@@ -1017,6 +1021,10 @@ export class SignInComponent implements OnInit, OnDestroy {
         this.ngZone.run(() => {
           if (String(role) === '1') {
             this.router.navigate(['/Admin']);
+            return;
+          }
+          if (String(role) === '10') {
+            this.router.navigate(['/GroupAdmin/GroupAdminDashboard']);
             return;
           }
           if (schoolName) {

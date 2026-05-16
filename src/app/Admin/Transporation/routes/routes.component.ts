@@ -36,6 +36,7 @@ export class RoutesComponent extends BasePermissionComponent {
   ngOnInit(): void {
     this.checkViewPermission();
     this.SchoolSelectionChange=false;
+    this.AdminSelectedActiveAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
     this.FetchSchoolsList();
     this.FetchInitialData();
   };
@@ -57,6 +58,8 @@ export class RoutesComponent extends BasePermissionComponent {
   isModalOpen = false;
   isViewModalOpen= false;
   SyllabusCount: number = 0;
+  SubjectsActiveCount: number = 0;
+  SubjectsInActiveCount: number = 0;
   ActiveUserId:string=localStorage.getItem('email')?.toString() || '';
   roleId = localStorage.getItem('RollID');
 
@@ -69,11 +72,14 @@ export class RoutesComponent extends BasePermissionComponent {
   editclicked:boolean=false;
   schoolList: any[] = [];
   selectedSchoolID: string = '';
+  selectedAcademicYearID: string = '';
   SchoolSelectionChange:boolean=false;
+  SchoolAcademicYearChange:boolean=false;
   academicYearList:any[] = [];
   AdminselectedSchoolID:string = '';
   AdminselectedAcademivYearID:string = '';
-// ^[a-zA-Z!@#$%^&*()_+\\-=\\[\\]{};:\'",.<>/?|`~]+$
+  AdminSelectedActiveAcademicYearID:string = sessionStorage.getItem('ActiveAcademicYearID') || '';
+
   SyllabusForm: any = new FormGroup({
     ID: new FormControl(),
     Name: new FormControl('',[Validators.required,Validators.pattern('^[a-zA-Z -_ ]+$')]),
@@ -108,7 +114,12 @@ export class RoutesComponent extends BasePermissionComponent {
   };
 
   FetchAcademicYearsList() {
-    const requestData = { SchoolID:this.AdminselectedSchoolID||'',Flag: '2' };
+    const schoolId =
+    this.SchoolSelectionChange
+      ? this.selectedSchoolID?.trim()
+      : this.AdminselectedSchoolID || '';
+
+    const requestData = { SchoolID:schoolId,Flag: '2' };
 
     this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)
       .subscribe(
@@ -172,16 +183,30 @@ export class RoutesComponent extends BasePermissionComponent {
 
   FetchAcademicYearCount(isSearch: boolean) {
     let SchoolIdSelected = '';
+    let AcademicYearIdSelected='';
 
     if (this.SchoolSelectionChange) {
       SchoolIdSelected = this.selectedSchoolID.trim();
     }
 
-    return this.apiurl.post<any>('Tbl_Route_CRUD_Operations', {
+    if(this.SchoolAcademicYearChange){
+      AcademicYearIdSelected=this.selectedAcademicYearID.trim();
+    }
+
+    const payload: any = {
       Flag: isSearch ? '8' : '6',
-      SchoolID:SchoolIdSelected,
+      SchoolID: SchoolIdSelected,
       Name: isSearch ? this.searchQuery.trim() : null
-    });
+    };
+
+    if (!this.isAdmin) {
+      payload.AcademicYear = this.AdminSelectedActiveAcademicYearID;
+    }
+    else if(this.isAdmin && this.SchoolAcademicYearChange){
+      payload.AcademicYear = AcademicYearIdSelected;
+    }
+
+    return this.apiurl.post<any>('Tbl_Route_CRUD_Operations', payload);
   }
 
   FetchInitialData(extra: any = {}) {
@@ -189,9 +214,14 @@ export class RoutesComponent extends BasePermissionComponent {
     const flag = isSearch ? '7' : '2';
 
     let SchoolIdSelected = '';
+    let AcademicYearIdSelected='';
 
     if (this.SchoolSelectionChange) {
       SchoolIdSelected = this.selectedSchoolID.trim();
+    }
+
+    if(this.SchoolAcademicYearChange){
+      AcademicYearIdSelected=this.selectedAcademicYearID.trim();
     }
 
     const cursor =
@@ -204,6 +234,8 @@ export class RoutesComponent extends BasePermissionComponent {
     this.FetchAcademicYearCount(isSearch).subscribe({
       next: (countResp: any) => {
         this.SyllabusCount = countResp?.data?.[0]?.totalcount ?? 0;
+        this.SubjectsActiveCount=countResp?.data?.[0]?.activeCount ?? 0;
+        this.SubjectsInActiveCount=countResp?.data?.[0]?.inactiveCount ?? 0;
 
         const payload: any = {
           Flag: flag,
@@ -215,6 +247,13 @@ export class RoutesComponent extends BasePermissionComponent {
           SchoolID:SchoolIdSelected,
           ...extra
         };
+
+        if (!this.isAdmin) {
+          payload.AcademicYear = this.AdminSelectedActiveAcademicYearID;
+        }
+        else if(this.isAdmin && this.SchoolAcademicYearChange){
+          payload.AcademicYear = AcademicYearIdSelected;
+        }
 
         if (isSearch) payload.Name = this.searchQuery.trim();
 
@@ -263,17 +302,22 @@ export class RoutesComponent extends BasePermissionComponent {
   };
 
   AddNewClicked(){
+    this.SyllabusForm.reset();
     if (this.isAdmin) {
       this.SyllabusForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+      this.SyllabusForm.get('School').patchValue('0');
+      this.SyllabusForm.get('AcademicYear').patchValue('0');
     } else {
       this.SyllabusForm.get('School')?.clearValidators();
+      this.SyllabusForm.get('AcademicYear')?.disable({ emitEvent: false });
     }
     if(this.AdminselectedSchoolID==''){
       this.FetchAcademicYearsList();
-    }
-    this.SyllabusForm.reset();
-    this.SyllabusForm.get('School').patchValue('0');
-    this.SyllabusForm.get('AcademicYear').patchValue('0');
+      if(!this.isAdmin){
+        this.SyllabusForm.get('AcademicYear').patchValue(this.AdminSelectedActiveAcademicYearID);
+      }
+    }   
+    
     this.IsAddNewClicked=!this.IsAddNewClicked;
     this.IsActiveStatus=true;
     this.ViewSyllabusClicked=false;
@@ -566,6 +610,19 @@ export class RoutesComponent extends BasePermissionComponent {
       this.selectedSchoolID = schoolID;
     }    
     this.SchoolSelectionChange = true;
+    this.FetchAcademicYearsList();
+    this.FetchInitialData();
+  };
+
+  onAcademicYearChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    if(schoolID=="0"){
+      this.selectedAcademicYearID="";
+    }else{
+      this.selectedAcademicYearID = schoolID;
+    }    
+    this.SchoolAcademicYearChange = true;
     this.FetchInitialData();
   };
 
@@ -666,4 +723,25 @@ export class RoutesComponent extends BasePermissionComponent {
     }   
     this.FetchAcademicYearsList();
   };
+
+  pageStartIndex(): number {
+    return this.SyllabusCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
+  }
+
+  pageEndIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.SyllabusCount);
+  }
+
+  CancelSyllabus(){
+    this.IsAddNewClicked=false;
+    this.AdminselectedSchoolID = '';
+    this.AdminselectedAcademivYearID = '';
+    this.SyllabusForm.reset();
+    this.FetchInitialData();
+  }
+
+  onRowsCountChange() {
+    this.currentPage = 1;
+    this.FetchInitialData();
+  }
 }

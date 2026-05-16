@@ -12,6 +12,7 @@ import { BasePermissionComponent  } from '../../../shared/base-crud.component';
 import { SchoolCacheService } from '../../../Services/school-cache.service';
 import { LoaderService } from '../../../Services/loader.service';
 import { HttpClient } from '@angular/common/http';
+import { FileService } from '../../../Services/file.service';
 
 @Component({
   selector: 'app-school-details',
@@ -28,7 +29,8 @@ export class SchoolDetailsComponent extends BasePermissionComponent {
     router: Router,
     public loader: LoaderService,
     private apiurl: ApiServiceService,
-    menuService: MenuServiceService
+    menuService: MenuServiceService,
+    private fileService: FileService
   ) {
     super(menuService, router);
   }
@@ -71,6 +73,7 @@ export class SchoolDetailsComponent extends BasePermissionComponent {
   schoolList: any[] = [];
   selectedSchoolID: string = '';
   SchoolSelectionChange:boolean=false;
+  SchoolID:string='';
 
   SchoolsForm: any = new FormGroup({
     ID: new FormControl(),
@@ -211,11 +214,37 @@ export class SchoolDetailsComponent extends BasePermissionComponent {
   };
 
   AddNewClicked(){
+    this.FetchLatestSchoolID();
     this.SchoolsForm.reset();
     this.IsAddNewClicked=!this.IsAddNewClicked;
     this.IsActiveStatus=true;
     this.ViewSyllabusClicked=false;
   };
+
+  FetchLatestSchoolID(){
+    const data = {
+        Flag: '9'
+      };
+
+      this.apiurl.post("Tbl_SchoolDetails_CRUD", data).subscribe({
+        next: (response: any) => {
+          if (response.statusCode === 200) {
+            this.SchoolID=response?.data?.[0].id;
+          }          
+        },
+        error: (err:any) => {
+          if (err.status === 400 && err.error?.message) {
+            this.AminityInsStatus = err.error.message;  // School Name Already Exists!
+          } else if (err.status === 500 && err.error?.Message) {
+            this.AminityInsStatus = err.error.Message;  // Database or internal error
+          } else {
+            this.AminityInsStatus = "Unexpected error occurred.";
+          }
+        },
+        complete: () => {
+        }
+      });
+  }
 
   SubmitSyllabus(){
     if(this.SchoolsForm.invalid){
@@ -471,7 +500,9 @@ export class SchoolDetailsComponent extends BasePermissionComponent {
 
   editreview(SyllabusID: string): void {
     this.editclicked=true;
+    this.SchoolID=SyllabusID.toString();
     this.FetchSyllabusDetByID(SyllabusID,'edit');
+    this.loadLogo();
     this.ViewSyllabusClicked=true;
   };
 
@@ -594,5 +625,107 @@ export class SchoolDetailsComponent extends BasePermissionComponent {
 
   pageEndIndex(): number {
     return Math.min(this.currentPage * this.pageSize, this.SchoolsCount);
+  }
+
+  schoolLogo: any = null;
+  schoolLogoFromDb: any = null;
+  isLogoUploading = false;
+
+  loadLogo() {
+    this.fileService.getSchoolLogo(this.SchoolID)
+      .subscribe((res: any) => {
+        this.schoolLogoFromDb = res;
+      });
+  }
+
+  onLogoSelected(event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (!['image/jpeg','image/png','image/webp'].includes(file.type)) {
+      alert('Only image allowed');
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Max 2MB');
+      return;
+    }
+
+    this.schoolLogo = {
+      file,
+      preview: URL.createObjectURL(file)
+    };
+  }
+
+  // async uploadLogo() {
+  //   if (!this.schoolLogo) {
+  //     alert('Select logo');
+  //     return;
+  //   }
+
+  //   this.isLogoUploading = true;
+
+  //   const fd = new FormData();
+  //   fd.append('File', this.schoolLogo.file);
+  //   fd.append('SchoolId', this.SchoolID);
+
+  //   await firstValueFrom(this.fileService.uploadSchoolLogo(fd));
+
+  //   this.schoolLogo = null;
+  //   // this.loadLogo();
+  //   this.isLogoUploading = false;
+  // }
+
+  async uploadLogo() {
+    if (!this.schoolLogo) {
+      alert('Select logo');
+      return;
+    }
+
+    this.isLogoUploading = true;
+
+    try {
+      const fd = new FormData();
+      fd.append('File', this.schoolLogo.file);
+      fd.append('SchoolId', this.SchoolID);
+
+      const res: any = await firstValueFrom(
+        this.fileService.uploadSchoolLogo(fd)
+      );
+
+      // console.log('Uploaded:', res);
+
+      // // update UI immediately
+      // if (res?.filePath) {
+      //   this.logoUrl = this.fileService.getFullFileUrl(res.filePath);
+      // }
+
+      this.schoolLogo = null;
+      this.loadLogo(); // optional but recommended
+      if(this.editclicked){
+        window.location.reload();
+      }      
+
+    } catch (err) {
+      console.error(err);
+      alert('Upload failed');
+    } finally {
+      this.isLogoUploading = false; // ✅ ALWAYS runs
+    }
+  }
+
+  getFileUrl(path: string) {
+    return this.fileService.getFullLogoFileUrl(path);
+  }
+
+  CancelSyllabus(){
+    this.IsAddNewClicked=false;
+    this.FetchInitialData();
+  }
+
+  onRowsCountChange() {
+    this.currentPage = 1;
+    this.FetchInitialData();
   }
 }

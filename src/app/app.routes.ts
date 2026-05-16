@@ -102,6 +102,9 @@ import { NoticesComponent } from './Admin/Notices/notices/notices.component';
 import { StudentsReportComponent } from './Admin/Report/students-report/students-report.component';
 import { FeeReportComponent } from './Admin/Report/fee-report/fee-report.component';
 import { ParentDashboardComponent } from './Parent/parent-dashboard/parent-dashboard.component';
+import { GroupAdminCreationComponent } from './Admin/Masters/group-admin-creation/group-admin-creation.component';
+import { GroupAdminDashboardComponent } from './GroupAdmin/group-admin-dashboard/group-admin-dashboard.component';
+
 
 export const routes: Routes = [
   { path: '', component: SignInComponent },
@@ -174,6 +177,7 @@ export const routes: Routes = [
       { path: 'StudentsReport', component: StudentsReportComponent },
       { path: 'StudentReport', redirectTo: 'StudentsReport', pathMatch: 'full' },
       { path: 'FeeReport', component: FeeReportComponent },
+      { path: 'GroupAdmin', component: GroupAdminCreationComponent },
     ]
   },
 
@@ -196,7 +200,7 @@ export const routes: Routes = [
       { path: 'Admission', component: AdmissionComponent },
       { path: 'AllotClassTeacher', component: AllotClassTeacherComponent },
       { path: 'ClassTransition', component: PromotionComponent },
-      { path: 'TransferStudents', component: TransferStudentsComponent },
+      { path: 'Transfer', component: TransferStudentsComponent },
       { path: 'Bus', component: BusesComponent },
       { path: 'Routes', component: RoutesComponent },
       { path: 'Stops', component: StopsComponent },
@@ -237,14 +241,12 @@ export const routes: Routes = [
       { path: 'LeaveDetails',  component: LeavedetailsComponent },
       { path: 'AssignHomework',  component: AssignHomewrokComponent },
       { path: 'HomeWork',  component: HomeworkComponent },
-
-
-
       { path: 'HolidayCalendar', component: HolidayCalenderComponent },
       { path: 'HolidayCalender', redirectTo: 'HolidayCalendar', pathMatch: 'full' },
       { path: 'StudentsReport', component: StudentsReportComponent },
       { path: 'StudentReport', redirectTo: 'StudentsReport', pathMatch: 'full' },
       { path: 'FeeReports', component: FeeReportComponent },
+      { path: 'GroupAdmin', component: GroupAdminCreationComponent },
     ]
   },
 
@@ -255,7 +257,6 @@ export const routes: Routes = [
     canActivate: [AuthMfaGuard, schoolGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-
       { path: 'dashboard', component: AdminMainDashboardComponent },
       { path: 'parent-dashboard', component: ParentDashboardComponent },
       { path: 'Staff', component: StaffComponent },
@@ -272,7 +273,7 @@ export const routes: Routes = [
       { path: 'Admission', component: AdmissionComponent },
       { path: 'AllotClassTeacher', component: AllotClassTeacherComponent },
       { path: 'ClassTransition', component: PromotionComponent },
-      { path: 'TransferStudents', component: TransferStudentsComponent },
+      { path: 'Transfer', component: TransferStudentsComponent },
       { path: 'Bus', component: BusesComponent },
       { path: 'Routes', component: RoutesComponent },
       { path: 'Stops', component: StopsComponent },
@@ -290,8 +291,6 @@ export const routes: Routes = [
       { path: 'ExamAttendance', component: ExamattendenceComponent },
       { path: 'ExamMarks', component: ExammarksComponent },
       { path: 'ExamResults', component: ExamresultsComponent },
-
-
       { path: 'Fares', component: FareComponent },
       { path: 'WorkingDays', component: WorkingDaysComponent },
       { path: 'Sessions', component: SessionsComponent },
@@ -316,13 +315,18 @@ export const routes: Routes = [
       { path: 'LeavePolicy',    component: LeavedetailsComponent },
       { path: 'AssignHomework',  component: AssignHomewrokComponent },
       { path: 'HomeWork',  component: HomeworkComponent },
-
       { path: 'HolidayCalendar', component: HolidayCalenderComponent },
       { path: 'HolidayCalender', redirectTo: 'HolidayCalendar', pathMatch: 'full' },
       { path: 'Notices', component: NoticesComponent },
       { path: 'StudentsReport', component: StudentsReportComponent },
       { path: 'StudentReport', redirectTo: 'StudentsReport', pathMatch: 'full' },
       { path: 'FeeReports', component: FeeReportComponent },
+      { path: 'GroupAdmin', component: GroupAdminCreationComponent },
     ]
+  },
+
+  {
+    path: 'GroupAdmin', component: GroupAdminDashboardComponent, canActivate: [AuthMfaGuard],
+    children: [{ path: 'GroupAdminDashboard', component: GroupAdminDashboardComponent }]
   }
 ];
