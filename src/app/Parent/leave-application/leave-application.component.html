@@ -1,0 +1,233 @@
+<div class="leave-application-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h2 class="page-title">
+        <mat-icon class="title-icon">assignment_late</mat-icon>
+        Apply for Leave
+      </h2>
+      <p class="page-subtitle">Submit leave application for your child</p>
+    </div>
+  </div>
+
+  <!-- Child Selection -->
+  <div class="child-selection-section">
+    <mat-card class="selection-card">
+      <mat-card-header>
+        <mat-card-title>Select Child</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="child-selector">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Choose Child</mat-label>
+            <mat-select [(ngModel)]="selectedChildId" (selectionChange)="selectChild($event.value)">
+              <mat-option value="">Select a child</mat-option>
+              <mat-option *ngFor="let child of childrenList" [value]="child.id">
+                {{ child.name }} - {{ child.className }} {{ child.divisionName }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Selected Child Info -->
+        <div *ngIf="selectedChild" class="selected-child-info">
+          <div class="child-details">
+            <div class="child-avatar">
+              <mat-icon>person</mat-icon>
+            </div>
+            <div class="child-info">
+              <h4>{{ selectedChild.name }}</h4>
+              <p>{{ selectedChild.className }} - {{ selectedChild.divisionName }}</p>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Leave Balance Card -->
+  <div *ngIf="leaveBalances" class="balance-section">
+    <mat-card class="balance-card">
+      <mat-card-header>
+        <mat-card-title>Leave Balance</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="balance-grid">
+          <div class="balance-item">
+            <div class="balance-label">Total Leaves</div>
+            <div class="balance-value">{{ leaveBalances[selectedChildId]?.totalLeaves ?? 0 }}</div>
+          </div>
+          <div class="balance-item">
+            <div class="balance-label">Used Leaves</div>
+            <div class="balance-value used">{{ leaveBalances[selectedChildId]?.usedLeaves ?? 0 }}</div>
+          </div>
+          <div class="balance-item">
+            <div class="balance-label">Remaining</div>
+            <div class="balance-value" [style.color]="getRemainingDaysColor()">
+              {{ leaveBalances[selectedChildId]?.remainingLeaves ?? 0 }}
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Leave Application Form -->
+  <div *ngIf="selectedChild" class="form-section">
+    <mat-card class="form-card">
+      <mat-card-header>
+        <mat-card-title>Leave Application Details</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        
+        <form [formGroup]="leaveForm" (ngSubmit)="onSubmit()">
+          <div class="form-grid">
+            <!-- Date Range -->
+            <div class="date-range-group">
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>From Date</mat-label>
+                <input matInput 
+                       [matDatepicker]="fromPicker" 
+                       formControlName="fromDate"
+                       [min]="minDate"
+                       [max]="maxDate"
+                       (dateChange)="onFromDateChange()">
+                <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+                <mat-datepicker #fromPicker></mat-datepicker>
+                <mat-error *ngIf="leaveForm.get('fromDate')?.hasError('required')">
+                  From date is required
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>To Date</mat-label>
+                <input matInput 
+                       [matDatepicker]="toPicker" 
+                       formControlName="toDate"
+                       [min]="minDate"
+                       [max]="maxDate">
+                <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
+                <mat-datepicker #toPicker></mat-datepicker>
+                <mat-error *ngIf="leaveForm.get('toDate')?.hasError('required')">
+                  To date is required
+                </mat-error>
+                <mat-error *ngIf="leaveForm.hasError('dateRangeInvalid')">
+                  To date must be after from date
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <!-- Reason -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Reason for Leave</mat-label>
+              <textarea matInput 
+                        formControlName="reason" 
+                        rows="4"
+                        maxlength="500">
+              </textarea>
+              <mat-hint align="end">{{ leaveForm.get('reason')?.value?.length || 0 }}/500</mat-hint>
+              <mat-error *ngIf="leaveForm.get('reason')?.hasError('required')">
+                Reason is required
+              </mat-error>
+              <mat-error *ngIf="leaveForm.get('reason')?.hasError('minlength')">
+                Reason must be at least 10 characters
+              </mat-error>
+            </mat-form-field>
+
+            <!-- File Upload -->
+            <div class="file-upload-section">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Supporting Document (Optional)</mat-label>
+                <input matInput 
+                       readonly 
+                       [value]="selectedFile?.name || 'No file selected'"
+                       placeholder="Click to choose file">
+                <!-- <button mat-icon-button matSuffix (click)="fileInput.click()"> -->
+                  <button type="button" mat-icon-button matSuffix (click)="fileInput.click()">
+                  <mat-icon>attach_file</mat-icon>
+                </button>
+              </mat-form-field>
+              <input
+                id="fileInput"
+                type="file"
+                #fileInput
+                class="file-input-hidden"
+                (change)="onFileSelected($event)"
+                accept=".pdf,.jpg,.jpeg,.png">
+              
+              <div *ngIf="selectedFile" class="selected-file">
+                <mat-icon>description</mat-icon>
+                <span>{{ selectedFile.name }}</span>
+                <button type="button" mat-icon-button (click)="removeFile()">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <button mat-button 
+                    type="button" 
+                    (click)="resetForm()"
+                    [disabled]="isSubmitting">
+              Clear
+            </button>
+            <button
+                  mat-raised-button
+                  color="primary"
+                  type="submit"
+                  class="submit-application-btn">
+
+            <mat-icon>
+              send
+            </mat-icon>
+
+            Submit Application
+
+          </button>
+          </div>
+          <div *ngIf="leaveForm.invalid" class="form-error-message" style="color: red; margin-top: 10px; font-size: 14px;">
+            Please fill all required fields correctly before submitting.
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Recent Applications -->
+  <div *ngIf="existingLeaves.length > 0" class="recent-applications-section">
+    <mat-card class="recent-applications-card">
+      <mat-card-header>
+        <mat-card-title>Recent Leave Applications</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="applications-list">
+          <div *ngFor="let leave of existingLeaves.slice(0, 5)" class="application-item">
+            <div class="application-header">
+              <div class="application-status" [ngClass]="'status-' + leave.status.toLowerCase()">
+                {{ leave.status }}
+              </div>
+            </div>
+            <div class="application-details">
+              <p><strong>Period:</strong> {{ formatDate(leave.fromDate) }} - {{ formatDate(leave.toDate) }}</p>
+              <p><strong>Days:</strong> {{ leave.totalDays }}</p>
+              <p><strong>Applied:</strong> {{ formatDate(leave.appliedDate) }}</p>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- No Child Selected Message -->
+  <div *ngIf="!selectedChild && childrenList.length === 0" class="no-child-message">
+    <mat-card>
+      <mat-card-content class="text-center">
+        <mat-icon class="large-icon">person_off</mat-icon>
+        <h3>No Children Found</h3>
+        <p>No children are associated with your account. Please contact the school administration.</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

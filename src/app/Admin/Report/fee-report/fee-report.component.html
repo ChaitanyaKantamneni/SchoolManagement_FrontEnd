@@ -1,0 +1,514 @@
+<div>
+  <app-dashboard-top-nav></app-dashboard-top-nav>
+</div>
+
+<div class="MainContentDiv">
+  <div class="w-100">
+    <div class="ComponentTop">
+      <div class="ComponentTopHeader">
+        <h5>Fee Reports</h5>
+        <p>Total {{ totalCount }} report entries in the active analytics view</p>
+      </div>
+    </div>
+
+    <div class="ComponentRecords">
+      <div class="fee-report-filter-card">
+        <div class="dashboard-intro">
+          <div>
+            <span class="section-eyebrow">Power BI Style Analytics</span>
+            <h6>Fee intelligence workspace</h6>
+            <p>Filter once, then explore KPIs, trends, flow analysis, defaulters, and smart summary tables.</p>
+          </div>
+        </div>
+
+        <div class="fee-report-filters-row">
+          <div class="InputFieldsContainer">
+            <label class="inputLabel">School <span class="required">*</span></label>
+            <select class="inputField" [ngModel]="selectedSchool" (ngModelChange)="onSchoolChange($event)">
+              <option value="">-- Select School --</option>
+              <option *ngFor="let school of schoolList" [value]="school.id">{{ school.name }}</option>
+            </select>
+            <div class="field-error" *ngIf="schoolError">Please select School.</div>
+          </div>
+
+          <div class="InputFieldsContainer">
+            <label class="inputLabel">Academic Year <span class="required">*</span></label>
+            <select
+              class="inputField"
+              [disabled]="!selectedSchool"
+              [ngModel]="selectedAcademicYear"
+              (ngModelChange)="onAcademicYearChange($event)"
+            >
+              <option value="">-- Select Academic Year --</option>
+              <option *ngFor="let year of academicYearList" [value]="year.id">{{ year.name }}</option>
+            </select>
+            <div class="field-error" *ngIf="academicYearError">Please select Academic Year.</div>
+          </div>
+        </div>
+
+        <div class="fee-report-filters-row fee-report-filters-row-bottom">
+          <div class="InputFieldsContainer">
+            <label class="inputLabel">Class</label>
+            <select
+              class="inputField"
+              [disabled]="!selectedSchool || !selectedAcademicYear"
+              [ngModel]="selectedClass"
+              (ngModelChange)="onClassChange($event)"
+            >
+              <option value="">-- Select Class --</option>
+              <option *ngFor="let classItem of classList" [value]="classItem.id">{{ classItem.name }}</option>
+            </select>
+          </div>
+
+          <div class="InputFieldsContainer">
+            <label class="inputLabel">Division</label>
+            <select class="inputField" [disabled]="!selectedClass" [ngModel]="selectedDivision" (ngModelChange)="onDivisionChange($event)">
+              <option value="">-- Select Division --</option>
+              <option *ngFor="let division of divisionList" [value]="division.id">{{ division.name }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="fee-report-filters-row fee-report-filters-row-bottom">
+          <div class="InputFieldsContainer">
+            <label class="inputLabel">Student</label>
+            <select class="inputField" [disabled]="!selectedDivision" [ngModel]="selectedStudent" (ngModelChange)="onStudentChange($event)">
+              <option value="">-- Select Student --</option>
+              <option *ngFor="let student of studentList" [value]="student.id">{{ student.name }}</option>
+            </select>
+          </div>
+
+          <div class="InputFieldsContainer">
+            <label class="inputLabel">Fee Category</label>
+            <select
+              class="inputField"
+              [disabled]="!selectedSchool || !selectedAcademicYear"
+              [ngModel]="selectedFeeCategory"
+              (ngModelChange)="onFeeCategoryChange($event)"
+            >
+              <option value="">-- Select Fee Category --</option>
+              <option *ngFor="let category of feeCategoryList" [value]="category.id">{{ category.name }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="fee-report-submit-row">
+          <button type="button" class="btnHover" (click)="onSubmit()">Build Dashboard</button>
+        </div>
+      </div>
+
+      <div class="fee-report-results-card" *ngIf="hasSubmitted">
+        <div class="dashboard-toolbar">
+          <div class="dashboard-toolbar-copy">
+            <span class="section-eyebrow">Executive View</span>
+            <h6>{{ selectedSchoolName }} | {{ selectedAcademicYearName }}</h6>
+            <p>Search updates every chart, table, risk panel, and detail grid in real time.</p>
+          </div>
+
+          <div class="dashboard-toolbar-actions">
+            <label class="fee-report-search-label">
+              <mat-icon>search</mat-icon>
+              <input
+                type="text"
+                class="form-control fee-report-search-input"
+                [(ngModel)]="searchQuery"
+                (ngModelChange)="onSearchChange()"
+                placeholder="Search students, classes, fee categories, payment modes..."
+              />
+            </label>
+
+            <div class="dashboard-chips">
+              <span class="dashboard-chip">
+                <mat-icon>database</mat-icon>
+                {{ totalCount }} rows
+              </span>
+              <span class="dashboard-chip success-chip">
+                <mat-icon>payments</mat-icon>
+                {{ formatAmount(totalCollectionAmount) }} collection
+              </span>
+              <span class="dashboard-chip danger-chip">
+                <mat-icon>warning</mat-icon>
+                {{ formatAmount(totalDueAmount) }} due
+              </span>
+              <button type="button" class="dashboard-chip action-chip" *ngIf="activeClassDrillId" (click)="clearClassDrill()">
+                <mat-icon>filter_alt_off</mat-icon>
+                Clear {{ activeClassDrillName }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="loading" class="fee-report-loader">
+          <p>Loading fee analytics dashboard...</p>
+        </div>
+
+        <div *ngIf="!loading && !hasDashboardData" class="analytics-empty-state">
+          <mat-icon>analytics</mat-icon>
+          <h6>No fee analytics available for the selected filters.</h6>
+          <p>Try adjusting the school, academic year, or search input to widen the dataset.</p>
+        </div>
+
+        <div *ngIf="!loading && hasDashboardData" class="fee-dashboard">
+          <section class="dashboard-section">
+            <div class="section-heading">
+              <div>
+                <span class="section-eyebrow">Executive Summary</span>
+                <h6>Top KPI layer</h6>
+              </div>
+            </div>
+
+            <div class="kpi-grid">
+              <article class="kpi-card" *ngFor="let card of executiveKpis" [ngClass]="card.accent">
+                <div class="kpi-icon">
+                  <mat-icon>{{ card.icon }}</mat-icon>
+                </div>
+                <div class="kpi-body">
+                  <p class="kpi-title">{{ card.title }}</p>
+                  <h3>{{ card.value }}</h3>
+                  <p class="kpi-meta">{{ card.meta }}</p>
+                  <span class="kpi-trend" [ngClass]="card.trendDirection">
+                    <mat-icon>
+                      {{
+                        card.trendDirection === 'up'
+                          ? 'trending_up'
+                          : card.trendDirection === 'down'
+                            ? 'trending_down'
+                            : 'trending_flat'
+                      }}
+                    </mat-icon>
+                    {{ card.trendText }}
+                  </span>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="dashboard-section">
+            <div class="section-heading">
+              <div>
+                <span class="section-eyebrow">Financial Distribution</span>
+                <h6>Collection, due, category, and class performance</h6>
+              </div>
+            </div>
+
+            <div class="chart-grid chart-grid-primary">
+              <article class="dashboard-card chart-card">
+                <div class="card-head">
+                  <div>
+                    <h6>Collection vs Due</h6>
+                    <p>Portfolio split across the current filtered scope</p>
+                  </div>
+                </div>
+                <div *ngIf="collectionVsDueChartOptions; else emptyDistributionChart" echarts [options]="collectionVsDueChartOptions" class="chart-host"></div>
+              </article>
+
+              <article class="dashboard-card chart-card">
+                <div class="card-head">
+                  <div>
+                    <h6>Fee Category Distribution</h6>
+                    <p>Category-wise revenue and outstanding exposure</p>
+                  </div>
+                </div>
+                <div *ngIf="feeCategoryDistributionChartOptions; else emptyDistributionChart" echarts [options]="feeCategoryDistributionChartOptions" class="chart-host"></div>
+              </article>
+
+              <article class="dashboard-card chart-card">
+                <div class="card-head">
+                  <div>
+                    <h6>Class-wise Collection vs Due</h6>
+                    <p>Click a class bar to drill into division performance</p>
+                  </div>
+                  <span class="mini-badge interactive-badge">Interactive</span>
+                </div>
+                <div
+                  *ngIf="classWisePerformanceChartOptions; else emptyDistributionChart"
+                  echarts
+                  [options]="classWisePerformanceChartOptions"
+                  (chartClick)="onClassPerformanceChartClick($event)"
+                  class="chart-host"
+                ></div>
+              </article>
+
+              <article class="dashboard-card chart-card">
+                <div class="card-head">
+                  <div>
+                    <h6>Division-wise Performance</h6>
+                    <p>{{ activeDivisionContextLabel }} ranked by net balance</p>
+                  </div>
+                  <span class="mini-badge">{{ activeClassDrillName || 'All Classes' }}</span>
+                </div>
+                <div *ngIf="divisionWisePerformanceChartOptions; else emptyDistributionChart" echarts [options]="divisionWisePerformanceChartOptions" class="chart-host"></div>
+              </article>
+            </div>
+
+            <ng-template #emptyDistributionChart>
+              <div class="chart-empty">
+                <mat-icon>insert_chart</mat-icon>
+                <p>No chart data in the current scope.</p>
+              </div>
+            </ng-template>
+          </section>
+
+          <section class="dashboard-section">
+            <div class="section-heading">
+              <div>
+                <span class="section-eyebrow">Trend Analysis</span>
+                <h6>Monthly and cross-period movement</h6>
+              </div>
+            </div>
+
+            <div class="chart-grid chart-grid-secondary">
+              <article class="dashboard-card chart-card">
+                <div class="card-head">
+                  <div>
+                    <h6>Monthly Fee Collection Trend</h6>
+                    <p>Smooth monthly collection curve with transaction context</p>
+                  </div>
+                </div>
+                <div *ngIf="monthlyCollectionTrendChartOptions; else emptyTrendChart" echarts [options]="monthlyCollectionTrendChartOptions" class="chart-host"></div>
+              </article>
+
+              <article class="dashboard-card chart-card">
+                <div class="card-head">
+                  <div>
+                    <h6>Collection vs Due Over Time</h6>
+                    <p>Area trend for realization and pending exposure</p>
+                  </div>
+                </div>
+                <div *ngIf="collectionVsDueAreaChartOptions; else emptyTrendChart" echarts [options]="collectionVsDueAreaChartOptions" class="chart-host"></div>
+              </article>
+            </div>
+
+            <ng-template #emptyTrendChart>
+              <div class="chart-empty">
+                <mat-icon>show_chart</mat-icon>
+                <p>No trend history available for the current records.</p>
+              </div>
+            </ng-template>
+          </section>
+
+          
+          
+          <section class="dashboard-section">
+            <div class="section-heading">
+              <div>
+                <span class="section-eyebrow">Smart Tables</span>
+                <h6>Analytics grids with sticky headers and sorting</h6>
+              </div>
+            </div>
+
+            <div class="smart-tables-grid">
+              <article class="dashboard-card analytics-table-card">
+                <div class="card-head">
+                  <div>
+                    <h6>Fee Category Summary</h6>
+                    <p>Category-wise contribution and realization efficiency</p>
+                  </div>
+                  <span class="mini-badge">{{ displayFeeCategorySummaryData.length }} rows</span>
+                </div>
+                <div class="table-shell">
+                  <table class="analytics-table">
+                    <thead>
+                      <tr>
+                        <th *ngFor="let col of feeCategorySummaryColumns" (click)="sortFeeCategorySummaryBy(col.key)" class="sortable-header">
+                          {{ col.label }}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let row of displayFeeCategorySummaryData">
+                        <td *ngFor="let col of feeCategorySummaryColumns">{{ getSummaryValue(row, col) }}</td>
+                      </tr>
+                      <tr *ngIf="!displayFeeCategorySummaryData.length">
+                        <td [attr.colspan]="feeCategorySummaryColumns.length" class="text-center">No fee category summary available.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </article>
+
+              <article class="dashboard-card analytics-table-card">
+                <div class="card-head">
+                  <div>
+                    <h6>Class-wise Summary</h6>
+                    <p>Class level collection, due, and efficiency analysis</p>
+                  </div>
+                  <span class="mini-badge">{{ displayClassSummaryData.length }} rows</span>
+                </div>
+                <div class="table-shell">
+                  <table class="analytics-table">
+                    <thead>
+                      <tr>
+                        <th *ngFor="let col of classSummaryColumns" (click)="sortClassSummaryBy(col.key)" class="sortable-header">
+                          {{ col.label }}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let row of displayClassSummaryData">
+                        <td *ngFor="let col of classSummaryColumns">{{ getSummaryValue(row, col) }}</td>
+                      </tr>
+                      <tr *ngIf="!displayClassSummaryData.length">
+                        <td [attr.colspan]="classSummaryColumns.length" class="text-center">No class summary available.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </article>
+
+              <article class="dashboard-card analytics-table-card">
+                <div class="card-head">
+                  <div>
+                    <h6>Division-wise Summary</h6>
+                    <p>Division level performance across the active selection</p>
+                  </div>
+                  <span class="mini-badge">{{ displayDivisionSummaryData.length }} rows</span>
+                </div>
+                <div class="table-shell">
+                  <table class="analytics-table">
+                    <thead>
+                      <tr>
+                        <th *ngFor="let col of divisionSummaryColumns" (click)="sortDivisionSummaryBy(col.key)" class="sortable-header">
+                          {{ col.label }}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let row of displayDivisionSummaryData">
+                        <td *ngFor="let col of divisionSummaryColumns">{{ getSummaryValue(row, col) }}</td>
+                      </tr>
+                      <tr *ngIf="!displayDivisionSummaryData.length">
+                        <td [attr.colspan]="divisionSummaryColumns.length" class="text-center">No division summary available.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="dashboard-section">
+            <div class="section-heading">
+              <div>
+                <span class="section-eyebrow">Operational Detail</span>
+                <h6>Searchable detail grids behind the analytics layer</h6>
+              </div>
+            </div>
+
+            <div class="detail-grid">
+              <article class="dashboard-card detail-table-card">
+                <div class="card-head">
+                  <div>
+                    <h6>Fee Collection Records</h6>
+                    <p>{{ filteredFeeCollectionData.length }} entries in the current view</p>
+                  </div>
+                </div>
+
+                <div class="table-shell">
+                  <table class="analytics-table detail-table">
+                    <thead>
+                      <tr>
+                        <th>SI NO</th>
+                        <th *ngFor="let col of feeCollectionColumns" (click)="sortCollectionBy(col.key)" class="sortable-header">
+                          {{ col.label }}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let row of pagedFeeCollectionData; let i = index">
+                        <td>{{ (currentCollectionPage - 1) * pageSize + i + 1 }}</td>
+                        <td *ngFor="let col of feeCollectionColumns">{{ getCollectionValue(row, col.key) }}</td>
+                      </tr>
+                      <tr *ngIf="!pagedFeeCollectionData.length">
+                        <td class="text-center" [attr.colspan]="feeCollectionColumns.length + 1">No fee collection data available.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="fee-report-table-footer">
+                  <div class="fee-report-footer-left">
+                    Showing {{ collectionShowingFrom }} to {{ collectionShowingTo }} of {{ filteredFeeCollectionData.length }} entries
+                  </div>
+                  <div class="fee-report-footer-right" *ngIf="filteredFeeCollectionData.length > pageSize">
+                    <button class="fee-report-page-link" (click)="changeCollectionPage(currentCollectionPage - 1)" [disabled]="currentCollectionPage === 1">
+                      Previous
+                    </button>
+                    <button
+                      *ngFor="let page of visibleCollectionPages"
+                      class="fee-report-page-link"
+                      [ngClass]="{ active: page === currentCollectionPage }"
+                      (click)="changeCollectionPage(page)"
+                    >
+                      {{ page }}
+                    </button>
+                    <button
+                      class="fee-report-page-link"
+                      (click)="changeCollectionPage(currentCollectionPage + 1)"
+                      [disabled]="currentCollectionPage === feeCollectionTotalPages()"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              </article>
+
+              <!-- <article class="dashboard-card detail-table-card">
+                <div class="card-head">
+                  <div>
+                    <h6>Fee Due Records</h6>
+                    <p>{{ filteredFeeDuesData.length }} entries in the current view</p>
+                  </div>
+                </div>
+
+                <div class="table-shell">
+                  <table class="analytics-table detail-table">
+                    <thead>
+                      <tr>
+                        <th>SI NO</th>
+                        <th *ngFor="let col of feeDuesColumns" (click)="sortDuesBy(col.key)" class="sortable-header">
+                          {{ col.label }}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let row of pagedFeeDuesData; let i = index">
+                        <td>{{ (currentDuesPage - 1) * pageSize + i + 1 }}</td>
+                        <td *ngFor="let col of feeDuesColumns">{{ getDuesValue(row, col.key) }}</td>
+                      </tr>
+                      <tr *ngIf="!pagedFeeDuesData.length">
+                        <td class="text-center" [attr.colspan]="feeDuesColumns.length + 1">No fee dues data available.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="fee-report-table-footer">
+                  <div class="fee-report-footer-left">
+                    Showing {{ duesShowingFrom }} to {{ duesShowingTo }} of {{ filteredFeeDuesData.length }} entries
+                  </div>
+                  <div class="fee-report-footer-right" *ngIf="filteredFeeDuesData.length > pageSize">
+                    <button class="fee-report-page-link" (click)="changeDuesPage(currentDuesPage - 1)" [disabled]="currentDuesPage === 1">
+                      Previous
+                    </button>
+                    <button
+                      *ngFor="let page of visibleDuesPages"
+                      class="fee-report-page-link"
+                      [ngClass]="{ active: page === currentDuesPage }"
+                      (click)="changeDuesPage(page)"
+                    >
+                      {{ page }}
+                    </button>
+                    <button class="fee-report-page-link" (click)="changeDuesPage(currentDuesPage + 1)" [disabled]="currentDuesPage === feeDuesTotalPages()">
+                      Next
+                    </button>
+                  </div>
+                </div>
+              </article> -->
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,5 +1,5 @@
 import { NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { DashboardTopNavComponent } from '../../../SignInAndSignUp/dashboard-top-nav/dashboard-top-nav.component';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule,Validators  } from '@angular/forms';
@@ -39,6 +39,7 @@ export class SubjectComponent extends BasePermissionComponent {
     this.SchoolSelectionChange=false;
     this.categories=[];
     this.FetchSchoolsList();
+    this.FetchSubjectsList();
     this.FetchInitialData();
   };
 
@@ -54,6 +55,8 @@ export class SubjectComponent extends BasePermissionComponent {
   private readonly SEARCH_DEBOUNCE = 300;
   SubjectsList: any[] =[];
   SubjectsCount: number = 0;
+  SubjectsActiveCount: number = 0;
+  SubjectsInActiveCount: number = 0;
   SyllabusList: any[] =[];
   isViewMode = false;
   viewSyllabus: any = null;
@@ -72,10 +75,16 @@ export class SubjectComponent extends BasePermissionComponent {
   editclicked:boolean=false;
   schoolList: any[] = [];
   selectedSchoolID: string = '';
+  selectedAcademicYearID: string = '';
+  selectedClassID: string = '';
   SchoolSelectionChange:boolean=false;
+  SchoolAcademicYearChange:boolean=false;
+  SchoolClassChange:boolean=false;
   academicYearList:any[] = [];
+  allsubjectsList:any[] = [];
   AdminselectedSchoolID:string = '';
   AdminselectedAcademivYearID:string = '';
+  AdminSelectedActiveAcademicYearID:string = sessionStorage.getItem('ActiveAcademicYearID') || '';
 
   ModuleForm: any = new FormGroup({
     ID: new FormControl(),
@@ -132,7 +141,12 @@ export class SubjectComponent extends BasePermissionComponent {
   };
 
   FetchAcademicYearsList() {
-    const requestData = { SchoolID:this.AdminselectedSchoolID||'',Flag: '2' };
+    const schoolId =
+    this.SchoolSelectionChange
+      ? this.selectedSchoolID?.trim()
+      : this.AdminselectedSchoolID || '';
+
+    const requestData = { SchoolID:schoolId,Flag: '2' };
 
     this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)
       .subscribe(
@@ -156,6 +170,37 @@ export class SubjectComponent extends BasePermissionComponent {
       );
   };
 
+  FetchSubjectsList() {
+    const AcademicYearIdSelected =
+    this.SchoolAcademicYearChange
+      ? this.selectedAcademicYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
+
+    const requestData = { SchoolID:this.AdminselectedSchoolID||'',
+      AcademicYear:AcademicYearIdSelected,Flag: '2' };
+
+    this.apiurl.post<any>('Tbl_Subject_CRUD_Operations', requestData)
+      .subscribe(
+        (response: any) => {
+          if (response && Array.isArray(response.data)) {
+            this.allsubjectsList = response.data.map((item: any) => {
+              const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+              return {
+                ID: item.id,
+                Name: item.name,
+                IsActive: isActiveString
+              };
+            });            
+          } else {
+            this.allsubjectsList = [];
+          }
+        },
+        (error) => {
+          this.allsubjectsList = [];
+        }
+      );
+  };
+
   protected override get isAdmin(): boolean {
     const role = sessionStorage.getItem('RollID') || localStorage.getItem('RollID');
     return role === '1';
@@ -163,16 +208,37 @@ export class SubjectComponent extends BasePermissionComponent {
 
   FetchAcademicYearCount(isSearch: boolean) {
     let SchoolIdSelected = '';
+    let AcademicYearIdSelected='';
+    let ClassSelected='';
 
     if (this.SchoolSelectionChange) {
       SchoolIdSelected = this.selectedSchoolID.trim();
     }
 
-    return this.apiurl.post<any>('Tbl_Subject_CRUD_Operations', {
+    if(this.SchoolAcademicYearChange){
+      AcademicYearIdSelected=this.selectedAcademicYearID.trim();
+    }
+
+    if(this.SchoolClassChange){
+      ClassSelected=this.selectedClassID.trim();
+    }
+
+    const payload: any = {
       Flag: isSearch ? '8' : '6',
-      SchoolID:SchoolIdSelected,
+      SchoolID: SchoolIdSelected,
+      // Class:ClassSelected,
       Name: isSearch ? this.searchQuery.trim() : null
-    });
+    };
+
+    // ✅ add only for admin
+    if (!this.isAdmin) {
+      payload.AcademicYear = this.AdminSelectedActiveAcademicYearID;
+    }
+    else if(this.isAdmin && this.SchoolAcademicYearChange){
+      payload.AcademicYear = AcademicYearIdSelected;
+    }
+
+    return this.apiurl.post<any>('Tbl_Subject_CRUD_Operations', payload);
   }
 
   FetchInitialData(extra: any = {}) {
@@ -180,9 +246,19 @@ export class SubjectComponent extends BasePermissionComponent {
     const flag = isSearch ? '7' : '2';
 
     let SchoolIdSelected = '';
+    let AcademicYearIdSelected='';
+    let ClassSelected='';
 
     if (this.SchoolSelectionChange) {
       SchoolIdSelected = this.selectedSchoolID.trim();
+    }
+
+    if(this.SchoolAcademicYearChange){
+      AcademicYearIdSelected=this.selectedAcademicYearID.trim();
+    }
+
+    if(this.SchoolClassChange){
+      ClassSelected=this.selectedClassID.trim();
     }
 
     const cursor =
@@ -195,6 +271,8 @@ export class SubjectComponent extends BasePermissionComponent {
     this.FetchAcademicYearCount(isSearch).subscribe({
       next: (countResp: any) => {
         this.SubjectsCount = countResp?.data?.[0]?.totalcount ?? 0;
+        this.SubjectsActiveCount=countResp?.data?.[0]?.activeCount ?? 0;
+        this.SubjectsInActiveCount=countResp?.data?.[0]?.inactiveCount ?? 0;
 
         const payload: any = {
           Flag: flag,
@@ -203,9 +281,17 @@ export class SubjectComponent extends BasePermissionComponent {
           SortDirection: this.sortDirection,
           LastCreatedDate: cursor?.lastCreatedDate ?? null,
           LastID: cursor?.lastID ?? null,
+          ID:ClassSelected,
           SchoolID:SchoolIdSelected,
           ...extra
         };
+
+        if (!this.isAdmin) {
+          payload.AcademicYear = this.AdminSelectedActiveAcademicYearID;
+        }
+        else if(this.isAdmin && this.SchoolAcademicYearChange){
+          payload.AcademicYear = AcademicYearIdSelected;
+        }
 
         if (isSearch) payload.Name = this.searchQuery.trim();
 
@@ -254,20 +340,25 @@ export class SubjectComponent extends BasePermissionComponent {
 
 
   AddNewClicked(){
+    this.ModuleForm.reset();
     if (this.isAdmin) {
       this.ModuleForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+      this.ModuleForm.get('School').patchValue('0');
+      this.ModuleForm.get('AcademicYear').patchValue('0');
     } else {
       this.ModuleForm.get('School')?.clearValidators();
+      this.ModuleForm.get('AcademicYear')?.disable({ emitEvent: false });
     }
     if(this.AdminselectedSchoolID==''){
       this.FetchAcademicYearsList();
+      if(!this.isAdmin){
+        this.ModuleForm.get('AcademicYear').patchValue(this.AdminSelectedActiveAcademicYearID);
+        this.FetchClassList();
+      }  
     }
     this.categories=[];
     this.selectedCategories=[];
     this.FetchClassList();
-    this.ModuleForm.reset();
-    this.ModuleForm.get('School').patchValue('0');
-    this.ModuleForm.get('AcademicYear').patchValue('0');
     this.IsAddNewClicked=!this.IsAddNewClicked;
     this.IsActiveStatus=true;
     this.ViewModuleClicked=false;
@@ -600,6 +691,7 @@ export class SubjectComponent extends BasePermissionComponent {
       this.selectedSchoolID = schoolID;
     }    
     this.SchoolSelectionChange = true;
+    this.FetchAcademicYearsList();
     this.FetchInitialData();
   };
 
@@ -717,4 +809,101 @@ export class SubjectComponent extends BasePermissionComponent {
     }    
     this.FetchClassList();
   };
+
+  onAcademicYearChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    if(schoolID=="0"){
+      this.selectedAcademicYearID="";
+    }else{
+      this.selectedAcademicYearID = schoolID;
+    }    
+    this.SchoolAcademicYearChange = true;
+    this.FetchSubjectsList();
+    this.FetchInitialData();
+  };
+
+  // FetchOnlyClassList() {
+  //   const AcademicYearIdSelected =
+  //   this.SchoolAcademicYearChange
+  //     ? this.selectedAcademicYearID?.trim()
+  //     : this.AdminSelectedActiveAcademicYearID || '';
+
+  //   const requestData = { 
+  //     SchoolID:this.AdminselectedSchoolID,
+  //     AcademicYear:AcademicYearIdSelected,
+  //     Flag: '3' };
+
+  //   this.apiurl.post<any>('Tbl_Class_CRUD_Operations', requestData)
+  //     .subscribe(
+  //       (response: any) => {
+  //         if (response && Array.isArray(response.data)) {
+  //           this.ClassList = response.data.map((item: any) => {
+  //             const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+  //             return {
+  //               ID: item.id,
+  //               Name: item.name
+  //             };
+  //           });
+  //         } else {
+  //           this.ClassList = [];
+  //         }
+  //       },
+  //       (error) => {
+  //         this.ClassList = [];
+  //       }
+  //     );
+  // };
+
+  onClassSelectionChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    if(schoolID=="0"){
+      this.selectedClassID="";
+    }else{
+      this.selectedClassID = schoolID;
+    }    
+    this.SchoolClassChange = true;
+    this.FetchInitialData();
+  };
+
+  pageStartIndex(): number {
+    return this.SubjectsCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
+  }
+
+  pageEndIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.SubjectsCount);
+  }
+
+  CancelSyllabus(){
+    this.IsAddNewClicked=false;
+    this.AdminselectedSchoolID = '';
+    this.AdminselectedAcademivYearID = '';
+    this.ModuleForm.reset();
+    this.FetchInitialData();
+  }
+
+  onRowsCountChange() {
+    this.currentPage = 1;
+    this.FetchInitialData();
+  }
+
+  @ViewChild('dropdownContainer')
+  dropdownContainer!: ElementRef;
+
+  toggleDropdown(event: Event) {
+    event.stopPropagation();
+    this.dropdownOpen = !this.dropdownOpen;
+  }
+
+  @HostListener('document:click', ['$event'])
+  clickOutside(event: Event) {
+
+    if (
+      this.dropdownContainer &&
+      !this.dropdownContainer.nativeElement.contains(event.target)
+    ) {
+      this.dropdownOpen = false;
+    }
+  }
 }

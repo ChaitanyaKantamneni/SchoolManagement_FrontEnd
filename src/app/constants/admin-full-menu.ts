@@ -19,7 +19,8 @@ export const FULL_ADMIN_MENU: Module[] = [
       { id: 'modules', pageName: 'Modules', moduleID: 'masters', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
       { id: 'pages', pageName: 'Pages', moduleID: 'masters', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
       { id: 'role', pageName: 'Roles', moduleID: 'masters', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
-      { id: 'staff', pageName: 'Staff', moduleID: 'masters', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
+      { id: 'staff', pageName: 'Staff', moduleID: 'masters', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
+      { id: 'groupadmin', pageName: 'Group Admin', moduleID: 'masters', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
     ]
   },
   {
@@ -113,6 +114,38 @@ export const FULL_ADMIN_MENU: Module[] = [
     pages: [
       { id: 'homework', pageName: 'HomeWork', moduleID: 'homework', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
       { id: 'assignhomework', pageName: 'Assign Homework', moduleID: 'homework', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
+    ]
+  },
+  {
+    id: 'holidaycalendar',
+    moduleName: 'Holiday Calendar',
+    pages: [
+      { id: 'holidaycalendar', pageName: 'Holiday Calendar', moduleID: 'holidaycalendar', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
+    ]
+  },
+  {
+    id: 'reports',
+    moduleName: 'Reports',
+    pages: [
+      { id: 'StudentsReport', pageName: 'Students Report', moduleID: 'reports', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
+      { id: 'FeeReport', pageName: 'Fee Report', moduleID: 'reports', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
+    ]
+  },
+  {
+    id: 'notices',
+    moduleName: 'Notices',
+    pages: [
+      { id: 'notices', pageName: 'Notices', moduleID: 'notices', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
+    ]
+  },
+  {
+    id: 'hostelmanagement',
+    moduleName: 'Hostel Management',
+    pages: [
+      { id: 'hostelmaster', pageName: 'Hostel Master', moduleID: 'hostelmanagement', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
+      { id: 'roommaster', pageName: 'Room Master', moduleID: 'hostelmanagement', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
+      { id: 'roomallotment', pageName: 'Room Allotment', moduleID: 'hostelmanagement', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
+      { id: 'outpass', pageName: 'Outpass', moduleID: 'hostelmanagement', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
     ]
   },
    {

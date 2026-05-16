@@ -17,6 +17,17 @@
   min-width: 260px;
 }
 
+/* School Admin layout: 3 fields per row */
+.fee-dues-filters-row.admin-row {
+  flex-wrap: nowrap;
+}
+
+.fee-dues-filters-row.admin-row .InputFieldsContainer {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: none;
+}
+
 .fee-dues-filters-row .submit-field {
   display: flex;
   align-items: flex-end;

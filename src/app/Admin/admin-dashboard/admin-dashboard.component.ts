@@ -202,7 +202,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       exam: 'quiz',
       attendance: 'how_to_reg',
       'hr & payroll': 'account_balance',
-      'leave management': 'event_note'
+      'leave management': 'event_note',
+      'holiday calendar': 'event'
     };
 
     return map[key] || 'folder';
@@ -268,7 +269,10 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       'salary issued': 'receipt_long',
       'apply leave': 'event_note',
       'leave approval': 'fact_check',
-      'leave details': 'settings'
+      'leave details': 'settings',
+      'holiday calendar': 'event',
+      'students report': 'bar_chart',
+      'fee report': 'bar_chart'
     };
 
     return map[key] || 'menu';
@@ -312,6 +316,9 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       myleaves:             'MyLeaves',
       leaveapproval:        'LeaveApproval',
       leavedetails:         'LeaveDetails',
+      holidaycalendar:      'HolidayCalendar',
+      studentsreport:       'StudentsReport',
+      feereport:           'FeeReport'
     };
 
     return alias[normalized] ?? compact;

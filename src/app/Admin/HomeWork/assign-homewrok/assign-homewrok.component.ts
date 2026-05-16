@@ -1,6 +1,9 @@
 import { DatePipe, DecimalPipe, NgClass, NgFor, NgIf, NgStyle, SlicePipe } from '@angular/common';
 import { Component, ElementRef, ViewChild } from '@angular/core';
+import { DatePipe, DecimalPipe, NgClass, NgFor, NgIf, NgStyle, SlicePipe } from '@angular/common';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { Observable, of } from 'rxjs';
 import { Observable, of } from 'rxjs';
 import { DashboardTopNavComponent } from '../../../SignInAndSignUp/dashboard-top-nav/dashboard-top-nav.component';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -11,9 +14,11 @@ import { BasePermissionComponent } from '../../../shared/base-crud.component';
 import { LoaderService } from '../../../Services/loader.service';
 import { HttpClient } from '@angular/common/http';
 import { FileService } from '../../../Services/file.service';
+import { FileService } from '../../../Services/file.service';
 
 @Component({
   selector: 'app-assign-homewrok',
+  imports: [NgIf, NgFor, NgClass, NgStyle, MatIconModule, DashboardTopNavComponent, ReactiveFormsModule, FormsModule, DatePipe, SlicePipe, DecimalPipe],
   imports: [NgIf, NgFor, NgClass, NgStyle, MatIconModule, DashboardTopNavComponent, ReactiveFormsModule, FormsModule, DatePipe, SlicePipe, DecimalPipe],
   templateUrl: './assign-homewrok.component.html',
   styleUrl: './assign-homewrok.component.css'
@@ -35,11 +40,27 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
   filePreviewType: 'image' | 'document' | null = null;
   isPreviewVisible: boolean = false;
 
+  @ViewChild('homeworkFileInput') homeworkFileInput?: ElementRef<HTMLInputElement>;
+
+  // File upload properties
+  selectedFile: File | null = null;
+  isUploading: boolean = false;
+  uploadProgress: number = 0;
+  uploadedFileName: string = '';
+  uploadedFileUrl: string = '';
+
+  // File preview properties
+  filePreviewUrl: string | null = null;
+  filePreviewType: 'image' | 'document' | null = null;
+  isPreviewVisible: boolean = false;
+
   constructor(
     private http: HttpClient,
     router: Router,
     public loader: LoaderService,
     private apiurl: ApiServiceService,
+    menuService: MenuServiceService,
+    public fileService: FileService
     menuService: MenuServiceService,
     public fileService: FileService
   ) {
@@ -701,6 +722,264 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     return of(null); // Return empty observable if no file to delete
   }
 
+  // ── File Upload Methods ───────────────────────────────────────────────────────
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      this.AminityInsStatus = 'File size exceeds 5MB limit.';
+      this.isModalOpen = true;
+      this.clearFileSelection();
+      return;
+    }
+
+    // Validate file type
+    const allowedTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'image/jpeg',
+      'image/png',
+      'image/jpg',
+      'text/plain'
+    ];
+    if (!allowedTypes.includes(file.type)) {
+      this.AminityInsStatus = 'Invalid file type. Allowed: PDF, DOC, DOCX, JPG, JPEG, PNG, TXT';
+      this.isModalOpen = true;
+      this.clearFileSelection();
+      return;
+    }
+
+    this.selectedFile = file;
+    this.uploadedFileName = file.name;
+
+    // Generate preview
+    this.generateFilePreview(file);
+  }
+
+  generateFilePreview(file: File): void {
+    this.isPreviewVisible = true;
+
+    // Check if file is an image
+    if (file.type.startsWith('image/')) {
+      this.filePreviewType = 'image';
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.filePreviewUrl = e.target?.result || null;
+      };
+      reader.readAsDataURL(file);
+    } else {
+      // For documents (PDF, DOC, TXT, etc.)
+      this.filePreviewType = 'document';
+      this.filePreviewUrl = null;
+    }
+  }
+
+  confirmUpload(): void {
+    // Don't upload file yet - keep it in memory
+    // File will be uploaded during Submit/Update
+    if (this.selectedFile) {
+      this.isPreviewVisible = false;
+      console.log('[PREVIEW] File confirmed, will upload on Submit');
+    }
+  }
+
+  cancelPreview(): void {
+    this.isPreviewVisible = false;
+    this.filePreviewUrl = null;
+    this.filePreviewType = null;
+    this.selectedFile = null;
+    this.uploadedFileName = '';
+    this.clearFileSelection();
+  }
+
+  uploadFile(file: File): void {
+    if (!file) return;
+
+    this.isUploading = true;
+    this.uploadProgress = 0;
+
+    const schoolId = this.AdminselectedSchoolID || this.ss('SchoolID') || '';
+
+    // Create FormData
+    const formData = new FormData();
+    formData.append('File', file);
+    formData.append('SchoolId', schoolId);
+    formData.append('FileType', 'Homework');
+    formData.append('ReferenceId', this.HomeworkForm.get('ID')?.value || 'new');
+
+    // Upload using FileService or direct HTTP
+    this.fileService.uploadHomeworkDoc(formData).subscribe({
+      next: (response: any) => {
+        this.isUploading = false;
+        this.uploadProgress = 100;
+
+        // Get the file URL from response
+        const fileUrl = response?.url || response?.filePath || response;
+        this.uploadedFileUrl = fileUrl;
+
+        // Set the AttachmentURL in the form
+        this.HomeworkForm.patchValue({
+          AttachmentURL: fileUrl
+        });
+
+        // Hide preview after successful upload
+        this.isPreviewVisible = false;
+        this.filePreviewUrl = null;
+        this.filePreviewType = null;
+
+        this.AminityInsStatus = 'File uploaded successfully!';
+        this.isModalOpen = true;
+      },
+      error: (err: any) => {
+        this.isUploading = false;
+        this.uploadProgress = 0;
+        this.AminityInsStatus = err?.error?.message || 'Failed to upload file.';
+        this.isModalOpen = true;
+        this.clearFileSelection();
+      }
+    });
+  }
+
+  clearFileSelection(): void {
+    this.selectedFile = null;
+    this.uploadedFileName = '';
+    this.uploadProgress = 0;
+    this.isUploading = false;
+    this.isPreviewVisible = false;
+    this.filePreviewUrl = null;
+    this.filePreviewType = null;
+    const el = this.homeworkFileInput?.nativeElement;
+    if (el) {
+      el.value = '';
+    }
+  }
+
+  removeAttachment(): void {
+    const attachmentUrl = this.HomeworkForm.get('AttachmentURL')?.value;
+    const homeworkId = this.HomeworkForm.get('ID')?.value || 'temp';
+
+    // If there's a file to delete, call API to permanently delete it
+    if (attachmentUrl) {
+      const schoolId = this.AdminselectedSchoolID || this.ss('SchoolID') || '';
+
+      // Extract filename from URL
+      const urlParts = attachmentUrl.split('/');
+      const fileName = urlParts[urlParts.length - 1];
+
+      if (fileName && schoolId) {
+        const deletePayload = {
+          SchoolId: schoolId,
+          HomeworkId: homeworkId,
+          FileName: fileName,
+          ModifiedBy: this.ActiveUserId,
+          ModifiedIp: '' // Add IP if available
+        };
+
+        this.fileService.deleteHomeworkFile(deletePayload).subscribe({
+          next: (res) => {
+            console.log('File deleted:', res);
+          },
+          error: (err) => {
+            console.error('Failed to delete file:', err);
+          }
+        });
+      }
+    }
+
+    // Clear form values regardless of API success
+    this.HomeworkForm.patchValue({ AttachmentURL: '' });
+    this.uploadedFileUrl = '';
+    this.uploadedFileName = '';
+    this.isPreviewVisible = false;
+    this.filePreviewUrl = null;
+    this.filePreviewType = null;
+    this.clearFileSelection();
+  }
+
+  // ── File View Helper Methods ───────────────────────────────────────────────────
+  getFileViewUrl(): string {
+    const url = this.HomeworkForm.get('AttachmentURL')?.value;
+    if (!url) return '';
+    return this.fileService.getFullFileUrl(url);
+  }
+
+  isImageFile(): boolean {
+    const url = this.HomeworkForm.get('AttachmentURL')?.value || '';
+    return this.fileService.isImageFile(url);
+  }
+
+  isPdfFile(path?: string): boolean {
+    const checkPath = path || this.HomeworkForm.get('AttachmentURL')?.value || this.selectedFile?.name || '';
+    return this.fileService.isPdfFile(checkPath);
+  }
+
+  isDocumentFile(): boolean {
+    const url = this.HomeworkForm.get('AttachmentURL')?.value || '';
+    return /\.(doc|docx|txt)$/i.test(url);
+  }
+
+  getFileIcon(): string {
+    const url = this.HomeworkForm.get('AttachmentURL')?.value || '';
+    return this.fileService.getFileIcon(url);
+  }
+
+  // Download attachment
+  downloadAttachment(): void {
+    const url = this.HomeworkForm.get('AttachmentURL')?.value;
+    if (url) {
+      const filename = url.split('/').pop() || 'download';
+      this.fileService.downloadFile(url, filename);
+    }
+  }
+
+  // Download submission attachment from view modal
+  downloadSubmissionAttachment(): void {
+    const url = this.selectedSubmissionView?.attachmentURL;
+    if (url) {
+      const filename = url.split('/').pop() || 'download';
+      this.fileService.downloadFile(url, filename);
+    }
+  }
+
+  // Download view syllabus attachment
+  downloadViewSyllabusAttachment(): void {
+    const url = this.viewSyllabus?.AttachmentURL;
+    if (url) {
+      const filename = url.split('/').pop() || 'download';
+      this.fileService.downloadFile(url, filename);
+    }
+  }
+
+  // Delete old file before uploading new one (during edit)
+  deleteOldFileBeforeUpload(): Observable<any> {
+    const oldUrl = this.HomeworkForm.get('AttachmentURL')?.value;
+    const homeworkId = this.HomeworkForm.get('ID')?.value || 'temp';
+
+    if (oldUrl && this.ViewSyllabusClicked) {
+      const schoolId = this.AdminselectedSchoolID || this.ss('SchoolID') || '';
+      const urlParts = oldUrl.split('/');
+      const fileName = urlParts[urlParts.length - 1];
+
+      if (fileName && schoolId) {
+        const deletePayload = {
+          SchoolId: schoolId,
+          HomeworkId: homeworkId,
+          FileName: fileName,
+          ModifiedBy: this.ActiveUserId,
+          ModifiedIp: ''
+        };
+        console.log('[DELETE OLD] Deleting before upload:', deletePayload);
+        return this.fileService.deleteHomeworkFile(deletePayload);
+      }
+    }
+    return of(null); // Return empty observable if no file to delete
+  }
+
   // ── Form Helper Methods ───────────────────────────────────────────────────────
   allowOnlyNumbers(event: KeyboardEvent) {
     if (
@@ -744,6 +1023,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     this.clearFileSelection();
     this.uploadedFileUrl = '';
 
+
+    // Reset file upload state
+    this.clearFileSelection();
+    this.uploadedFileUrl = '';
+
     // For teachers, only trigger allocation sync when academic year is manually selected
     if (this.isTeacher) {
       console.log('[ASSIGN HOMEWORK] AddNewClicked - Setting up teacher form');
@@ -751,6 +1035,7 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
       // Don't auto-select academic year - wait for user to select it
       // Allocation sync will be triggered in onAcademicYearChange when user selects academic year
     }
+
 
     this.IsAddNewClicked = !this.IsAddNewClicked;
     this.IsActiveStatus = true;
@@ -761,7 +1046,10 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
   SubmitHomework() {
     console.log('[SUBMIT] Starting homework submission...');
     
+    console.log('[SUBMIT] Starting homework submission...');
+    
     if (this.HomeworkForm.invalid) {
+      console.log('[SUBMIT] Form is invalid:', this.HomeworkForm.errors);
       console.log('[SUBMIT] Form is invalid:', this.HomeworkForm.errors);
       this.HomeworkForm.markAllAsTouched();
       return;
@@ -813,10 +1101,59 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
   }
 
   submitToDB(operation: 'insert' | 'update') {
+    // If file selected, upload it first then submit to DB
+    if (this.selectedFile) {
+      console.log('[SUBMIT] File selected, uploading first...');
+      this.uploadFileThenSubmit('insert');
+    } else {
+      console.log('[SUBMIT] No file, submitting directly to DB...');
+      this.submitToDB('insert');
+    }
+  }
+
+  uploadFileThenSubmit(operation: 'insert' | 'update') {
+    const schoolId = this.AdminselectedSchoolID || this.ss('SchoolID') || '';
+    const homeworkId = operation === 'update' ? this.HomeworkForm.get('ID')?.value || 'temp' : 'temp';
+    
+    console.log(`[UPLOAD] Starting file upload for ${operation}...`);
+    
+    const formData = new FormData();
+    formData.append('File', this.selectedFile!);
+    formData.append('SchoolId', schoolId);
+    formData.append('HomeworkId', homeworkId);
+
+    this.fileService.uploadHomeworkDoc(formData).subscribe({
+      next: (response: any) => {
+        console.log('[UPLOAD] File uploaded successfully:', response);
+        
+        // Set AttachmentURL to the uploaded path
+        this.HomeworkForm.patchValue({ AttachmentURL: response.url });
+        this.uploadedFileName = response.fileName;
+        this.uploadedFileUrl = response.url;
+        
+        // Now submit to DB
+        if (operation === 'insert') {
+          this.submitToDB('insert');
+        } else {
+          this.submitToDB('update');
+        }
+      },
+      error: (err) => {
+        console.error('[UPLOAD] File upload failed:', err);
+        this.AminityInsStatus = "File upload failed. Please try again.";
+        this.isModalOpen = true;
+      }
+    });
+  }
+
+  submitToDB(operation: 'insert' | 'update') {
     const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
     const attachmentUrl = this.HomeworkForm.get('AttachmentURL')?.value;
     
+    const attachmentUrl = this.HomeworkForm.get('AttachmentURL')?.value;
+    
     const data = {
+      ID: operation === 'update' ? this.HomeworkForm.get('ID')?.value : undefined,
       ID: operation === 'update' ? this.HomeworkForm.get('ID')?.value : undefined,
       SchoolID: this.HomeworkForm.get('School')?.value || this.AdminselectedSchoolID,
       AcademicYear: this.HomeworkForm.get('AcademicYear')?.value || this.AdminselectedAcademivYearID,
@@ -829,25 +1166,33 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
       AssignedDate: this.HomeworkForm.get('AssignedDate')?.value,
       SubmissionDate: this.HomeworkForm.get('SubmissionDate')?.value,
       AttachmentURL: attachmentUrl,
+      AttachmentURL: attachmentUrl,
       IsActive: IsActiveStatusNumeric,
       CreatedBy: this.ActiveUserId,
       CreatedIP: '',
       ModifiedBy: this.ActiveUserId,
       ModifiedIP: '',
       Flag: operation === 'insert' ? '1' : '5'
+      Flag: operation === 'insert' ? '1' : '5'
     };
 
+    console.log(`[${operation.toUpperCase()}] Submitting to DB:`, JSON.stringify(data, null, 2));
     console.log(`[${operation.toUpperCase()}] Submitting to DB:`, JSON.stringify(data, null, 2));
 
     this.apiurl.post("Tbl_Homework_CRUD_Operations", data).subscribe({
       next: (response: any) => {
         console.log(`[${operation.toUpperCase()}] API Response:`, response);
+        console.log(`[${operation.toUpperCase()}] API Response:`, response);
         if (response.statusCode === 200) {
           this.IsAddNewClicked = !this.IsAddNewClicked;
           this.isModalOpen = true;
           this.AminityInsStatus = operation === 'insert' ? "Homework Assigned Successfully!" : "Homework Updated Successfully!";
+          this.AminityInsStatus = operation === 'insert' ? "Homework Assigned Successfully!" : "Homework Updated Successfully!";
           this.HomeworkForm.reset();
           this.HomeworkForm.markAsPristine();
+          this.clearFileSelection();
+          this.uploadedFileUrl = '';
+          this.selectedFile = null;
           this.clearFileSelection();
           this.uploadedFileUrl = '';
           this.selectedFile = null;
@@ -863,10 +1208,13 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
           this.FetchInitialData({}, true);
         } else {
           this.AminityInsStatus = response.message || `Error ${operation === 'insert' ? 'submitting' : 'updating'} homework.`;
+          this.AminityInsStatus = response.message || `Error ${operation === 'insert' ? 'submitting' : 'updating'} homework.`;
           this.isModalOpen = true;
         }
       },
       error: (err: any) => {
+        console.error(`[${operation.toUpperCase()}] API Error:`, err);
+        this.AminityInsStatus = `Error ${operation === 'insert' ? 'submitting' : 'updating'} homework.`;
         console.error(`[${operation.toUpperCase()}] API Error:`, err);
         this.AminityInsStatus = `Error ${operation === 'insert' ? 'submitting' : 'updating'} homework.`;
         this.isModalOpen = true;
@@ -877,10 +1225,39 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
   UpdateHomework() {
     console.log('[UPDATE] Starting homework update...');
     
+    console.log('[UPDATE] Starting homework update...');
+    
     if (this.HomeworkForm.invalid) {
+      console.log('[UPDATE] Form is invalid:', this.HomeworkForm.errors);
       console.log('[UPDATE] Form is invalid:', this.HomeworkForm.errors);
       this.HomeworkForm.markAllAsTouched();
       return;
+    }
+
+    // If new file selected, delete old file first then upload new file
+    if (this.selectedFile) {
+      console.log('[UPDATE] New file selected, handling replacement...');
+      
+      const oldUrl = this.HomeworkForm.get('AttachmentURL')?.value;
+      if (oldUrl) {
+        // Delete old file first
+        this.deleteOldFileBeforeUpload().subscribe({
+          next: () => {
+            console.log('[UPDATE] Old file deleted, now uploading new file');
+            this.uploadFileThenSubmit('update');
+          },
+          error: (err) => {
+            console.error('[UPDATE] Failed to delete old file, proceeding with upload:', err);
+            this.uploadFileThenSubmit('update');
+          }
+        });
+      } else {
+        // No old file, just upload new one
+        this.uploadFileThenSubmit('update');
+      }
+    } else {
+      console.log('[UPDATE] No new file, updating DB directly...');
+      this.submitToDB('update');
     }
 
     // If new file selected, delete old file first then upload new file
@@ -1417,6 +1794,18 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
           this.AdminselectedSubjectID = item.subjectID?.toString() || '0';
           this.IsActiveStatus = isActive;
           this.IsAddNewClicked = true;
+
+          // Set file upload state for existing attachment
+          if (item.attachmentURL) {
+            this.uploadedFileUrl = item.attachmentURL;
+            // Extract filename from URL
+            const urlParts = item.attachmentURL.split('/');
+            this.uploadedFileName = urlParts[urlParts.length - 1] || 'Attached File';
+          } else {
+            this.uploadedFileUrl = '';
+            this.uploadedFileName = '';
+          }
+
 
           // Set file upload state for existing attachment
           if (item.attachmentURL) {

@@ -111,7 +111,7 @@ export class MenuServiceService {
   private menu: Module[] = [];
   private loadedRoleId: string | null = null;
   private menuLoadedSource = new BehaviorSubject<boolean>(false);
-  menuLoaded$ = this.menuLoadedSource.asObservable();
+  menuLoaded$ = this.menuLoadedSource;
 
   constructor(private http: HttpClient, private apiService: ApiServiceService) {
     this.loadMenuFromStorage();
@@ -163,6 +163,27 @@ export class MenuServiceService {
           }))
         }));
 
+        if (roleId === '1') {
+          const hasHostel = modules.some(m => m.moduleName.trim().toLowerCase() === 'hostel management');
+          if (!hasHostel) {
+            modules.push({
+              id: 'hostel_mgr',
+              moduleName: 'Hostel Management',
+              pages: [
+                {
+                  id: 'hostel_master',
+                  pageName: 'Hostel Master',
+                  moduleID: 'hostel_mgr',
+                  canView: '1',
+                  canAdd: '1',
+                  canEdit: '1',
+                  canDelete: '1'
+                }
+              ]
+            });
+          }
+        }
+
         this.setMenu(modules);
         return modules;
       }),
@@ -198,8 +219,15 @@ export class MenuServiceService {
 
   /** Get a page by name */
   getPageByName(pageName: string): Page | undefined {
+    const normalize = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ');
+    const target = normalize(pageName);
+    // Also try alternate calendar/calender spelling
+    const alternates = new Set([target,
+      target.replace('calendar', 'calender'),
+      target.replace('calender', 'calendar')
+    ]);
     for (const module of this.menu) {
-      const page = module.pages.find(p => p.pageName === pageName);
+      const page = module.pages.find(p => alternates.has(normalize(p.pageName)));
       if (page) return page;
     }
     return undefined;

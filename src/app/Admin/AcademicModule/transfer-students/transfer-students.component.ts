@@ -21,9 +21,9 @@ import { HttpClient } from '@angular/common/http';
   styleUrl: './transfer-students.component.css'
 })
 export class TransferStudentsComponent extends BasePermissionComponent {
-  pageName = 'Student Transfer';
-  
-    constructor(
+  pageName = 'Transfer';
+
+  constructor(
       private http: HttpClient,
       router: Router,
       public loader: LoaderService,
@@ -31,32 +31,34 @@ export class TransferStudentsComponent extends BasePermissionComponent {
       menuService: MenuServiceService
     ) {
       super(menuService, router);
+  }
+
+  ngOnInit(): void {
+    this.checkViewPermission();
+    this.SchoolSelectionChange=false;
+    this.SyllabusList=[];
+    if (this.isAdmin) {
+      this.ClassDivisionForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+    } else {
+      this.ClassDivisionForm.get('School')?.clearValidators();
     }
-  
-    ngOnInit(): void {
-      this.checkViewPermission();
-      this.SchoolSelectionChange=false;
-      this.SyllabusList=[];
-      if (this.isAdmin) {
-        this.ClassDivisionForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
-      } else {
-        this.ClassDivisionForm.get('School')?.clearValidators();
-      }
-      if(this.AdminselectedSchoolID==''){
-        this.FetchAcademicYearsList();
-      }
-      this.ClassDivisionForm.reset();
-      this.ClassDivisionForm.get('Class').patchValue('0');
-      this.ClassDivisionForm.get('School').patchValue('0');
-      this.ClassDivisionForm.get('AcademicYear').patchValue('0');
-      this.ClassDivisionForm.get('TransitionType').patchValue('0');
-      this.ClassDivisionForm.get('Division').patchValue('0');
-      this.StudentsList=[];
-      this.selectedStudents=[];
-      this.FetchSchoolsList();
-    };
-  
-    IsAddNewClicked:boolean=false;
+    if(this.AdminselectedSchoolID==''){
+      this.FetchAcademicYearsList();
+      this.FetchTransitionAcademicYearsList();
+    }
+    this.ClassDivisionForm.reset();
+    this.ClassDivisionForm.get('Class').patchValue('0');
+    this.ClassDivisionForm.get('School').patchValue('0');
+    this.ClassDivisionForm.get('AcademicYear').patchValue('0');
+    this.ClassDivisionForm.get('TransitionType')?.patchValue(1);
+    this.onTransitionChange(1);
+    this.ClassDivisionForm.get('Division').patchValue('0');
+    this.StudentsList=[];
+    this.selectedStudents=[];
+    this.FetchSchoolsList();
+  };
+
+  IsAddNewClicked:boolean=false;
     IsActiveStatus:boolean=false;
     ViewClassDivisionClicked:boolean=false;
     currentPage = 1;
@@ -69,6 +71,7 @@ export class TransferStudentsComponent extends BasePermissionComponent {
     ClassDivisionList: any[] =[];
     ClassDivisionCount: number = 0;
     SyllabusList: any[] =[];
+    TransitionClassList: any[] =[];
     StudentsList: any[] =[];
     selectedStudents: any[] = [];
     isViewMode = false;
@@ -90,6 +93,7 @@ export class TransferStudentsComponent extends BasePermissionComponent {
     selectedSchoolID: string = '';
     SchoolSelectionChange:boolean=false;
     academicYearList:any[] = [];
+    transitionacademicYearList:any[] = [];
     DivisionsList:any[] = [];
     TransitionDivisionsList:any[] = [];
     ClassTeachersList:any[] = [];
@@ -97,6 +101,8 @@ export class TransferStudentsComponent extends BasePermissionComponent {
     AdminselectedSchoolID:string = '';
     AdminselectedAcademivYearID:string = '';
     AdminselectedClassID:string = '';
+    AdminselectedTransitionAcademicYearID = '';
+    AdminselectedTransitionClassID = '';
     AdminselectedClassDivisionID:string = '';
     SelectedTransitionID:string = '';
   
@@ -112,23 +118,7 @@ export class TransferStudentsComponent extends BasePermissionComponent {
       Remarks: new FormControl()
     });
   
-    allowOnlyNumbers(event: KeyboardEvent) {
-      if (
-        event.key === 'Backspace' ||
-        event.key === 'Tab' ||
-        event.key === 'ArrowLeft' ||
-        event.key === 'ArrowRight' ||
-        event.key === 'Delete'
-      ) {
-        return;
-      }
-  
-      if (!/^[0-9]$/.test(event.key)) {
-        event.preventDefault();
-      }
-    }
-  
-    FetchSchoolsList() {
+  FetchSchoolsList() {
       const requestData = { Flag: '2' };
   
       this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', requestData)
@@ -174,6 +164,31 @@ export class TransferStudentsComponent extends BasePermissionComponent {
           },
           (error) => {
             this.academicYearList = [];
+          }
+        );
+    };
+
+    FetchTransitionAcademicYearsList() {
+      const requestData = { SchoolID:this.AdminselectedSchoolID||'',Flag: '2' };
+  
+      this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)
+        .subscribe(
+          (response: any) => {
+            if (response && Array.isArray(response.data)) {
+              this.transitionacademicYearList = response.data.map((item: any) => {
+                const isActiveString = item.isActive === "1" ? "Active" : "InActive";
+                return {
+                  ID: item.id,
+                  Name: item.name,
+                  IsActive: isActiveString
+                };
+              });            
+            } else {
+              this.transitionacademicYearList = [];
+            }
+          },
+          (error) => {
+            this.transitionacademicYearList = [];
           }
         );
     };
@@ -224,7 +239,7 @@ export class TransferStudentsComponent extends BasePermissionComponent {
             Class:this.AdminselectedClassID,
             Division:this.AdminselectedClassDivisionID,
             Flag: flag,
-            Limit: this.pageSize,
+            // Limit: this.pageSize,
             SortColumn: this.sortColumn,
             SortDirection: this.sortDirection,
             LastCreatedDate: cursor?.lastCreatedDate ?? null,
@@ -321,144 +336,81 @@ export class TransferStudentsComponent extends BasePermissionComponent {
           }
         );
     };
-  
-    FetchDivisionsList() {
-      if(this.SelectedTransitionID){
-        const requestData = { 
+
+    FetchTransitionClassList() {
+      const requestData = { 
         SchoolID:this.AdminselectedSchoolID,
-        AcademicYear:this.AdminselectedAcademivYearID,
-        Class:this.AdminselectedClassID,
-        Flag: '3' };
+        AcademicYear:this.AdminselectedTransitionAcademicYearID,
+        Flag: '9' };
   
       this.apiurl.post<any>('Tbl_ClassDivision_CRUD_Operations', requestData)
         .subscribe(
           (response: any) => {
             if (response && Array.isArray(response.data)) {
-              this.TransitionDivisionsList = response.data.map((item: any) => {
+              this.TransitionClassList = response.data.map((item: any) => {
                 const isActiveString = item.isActive === "1" ? "Active" : "InActive";
                 return {
-                  ID: item.id,
-                  Name: item.name
+                  ID: item.sNo,
+                  Name: item.syllabusClassName
                 };
               });
             } else {
-              this.TransitionDivisionsList = [];
+              this.TransitionClassList = [];
             }
           },
           (error) => {
-            this.TransitionDivisionsList = [];
+            this.TransitionClassList = [];
           }
         );
-      }
-      else{
-        const requestData = { 
-        SchoolID:this.AdminselectedSchoolID,
-        AcademicYear:this.AdminselectedAcademivYearID,
-        Class:this.AdminselectedClassID,
-        Flag: '3' };
-  
-      this.apiurl.post<any>('Tbl_ClassDivision_CRUD_Operations', requestData)
-        .subscribe(
-          (response: any) => {
-            if (response && Array.isArray(response.data)) {
-              this.DivisionsList = response.data.map((item: any) => {
-                const isActiveString = item.isActive === "1" ? "Active" : "InActive";
-                return {
+    };
+
+
+  FetchDivisionsList(type: 'main' | 'transition') {
+      const requestData = {
+        SchoolID: this.AdminselectedSchoolID,
+        AcademicYear: this.AdminselectedTransitionAcademicYearID,
+        Class:
+          type === 'transition'
+            ? this.AdminselectedTransitionClassID
+            : this.AdminselectedClassID,
+        Flag: '3'
+      };
+
+      this.apiurl.post<any>(
+        'Tbl_ClassDivision_CRUD_Operations',
+        requestData
+      )
+      .subscribe(
+        (response: any) => {
+
+          const mappedData =
+            response && Array.isArray(response.data)
+              ? response.data.map((item: any) => ({
                   ID: item.id,
                   Name: item.name
-                };
-              });
-            } else {
-              this.DivisionsList = [];
-            }
-          },
-          (error) => {
+                }))
+              : [];
+
+          if (type === 'transition') {
+            this.TransitionDivisionsList = mappedData;
+          } else {
+            this.DivisionsList = mappedData;
+          }
+
+        },
+        () => {
+
+          if (type === 'transition') {
+            this.TransitionDivisionsList = [];
+          } else {
             this.DivisionsList = [];
           }
-        );
-      }
-    };
-  
-    FetchStaffList() {
-      const requestData = { 
-        SchoolID:this.AdminselectedSchoolID||'',
-        AcademicYear:this.AdminselectedAcademivYearID||'',Flag: '9' };
-  
-      this.apiurl.post<any>('Tbl_Staff_CRUD_Operations', requestData)
-        .subscribe(
-          (response: any) => {
-            if (response && Array.isArray(response.data)) {
-              this.ClassTeachersList = response.data.map((item: any) => {
-                const isActiveString = item.isActive === "1" ? "Active" : "InActive";
-  
-                // Check if staffType is a comma-separated string and convert it to an array
-                const staffTypeArray = item.staffType ? item.staffType.split(',').map((id: string) => id.trim()) : [];
-  
-                return {
-                  ID: item.id,
-                  StaffType: staffTypeArray, // Ensure StaffType is always an array
-                  Name: item.firstName + ' ' + item.middleName + ' ' + item.lastName + ' ' + '-' + ' ' + item.email,
-                  FirstName: item.firstName,
-                  MiddleName: item.middleName,
-                  LastName: item.lastName,
-                  MobileNumber: item.mobileNumber,
-                  Email: item.email,
-                  DateOfBirth: item.dateOfBirth,
-                  Qualification: item.qualification,
-                  IsActive: isActiveString
-                };
-              });
-            } else {
-              this.ClassTeachersList = [];
-            }
-          },
-          (error) => {
-            this.ClassTeachersList = [];
-          }
-        );
-    };
-  
-    FetchClassTeachersList() {
-      const requestData = { 
-        SchoolID:this.AdminselectedSchoolID||'',
-        AcademicYear:this.AdminselectedAcademivYearID||'',Flag: '11' };
-  
-      this.apiurl.post<any>('Tbl_Staff_CRUD_Operations', requestData)
-        .subscribe(
-          (response: any) => {
-            if (response && Array.isArray(response.data)) {
-              this.ClassTeachersList = response.data.map((item: any) => {
-                const isActiveString = item.isActive === "1" ? "Active" : "InActive";
-  
-                // Check if staffType is a comma-separated string and convert it to an array
-                const staffTypeArray = item.staffType ? item.staffType.split(',').map((id: string) => id.trim()) : [];
-  
-                return {
-                  ID: item.id,
-                  StaffType: staffTypeArray, // Ensure StaffType is always an array
-                  Name: item.firstName + ' ' + item.middleName + ' ' + item.lastName + ' ' + '-' + ' ' + item.email,
-                  FirstName: item.firstName,
-                  MiddleName: item.middleName,
-                  LastName: item.lastName,
-                  MobileNumber: item.mobileNumber,
-                  Email: item.email,
-                  DateOfBirth: item.dateOfBirth,
-                  Qualification: item.qualification,
-                  IsActive: isActiveString
-                };
-              });
-              console.log("ClassTeachersList",this.ClassTeachersList);
-            } else {
-              this.ClassTeachersList = [];
-            }
-          },
-          (error) => {
-            this.ClassTeachersList = [];
-          }
-        );
-    };
-  
-    SubmitClassDivision(){
+
+        }
+      );
+    }
+
+  SubmitClassDivision(){
       const formValues = this.ClassDivisionForm.value;
       if(this.ClassDivisionForm.invalid){
         console.log('Invalid form',this.ClassDivisionForm);
@@ -521,71 +473,8 @@ export class TransferStudentsComponent extends BasePermissionComponent {
         });
       }
     };
-  
-    FetchSyllabusDetByID(SyllabusID: string, mode: 'view' | 'edit') {
-      const data = {
-        ID: SyllabusID,
-        Flag: "4"
-      };
-  
-      this.apiurl.post<any>("Tbl_AllotClassTeacher_CRUD_Operations", data).subscribe(
-        (response: any) => {
-  
-          const item = response?.data?.[0];
-          if (!item) {
-            this.ClassDivisionForm.reset();
-            this.viewSyllabus = null;
-            return;
-          }
-  
-          const isActive = item.isActive === '1';
-  
-          if (mode === 'view') {
-            this.isViewMode = true;
-            this.viewSyllabus = {
-              ID: item.id,
-              Class: item.class,
-              Division: item.division,
-              ClassTeacher: item.classTeacher,
-              ClassName: item.className,
-              StaffName: item.staffName,
-              DivisionName:item.divisionName,
-              SchoolName:item.schoolName,
-              AcademicYearName:item.academicYearName,
-              IsActive: isActive
-            };
-            this.isViewModalOpen = true;
-          }
-  
-          if (mode === 'edit') {
-            this.isViewMode = false;
-            this.ClassDivisionForm.patchValue({
-              ID: item.id,
-              Class: item.class,
-              Division: item.division,
-              ClassTeacher: item.classTeacher,
-              School:item.schoolID,
-              AcademicYear:item.academicYear
-            });
-            this.AdminselectedSchoolID=item.schoolID;
-            this.AdminselectedAcademivYearID=item.academicYear;
-            this.AdminselectedClassID=item.class;
-            this.FetchAcademicYearsList();          
-            this.FetchStaffList();
-            this.FetchClassList();
-            this.FetchDivisionsList();
-            this.IsActiveStatus = isActive;
-            this.IsAddNewClicked = true;
-          }
-  
-        },
-        error => {
-          console.error(error);
-        }
-      );
-    };
-  
-    UpdateClassDivision(){
+
+  UpdateClassDivision(){
       if(this.ClassDivisionForm.invalid){
         this.ClassDivisionForm.markAllAsTouched();
         return;
@@ -628,89 +517,20 @@ export class TransferStudentsComponent extends BasePermissionComponent {
         });
       }
     };
-  
-    previousPage() {
-      if (this.currentPage > 1) {
-        this.goToPage(this.currentPage - 1);
-      }
-    };
-  
-    nextPage() {
-      if (this.currentPage < this.totalPages()) {
-        this.goToPage(this.currentPage + 1);
-      }
-    };
-  
-    firstPage() {
-      this.goToPage(1);
-    };
-  
-    lastPage() {
-      this.goToPage(this.totalPages());
-    };
-  
-    goToPage(pageNumber: number) {
-      const total = this.totalPages();
-  
-      if (pageNumber < 1) pageNumber = 1;
-      if (pageNumber > total) pageNumber = total;
-  
-      this.currentPage = pageNumber;
-  
-      const isBoundaryPage =
-        pageNumber === 1 ||
-        pageNumber === total ||
-        !this.pageCursors[pageNumber - 2];
-  
-      if (isBoundaryPage) {
-        const offset = (pageNumber - 1) * this.pageSize;
-        this.FetchInitialData({ offset });
+
+    sort(column: string) {
+      if (this.sortColumn === column) {
+        this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
       } else {
-        this.FetchInitialData();
+        this.sortColumn = column;
+        this.sortDirection = 'asc';
       }
+      this.currentPage = 1;
+      this.pageCursors = [];
+      this.FetchInitialData();
     };
-  
-    totalPages() {
-      return Math.ceil(this.ClassDivisionCount / this.pageSize);
-    };
-  
-    getVisiblePageNumbers() {
-      const totalPages = this.totalPages();
-      const pages = [];
-      let start = Math.max(this.currentPage - Math.floor(this.visiblePageCount/2), 1);
-      let end = Math.min(start + this.visiblePageCount - 1, totalPages);
-      if (end - start < this.visiblePageCount - 1) start = Math.max(end - this.visiblePageCount + 1, 1);
-      for (let i=start; i<=end; i++) pages.push(i);
-      return pages;
-    };
-  
-    onSearchChange() {
-      clearTimeout(this.searchTimer);
-  
-      this.searchTimer = setTimeout(() => {
-        const value = this.searchQuery?.trim() || '';
-  
-        if (value.length === 0) {
-          this.currentPage = 1;
-          this.pageSize=5;
-          this.visiblePageCount=3;
-          this.FetchInitialData();
-          return;
-        }
-  
-        if (value.length < this.SEARCH_MIN_LENGTH) {
-          return;
-        }
-        
-        this.currentPage = 1;
-        this.pageSize=5;
-        this.visiblePageCount=3;
-        this.FetchInitialData();
-  
-      }, this.SEARCH_DEBOUNCE);
-    };
-  
-    formatDateYYYYMMDD(dateStr: string | null) {
+
+  formatDateYYYYMMDD(dateStr: string | null) {
       if (!dateStr) return '';
       const d = new Date(dateStr);
       return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
@@ -736,150 +556,33 @@ export class TransferStudentsComponent extends BasePermissionComponent {
   
     handleOk() {
       this.isModalOpen = false;
+      this.ClassDivisionForm.get('TransitionType')?.patchValue(1);
+      this.onTransitionChange(1);
       if(this.AdminselectedSchoolID==''){
         this.FetchAcademicYearsList();
+        this.FetchTransitionAcademicYearsList();
       }
       this.isViewModalOpen=false;
     };
-  
-    editreview(SyllabusID: string): void {
-      if (this.isAdmin) {
-        this.ClassDivisionForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
-      } else {
-        this.ClassDivisionForm.get('School')?.clearValidators();
-      }
-      this.editclicked=true;
-      this.FetchSyllabusDetByID(SyllabusID,'edit');
-      this.ViewClassDivisionClicked=true;
-    };
-  
-    toggleChange(){
-      this.IsActiveStatus = !this.IsActiveStatus;
-    };
-  
-    sort(column: string) {
-      if (this.sortColumn === column) {
-        this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-      } else {
-        this.sortColumn = column;
-        this.sortDirection = 'asc';
-      }
-      this.currentPage = 1;
-      this.pageCursors = [];
-      this.FetchInitialData();
-    };
-  
-    onSchoolChange(event: Event) {
-      const target = event.target as HTMLSelectElement;
-      const schoolID = target.value;
-      if(schoolID=="0"){
-        this.selectedSchoolID="";
-      }else{
-        this.selectedSchoolID = schoolID;
-      }    
-      this.SchoolSelectionChange = true;
-      this.FetchInitialData();
-    };
-  
-    exportToExcel() {
-        const isSearch = !!this.searchQuery?.trim();
-        const flag = isSearch ? '7' : '2';
-  
-        const payload: any = {
-          Flag: flag,
-          SchoolID: this.selectedSchoolID || null,
-          Name: isSearch ? this.searchQuery.trim() : null
-        };
-  
-        this.loader.show();
-  
-        this.http.post(`${this.apiurl.api_url}/ExportSyllabusToExcel`, payload, { responseType: 'blob' })
-          .subscribe({
-            next: (blob: Blob) => {
-              const a = document.createElement('a');
-              a.href = URL.createObjectURL(blob);
-              a.download = 'Syllabus.xlsx';
-              a.click();
-              URL.revokeObjectURL(a.href);
-              this.loader.hide();
-            },
-            error: () => {
-              alert('Excel export failed. Please try again.');
-              this.loader.hide();
-            }
-          });
-    };
-  
-    exportSyllabus(type: 'pdf' | 'excel' | 'print') {
-      const isSearch = !!this.searchQuery?.trim();
-      const flag = isSearch ? '7' : '2';
-      const payload: any = {
-        Flag: flag,
-        SchoolID: this.selectedSchoolID || null,
-        Name: isSearch ? this.searchQuery.trim() : null
-      };
-  
-      this.loader.show();
-  
-      const url = `${this.apiurl.api_url}/ExportSyllabus?type=${type}`;
-  
-      this.http.post(url, payload, { responseType: 'blob' }).subscribe({
-        next: (blob: Blob) => {
-          const fileNameBase = `Syllabus_${new Date().toISOString().replace(/[:.]/g,'')}`;
-  
-          if (type === 'pdf' || type === 'print') {
-            const fileURL = URL.createObjectURL(blob);
-  
-            if (type === 'print') {
-              const printWindow = window.open(fileURL);
-              printWindow?.focus();
-              printWindow?.print();
-            } else {
-              const a = document.createElement('a');
-              a.href = fileURL;
-              a.download = `${fileNameBase}.pdf`;
-              a.click();
-            }
-  
-            // Release URL after use
-            setTimeout(() => URL.revokeObjectURL(fileURL), 1000);
-          } 
-          else if (type === 'excel') {
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `${fileNameBase}.xlsx`;
-            a.click();
-            setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-          }
-  
-          this.loader.hide();
-        },
-        error: () => {
-          alert(`${type.toUpperCase()} export failed. Please try again.`);
-          this.loader.hide();
-        }
-      });
-    };
-  
-    viewReview(SyllabusID: string): void {
-      this.FetchSyllabusDetByID(SyllabusID,'view');
-      this.isViewModalOpen=true;
-    };
-  
-    onAdminSchoolChange(event: Event) {
+
+  onAdminSchoolChange(event: Event) {
       this.academicYearList=[];
       this.SyllabusList = [];
+      this.transitionacademicYearList=[];
+      this.TransitionClassList = [];
       this.ClassDivisionForm.get('Class').patchValue('0');
       this.ClassDivisionForm.get('AcademicYear').patchValue('0');
+      this.ClassDivisionForm.get('TransitionAcademicYear').patchValue('0');
+      this.ClassDivisionForm.get('TransitionClass').patchValue('0');
       const target = event.target as HTMLSelectElement;
       const schoolID = target.value;
       if(schoolID=="0"){
         this.AdminselectedSchoolID="";
       }else{
         this.AdminselectedSchoolID = schoolID;
-      }  
-      console.log('this.AdminselectedSchoolID',this.AdminselectedSchoolID);  
+      }    
       this.FetchAcademicYearsList();
+      this.FetchTransitionAcademicYearsList();
     };
   
     onAdminAcademicYearChange(event: Event) {
@@ -894,15 +597,28 @@ export class TransferStudentsComponent extends BasePermissionComponent {
       }    
       this.FetchClassList();
     };
+
+    onAdminTransitionAcademicYearChange(event: Event) {
+      this.TransitionClassList = [];    
+      this.ClassDivisionForm.get('TransitionClass').patchValue('0');
+      const target = event.target as HTMLSelectElement;
+      const schoolID = target.value;
+      if(schoolID=="0"){
+        this.AdminselectedTransitionAcademicYearID="";
+      }else{
+        this.AdminselectedTransitionAcademicYearID = schoolID;
+      }    
+      this.FetchTransitionClassList();
+    };
   
     onAdminClassChange(event: Event) {          
-      if(this.SelectedTransitionID){
-        this.TransitionDivisionsList=[];
-        this.ClassDivisionForm.get('TransitionDivision').patchValue('0');
-      }
-      else{
+      if (this.ClassDivisionForm.get('TransitionType')?.value === 1 ||
+          this.ClassDivisionForm.get('TransitionType')?.value === 2) {
+        this.TransitionDivisionsList = [];
+        this.ClassDivisionForm.get('TransitionDivision')?.patchValue('0');
+      } else {
         this.DivisionsList = [];
-        this.ClassDivisionForm.get('Division').patchValue('0');
+        this.ClassDivisionForm.get('Division')?.patchValue('0');
       }      
       const target = event.target as HTMLSelectElement;
       const schoolID = target.value;
@@ -911,8 +627,22 @@ export class TransferStudentsComponent extends BasePermissionComponent {
       }else{
         this.AdminselectedClassID = schoolID;
       }    
-      this.FetchDivisionsList();
+      this.FetchDivisionsList('main');
     };
+
+    onTransitionClassChange(event: Event) {
+      this.TransitionDivisionsList = [];
+      this.ClassDivisionForm.get('TransitionDivision')?.patchValue('0');
+
+      const target = event.target as HTMLSelectElement;
+
+      this.AdminselectedTransitionClassID =
+        target.value === '0'
+          ? ''
+          : target.value;
+
+      this.FetchDivisionsList('transition');
+    }
 
     onAdminDivisionChange(event: Event) {
       this.StudentsList = [];  
@@ -927,23 +657,29 @@ export class TransferStudentsComponent extends BasePermissionComponent {
       this.FetchInitialData();
     };
 
-    onTransitionChange(event: Event) {
-      // this.ClassDivisionForm.get('TransitionClass').patchValue('0');
-      // this.ClassDivisionForm.get('TransitionDivision').patchValue('0');
-      const target = event.target as HTMLSelectElement;
-      const schoolID = target.value;
-      if(schoolID=="1"){
-        this.SelectedTransitionID="Transfer";
-        if (schoolID=="1") {
-          this.ClassDivisionForm.get('Remarks')?.setValidators([Validators.required]);
-        } else {
-          this.ClassDivisionForm.get('Remarks')?.clearValidators();
-        }
+    onTransitionChange(value: number): void {
+      // Reset dependent fields
+      this.ClassDivisionForm.get('TransitionAcademicYear')?.patchValue('0');
+      this.ClassDivisionForm.get('TransitionClass')?.patchValue('0');
+      this.ClassDivisionForm.get('TransitionDivision')?.patchValue('0');
+      
+      // Set the form control value
+      this.ClassDivisionForm.get('TransitionType')?.setValue(value);
+      this.ClassDivisionForm.get('TransitionType')?.markAsTouched();
+
+      if (value === 1) {
+        this.SelectedTransitionID = "Transfer";
+        // Remarks is mandatory for de-promotion
+        this.ClassDivisionForm.get('Remarks')?.setValidators([Validators.required]);
+
+      } else {
+        this.SelectedTransitionID = String(value);
+        this.ClassDivisionForm.get('Remarks')?.clearValidators();
       }
-      else{
-        this.SelectedTransitionID = schoolID;
-      }  
-    };
+
+      // Always update validity after changing validators
+      this.ClassDivisionForm.get('Remarks')?.updateValueAndValidity();
+    }
 
     submitSelection() {
       this.selectedStudents = this.StudentsList
@@ -968,5 +704,19 @@ export class TransferStudentsComponent extends BasePermissionComponent {
           this.selectedStudents = [];
         }
       }      
+    }
+
+    getSelectedCount(): number {
+      return this.StudentsList.filter(s => s.isSelected).length;
+    }
+
+    isAllSelected(): boolean {
+      return this.StudentsList.length > 0 &&
+            this.StudentsList.every(s => s.isSelected);
+    }
+
+    toggleSelectAll(event: Event): void {
+      const checked = (event.target as HTMLInputElement).checked;
+      this.StudentsList.forEach(s => s.isSelected = checked);
     }
 }

@@ -2,50 +2,87 @@
   <app-dashboard-top-nav></app-dashboard-top-nav>
 </div>
 <div class="MainContentDiv">
-  <div *ngIf="!IsAddNewClicked" class="w-100">
-    <div class="ComponentTop">
+  <div *ngIf="!IsAddNewClicked" class="w-100 admission-dashboard">
+    <div class="ComponentTop admission-hero">
       <div class="ComponentTopHeader">
+        <div class="admission-breadcrumb">
+          <span>Transportation</span>
+          <mat-icon>chevron_right</mat-icon>
+          <strong>Stops</strong>
+        </div>
         <h5>Bus Stops Management</h5>
         <p>Total {{ SyllabusCount }} Stops Added</p>
       </div>
-      <div class="ComponentTopBottom">
-        <button *ngIf="canAdd()" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Stop</button>
+      <div class="ComponentTopBottom admission-header-actions">
+        <button *ngIf="canAdd()" type="button" class="admission-btn admission-btn--primary admission-top-action" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Stop</button>
       </div>
     </div>
-    <div class="ComponentRecords">
-      <div>
-        <div class="ComponentRecordsTop">
-          <div class="filterOptions">
-            <div class="searchreview input-container" >
-              <input type="text" id="searchQuery" class="form-control floating-input"
-                [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search... "  />
-              <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
-              <!-- <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i> -->
-            </div>
-            <div class="searchreview" *ngIf="isAdmin && SyllabusList.length != 0">
-              <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
-                <option value="">-- Select School --</option>
-                <option value="0">All Schools</option>
-                <option *ngFor="let school of schoolList" [value]="school.ID">
-                  {{ school.Name }}
-                </option>
-              </select>
-            </div>
-          </div>
-          <!-- <div class="DownloadButtons" *ngIf="SyllabusList.length != 0">
-            <button class="btnHover" (click)="exportSyllabus('pdf')"><mat-icon>picture_as_pdf</mat-icon></button>
-            <button class="btnHover" (click)="exportSyllabus('excel')"><mat-icon>description</mat-icon></button>
-            <button class="btnHover" (click)="exportSyllabus('print')"><mat-icon>print</mat-icon></button>
-          </div> -->
+    <div class="admission-stats-grid">
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--blue"><mat-icon>person_outline</mat-icon></div>
+        <div>
+          <strong>{{ SyllabusCount }}</strong>
+          <span>Total Stops</span>
+          <!-- <small class="admission-stat-positive">+{{ SubjectsList.length }} this month</small> -->
         </div>
-        <div class="reviewstable">
-          <table id="classTable" *ngIf="SyllabusList.length != 0" class="table table-bordered">
+      </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--green"><mat-icon>check</mat-icon></div>
+        <div>
+          <strong>{{ SubjectsActiveCount }}</strong>
+          <span>Active Stops</span>
+          <!-- <small class="admission-stat-positive">{{ SubjectsActiveCount }} active rate</small> -->
+        </div>
+      </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--amber"><mat-icon>schedule</mat-icon></div>
+        <div>
+          <strong>{{ SubjectsInActiveCount }}</strong>
+          <span>Pending Review</span>
+          <!-- <small class="admission-stat-warning">Needs action</small> -->
+        </div>
+      </div>
+    </div>
+    <div class="admission-filter-row">
+      <div class="admission-searchbox">
+        <mat-icon>search</mat-icon>
+        <input type="text" id="searchQuery" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search by stop name" />
+      </div>
+      <button type="button" class="admission-chip admission-chip--active">All <span>{{ SyllabusCount }}</span></button>
+      <!-- <button type="button" class="admission-chip">Active</button>
+      <button type="button" class="admission-chip">Pending</button> -->
+      <select class="admission-select" *ngIf="isAdmin" (change)="onSchoolChange($event)">
+        <!-- <option value="">All Classes</option> -->
+        <option value="0">All Schools</option>
+        <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+      </select>
+      <select class="admission-select" *ngIf="isAdmin" (change)="onAcademicYearChange($event)">
+        <!-- <option value="">All Classes</option> -->
+        <option value="0">All Academic Year</option>
+        <option *ngFor="let school of academicYearList" [value]="school.ID">{{ school.Name }}</option>
+      </select>
+      <select class="admission-select" (change)="onClassSelectionChange($event)">
+        <!-- <option value="">All Classes</option> -->
+        <option value="0">All Routes</option>
+        <option *ngFor="let school of AllRoutesList" [value]="school.ID">{{ school.Name }}</option>
+      </select>
+    </div>
+    <div class="ComponentRecords admission-record-card">
+      <div>
+        <div class="ComponentRecordsTop admission-record-header">
+          <div>
+            <h5>Bus Stops Records</h5>
+            <p>Showing {{ pageEndIndex() }} of {{ SyllabusCount }} records</p>
+          </div>
+        </div>
+        <div class="reviewstable admission-table-wrap">
+          <table id="classTable" *ngIf="SyllabusList.length != 0" class="table table-bordered admission-table">
             <thead>
               <tr>
                 <th class="visually-hidden">Academic Year ID</th>
                 <th>SI.No</th>
                 <th>Route Name</th>
-                <th (click)="sort('Name')" class="sortable-column">
+                <!-- <th (click)="sort('Name')" class="sortable-column">
                   <span class="column-text">Stop Name</span>
                   <span class="arrows">
                     <mat-icon 
@@ -57,10 +94,12 @@
                       keyboard_arrow_down
                     </mat-icon>
                   </span>
-                </th>
-                <th *ngIf="isAdmin">School Name</th>
+                </th> -->
+                <th>Stop Name</th>                
                 <th>Stop Order</th>
                 <th>Distance</th>
+                <th>Academic Year</th>
+                <th *ngIf="isAdmin">School Name</th>
                 <th>Status</th>               
                 <th>Actions</th>
               </tr>
@@ -70,17 +109,18 @@
                 <td data-label="ID" class="visually-hidden">{{ Syllabus.ID }}</td>
                 <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
                 <td data-label="Name">{{ Syllabus.RouteName }}</td>
-                <td data-label="StopName">{{ Syllabus.StopName }}</td>
-                <td data-label="SchoolName" *ngIf="isAdmin">{{ Syllabus.SchoolName }}</td>
+                <td data-label="StopName">{{ Syllabus.StopName }}</td>                
                 <td data-label="StopOrder">{{ Syllabus.StopOrder }}</td>
                 <td data-label="Distance">{{ Syllabus.Distance }}</td>
+                <td data-label="AcademicYearName">{{ Syllabus.AcademicYearName }}</td>
+                <td data-label="SchoolName" *ngIf="isAdmin">{{ Syllabus.SchoolName }}</td>
                 <td data-label="Status">
                   <span
                     class="status-pill"
-                    [style.background]="(Syllabus.IsActive === true || Syllabus.IsActive === 'true' || Syllabus.IsActive === 'Active' || Syllabus.IsActive === 1) ? 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)' : 'linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%)'"
-                    [style.color]="(Syllabus.IsActive === true || Syllabus.IsActive === 'true' || Syllabus.IsActive === 'Active' || Syllabus.IsActive === 1) ? '#166534' : '#9f1239'"
-                    [style.borderColor]="(Syllabus.IsActive === true || Syllabus.IsActive === 'true' || Syllabus.IsActive === 'Active' || Syllabus.IsActive === 1) ? '#86efac' : '#fda4af'">
-                    {{ (Syllabus.IsActive === true || Syllabus.IsActive === 'true' || Syllabus.IsActive === 'Active' || Syllabus.IsActive === 1) ? 'Active' : 'Inactive' }}
+                    [style.background]="(Syllabus.IsActive === true || Syllabus.IsActive === 'true' || Syllabus.IsActive === 'Active' || Syllabus.IsActive === 1) ? '#d9f9e5' : '#fff0bd'"
+                    [style.color]="(Syllabus.IsActive === true || Syllabus.IsActive === 'true' || Syllabus.IsActive === 'Active' || Syllabus.IsActive === 1) ? '#00823a' : '#c25b00'"
+                    [style.borderColor]="(Syllabus.IsActive === true || Syllabus.IsActive === 'true' || Syllabus.IsActive === 'Active' || Syllabus.IsActive === 1) ? '#86efac' : '#f5d77a'">
+                    {{ (Syllabus.IsActive === true || Syllabus.IsActive === 'true' || Syllabus.IsActive === 'Active' || Syllabus.IsActive === 1) ? 'Active' : 'Pending' }}
                   </span>
                 </td>
                 <td data-label="Actions">
@@ -103,6 +143,19 @@
             </div>
             <p>No data found.</p>
           </div>
+          <div class="admission-footer-meta">
+            <label>
+              Rows:
+              <select aria-label="Rows per page" [(ngModel)]="pageSize"
+            (ngModelChange)="onRowsCountChange()">
+                <option [ngValue]="5">5</option>
+                <option [ngValue]="10">10</option>
+                <option [ngValue]="25">25</option>
+                <option [ngValue]="50">50</option>
+              </select>
+            </label>
+            <p>{{ pageStartIndex() }}&ndash;{{ pageEndIndex() }} of {{ SyllabusCount }} records</p>
+          </div>
           <div *ngIf="SyllabusCount > pageSize" class="pagination-controls">
             <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
             <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
@@ -120,16 +173,31 @@
     </div>
   </div>
   <div *ngIf="IsAddNewClicked" class="w-100">
+    <div class="admission-breadcrumb">
+          <span>Transportation</span>
+          <mat-icon>chevron_right</mat-icon>
+          <span>Stops</span>
+          <mat-icon>chevron_right</mat-icon>
+          <strong>Add Bus Stop</strong>
+        </div>
+    <div class="AddFormTop">
+          <button (click)="CancelSyllabus()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+          <div class="admission-record-header p-0">
+            <div>
+              <h5>Add Bus Stop</h5>
+              <p>Configure a new Bus Stop for Bus Route for Academic year</p>
+            </div>
+          </div>
+        </div>
     <div class="AddForm">
-      <div class="AddFormTop">
-        <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
-        <p>Add Stop</p>
+      <div class="form-top">
+        <p class="cc-title">Bus Stop Details</p>
       </div>
       <div class="AddFormConatiner">
         <form [formGroup]="SyllabusForm">
           <div class="FormInputRowsContainer">
             <div class="InputRow">
-               <div class="InputFieldsContainer" *ngIf="isAdmin">
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <label class="inputLabel" for="email">School <span class="required">*</span></label>
                 <div class="input-with-error">
                   <select class="inputField" type="date" formControlName="School" placeholder="Select Start Date" (change)="onAdminSchoolChange($event)" >
@@ -141,7 +209,7 @@
                   </div>
                 </div>
               </div> 
-               <div class="InputFieldsContainer">
+              <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Academic Year <span class="required">*</span></label>
                 <div class="input-with-error">
                   <select class="inputField" type="date" formControlName="AcademicYear" placeholder="Select Start Date" (change)=onAdminAcademicYearChange($event)>
@@ -225,50 +293,45 @@
                 </div>
               </div>
               <div class="InputFieldsContainer" *ngIf="!isAdmin">
-                <div class="toggle-container" (click)="$event.stopPropagation()">
-                  <label class="switch">
-                    <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
-                    <span class="slider">
-                      <span
-                        class="toggle-text"
-                        [ngStyle]="{
-                          left: IsActiveStatus ? '42%' : '60%',
-                          fontSize: IsActiveStatus ? '9px' : '9px'
-                        }"
-                      >
-                        {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                <span style="visibility: hidden;">hello adding new academic year</span>
+              </div>
+            </div>
+            <div class="InputRow">
+              <div class="noteActiveCard">
+                <div class="noteSection">
+                  <span>Note</span>
+                  <p>Bus stops can be mapped to routes with stop order and distance details. Mark a stop as Active to enable student pickup and transport allocation.</p>
+                </div>
+                <div class="InputFieldsContainer">
+                  <div class="toggle-container" (click)="$event.stopPropagation()">
+                    <label class="switch">
+                      <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
+                      <span class="slider">
+                        <span
+                          class="toggle-text"
+                          [ngStyle]="{
+                            left: IsActiveStatus ? '42%' : '60%',
+                            fontSize: IsActiveStatus ? '9px' : '9px'
+                          }"
+                        >
+                          {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                        </span>
                       </span>
-                    </span>
-                  </label>
+                    </label>
+                  </div>
                 </div>
               </div> 
             </div>
-            <div class="InputRow" *ngIf="isAdmin">
-              <div class="InputFieldsContainer" *ngIf="isAdmin">
-                <div class="toggle-container" (click)="$event.stopPropagation()">
-                  <label class="switch">
-                    <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
-                    <span class="slider">
-                      <span
-                        class="toggle-text"
-                        [ngStyle]="{
-                          left: IsActiveStatus ? '42%' : '60%',
-                          fontSize: IsActiveStatus ? '9px' : '9px'
-                        }"
-                      >
-                        {{ IsActiveStatus ? 'Active' : 'Inactive' }}
-                      </span>
-                    </span>
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="ActionButtons">
-            <button type="button" *ngIf="ViewSyllabusClicked && canEdit()" (click)="UpdateSyllabus()">Update</button>
-            <button type="button" *ngIf="!ViewSyllabusClicked && canAdd()" (click)="SubmitSyllabus()">Submit</button>
           </div>
         </form>
+      </div>
+      <div class="form-bottom">
+        <span class="footer-hint">Fields marked <span class="required">*</span> are required</span>
+        <div class="ActionButtons footer-actions">
+            <button type="button" class="cancelbtn" (click)="CancelSyllabus()">Cancel</button>
+            <button type="button" class="submitbtn" *ngIf="ViewSyllabusClicked && canEdit()" (click)="UpdateSyllabus()">Update</button>
+            <button type="button" class="submitbtn" *ngIf="!ViewSyllabusClicked && canAdd()" (click)="SubmitSyllabus()">Submit</button>
+          </div>
       </div>
     </div>
   </div>

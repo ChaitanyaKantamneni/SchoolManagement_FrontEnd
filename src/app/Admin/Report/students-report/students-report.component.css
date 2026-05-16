@@ -1,0 +1,473 @@
+/* Only component-specific overrides — all layout/table/pagination comes from global styles.css */
+
+.student-name-link {
+  color: #1d4ed8;
+  cursor: pointer;
+  font-weight: var(--app-font-weight-medium);
+  text-decoration: none;
+}
+
+.student-name-link:hover {
+  text-decoration: underline;
+  color: #153e90;
+}
+
+@media print {
+  app-dashboard-top-nav,
+  .DownloadButtons,
+  .searchreview,
+  .pagination-controls,
+  .filterOptions,
+  .AddFormTop button {
+    display: none !important;
+  }
+}
+
+.reviewstable table {
+  width: 100%;
+  table-layout: fixed; /* 🔥 KEY FIX */
+  border-collapse: collapse;
+}
+
+.reviewstable th,
+.reviewstable td {
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* .reviewstable th:nth-child(1),
+.reviewstable td:nth-child(1) {
+  width: 60px;
+}
+
+.reviewstable th:nth-child(2),
+.reviewstable td:nth-child(2) {
+  width: 180px;
+  text-align: left;
+}
+
+.reviewstable th:nth-child(3),
+.reviewstable td:nth-child(3) {
+  width: 150px;
+}
+
+.reviewstable th:nth-child(4),
+.reviewstable td:nth-child(4) {
+  width: 180px;
+}
+
+.reviewstable th:nth-child(5),
+.reviewstable td:nth-child(5) {
+  width: 130px;
+}
+
+.reviewstable th:nth-child(6),
+.reviewstable td:nth-child(6),
+.reviewstable th:nth-child(7),
+.reviewstable td:nth-child(7) {
+  width: 100px;
+}
+
+.reviewstable th:nth-child(8),
+.reviewstable td:nth-child(8) {
+  width: 140px;
+}
+
+.reviewstable th:nth-child(9),
+.reviewstable td:nth-child(9) {
+  width: 220px;
+  text-align: left;
+}
+
+.reviewstable th:nth-child(10),
+.reviewstable td:nth-child(10) {
+  width: 100px;
+}
+
+.reviewstable th:nth-child(11),
+.reviewstable td:nth-child(11) {
+  width: 80px;
+} */
+
+/* Table Base Setup */
+.custom-student-table {
+  width: 100%;
+  table-layout: fixed; 
+  border-collapse: collapse;
+  min-width: 1200px; /* Prevents extreme squeezing on small laptops */
+}
+
+.custom-student-table th,
+.custom-student-table td {
+  box-sizing: border-box;
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 10px 8px; /* Adds breathing room */
+}
+
+/* Explicit Column Widths */
+.col-slno { width: 60px; }
+.col-name { width: 180px; text-align: left !important; }
+.col-admission { width: 150px; }
+.col-school { width: 180px; }
+.col-academic { width: 140px; }
+.col-class { width: 110px; }
+.col-division { width: 100px; }
+.col-phone { width: 130px; }
+.col-email { width: 220px; text-align: left !important; }
+.col-gender { width: 100px; }
+.col-actions { width: 80px; }
+
+/* Sortable Header Flexbox Fix */
+.sortable-column {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+
+.custom-student-table th {
+  vertical-align: middle;
+  text-align: center;
+}
+
+.custom-student-table th.col-name,
+.custom-student-table th.col-email {
+  text-align: left !important;
+}
+
+.header-flex {
+  display: inline-flex;   /* 🔥 change from flex → inline-flex */
+  align-items: center;
+  gap: 4px;               /* spacing between text & arrows */
+  width: auto;            /* 🔥 remove full width */
+}
+
+.header-flex.left-align {
+  justify-content: flex-start;
+}
+
+.header-flex.center-align {
+  justify-content: center;
+}
+
+.sortable-column .arrows {
+  display: flex;
+  flex-direction: column;
+  line-height: 0.5; /* Tightens the gap between the up/down arrows */
+}
+
+.sortable-column .arrows {
+  display: inline-flex;
+  flex-direction: column;
+  margin-left: 4px;
+}
+
+.sortable-column .arrows mat-icon {
+  font-size: 16px;
+  height: 16px;
+  width: 16px;
+  margin: -2px 0;
+}
+
+.reviewstable {
+  overflow-x: auto;
+}
+
+.col-name,
+.col-email {
+  text-align: left !important;
+}
+
+th.col-name,
+th.col-email {
+  text-align: left !important;
+}
+
+
+.custom-student-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+/* 🔥 FORCE browser default table behavior */
+.custom-student-table thead {
+  display: table-header-group;
+}
+
+.custom-student-table tbody {
+  display: table-row-group;
+}
+
+.custom-student-table tr {
+  display: table-row;
+}
+
+.custom-student-table th,
+.custom-student-table td {
+  display: table-cell;
+}
+
+/* 🔥 CRITICAL FIX */
+.custom-student-table th.sortable-column {
+  display: table-cell !important;   /* override global flex */
+  position: relative;
+}
+
+.student-report-detail-shell .AddFormConatiner {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.student-hero-card,
+.report-section-card {
+  background: #ffffff;
+  border: 1px solid #dbe7f3;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+}
+
+.student-hero-header,
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 24px;
+  background: linear-gradient(135deg, #dff1ff 0%, #eef7ff 100%);
+  color: #1f4b7a;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.student-hero-content {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 24px;
+  padding: 24px;
+}
+
+.student-avatar-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 28px 20px;
+  border-right: 1px solid #e5edf5;
+}
+
+.student-avatar-circle {
+  width: 124px;
+  height: 124px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  box-shadow: 0 20px 35px rgba(37, 99, 235, 0.25);
+}
+
+.student-avatar-name {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #111827;
+  text-align: center;
+}
+
+.student-avatar-meta {
+  color: #6b7280;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.report-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.12);
+  color: #1d4ed8;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.student-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 24px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 54px;
+  padding: 14px 0;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.detail-item-wide {
+  grid-column: 1 / -1;
+}
+
+.detail-item-address {
+  align-items: flex-start;
+  justify-content: flex-start;
+  min-height: 64px;
+}
+
+.detail-item-address .detail-label {
+  flex: 0 0 180px;
+  padding-top: 2px;
+}
+
+.detail-item-address .detail-value {
+  display: block;
+  width: 100%;
+  text-align: left;
+  line-height: 1.6;
+}
+
+.detail-label {
+  flex: 0 0 42%;
+  color: #334155;
+  font-weight: 600;
+}
+
+.detail-value {
+  flex: 1 1 auto;
+  color: #0f172a;
+  text-align: left;
+  word-break: break-word;
+}
+
+.report-section-card {
+  padding-bottom: 10px;
+}
+
+.detail-table-wrap {
+  padding: 18px 20px 10px;
+}
+
+.detail-table-wrap table {
+  width: 100%;
+  table-layout: auto;
+}
+
+.detail-table-wrap th,
+.detail-table-wrap td {
+  vertical-align: middle;
+  white-space: normal;
+}
+
+.report-total-row td {
+  font-weight: 700;
+  background: #f8fbff;
+}
+
+.attendance-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.9fr);
+  gap: 20px;
+}
+
+.attendance-chart-card {
+  min-height: 100%;
+}
+
+.attendance-chart {
+  height: 360px;
+  padding: 26px 16px 18px;
+}
+
+.attendance-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 90px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.present-chip {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.absent-chip {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.empty-state-text {
+  margin: 0;
+  padding: 20px 24px 24px;
+  color: #64748b;
+  font-size: 0.98rem;
+}
+
+@media (max-width: 1100px) {
+  .student-hero-content,
+  .attendance-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .student-avatar-panel {
+    border-right: 0;
+    border-bottom: 1px solid #e5edf5;
+  }
+}
+
+@media (max-width: 768px) {
+  .student-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .student-hero-header,
+  .section-title {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .detail-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .detail-label {
+    flex-basis: auto;
+  }
+}
+
+@media print {
+  .student-hero-card,
+  .report-section-card {
+    box-shadow: none;
+    break-inside: avoid;
+  }
+
+  .student-report-detail-shell,
+  .student-report-detail-shell .AddFormConatiner,
+  .student-hero-card,
+  .report-section-card {
+    background: #ffffff !important;
+    border-color: #d7e3f0 !important;
+  }
+}

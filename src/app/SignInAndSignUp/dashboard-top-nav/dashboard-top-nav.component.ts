@@ -84,7 +84,11 @@ export class DashboardTopNavComponent implements OnInit, OnDestroy {
     viewattendance: 'View Attendance',
     staffattendance: 'Staff Attendance',
     viewstaffattendance: 'View Staff Attendance',
-    leavemanagement: 'Leave Management'
+    leavemanagement: 'Leave Management',
+    outpass: 'Hostel Outpass',
+    hostelmaster: 'Hostel Master',
+    roommaster: 'Room Master',
+    roomallotment: 'Room Allotment'
   };
 
   constructor(

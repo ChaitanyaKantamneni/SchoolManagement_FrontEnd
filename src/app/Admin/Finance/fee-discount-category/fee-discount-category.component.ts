@@ -287,7 +287,7 @@ constructor(
       MinAmountForDiscount:item.minAmountForDiscount,
       DiscountValuePerInstallment:item.discountValuePerInstallment,
       Description:item.description,
-      IsActive: item.isActive === "True" ? 'Active' : 'InActive',
+      IsActive: item.isActive === "1" ? 'Active' : 'InActive',
       AcademicYearName:item.academicYearName,
       SchoolName:item.schoolName,
       FeeCategoryName:item.feeCategoryName
@@ -419,7 +419,7 @@ constructor(
         }
 
         // ✅ normalize once
-        const isActive = item.isActive === "True";
+        const isActive = item.isActive === "1";
 
         if (mode === 'view') {
           this.isViewMode = true;

@@ -137,8 +137,12 @@
           <div class="admission-footer-meta">
             <label>
               Rows:
-              <select aria-label="Rows per page">
-                <option>{{ pageSize }}</option>
+              <select aria-label="Rows per page" [(ngModel)]="pageSize"
+            (ngModelChange)="onRowsCountChange()">
+                <option [ngValue]="5">5</option>
+                <option [ngValue]="10">10</option>
+                <option [ngValue]="25">25</option>
+                <option [ngValue]="50">50</option>
               </select>
             </label>
             <p>{{ pageStartIndex() }}&ndash;{{ pageEndIndex() }} of {{ SchoolsCount }} records</p>
@@ -162,105 +166,168 @@
     </div>
   </div>
   <div *ngIf="IsAddNewClicked" class="w-100">
-    <div class="AddForm">
-      <div class="AddFormTop">
+    <div class="admission-breadcrumb">
+          <span>Masters</span>
+          <mat-icon>chevron_right</mat-icon>
+          <span>School Details</span>
+          <mat-icon>chevron_right</mat-icon>
+          <strong>Configure</strong>
+        </div>
+    <div class="AddFormTop">
         <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
-        <p>Add School</p>
+        <div class="admission-record-header p-0">
+          <div>
+            <h5>School Configuration</h5>
+            <p>Enter the key details to configure the new school on the platform</p>
+          </div>
+        </div>
+      </div>
+    <div class="AddForm">
+      <div class="form-top">
+        <p class="cc-title">School Profile</p>
+        <!-- <span
+                    class="status-pill"
+                    [style.background]="(School.IsActive === true || School.IsActive === 'true' || School.IsActive === 'Active' || School.IsActive === 1) ? '#d9f9e5' : '#fff0bd'"
+                    [style.color]="(School.IsActive === true || School.IsActive === 'true' || School.IsActive === 'Active' || School.IsActive === 1) ? '#00823a' : '#c25b00'"
+                    [style.borderColor]="(School.IsActive === true || School.IsActive === 'true' || School.IsActive === 'Active' || School.IsActive === 1) ? '#86efac' : '#f5d77a'">
+                    {{ (School.IsActive === true || School.IsActive === 'true' || School.IsActive === 'Active' || School.IsActive === 1) ? 'Active' : 'Pending' }}
+                  </span>      -->
       </div>
       <div class="AddFormConatiner">
         <form [formGroup]="SchoolsForm">
-          <div class="FormInputRowsContainer">
-            <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="Name">School Name <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Name" placeholder="Enter School Name" (keydown)="allowAlphaAndSpecial($event)" />
-                  <div *ngIf="(SchoolsForm.get('Name' ) ?. touched && SchoolsForm.get('Name' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(SchoolsForm.get('Name' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Name.</small>
+          <div class="form-logo-group">
+            <div class="upload-logo-card">
+              
+              <div class="upload-card">
+                <p class="section-title">School Logo</p>
+
+                <div class="upload-box" (click)="logoInput.click()">
+
+                  <input type="file" hidden accept=".jpg,.png,.webp,.jpeg" #logoInput (change)="onLogoSelected($event)" />
+
+                  <div class="upload-content h-100">
+
+                    <!-- IMAGE WRAPPER -->
+                    <div class="image-container" *ngIf="schoolLogo?.preview || schoolLogoFromDb">
+                      <img [src]="schoolLogo?.preview || getFileUrl(schoolLogoFromDb?.filePath)" class="preview-img"/>
+                    </div>
+
+                    <!-- PLACEHOLDER -->
+                    <div class="placeholder" *ngIf="!schoolLogo && !schoolLogoFromDb">
+                      <div class="upload-icon">⬆</div>
+                      <div class="lz-text">
+                        <b>Click to upload</b>
+                        <br>
+                        "or drag & drop"
+                      </div>
+                      <div class="lz-fmt">PNG, JPG, SVG · Max 2 MB</div>
                     </div>
                   </div>
                 </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="PhoneNumber">Phone Number <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="PhoneNumber" placeholder="Enter Phone Number" (keydown)="allowOnlyNumbers($event)" minlength="10" maxlength="10" />
-                  <div *ngIf="(SchoolsForm.get('PhoneNumber' ) ?. touched && SchoolsForm.get('PhoneNumber' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(SchoolsForm.get('PhoneNumber' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Phone Number.</small>
-                    </div>
-                    <div *ngIf="(SchoolsForm.get('PhoneNumber' ) ?. errors ?. ['pattern' ]) ">
-                      <small>Phone number must be exactly 10 digits.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>                            
-            </div>
-            <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="Email">Email <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Email" placeholder="Enter Email" />
-                  <div *ngIf="(SchoolsForm.get('Email' ) ?. touched && SchoolsForm.get('Email' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(SchoolsForm.get('Email' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Email.</small>
-                    </div>
-                    <div *ngIf="(SchoolsForm.get('Email' ) ?. errors ?. ['pattern' ]) ">
-                      <small>Invalid email format.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="Website">Website <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <input class="inputField" formControlName="Website" placeholder="Enter Website URL" />
-                  <div *ngIf="(SchoolsForm.get('Website' ) ?. touched && SchoolsForm.get('Website' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(SchoolsForm.get('Website' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Website URL.</small>
-                    </div>
-                  </div>
-                </div>
+
+                <button class="upload-btn" (click)="uploadLogo()" [disabled]="isLogoUploading">
+                  {{ isLogoUploading ? 'Uploading...' : 'Upload Logo' }}
+                </button>
               </div>
             </div>
-            <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel" for="Address">Address <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <textarea class="inputField" formControlName="Address" placeholder="Enter Address" rows="2"></textarea>
-                  <div *ngIf="(SchoolsForm.get('Address' ) ?. touched && SchoolsForm.get('Address' ) ?. invalid)" class="text-danger">
-                    <div *ngIf="(SchoolsForm.get('Address' ) ?. errors ?. ['required' ]) ">
-                      <small>Please Enter Address.</small>
+            <div class="FormInputRowsContainer">
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel" for="Name">School Name <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="Name" placeholder="Enter School Name" (keydown)="allowAlphaAndSpecial($event)" />
+                    <div *ngIf="(SchoolsForm.get('Name' ) ?. touched && SchoolsForm.get('Name' ) ?. invalid)" class="text-danger">
+                      <div *ngIf="(SchoolsForm.get('Name' ) ?. errors ?. ['required' ]) ">
+                        <small>Please Enter Name.</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel" for="PhoneNumber">Phone Number <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="PhoneNumber" placeholder="Enter Phone Number" (keydown)="allowOnlyNumbers($event)" minlength="10" maxlength="10" />
+                    <div *ngIf="(SchoolsForm.get('PhoneNumber' ) ?. touched && SchoolsForm.get('PhoneNumber' ) ?. invalid)" class="text-danger">
+                      <div *ngIf="(SchoolsForm.get('PhoneNumber' ) ?. errors ?. ['required' ]) ">
+                        <small>Please Enter Phone Number.</small>
+                      </div>
+                      <div *ngIf="(SchoolsForm.get('PhoneNumber' ) ?. errors ?. ['pattern' ]) ">
+                        <small>Phone number must be exactly 10 digits.</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>                            
+              </div>
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel" for="Email">Email <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="Email" placeholder="Enter Email" />
+                    <div *ngIf="(SchoolsForm.get('Email' ) ?. touched && SchoolsForm.get('Email' ) ?. invalid)" class="text-danger">
+                      <div *ngIf="(SchoolsForm.get('Email' ) ?. errors ?. ['required' ]) ">
+                        <small>Please Enter Email.</small>
+                      </div>
+                      <div *ngIf="(SchoolsForm.get('Email' ) ?. errors ?. ['pattern' ]) ">
+                        <small>Invalid email format.</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel" for="Website">Website <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <input class="inputField" formControlName="Website" placeholder="Enter Website URL" />
+                    <div *ngIf="(SchoolsForm.get('Website' ) ?. touched && SchoolsForm.get('Website' ) ?. invalid)" class="text-danger">
+                      <div *ngIf="(SchoolsForm.get('Website' ) ?. errors ?. ['required' ]) ">
+                        <small>Please Enter Website URL.</small>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-              <div class="InputFieldsContainer">
-                <div class="toggle-container" (click)="$event.stopPropagation()">
-                  <label class="switch">
-                    <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
-                    <span class="slider">
-                      <span
-                        class="toggle-text"
-                        [ngStyle]="{
-                          left: IsActiveStatus ? '42%' : '60%',
-                          fontSize: IsActiveStatus ? '9px' : '9px'
-                        }"
-                      >
-                        {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+              <div class="InputRow">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel" for="Address">Address <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <textarea class="inputField" formControlName="Address" placeholder="Enter Address" rows="2"></textarea>
+                    <div *ngIf="(SchoolsForm.get('Address' ) ?. touched && SchoolsForm.get('Address' ) ?. invalid)" class="text-danger">
+                      <div *ngIf="(SchoolsForm.get('Address' ) ?. errors ?. ['required' ]) ">
+                        <small>Please Enter Address.</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="InputFieldsContainer">
+                  <div class="toggle-container" (click)="$event.stopPropagation()">
+                    <label class="switch">
+                      <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
+                      <span class="slider">
+                        <span
+                          class="toggle-text"
+                          [ngStyle]="{
+                            left: IsActiveStatus ? '42%' : '60%',
+                            fontSize: IsActiveStatus ? '9px' : '9px'
+                          }"
+                        >
+                          {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                        </span>
                       </span>
-                    </span>
-                  </label>
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          <div class="ActionButtons">
-            <button type="button" *ngIf="ViewSyllabusClicked && canEdit()" (click)="UpdateSyllabus()">Update</button>
-            <button type="button" *ngIf="!ViewSyllabusClicked && canAdd()" (click)="SubmitSyllabus()">Submit</button>
-          </div>
+          
         </form>
+      </div>
+      <div class="form-bottom">
+        <span class="footer-hint">Fields marked <span class="required">*</span> are required</span>
+        <div class="ActionButtons footer-actions">
+            <button type="button" class="cancelbtn" (click)="CancelSyllabus()">Cancel</button>
+            <button type="button" class="submitbtn" *ngIf="ViewSyllabusClicked && canEdit()" (click)="UpdateSyllabus()">Update</button>
+            <button type="button" class="submitbtn" *ngIf="!ViewSyllabusClicked && canAdd()" (click)="SubmitSyllabus()">Submit</button>
+          </div>
       </div>
     </div>
   </div>

@@ -90,4 +90,14 @@ export class ApiServiceService {
   getImageUrl(filePath: string): string {
     return filePath ? `${this.api_img_url}=${encodeURIComponent(filePath)}` : 'assets/images/empty.png';
   }
+
+  getSchoolFilter(): { schoolId?: string; schoolIds?: string[]; isGroupAdmin: boolean } {
+    const role = sessionStorage.getItem('RollID');
+    const isGroupAdmin = role === '10';
+    if (isGroupAdmin) {
+      const raw = sessionStorage.getItem('schoolIds') || '';
+      return { schoolIds: raw.split(',').filter(Boolean), isGroupAdmin: true };
+    }
+    return { schoolId: sessionStorage.getItem('SchoolID') || undefined, isGroupAdmin: false };
+  }
 }

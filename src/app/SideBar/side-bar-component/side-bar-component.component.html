@@ -11,7 +11,8 @@
 
     <div class="logo">
       <a>
-        <img src="Images/Logo1.jpg" alt="School ERP" />
+        <!-- <img src="Images/Logo1.jpg" alt="School ERP" /> -->
+         <img [src]="logoUrl" alt="School ERP" />
       </a>
     </div>
 
@@ -20,30 +21,33 @@
         <li>
           <a (click)="goToDashboard()" routerLinkActive="active">
             <mat-icon>dashboard</mat-icon>
-            <span class="DashboardMenuLi">Dashboard</span>
+            <span class="DashboardMenuLi">{{ isParentRole ? 'My Portal' : 'Dashboard' }}</span>
           </a>
         </li>
 
-        <li
-          class="menu-item has-submenu"
-          *ngFor="let module of getVisibleModules()"
-          [ngClass]="{'is-open': openedSubmenu === module.id.toString()}"
-        >
-          <div class="parent-row" (click)="toggleSubmenu(module.id.toString())">
-            <mat-icon>{{ getModuleIcon(module.moduleName) }}</mat-icon>
-            <span class="DashboardMenuLi">{{ module.moduleName }}</span>
-            <mat-icon class="submenu-arrow">expand_more</mat-icon>
-          </div>
+        <!-- Hide module navigation for parent role -->
+        <ng-container *ngIf="!isParentRole">
+          <li
+            class="menu-item has-submenu"
+            *ngFor="let module of getVisibleModules()"
+            [ngClass]="{'is-open': openedSubmenu === module.id.toString()}"
+          >
+            <div class="parent-row" (click)="toggleSubmenu(module.id.toString())">
+              <mat-icon>{{ getModuleIcon(module.moduleName) }}</mat-icon>
+              <span class="DashboardMenuLi">{{ module.moduleName }}</span>
+              <mat-icon class="submenu-arrow">expand_more</mat-icon>
+            </div>
 
-          <ul *ngIf="openedSubmenu === module.id.toString()" class="submenu">
-            <li *ngFor="let page of getVisiblePages(module)">
-              <a (click)="navigate(page, $event)" [ngClass]="{'active': isPageActive(page)}">
-                <mat-icon>{{ getPageIcon(page.pageName) }}</mat-icon>
-                <span class="submenu-text">{{ page.pageName }}</span>
-              </a>
-            </li>
-          </ul>
-        </li>
+            <ul *ngIf="openedSubmenu === module.id.toString()" class="submenu">
+              <li *ngFor="let page of getVisiblePages(module)">
+                <a (click)="navigate(page, $event)" [ngClass]="{'active': isPageActive(page)}">
+                  <mat-icon>{{ getPageIcon(page.pageName) }}</mat-icon>
+                  <span class="submenu-text">{{ page.pageName }}</span>
+                </a>
+              </li>
+            </ul>
+          </li>
+        </ng-container>
       </ul>
     </div>
   </aside>

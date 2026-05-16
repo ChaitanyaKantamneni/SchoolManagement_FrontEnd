@@ -1,0 +1,1086 @@
+<div class="pd-shell">
+
+  <!-- ════════════════════════════════════════════════════════════ MAIN CONTENT -->
+  <div class="pd-main">
+
+    <!-- ─────────────────────────────────────────────────────── TOP HEADER -->
+    <header class="pd-header">
+      <div class="pd-header__left">
+        <div class="pd-header__welcome">
+          <span class="pd-header__greeting">Welcome back,</span>
+          <span class="pd-header__name">{{ getUserName() }}</span>
+        </div>
+      </div>
+
+      <div class="pd-header__center">
+        <!-- Academic Year Selector -->
+        <div class="pd-academic-year-selector">
+          <mat-icon style="font-size:1rem;vertical-align:middle;color:#64748b">calendar_today</mat-icon>
+          <select class="pd-year-select" [(ngModel)]="selectedAcademicYearId" (change)="onAcademicYearChange($event)">
+            <option value="">-- Select Year --</option>
+            <option *ngFor="let year of academicYears" [value]="year.ID">{{ year.Name }}</option>
+          </select>
+        </div>
+        <!-- Child Selector Chips (shown when parent has multiple children) -->
+        <div class="pd-child-chips" *ngIf="childrenList.length > 1">
+          <span class="pd-child-chips__label">Child:</span>
+          <button *ngFor="let child of childrenList"
+            class="pd-chip"
+            [class.pd-chip--active]="selectedChildId === child.id"
+            (click)="selectChild(child.id)">
+            {{ child.name }}
+          </button>
+        </div>
+        <span *ngIf="childrenList.length === 1" class="pd-single-child-name">
+          <mat-icon style="font-size:1rem;vertical-align:middle">child_care</mat-icon>
+          {{ selectedChild?.name }}
+        </span>
+      </div>
+
+      <div class="pd-header__right">
+        <div class="pd-search">
+          <mat-icon class="pd-search__icon">search</mat-icon>
+          <input class="pd-search__input" placeholder="Search…" />
+        </div>
+        <button class="pd-icon-btn" title="Notifications">
+          <mat-icon>inbox</mat-icon>
+          <span class="pd-notif-badge">3</span>
+        </button>
+        <div class="pd-avatar" [title]="getUserName()">
+          {{ getUserInitials() }}
+        </div>
+      </div>
+    </header>
+
+    <!-- DEBUG STRIP (remove after fixing) -->
+    <!-- <div style="background:#fef3c7;border-bottom:1px solid #fbbf24;padding:6px 1.5rem;font-size:0.75rem;color:#92400e;font-family:monospace">
+      🔍 Debug: {{ debugInfo }}
+    </div> -->
+
+    <!-- ─────────────────────────────────────────────── PAGE TITLE + TABS -->
+    <div class="pd-page-title">
+      <div>
+        <h1 class="pd-page-title__h1">Parent Portal</h1>
+        <p class="pd-page-title__sub">Academic Overview — {{ selectedChild?.name || 'Student' }}</p>
+      </div>
+    </div>
+
+    <nav class="pd-tabs">
+      <button *ngFor="let tab of visibleTabs"
+        class="pd-tab"
+        [class.pd-tab--active]="currentView === tab.id"
+        (click)="switchView(tab.id)">
+        <mat-icon>inbox</mat-icon>
+        {{ tab.label }}
+      </button>
+    </nav>
+
+    <!-- ────────────────────────────────────────────────────── CONTENT AREA -->
+    <div class="pd-content">
+
+      <!-- Loading children -->
+      <div *ngIf="loadingChildren" class="pd-empty-state">
+        <mat-icon class="pd-spin">autorenew</mat-icon>
+        <p>Loading student data…</p>
+      </div>
+
+      <!-- No children found -->
+      <div *ngIf="!loadingChildren && noChildrenFound" class="pd-empty-state">
+        <mat-icon>inbox</mat-icon>
+        <p>No students linked to this account. Please contact school administration.</p>
+      </div>
+
+      <!-- ══════════════════════════════════════════════ DASHBOARD VIEW -->
+      <div *ngIf="!loadingChildren && !noChildrenFound && currentView === 'dashboard'" class="pd-view pd-view--dashboard">
+
+        <!-- Summary Cards -->
+        <div class="pd-cards">
+          <div *ngFor="let card of summaryCards"
+            class="pd-card pd-card--{{ card.color }}">
+            <div class="pd-card__body">
+              <p class="pd-card__label">{{ card.label }}</p>
+              <h2 class="pd-card__value">{{ card.value }}</h2>
+              <span class="pd-card__sub">{{ card.subtext }}</span>
+            </div>
+            <div class="pd-card__icon">
+              <mat-icon>inbox</mat-icon>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grid: Profile + Progress -->
+        <div class="pd-grid-2">
+
+          <!-- Student Profile Card -->
+          <div class="pd-panel">
+            <h3 class="pd-panel__title">
+              <mat-icon>person</mat-icon> Student Profile
+            </h3>
+            <ng-container *ngIf="studentProfile; else noProfile">
+              <div class="pd-profile">
+                <div class="pd-profile__avatar">
+                  <mat-icon>inbox</mat-icon>
+                </div>
+                <div class="pd-profile__info">
+                  <div class="pd-profile__name">{{ studentProfile.fullName }}</div>
+                  <div class="pd-profile__class">{{ studentProfile.class }}</div>
+                  <span class="pd-badge pd-badge--active">{{ studentProfile.status }}</span>
+                </div>
+              </div>
+              <div class="pd-profile__details">
+                <div class="pd-detail">
+                  <span class="pd-detail__key">Admission ID</span>
+                  <span class="pd-detail__val">{{ studentProfile.admissionId }}</span>
+                </div>
+                <div class="pd-detail">
+                  <span class="pd-detail__key">Roll No</span>
+                  <span class="pd-detail__val">{{ studentProfile.rollNo }}</span>
+                </div>
+                <div class="pd-detail">
+                  <span class="pd-detail__key">Blood Group</span>
+                  <span class="pd-detail__val">{{ studentProfile.bloodGroup }}</span>
+                </div>
+                <div class="pd-detail">
+                  <span class="pd-detail__key">Academic Year</span>
+                  <span class="pd-detail__val">{{ academicYear }}</span>
+                </div>
+              </div>
+            </ng-container>
+            <ng-template #noProfile>
+              <p class="pd-empty-inline">Loading profile…</p>
+            </ng-template>
+          </div>
+
+          <!-- Academic Progress Card -->
+          <div class="pd-panel">
+            <h3 class="pd-panel__title">
+              <mat-icon>analytics</mat-icon> Academic Progress
+            </h3>
+            <div class="pd-progress-section">
+              <div class="pd-progress-header">
+                <span class="pd-progress-label">Attendance</span>
+                <span class="pd-progress-pct" [style.color]="attendanceColor">{{ attendanceSummary.percentage }}%</span>
+              </div>
+              <div class="pd-progress-bar">
+                <div class="pd-progress-fill"
+                  [style.width.%]="attendanceSummary.percentage"
+                  [style.background]="attendanceColor">
+                </div>
+              </div>
+              <p class="pd-progress-msg" [class.pd-progress-msg--warn]="attendanceSummary.percentage < 75">
+                {{ attendanceMessage }}
+              </p>
+            </div>
+
+            <!-- Today's Mini Schedule -->
+            <h4 class="pd-panel__subtitle">Today's Schedule ({{ currentDay }})</h4>
+            <div class="pd-mini-schedule" *ngIf="todaysSchedule.length > 0; else noSchedule">
+              <div *ngFor="let s of todaysSchedule.slice(0, 4)" class="pd-mini-row">
+                <span class="pd-mini-period">P{{ s.period }}</span>
+                <span class="pd-mini-subject">{{ s.subject }}</span>
+                <span class="pd-mini-time">{{ s.time }}</span>
+              </div>
+            </div>
+            <ng-template #noSchedule>
+              <p class="pd-empty-inline">Timetable not loaded yet — visit the Timetable tab.</p>
+            </ng-template>
+          </div>
+        </div>
+
+        <!-- Notice Board + Schedule full -->
+        <div class="pd-grid-2">
+          <!-- Notice Board -->
+          <div class="pd-panel">
+            <div class="pd-panel__header">
+              <h3 class="pd-panel__title">
+                <mat-icon>inbox</mat-icon> Notice Board
+              </h3>
+              <button class="pd-btn-ghost">View All</button>
+            </div>
+            <div class="pd-notices">
+              <div *ngFor="let notice of noticesList" class="pd-notice">
+                <div class="pd-notice__icon">
+                  <mat-icon>inbox</mat-icon>
+                </div>
+                <div class="pd-notice__content">
+                  <p class="pd-notice__title">{{ notice.title }}</p>
+                  <p class="pd-notice__desc">{{ notice.description }}</p>
+                  <span class="pd-notice__date">{{ notice.date }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Full Today's Schedule -->
+          <div class="pd-panel">
+            <h3 class="pd-panel__title">
+              <mat-icon>inbox</mat-icon> Today's Schedule — {{ currentDay }}
+            </h3>
+            <ng-container *ngIf="todaysSchedule.length > 0; else noTodaySchedule">
+              <table class="pd-table">
+                <thead>
+                  <tr>
+                    <th>Period</th>
+                    <th>Time</th>
+                    <th>Subject</th>
+                    <th>Teacher</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let s of todaysSchedule">
+                    <td>P{{ s.period }}</td>
+                    <td>{{ s.time }}</td>
+                    <td>{{ s.subject }}</td>
+                    <td>{{ s.teacher }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </ng-container>
+            <ng-template #noTodaySchedule>
+              <p class="pd-empty-inline">Visit the Timetable tab to load the schedule.</p>
+            </ng-template>
+          </div>
+        </div>
+
+      </div><!-- /dashboard view -->
+
+
+      <!-- ══════════════════════════════════════════════ ATTENDANCE VIEW -->
+      <div *ngIf="!loadingChildren && !noChildrenFound && currentView === 'attendance'" class="pd-view">
+        <div class="pd-view-header">
+          <div>
+            <h2 class="pd-view-header__title">Attendance Tracker</h2>
+            <p class="pd-view-header__sub">Detailed attendance for {{ selectedChild?.name || 'Student' }}</p>
+          </div>
+        </div>
+
+        <!-- Attendance Summary Chips -->
+        <div class="pd-cards pd-cards--sm">
+          <div class="pd-card pd-card--green">
+            <div class="pd-card__body">
+              <p class="pd-card__label">Total Days</p>
+              <h2 class="pd-card__value">{{ attendanceSummary.total }}</h2>
+            </div>
+            <div class="pd-card__icon"><mat-icon>inbox</mat-icon></div>
+          </div>
+          <div class="pd-card pd-card--blue">
+            <div class="pd-card__body">
+              <p class="pd-card__label">Present</p>
+              <h2 class="pd-card__value">{{ attendanceSummary.present }}</h2>
+            </div>
+            <div class="pd-card__icon"><mat-icon>inbox</mat-icon></div>
+          </div>
+          <div class="pd-card pd-card--orange">
+            <div class="pd-card__body">
+              <p class="pd-card__label">Absent</p>
+              <h2 class="pd-card__value">{{ attendanceSummary.absent }}</h2>
+            </div>
+            <div class="pd-card__icon"><mat-icon>inbox</mat-icon></div>
+          </div>
+          <div class="pd-card pd-card--purple">
+            <div class="pd-card__body">
+              <p class="pd-card__label">Percentage</p>
+              <h2 class="pd-card__value">{{ attendanceSummary.percentage }}%</h2>
+            </div>
+            <div class="pd-card__icon"><mat-icon>inbox</mat-icon></div>
+          </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="pd-panel" style="margin-bottom: 1.5rem;">
+          <div class="pd-progress-header">
+            <span class="pd-progress-label">Attendance Rate</span>
+            <span class="pd-progress-pct" [style.color]="attendanceColor">{{ attendanceSummary.percentage }}%</span>
+          </div>
+          <div class="pd-progress-bar">
+            <div class="pd-progress-fill"
+              [style.width.%]="attendanceSummary.percentage"
+              [style.background]="attendanceColor">
+            </div>
+          </div>
+        </div>
+
+        <!-- Records Table -->
+        <div class="pd-panel">
+          <h3 class="pd-panel__title"><mat-icon>inbox</mat-icon> Daily Records</h3>
+          <div *ngIf="loadingAttendance" class="pd-empty-state">
+            <mat-icon class="pd-spin">autorenew</mat-icon><p>Loading…</p>
+          </div>
+          <ng-container *ngIf="!loadingAttendance">
+            <table class="pd-table" *ngIf="attendanceRecords.length > 0; else noAtt">
+              <thead>
+                <tr><th>SI.No</th><th>Date</th><th>Day</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let rec of attendanceRecords; let i = index">
+                  <td>{{ i + 1 }}</td>
+                  <td>{{ rec.date }}</td>
+                  <td>{{ rec.day }}</td>
+                  <!-- <td>{{ rec.session || '—' }}</td> -->
+                  <td><span class="pd-badge" [ngClass]="getStatusClass(rec.status)">{{ rec.status }}</span></td>
+                </tr>
+              </tbody>
+            </table>
+            <ng-template #noAtt>
+              <p class="pd-empty-inline">No attendance records found for this student.</p>
+            </ng-template>
+          </ng-container>
+        </div>
+      </div><!-- /attendance view -->
+
+
+      <!-- ══════════════════════════════════════════════ FEES VIEW -->
+      <div *ngIf="!loadingChildren && !noChildrenFound && currentView === 'fees'" class="pd-view">
+        <div class="pd-view-header">
+          <div>
+            <h2 class="pd-view-header__title">Fee Management</h2>
+            <p class="pd-view-header__sub">Fee details for {{ selectedChild?.name || 'Student' }}</p>
+          </div>
+        </div>
+
+        <div class="pd-cards pd-cards--sm">
+          <div class="pd-card pd-card--green">
+            <div class="pd-card__body">
+              <p class="pd-card__label">Total Fee</p>
+              <h2 class="pd-card__value">₹{{ feeTotal.toLocaleString('en-IN') }}</h2>
+            </div>
+            <div class="pd-card__icon"><mat-icon>inbox</mat-icon></div>
+          </div>
+          <div class="pd-card pd-card--blue">
+            <div class="pd-card__body">
+              <p class="pd-card__label">Amount Paid</p>
+              <h2 class="pd-card__value">₹{{ feePaid.toLocaleString('en-IN') }}</h2>
+            </div>
+            <div class="pd-card__icon"><mat-icon>inbox</mat-icon></div>
+          </div>
+          <div class="pd-card pd-card--orange">
+            <div class="pd-card__body">
+              <p class="pd-card__label">Balance Due</p>
+              <h2 class="pd-card__value">₹{{ feeBalance.toLocaleString('en-IN') }}</h2>
+            </div>
+            <div class="pd-card__icon"><mat-icon>inbox</mat-icon></div>
+          </div>
+        </div>
+
+        <!-- Fee Sub-Tabs -->
+        <div class="pd-tabs">
+          <button 
+            *ngFor="let tab of feeTabs" 
+            class="pd-tab"
+            [class.pd-tab--active]="currentFeeTab === tab.id"
+            (click)="switchFeeTab(tab.id)">
+            <mat-icon>inbox</mat-icon>
+            {{ tab.label }}
+          </button>
+        </div>
+
+        <!-- Fee Dues Tab -->
+        <div *ngIf="currentFeeTab === 'dues'" class="pd-panel">
+          <h3 class="pd-panel__title"><mat-icon>inbox</mat-icon> Fee Dues</h3>
+          <div *ngIf="loadingFees" class="pd-empty-state">
+            <mat-icon class="pd-spin">autorenew</mat-icon><p>Loading…</p>
+          </div>
+          <ng-container *ngIf="!loadingFees">
+            <table class="pd-table" *ngIf="feeDuesRecords.length > 0; else noFeeDues">
+              <thead>
+                <tr>
+                  <th>Fee Category</th><th>Due Amount (₹)</th><th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let due of feeDuesRecords">
+                  <td>{{ due.term }}</td>
+                  <td>{{ due.amount | number }}</td>
+                  <td><span class="pd-badge" [ngClass]="getFeeStatusClass(due.status)">{{ due.status }}</span></td>
+                </tr>
+              </tbody>
+            </table>
+            <ng-template #noFeeDues>
+              <p class="pd-empty-inline">No fee dues found for this student.</p>
+            </ng-template>
+          </ng-container>
+        </div>
+
+        <!-- Payment History Tab -->
+        <div *ngIf="currentFeeTab === 'history'" class="pd-panel">
+          <h3 class="pd-panel__title"><mat-icon>inbox</mat-icon> Payment History</h3>
+          <ng-container *ngIf="!loadingFees">
+            <table class="pd-table" *ngIf="feeRecords.length > 0; else noPayments">
+              <thead>
+                <tr>
+                  <th>Fee Category</th><th>Amount Paid (₹)</th><th>Status</th><th>Payment Date</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let fee of feeRecords">
+                  <td>{{ fee.term }}</td>
+                  <td>{{ fee.amount | number }}</td>
+                  <td><span class="pd-badge" [ngClass]="getFeeStatusClass(fee.status)">{{ fee.status }}</span></td>
+                  <td>{{ fee.date }}</td>
+                  <td>
+                    <div class="d-flex justify-content-center align-items-center h-100">
+                      <button 
+                        *ngIf="fee.receiptNo" 
+                        class="btn checkbtn" 
+                        data-tooltip="View" 
+                        (click)="viewReview(fee.ID)">
+                        <mat-icon class="mat-edit-icon">visibility</mat-icon>
+                      </button>
+                      <button 
+                        *ngIf="fee.receiptNo" 
+                        class="btn checkbtn" 
+                        data-tooltip="Print" 
+                        (click)="printFeeReceiptFromList(fee.ID)"
+                        style="margin-left: 5px;">
+                        <mat-icon class="mat-edit-icon">print</mat-icon>
+                      </button>
+                      <span *ngIf="!fee.receiptNo" class="pd-text-muted">—</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <ng-template #noPayments>
+              <p class="pd-empty-inline">No payment history found for this student.</p>
+            </ng-template>
+          </ng-container>
+        </div>
+      </div><!-- /fees view -->
+
+
+      <!-- ══════════════════════════════════════════════ EXAMS VIEW (matching Admin Exam Results) -->
+      <div *ngIf="!loadingChildren && !noChildrenFound && currentView === 'exams'" class="pd-view">
+        <div class="pd-view-header">
+          <div>
+            <h2 class="pd-view-header__title">Exam Results</h2>
+            <p class="pd-view-header__sub">Academic performance for {{ selectedChild?.name || 'Student' }}</p>
+          </div>
+        </div>
+        <div class="pd-panel">
+          <h3 class="pd-panel__title"><mat-icon>inbox</mat-icon> Exam Results</h3>
+          <div *ngIf="loadingExams" class="pd-empty-state">
+            <mat-icon class="pd-spin">autorenew</mat-icon><p>Loading…</p>
+          </div>
+          <ng-container *ngIf="!loadingExams">
+            <!-- Admin-style Exam Results Table -->
+            <div class="reviewstable">
+              <table id="classTable" *ngIf="examRecords.length > 0" class="table table-bordered">
+                <thead>
+                  <tr>
+                    <th>SI.No</th>
+                    <th>Exam Name</th>
+                    <th>Admission No</th>                
+                    <th>Student Name</th>
+                    <th>Class</th>  
+                    <th>Division</th>
+                    <th>Total Marks</th>
+                    <th>Max Marks</th>
+                    <th>Percentage</th>
+                    <th>Result</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let Syllabus of examRecords; let i = index">
+                    <td>{{ i + 1 }}</td>
+                    <td>{{ Syllabus.ExamType }}</td>
+                    <td>{{ Syllabus.AdmissionNo }}</td>
+                    <td>{{ Syllabus.StudentName }}</td>
+                    <td>{{ Syllabus.Class }}</td>
+                    <td>{{ Syllabus.Division }}</td>
+                    <td>{{ Syllabus.TotalMarks ? Syllabus.TotalMarks : 'Absent' }}</td>
+                    <td>{{ Syllabus.TotalMaxMarks ? Syllabus.TotalMaxMarks : 'Absent' }}</td>
+                    <td>{{ Syllabus.TotalPercentage ? (Syllabus.TotalPercentage + '%') : 'Absent' }}</td>
+                    <td>
+                      <span
+                        [ngClass]="{
+                          'text-success fw-bolder': Syllabus.Result === 'PASS',
+                          'text-danger fw-bold': Syllabus.Result === 'FAIL'
+                        }">
+                        {{ Syllabus.Result }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="d-flex justify-content-center align-items-center h-100">
+                        <button class="btn checkbtn" data-tooltip="View" (click)="viewExamDetails(Syllabus)">
+                          <mat-icon class="mat-edit-icon">visibility</mat-icon>
+                        </button> 
+                      </div>
+                    </td> 
+                  </tr>
+                </tbody>
+              </table>
+              <div *ngIf="examRecords.length === 0" class="NoDataFound">
+                <div class="NoDataFoundImg">
+                  <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
+                </div>
+                <p>No data found.</p>
+              </div>
+            </div>
+            <ng-template #noExams>
+              <p class="pd-empty-inline">No exam records found for this student.</p>
+            </ng-template>
+          </ng-container>
+        </div>
+
+        <!-- Exam Detail View Modal (matching Admin examresults) - INSIDE exams view -->
+        <div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isExamViewModalOpen}" [style.display]="isExamViewModalOpen ? 'block' : 'none'">
+          <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+              <div class="modal-header d-flex justify-content-between align-items-center">
+                <h5 class="modal-title mb-0">Exam Results</h5>
+                <div class="d-flex align-items-center gap-2">
+                  <!-- PRINT BUTTON -->
+                  <button class="btn btn-sm btn-primary" (click)="printMarksheet()">
+                    <mat-icon>inbox</mat-icon>
+                  </button>
+                  <!-- CLOSE BUTTON -->
+                  <button type="button" class="close" (click)="isExamViewModalOpen = false">
+                    <span>&times;</span>
+                  </button>
+                </div>
+              </div>
+              <div id="marksheetContent" class="modal-body marksheet p-4">
+                <!-- HEADER -->
+                <div class="text-center mb-3">
+                  <h4 class="fw-bold text-uppercase">{{ selectedExamForView?.SchoolName }}</h4>
+                  <p class="mb-0">Academic Year: {{ selectedExamForView?.AcademicYearName }}</p>
+                </div>
+                <div class="exam-line">
+                  <span>{{ selectedExamForView?.ExamType }}</span>
+                </div>
+                <hr>
+                <p><strong></strong></p>
+                
+                <!-- STUDENT DETAILS -->
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <p><strong>Name:</strong> {{ selectedExamForView?.StudentName }}</p>
+                    <p class="mb-1 text-nowrap"><strong>Admission No:</strong> {{ selectedExamForView?.AdmissionNo }}</p>
+                  </div>
+                  <div class="col-md-6 text-md-end">
+                    <p><strong>Class:</strong> {{ selectedExamForView?.Class }}</p>
+                    <p><strong>Division:</strong> {{ selectedExamForView?.Division }}</p>
+                  </div>
+                </div>
+                
+                <!-- SUBJECT TABLE -->
+                <table class="table table-bordered text-center">
+                  <thead class="table-dark">
+                    <tr>
+                      <th>#</th>
+                      <th>Subject</th>
+                      <th>Max Marks</th>
+                      <th>Marks Obtained</th>
+                      <th>Percentage</th>
+                      <th>Result</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let subject of studentReport; let i = index">
+                      <td>{{ i + 1 }}</td>
+                      <td class="text-start fw-semibold">
+                        {{ subject.SubjectName }}
+                      </td>
+                      <td>{{ subject.MaxMarks }}</td>
+                      
+                      <!-- MARKS / ABSENT -->
+                      <td>
+                        {{ subject.SubjectMarks ? subject.SubjectMarks : 'AB' }}
+                      </td>
+                      
+                      <!-- PERCENT -->
+                      <td>
+                        {{ subject.SubjectMarks ? (subject.SubjectPercentage + '%') : '-' }}
+                      </td>
+                      
+                      <!-- RESULT -->
+                      <td>
+                        <span 
+                          style="font-size: 15px;"
+                          [ngClass]="{
+                            'text-success fw-bold': subject.SubjectResult === 'PASS',
+                            'text-danger fw-bold': subject.SubjectResult === 'FAIL'
+                          }">
+                          {{ subject.SubjectResult }}
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                
+                <!-- TOTAL -->
+                <div class="row mt-4 border p-3 rounded bg-light">
+                  <div class="col-md-4">
+                    <p><strong>Total Marks:</strong> {{ selectedExamForView?.TotalMarks }}</p>
+                  </div>
+                  <div class="col-md-4">
+                    <p><strong>Total Max Marks:</strong> {{ selectedExamForView?.TotalMaxMarks }}</p>
+                  </div>
+                  <div class="col-md-4">
+                    <p><strong>Percentage:</strong> {{ selectedExamForView?.TotalPercentage }}%</p>
+                  </div>
+                </div>
+                
+                <!-- FINAL RESULT -->
+                <div class="text-center mt-3">
+                  <h5>
+                    Final Result:
+                    <span 
+                    style="font-size: 18px;"
+                      [ngClass]="{
+                        'text-success': getFinalResult() === 'PASS',
+                        'text-danger': getFinalResult() === 'FAIL'
+                      }">
+                      {{ getFinalResult() }}
+                    </span>
+                  </h5>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /exams view -->
+
+    <!-- Fee Receipt Modal -->
+    <div class="modal viewmodel" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Fee Receipt</h5>
+            <button type="button" class="close" (click)="closeModal('view')">
+              <span>&times;</span>
+            </button>
+          </div>
+          <div class="modal-body" id="receiptSection">
+
+            <div class="receipt-box">
+          
+              <!-- HEADER -->
+              <div class="header">
+                <!-- LOGO (Dynamic optional) -->
+                <div class="logo">
+                  <img [src]="viewSyllabus?.SchoolLogo || 'assets/logo.png'" alt="Logo">
+                </div>
+              
+                <!-- CENTER TEXT (Dynamic) -->
+                <div class="header-center">
+                  <h2>{{ viewSyllabus?.SchoolName }}</h2>
+                  <h3>RECEIPT</h3>
+                </div>
+              </div>
+          
+              <div class="receipt-top">
+                <div><b>Receipt No:</b> {{ viewSyllabus?.ReceiptNo }}</div>
+                <div><b>Date:</b> {{ viewSyllabus?.PaymentDate }}</div>
+              </div>
+          
+              <hr>
+          
+              <!-- STUDENT DETAILS -->
+              <h5 class="section-title">Student Details</h5>
+          
+              <div class="receipt-left-line"><b>Student Name :</b> {{ viewSyllabus?.StudentName }}</div>
+              <div class="receipt-left-line"><b>Class :</b> {{ viewSyllabus?.ClassName }}</div>
+              <div class="receipt-left-line"><b>Division :</b> {{ viewSyllabus?.DivisionName }}</div>
+          
+              <hr>
+          
+              <!-- PAYMENT SUMMARY -->
+              <h5 class="section-title">Payment Summary</h5>
+          
+              <table class="receipt-table">
+                <tr>
+                  <th>Particulars</th>
+                  <th>Amount</th>
+                </tr>
+                <tr>
+                  <td>Total Fee</td>
+                  <td>₹ {{ viewSyllabus?.TotalFee }}</td>
+                </tr>
+                <tr>
+                  <td>Total Discount</td>
+                  <td>₹ {{ viewSyllabus?.TotalDiscount }}</td>
+                </tr>
+                <tr>
+                  <td>Total Fee Paid</td>
+                  <td>₹ {{ viewSyllabus?.TotalFeePaid }}</td>
+                </tr>
+                <tr>
+                  <td>Fee Paid (This Receipt)</td>
+                  <td>₹ {{ viewSyllabus?.FeePaid }}</td>
+                </tr>
+                <tr>
+                  <td><b>Remaining Amount</b></td>
+                  <td><b>₹ {{ viewSyllabus?.RemainingAmount }}</b></td>
+                </tr>
+              </table>
+          
+              <hr>
+          
+              <!-- PAYMENT DETAILS -->
+              <h5 class="section-title">Payment Details</h5>
+          
+              <div class="receipt-left-line"><b>Payment Mode :</b> {{ getReceiptPaymentModeLabel() }}</div>
+              <div class="receipt-left-line" *ngIf="isReceiptUpiOrCardMode()"><b>Transaction ID :</b> {{ getReceiptPaymentReferenceValue() }}</div>
+              <div class="receipt-left-line" *ngIf="isReceiptChequeMode()"><b>Cheque No :</b> {{ getReceiptPaymentReferenceValue() }}</div>
+          
+              <hr>
+          
+              <!-- FOOTER -->
+              <div class="receipt-footer">
+                <div class="receipt-left-line"><b>Received By :</b> {{ viewSyllabus?.CreatedBy }}</div>
+                <div class="receipt-left-line"><b>School Name :</b> {{ viewSyllabus?.SchoolName }}</div>
+              </div>
+          
+              <hr>
+          
+              <p class="note">
+                <b>Note:</b> This is a system-generated receipt. No signature required.
+              </p>
+          
+            </div>
+          
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-primary" (click)="printFeeReceipt()">Print</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+      <!-- ══════════════════════════════════════════════ HOMEWORK VIEW -->
+      <div *ngIf="!loadingChildren && !noChildrenFound && currentView === 'homework'" class="pd-view">
+        <app-parent-homework></app-parent-homework>
+      </div><!-- /homework view -->
+
+      <!-- ══════════════════════════════════════════════ LEAVE VIEW -->
+      <div *ngIf="!loadingChildren && !noChildrenFound && currentView === 'leave'" class="pd-view pd-view--leave">
+        
+        <!-- Leave Header -->
+        <div class="pd-view-header">
+          <div>
+            <h2 class="pd-view-header__title">Leave Management</h2>
+            <p class="pd-view-header__sub">Apply and track leave applications for {{ selectedChild?.name || 'Student' }}</p>
+          </div>
+        </div>
+
+        
+        <!-- Leave Tabs -->
+        <div class="pd-tabs pd-tabs--sub">
+          <button *ngFor="let tab of leaveTabs"
+            class="pd-tab"
+            [class.pd-tab--active]="currentLeaveTab === tab.id"
+            (click)="switchLeaveTab(tab.id)">
+            <mat-icon>{{ tab.icon }}</mat-icon>
+            {{ tab.label }}
+          </button>
+        </div>
+
+        <!-- Leave History Tab -->
+        <div *ngIf="currentLeaveTab === 'history'" class="pd-tab-content">
+          <div class="pd-panel">
+            <div class="pd-panel__header" style="display:flex;justify-content:space-between;align-items:center;">
+              <h3 class="pd-panel__title" style="margin:0">
+                <mat-icon>history</mat-icon> Leave History
+              </h3>
+              <button class="pd-btn-ghost" type="button" (click)="loadLeaveData()">
+                <mat-icon>refresh</mat-icon> Refresh
+              </button>
+            </div>
+            
+            <div *ngIf="loadingLeaveHistory" class="pd-empty-state">
+              <mat-icon class="pd-spin">autorenew</mat-icon>
+              <p>Loading leave history…</p>
+            </div>
+
+            <div *ngIf="!loadingLeaveHistory && leaveApplications.length === 0" class="pd-empty-state">
+              <mat-icon>inbox</mat-icon>
+              <p>No leave applications found</p>
+            </div>
+
+            <div *ngIf="!loadingLeaveHistory && leaveApplications.length > 0" class="leave-history-list">
+              <div *ngFor="let leave of leaveApplications" class="leave-item">
+                <div class="leave-header">
+                  <span class="status-badge" [ngClass]="getLeaveStatusClass(leave.status)">
+                    {{ leave.status }}
+                  </span>
+                </div>
+                
+                <div class="leave-dates">
+                  <strong>{{ formatDate(leave.fromDate) }}</strong>
+                  <span> to </span>
+                  <strong>{{ formatDate(leave.toDate) }}</strong>
+                  <span class="days-count">({{ leave.totalDays }} days)</span>
+                </div>
+                
+                <div class="leave-reason">
+                  <p>{{ leave.reason }}</p>
+                </div>
+                
+                <div class="leave-meta">
+                  <span>Applied: {{ formatDate(leave.appliedDate) }}</span>
+                  <span *ngIf="leave.approvedDate">Approved: {{ formatDate(leave.approvedDate) }}</span>
+                  <span *ngIf="leave.rejectedDate">Rejected: {{ formatDate(leave.rejectedDate) }}</span>
+                </div>
+                
+                <div class="leave-actions">
+                  <button class="pd-btn pd-btn--small pd-btn--primary" (click)="viewLeaveDetails(leave)">
+                    <mat-icon>inbox</mat-icon> View Details
+                  </button>
+                  <button *ngIf="leave.status === 'Pending'" 
+                          class="pd-btn pd-btn--small pd-btn--danger" 
+                          (click)="openCancelModal(leave)">
+                    <mat-icon>inbox</mat-icon> Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Apply Leave Tab -->
+        <div *ngIf="currentLeaveTab === 'apply'" class="pd-tab-content">
+          <div class="pd-panel">
+            <h3 class="pd-panel__title">
+              <mat-icon>add_circle</mat-icon> Apply for Leave
+            </h3>
+            
+            <form [formGroup]="leaveForm" class="leave-form">
+              
+              <!-- Date Range -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="fromDate">From Date *</label>
+                  <input id="fromDate" type="date" formControlName="fromDate" class="pd-form-control">
+                  <div *ngIf="leaveForm.get('fromDate')?.touched && leaveForm.get('fromDate')?.invalid" class="error-message">
+                    From date is required
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label for="toDate">To Date *</label>
+                  <input id="toDate" type="date" formControlName="toDate" class="pd-form-control">
+                  <div *ngIf="leaveForm.get('toDate')?.touched && leaveForm.get('toDate')?.invalid" class="error-message">
+                    To date is required
+                  </div>
+                </div>
+              </div>
+
+              <!-- Reason -->
+              <div class="form-group">
+                <label for="reason">Reason for Leave * (minimum 10 characters)</label>
+                <textarea id="reason" formControlName="reason" rows="4" class="pd-form-control" 
+                          placeholder="Please provide detailed reason for the leave..."></textarea>
+                <div *ngIf="leaveForm.get('reason')?.touched && leaveForm.get('reason')?.invalid" class="error-message">
+                  Reason is required and must be at least 10 characters
+                </div>
+              </div>
+
+              <!-- Attachment -->
+              <div class="form-group">
+                <label for="attachment">Attachment (Optional)</label>
+                <input id="attachment" type="file" (change)="onFileSelected($event)" class="pd-form-control">
+                <small class="form-help">Upload medical certificate or supporting document if applicable</small>
+              </div>
+
+              <!-- Submit Button -->
+              <div class="form-actions">
+                <button type="button" class="btn btn-secondary" (click)="resetLeaveForm()">
+                  <mat-icon>refresh</mat-icon> Reset
+                </button>
+                <button type="button" 
+                        class="btn btn-primary" 
+                        (click)="submitLeaveApplication()"
+                        [disabled]="!leaveForm.valid || isSubmittingLeave">
+                  <mat-icon *ngIf="!isSubmittingLeave">send</mat-icon>
+                  <mat-icon *ngIf="isSubmittingLeave" class="pd-spin">autorenew</mat-icon>
+                  {{ isSubmittingLeave ? 'Submitting...' : 'Submit Application' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Leave Details Modal -->
+        <div *ngIf="selectedLeaveForView" class="pd-modal-overlay" (click)="closeLeaveDetails()">
+          <div class="pd-modal" (click)="$event.stopPropagation()">
+            <div class="pd-modal__header">
+              <h3>Leave Application Details</h3>
+              <button class="pd-modal__close" (click)="closeLeaveDetails()">
+                <mat-icon>inbox</mat-icon>
+              </button>
+            </div>
+            <div class="pd-modal__body">
+              <div class="leave-detail-grid">
+                <div class="detail-row">
+                  <span class="detail-label">Student Name:</span>
+                  <span class="detail-value">{{ selectedLeaveForView.studentName || selectedChild?.name }}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">From Date:</span>
+                  <span class="detail-value">{{ formatDate(selectedLeaveForView.fromDate) }}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">To Date:</span>
+                  <span class="detail-value">{{ formatDate(selectedLeaveForView.toDate) }}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Total Days:</span>
+                  <span class="detail-value">{{ selectedLeaveForView.totalDays }} days</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Status:</span>
+                  <span class="status-badge" [ngClass]="getLeaveStatusClass(selectedLeaveForView.status)">
+                    {{ selectedLeaveForView.status }}
+                  </span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Applied Date:</span>
+                  <span class="detail-value">{{ formatDate(selectedLeaveForView.appliedDate) }}</span>
+                </div>
+                <div *ngIf="selectedLeaveForView.approvedDate" class="detail-row">
+                  <span class="detail-label">Approved Date:</span>
+                  <span class="detail-value">{{ formatDate(selectedLeaveForView.approvedDate) }}</span>
+                </div>
+                <div *ngIf="selectedLeaveForView.rejectionReason" class="detail-row">
+                  <span class="detail-label">Rejection Reason:</span>
+                  <span class="detail-value">{{ selectedLeaveForView.rejectionReason }}</span>
+                </div>
+                <div class="detail-row full-width">
+                  <span class="detail-label">Reason:</span>
+                  <span class="detail-value">{{ selectedLeaveForView.reason }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="pd-modal__footer">
+              <button class="pd-btn pd-btn--primary" (click)="closeLeaveDetails()">Close</button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /leave view -->
+
+      <!-- ══════════════════════════════════════════════ CANCEL LEAVE MODAL -->
+      <div class="modal" [ngClass]="{'show': showCancelModal}" [style.display]="showCancelModal ? 'flex' : 'none'" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document" style="max-width:440px;width:100%;">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Cancel Leave Application</h5>
+              <button type="button" class="close" (click)="closeCancelModal()"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+              <p style="margin-bottom:12px;color:#475569;font-size:13px;">Please provide a reason for cancellation.</p>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Reason for Cancellation <span style="color:red">*</span></label>
+                <textarea
+                  class="inputField"
+                  rows="3"
+                  [(ngModel)]="cancelReason"
+                  placeholder="Enter reason for cancellation..."
+                  style="resize:none;"></textarea>
+              </div>
+            </div>
+            <div class="modal-footer" style="justify-content:flex-end;gap:10px;">
+              <button type="button" class="btn btncancel" (click)="closeCancelModal()">Close</button>
+              <button type="button" class="btn btn-primary" (click)="confirmCancelLeave()" [disabled]="!cancelReason.trim()">
+                Confirm Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════ LEAVE CONFIRMATION MODAL -->
+      <div class="modal" [ngClass]="{'show': showLeaveConfirmModal}" [style.display]="showLeaveConfirmModal ? 'flex' : 'none'" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document" style="max-width:460px;width:100%;">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Confirm Leave Application</h5>
+              <button type="button" class="close" (click)="cancelLeaveConfirm()"><span>&times;</span></button>
+            </div>
+            <div class="modal-body" *ngIf="pendingLeaveApplication">
+              <p style="margin-bottom:14px;color:#475569;font-size:13px;">Please review the details before submitting.</p>
+              <div class="row">
+                <div class="col-5 viewHeadingfontsize">Student Name</div>
+                <div class="col-7 viewfontsize">{{ pendingLeaveApplication.studentName }}</div>
+              </div>
+              <div class="row">
+                <div class="col-5 viewHeadingfontsize">From Date</div>
+                <div class="col-7 viewfontsize">{{ formatDate(pendingLeaveApplication.fromDate) }}</div>
+              </div>
+              <div class="row">
+                <div class="col-5 viewHeadingfontsize">To Date</div>
+                <div class="col-7 viewfontsize">{{ formatDate(pendingLeaveApplication.toDate) }}</div>
+              </div>
+              <div class="row">
+                <div class="col-5 viewHeadingfontsize">Total Days</div>
+                <div class="col-7 viewfontsize">{{ pendingLeaveApplication.totalDays }}</div>
+              </div>
+              <div class="row">
+                <div class="col-5 viewHeadingfontsize">Reason</div>
+                <div class="col-7 viewfontsize">{{ pendingLeaveApplication.reason }}</div>
+              </div>
+            </div>
+            <div class="modal-footer" style="justify-content:flex-end;gap:10px;">
+              <button type="button" class="btn btncancel" (click)="cancelLeaveConfirm()">Cancel</button>
+              <button type="button" class="btn btn-primary" (click)="confirmLeaveSubmit()" [disabled]="isSubmittingLeave">
+                <mat-icon *ngIf="isSubmittingLeave" class="pd-spin" style="font-size:16px;vertical-align:middle;">autorenew</mat-icon>
+                {{ isSubmittingLeave ? 'Submitting...' : 'Confirm & Submit' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════ TIMETABLE VIEW -->
+      <div *ngIf="!loadingChildren && !noChildrenFound && currentView === 'timetable'" class="pd-view">
+        <div class="pd-view-header">
+          <div>
+            <h2 class="pd-view-header__title">Weekly Timetable</h2>
+            <p class="pd-view-header__sub">Class schedule for {{ selectedChild?.class || 'Class' }}</p>
+          </div>
+        </div>
+        <div *ngIf="loadingTimetable" class="pd-empty-state">
+          <mat-icon class="pd-spin">autorenew</mat-icon><p>Loading timetable…</p>
+        </div>
+        <div class="pd-panel pd-panel--overflow" *ngIf="!loadingTimetable">
+          <ng-container *ngIf="timetableGrid.length > 0; else noTT">
+            <table class="pd-table pd-table--timetable">
+              <thead>
+                <tr>
+                  <th>Day</th>
+                  <th *ngFor="let period of periodHeaders">{{ period }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of timetableGrid">
+                  <td class="day-cell">
+                    <h5>{{ row.day }}</h5>
+                  </td>
+                  <td *ngFor="let period of periodHeaders; let pIndex = index">
+                    <div class="timetable-cell">
+                      <div class="subject-name">
+                        {{ row[`period${pIndex + 1}`]?.subject || '-' }}
+                      </div>
+                      <div class="time-range">
+                        {{ row[`period${pIndex + 1}`]?.time }}
+                      </div>
+                      <div class="staff-name">
+                        {{ row[`period${pIndex + 1}`]?.teacher || '-' }}
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </ng-container>
+          <ng-template #noTT>
+            <p class="pd-empty-inline">No timetable data found. The timetable may not be configured yet.</p>
+          </ng-template>
+        </div>
+      </div><!-- /timetable view -->
+
+    </div><!-- /pd-content -->
+  </div><!-- /pd-main -->
+</div><!-- /pd-shell -->
