@@ -123,345 +123,191 @@
   </div>
 
   <!-- Add / Edit Form -->
+  <!-- ═══════════════════════════════════════════
+       ADD / EDIT VIEW
+  ════════════════════════════════════════════ -->
   <div *ngIf="IsAddNewClicked" class="w-100">
-    <div class="AddForm">
-      <div class="AddFormTop">
-        <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
-        <p>{{ ViewItemClicked ? 'Edit Item' : 'Add Item' }}</p>
+
+    <!-- Top bar -->
+    <div class="sale-topbar">
+      <div class="sale-topbar-left">
+        <button class="back-btn" (click)="AddNewClicked()" title="Back">
+          <mat-icon>arrow_circle_left</mat-icon>
+        </button>
+        <div class="sale-title-block">
+          <div class="sale-icon-wrap">
+            <mat-icon>inventory_2</mat-icon>
+          </div>
+          <div>
+            <h5 class="sale-title">Items Management</h5>
+            <span class="sale-subtitle">
+              <span class="dot-active"></span>
+              {{ ViewItemClicked ? 'UPDATE ITEM' : 'REGISTER ITEM' }}
+            </span>
+          </div>
+        </div>
       </div>
-      <div class="AddFormConatiner">
-        <form [formGroup]="ItemsForm">
-          <div class="FormInputRowsContainer">
-            <ng-container *ngIf="isAdmin; else schoolWiseLayout">
-
-              <!-- Admin Row 1: School, Academic Year, Category -->
-              <div class="InputRow">
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">School <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <select class="inputField" formControlName="School" (change)="onAdminSchoolChange($event)">
-                      <option value="0">-- Select School --</option>
-                      <option *ngFor="let school of schoolList" value="{{school.ID}}">{{school.Name}}</option>
-                    </select>
-                    <div *ngIf="ItemsForm.get('School')?.hasError('min') && (ItemsForm.get('School')?.touched || ItemsForm.get('School')?.dirty)" class="text-danger">
-                      <small>Please Select School.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Academic Year <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <select class="inputField" formControlName="AcademicYear" (change)="onAdminAcademicYearChange($event)">
-                      <option value="0">-- Select Academic Year --</option>
-                      <option *ngFor="let ay of academicYearList" value="{{ay.ID}}">{{ay.Name}}</option>
-                    </select>
-                    <div *ngIf="ItemsForm.get('AcademicYear')?.hasError('min') && (ItemsForm.get('AcademicYear')?.touched || ItemsForm.get('AcademicYear')?.dirty)" class="text-danger">
-                      <small>Please Select Academic Year.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Category <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <select class="inputField" formControlName="CategoryID">
-                      <option value="0">-- Select Category --</option>
-                      <option *ngFor="let cat of categoriesList" value="{{cat.ID}}">{{cat.Name}}</option>
-                    </select>
-                    <div *ngIf="ItemsForm.get('CategoryID')?.hasError('min') && (ItemsForm.get('CategoryID')?.touched || ItemsForm.get('CategoryID')?.dirty)" class="text-danger">
-                      <small>Please Select Category.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Admin Row 2: Unit, Item Name, Purchase Price -->
-              <div class="InputRow">
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Unit <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <select class="inputField" formControlName="UnitID">
-                      <option value="0">-- Select Unit --</option>
-                      <option *ngFor="let unit of unitsList" value="{{unit.ID}}">{{unit.Name}}</option>
-                    </select>
-                    <div *ngIf="ItemsForm.get('UnitID')?.hasError('min') && (ItemsForm.get('UnitID')?.touched || ItemsForm.get('UnitID')?.dirty)" class="text-danger">
-                      <small>Please Select Unit.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Item Name <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="ItemName" placeholder="Enter Item Name" />
-                    <div *ngIf="ItemsForm.get('ItemName')?.touched && ItemsForm.get('ItemName')?.invalid" class="text-danger">
-                      <small *ngIf="ItemsForm.get('ItemName')?.errors?.['required']">Please Enter Item Name.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Purchase Price <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="PurchasePrice" placeholder="Enter Purchase Price"
-                      type="number" min="0" (keydown)="allowDecimalNumbers($event)" />
-                    <div *ngIf="ItemsForm.get('PurchasePrice')?.touched && ItemsForm.get('PurchasePrice')?.invalid" class="text-danger">
-                      <small *ngIf="ItemsForm.get('PurchasePrice')?.errors?.['required']">Please Enter Purchase Price.</small>
-                      <small *ngIf="ItemsForm.get('PurchasePrice')?.errors?.['min']">Purchase Price cannot be negative.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Admin Row 3: Selling Price, Opening Stock, Reorder Level -->
-              <div class="InputRow">
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Selling Price <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="SellingPrice" placeholder="Enter Selling Price"
-                      type="number" min="0" (keydown)="allowDecimalNumbers($event)" />
-                    <div *ngIf="ItemsForm.get('SellingPrice')?.touched && ItemsForm.get('SellingPrice')?.invalid" class="text-danger">
-                      <small *ngIf="ItemsForm.get('SellingPrice')?.errors?.['required']">Please Enter Selling Price.</small>
-                      <small *ngIf="ItemsForm.get('SellingPrice')?.errors?.['min']">Selling Price cannot be negative.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Opening Stock</label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="OpeningStock" placeholder="Enter Opening Stock"
-                      type="number" min="0" (keydown)="allowDecimalNumbers($event)" />
-                    <div *ngIf="ItemsForm.get('OpeningStock')?.touched && ItemsForm.get('OpeningStock')?.invalid" class="text-danger">
-                      <small *ngIf="ItemsForm.get('OpeningStock')?.errors?.['min']">Opening Stock cannot be negative.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Reorder Level</label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="ReorderLevel" placeholder="Enter Reorder Level"
-                      type="number" min="0" (keydown)="allowDecimalNumbers($event)" />
-                    <div *ngIf="ItemsForm.get('ReorderLevel')?.touched && ItemsForm.get('ReorderLevel')?.invalid" class="text-danger">
-                      <small *ngIf="ItemsForm.get('ReorderLevel')?.errors?.['min']">Reorder Level cannot be negative.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Admin Row 4: CGST, SGST, Description -->
-              <div class="InputRow">
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Tax CGST (%)</label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="TaxCGST" placeholder="Enter CGST %"
-                      type="number" min="0" max="100" (keydown)="allowDecimalNumbers($event)" />
-                    <div *ngIf="ItemsForm.get('TaxCGST')?.touched && ItemsForm.get('TaxCGST')?.invalid" class="text-danger">
-                      <small *ngIf="ItemsForm.get('TaxCGST')?.errors?.['min']">CGST cannot be negative.</small>
-                      <small *ngIf="ItemsForm.get('TaxCGST')?.errors?.['max']">CGST cannot exceed 100%.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Tax SGST (%)</label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="TaxSGST" placeholder="Enter SGST %"
-                      type="number" min="0" max="100" (keydown)="allowDecimalNumbers($event)" />
-                    <div *ngIf="ItemsForm.get('TaxSGST')?.touched && ItemsForm.get('TaxSGST')?.invalid" class="text-danger">
-                      <small *ngIf="ItemsForm.get('TaxSGST')?.errors?.['min']">SGST cannot be negative.</small>
-                      <small *ngIf="ItemsForm.get('TaxSGST')?.errors?.['max']">SGST cannot exceed 100%.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Description</label>
-                  <div class="input-with-error">
-                    <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="2"></textarea>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Admin Row 5: Toggle -->
-              <div class="InputRow">
-                <div class="InputFieldsContainer">
-                  <div class="toggle-container" (click)="$event.stopPropagation()">
-                    <label class="switch">
-                      <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
-                      <span class="slider">
-                        <span
-                          class="toggle-text"
-                          [ngStyle]="{
-                            left: IsActiveStatus ? '42%' : '60%',
-                            fontSize: '9px'
-                          }">
-                          {{ IsActiveStatus ? 'Active' : 'Inactive' }}
-                        </span>
-                      </span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-            </ng-container>
-
-            <!-- Non-Admin Layout -->
-            <ng-template #schoolWiseLayout>
-
-              <!-- Non-Admin Row 1: Academic Year, Category, Unit -->
-              <div class="InputRow">
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Academic Year <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <select class="inputField" formControlName="AcademicYear" (change)="onAdminAcademicYearChange($event)">
-                      <option value="0">-- Select Academic Year --</option>
-                      <option *ngFor="let ay of academicYearList" value="{{ay.ID}}">{{ay.Name}}</option>
-                    </select>
-                    <div *ngIf="ItemsForm.get('AcademicYear')?.hasError('min') && (ItemsForm.get('AcademicYear')?.touched || ItemsForm.get('AcademicYear')?.dirty)" class="text-danger">
-                      <small>Please Select Academic Year.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Category <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <select class="inputField" formControlName="CategoryID">
-                      <option value="0">-- Select Category --</option>
-                      <option *ngFor="let cat of categoriesList" value="{{cat.ID}}">{{cat.Name}}</option>
-                    </select>
-                    <div *ngIf="ItemsForm.get('CategoryID')?.hasError('min') && (ItemsForm.get('CategoryID')?.touched || ItemsForm.get('CategoryID')?.dirty)" class="text-danger">
-                      <small>Please Select Category.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Unit <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <select class="inputField" formControlName="UnitID">
-                      <option value="0">-- Select Unit --</option>
-                      <option *ngFor="let unit of unitsList" value="{{unit.ID}}">{{unit.Name}}</option>
-                    </select>
-                    <div *ngIf="ItemsForm.get('UnitID')?.hasError('min') && (ItemsForm.get('UnitID')?.touched || ItemsForm.get('UnitID')?.dirty)" class="text-danger">
-                      <small>Please Select Unit.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Non-Admin Row 2: Item Name, Purchase Price, Selling Price -->
-              <div class="InputRow">
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Item Name <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="ItemName" placeholder="Enter Item Name" />
-                    <div *ngIf="ItemsForm.get('ItemName')?.touched && ItemsForm.get('ItemName')?.invalid" class="text-danger">
-                      <small *ngIf="ItemsForm.get('ItemName')?.errors?.['required']">Please Enter Item Name.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Purchase Price <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="PurchasePrice" placeholder="Enter Purchase Price"
-                      type="number" min="0" (keydown)="allowDecimalNumbers($event)" />
-                    <div *ngIf="ItemsForm.get('PurchasePrice')?.touched && ItemsForm.get('PurchasePrice')?.invalid" class="text-danger">
-                      <small *ngIf="ItemsForm.get('PurchasePrice')?.errors?.['required']">Please Enter Purchase Price.</small>
-                      <small *ngIf="ItemsForm.get('PurchasePrice')?.errors?.['min']">Purchase Price cannot be negative.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Selling Price <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="SellingPrice" placeholder="Enter Selling Price"
-                      type="number" min="0" (keydown)="allowDecimalNumbers($event)" />
-                    <div *ngIf="ItemsForm.get('SellingPrice')?.touched && ItemsForm.get('SellingPrice')?.invalid" class="text-danger">
-                      <small *ngIf="ItemsForm.get('SellingPrice')?.errors?.['required']">Please Enter Selling Price.</small>
-                      <small *ngIf="ItemsForm.get('SellingPrice')?.errors?.['min']">Selling Price cannot be negative.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Non-Admin Row 3: Opening Stock, Reorder Level, CGST -->
-              <div class="InputRow">
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Opening Stock</label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="OpeningStock" placeholder="Enter Opening Stock"
-                      type="number" min="0" (keydown)="allowDecimalNumbers($event)" />
-                    <div *ngIf="ItemsForm.get('OpeningStock')?.touched && ItemsForm.get('OpeningStock')?.invalid" class="text-danger">
-                      <small *ngIf="ItemsForm.get('OpeningStock')?.errors?.['min']">Opening Stock cannot be negative.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Reorder Level</label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="ReorderLevel" placeholder="Enter Reorder Level"
-                      type="number" min="0" (keydown)="allowDecimalNumbers($event)" />
-                    <div *ngIf="ItemsForm.get('ReorderLevel')?.touched && ItemsForm.get('ReorderLevel')?.invalid" class="text-danger">
-                      <small *ngIf="ItemsForm.get('ReorderLevel')?.errors?.['min']">Reorder Level cannot be negative.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Tax CGST (%)</label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="TaxCGST" placeholder="Enter CGST %"
-                      type="number" min="0" max="100" (keydown)="allowDecimalNumbers($event)" />
-                    <div *ngIf="ItemsForm.get('TaxCGST')?.touched && ItemsForm.get('TaxCGST')?.invalid" class="text-danger">
-                      <small *ngIf="ItemsForm.get('TaxCGST')?.errors?.['min']">CGST cannot be negative.</small>
-                      <small *ngIf="ItemsForm.get('TaxCGST')?.errors?.['max']">CGST cannot exceed 100%.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Non-Admin Row 4: SGST, Description, Toggle -->
-              <div class="InputRow">
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Tax SGST (%)</label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="TaxSGST" placeholder="Enter SGST %"
-                      type="number" min="0" max="100" (keydown)="allowDecimalNumbers($event)" />
-                    <div *ngIf="ItemsForm.get('TaxSGST')?.touched && ItemsForm.get('TaxSGST')?.invalid" class="text-danger">
-                      <small *ngIf="ItemsForm.get('TaxSGST')?.errors?.['min']">SGST cannot be negative.</small>
-                      <small *ngIf="ItemsForm.get('TaxSGST')?.errors?.['max']">SGST cannot exceed 100%.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Description</label>
-                  <div class="input-with-error">
-                    <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="2"></textarea>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <div class="toggle-container" (click)="$event.stopPropagation()">
-                    <label class="switch">
-                      <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
-                      <span class="slider">
-                        <span
-                          class="toggle-text"
-                          [ngStyle]="{
-                            left: IsActiveStatus ? '42%' : '60%',
-                            fontSize: '9px'
-                          }">
-                          {{ IsActiveStatus ? 'Active' : 'Inactive' }}
-                        </span>
-                      </span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-            </ng-template>
-          </div>
-
-          <div class="ActionButtons">
-            <button type="button" *ngIf="ViewItemClicked && canEdit()" (click)="UpdateItem()">Update</button>
-            <button type="button" *ngIf="!ViewItemClicked && canAdd()" (click)="SubmitItem()">Submit</button>
-          </div>
-        </form>
+      <div class="sale-topbar-right">
+        <button class="save-btn" (click)="ViewItemClicked ? UpdateItem() : SubmitItem()">
+          <mat-icon>save</mat-icon> SAVE
+        </button>
       </div>
     </div>
+
+    <form [formGroup]="ItemsForm" class="sale-form-wrap">
+
+      <!-- ITEM DETAILS section -->
+      <div class="sale-section">
+        <div class="sale-section-header">
+          <mat-icon>info</mat-icon>
+          <span>ITEM DETAILS</span>
+        </div>
+
+        <div class="sale-details-grid">
+
+          <!-- Admin: School -->
+          <div class="sale-field" *ngIf="isAdmin">
+            <label class="sale-label">SELECT SCHOOL <span class="required">*</span></label>
+            <select class="sale-select" formControlName="School" (change)="onAdminSchoolChange($event)">
+              <option value="0">-- Select School --</option>
+              <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+            </select>
+            <div *ngIf="ItemsForm.get('School')?.hasError('min') && (ItemsForm.get('School')?.touched || ItemsForm.get('School')?.dirty)" class="sale-error">
+              <small>Please Select School.</small>
+            </div>
+          </div>
+
+          <!-- Academic Year -->
+          <div class="sale-field">
+            <label class="sale-label">ACADEMIC YEAR <span class="required">*</span></label>
+            <select class="sale-select" formControlName="AcademicYear" (change)="onAdminAcademicYearChange($event)">
+              <option value="0">-- Select Academic Year --</option>
+              <option *ngFor="let ay of academicYearList" [value]="ay.ID">{{ ay.Name }}</option>
+            </select>
+            <div *ngIf="ItemsForm.get('AcademicYear')?.hasError('min') && (ItemsForm.get('AcademicYear')?.touched || ItemsForm.get('AcademicYear')?.dirty)" class="sale-error">
+              <small>Please Select Academic Year.</small>
+            </div>
+          </div>
+
+          <!-- Category -->
+          <div class="sale-field">
+            <label class="sale-label">CATEGORY <span class="required">*</span></label>
+            <select class="sale-select" formControlName="CategoryID">
+              <option value="0">-- Select Category --</option>
+              <option *ngFor="let cat of categoriesList" [value]="cat.ID">{{ cat.Name }}</option>
+            </select>
+            <div *ngIf="ItemsForm.get('CategoryID')?.hasError('min') && (ItemsForm.get('CategoryID')?.touched || ItemsForm.get('CategoryID')?.dirty)" class="sale-error">
+              <small>Please Select Category.</small>
+            </div>
+          </div>
+
+          <!-- Unit -->
+          <div class="sale-field">
+            <label class="sale-label">UNIT <span class="required">*</span></label>
+            <select class="sale-select" formControlName="UnitID">
+              <option value="0">-- Select Unit --</option>
+              <option *ngFor="let unit of unitsList" [value]="unit.ID">{{ unit.Name }}</option>
+            </select>
+            <div *ngIf="ItemsForm.get('UnitID')?.hasError('min') && (ItemsForm.get('UnitID')?.touched || ItemsForm.get('UnitID')?.dirty)" class="sale-error">
+              <small>Please Select Unit.</small>
+            </div>
+          </div>
+
+          <!-- Item Name -->
+          <div class="sale-field">
+            <label class="sale-label">ITEM NAME <span class="required">*</span></label>
+            <input class="sale-input" formControlName="ItemName" placeholder="Enter Item Name" />
+            <div *ngIf="ItemsForm.get('ItemName')?.touched && ItemsForm.get('ItemName')?.invalid" class="sale-error">
+              <small *ngIf="ItemsForm.get('ItemName')?.errors?.['required']">Please Enter Item Name.</small>
+            </div>
+          </div>
+
+          <!-- Purchase Price -->
+          <div class="sale-field">
+            <label class="sale-label">PURCHASE PRICE <span class="required">*</span></label>
+            <input class="sale-input" formControlName="PurchasePrice" placeholder="0.00" type="number" step="0.01" />
+            <div *ngIf="ItemsForm.get('PurchasePrice')?.touched && ItemsForm.get('PurchasePrice')?.invalid" class="sale-error">
+              <small *ngIf="ItemsForm.get('PurchasePrice')?.errors?.['required']">Please Enter Purchase Price.</small>
+              <small *ngIf="ItemsForm.get('PurchasePrice')?.errors?.['min']">Cannot be negative.</small>
+            </div>
+          </div>
+
+          <!-- Selling Price -->
+          <div class="sale-field">
+            <label class="sale-label">SELLING PRICE <span class="required">*</span></label>
+            <input class="sale-input" formControlName="SellingPrice" placeholder="0.00" type="number" step="0.01" />
+            <div *ngIf="ItemsForm.get('SellingPrice')?.touched && ItemsForm.get('SellingPrice')?.invalid" class="sale-error">
+              <small *ngIf="ItemsForm.get('SellingPrice')?.errors?.['required']">Please Enter Selling Price.</small>
+              <small *ngIf="ItemsForm.get('SellingPrice')?.errors?.['min']">Cannot be negative.</small>
+            </div>
+          </div>
+
+          <!-- Opening Stock -->
+          <div class="sale-field">
+            <label class="sale-label">OPENING STOCK</label>
+            <input class="sale-input" formControlName="OpeningStock" placeholder="0" type="number" />
+            <div *ngIf="ItemsForm.get('OpeningStock')?.touched && ItemsForm.get('OpeningStock')?.invalid" class="sale-error">
+              <small *ngIf="ItemsForm.get('OpeningStock')?.errors?.['min']">Cannot be negative.</small>
+            </div>
+          </div>
+
+          <!-- Reorder Level -->
+          <div class="sale-field">
+            <label class="sale-label">REORDER LEVEL</label>
+            <input class="sale-input" formControlName="ReorderLevel" placeholder="0" type="number" />
+            <div *ngIf="ItemsForm.get('ReorderLevel')?.touched && ItemsForm.get('ReorderLevel')?.invalid" class="sale-error">
+              <small *ngIf="ItemsForm.get('ReorderLevel')?.errors?.['min']">Cannot be negative.</small>
+            </div>
+          </div>
+
+          <!-- Tax CGST -->
+          <div class="sale-field">
+            <label class="sale-label">TAX CGST (%)</label>
+            <input class="sale-input" formControlName="TaxCGST" placeholder="0.00" type="number" step="0.01" />
+            <div *ngIf="ItemsForm.get('TaxCGST')?.touched && ItemsForm.get('TaxCGST')?.invalid" class="sale-error">
+              <small *ngIf="ItemsForm.get('TaxCGST')?.errors?.['min']">Cannot be negative.</small>
+              <small *ngIf="ItemsForm.get('TaxCGST')?.errors?.['max']">Cannot exceed 100%.</small>
+            </div>
+          </div>
+
+          <!-- Tax SGST -->
+          <div class="sale-field">
+            <label class="sale-label">TAX SGST (%)</label>
+            <input class="sale-input" formControlName="TaxSGST" placeholder="0.00" type="number" step="0.01" />
+            <div *ngIf="ItemsForm.get('TaxSGST')?.touched && ItemsForm.get('TaxSGST')?.invalid" class="sale-error">
+              <small *ngIf="ItemsForm.get('TaxSGST')?.errors?.['min']">Cannot be negative.</small>
+              <small *ngIf="ItemsForm.get('TaxSGST')?.errors?.['max']">Cannot exceed 100%.</small>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="sale-field">
+            <label class="sale-label">DESCRIPTION</label>
+            <input class="sale-input" formControlName="Description" placeholder="Enter Description" />
+          </div>
+
+          <!-- Status Toggle -->
+          <div class="sale-field">
+            <label class="sale-label">STATUS</label>
+            <div class="toggle-container" (click)="$event.stopPropagation()">
+              <label class="switch">
+                <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
+                <span class="slider">
+                  <span class="toggle-text"
+                    [ngStyle]="{ left: IsActiveStatus ? '42%' : '60%', fontSize: '9px' }">
+                    {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                  </span>
+                </span>
+              </label>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </form>
   </div>
+
 </div>
 
 <!-- Status Modal -->

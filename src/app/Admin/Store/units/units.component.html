@@ -118,234 +118,148 @@
     </div>
   </div>
 
+  <!-- ═══════════════════════════════════════════
+       ADD / EDIT VIEW
+  ════════════════════════════════════════════ -->
   <div *ngIf="IsAddNewClicked" class="w-100">
-    <div class="AddForm">
-      <div class="AddFormTop">
-        <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
-        <p>Add Unit</p>
+
+    <!-- Top bar -->
+    <div class="sale-topbar">
+      <div class="sale-topbar-left">
+        <button class="back-btn" (click)="AddNewClicked()" title="Back">
+          <mat-icon>arrow_circle_left</mat-icon>
+        </button>
+        <div class="sale-title-block">
+          <div class="sale-icon-wrap">
+            <mat-icon>straighten</mat-icon>
+          </div>
+          <div>
+            <h5 class="sale-title">Units Management</h5>
+            <span class="sale-subtitle">
+              <span class="dot-active"></span>
+              {{ ViewUnitClicked ? 'UPDATE UNIT' : 'REGISTER UNIT' }}
+            </span>
+          </div>
+        </div>
       </div>
-      <div class="AddFormConatiner">
-        <form [formGroup]="UnitsForm">
-          <div class="FormInputRowsContainer">
-            <ng-container *ngIf="isAdmin; else schoolWiseLayout">
-
-              <!-- Row 1: School, Academic Year, Unit Name -->
-              <div class="InputRow">
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">School <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <select class="inputField" formControlName="School" (change)="onAdminSchoolChange($event)">
-                      <option value="0">-- Select School --</option>
-                      <option *ngFor="let school of schoolList" value="{{school.ID}}">{{school.Name}}</option>
-                    </select>
-                    <div *ngIf="UnitsForm.get('School')?.hasError('min') && (UnitsForm.get('School')?.touched || UnitsForm.get('School')?.dirty)" class="text-danger">
-                      <small>Please Select School.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Academic Year <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <select class="inputField" formControlName="AcademicYear">
-                      <option value="0">-- Select Academic Year --</option>
-                      <option *ngFor="let ay of academicYearList" value="{{ay.ID}}">{{ay.Name}}</option>
-                    </select>
-                    <div *ngIf="UnitsForm.get('AcademicYear')?.hasError('min') && (UnitsForm.get('AcademicYear')?.touched || UnitsForm.get('AcademicYear')?.dirty)" class="text-danger">
-                      <small>Please Select Academic Year.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Unit Name <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="UnitName" placeholder="Enter Unit Name" />
-                    <div *ngIf="UnitsForm.get('UnitName')?.touched && UnitsForm.get('UnitName')?.invalid" class="text-danger">
-                      <small *ngIf="UnitsForm.get('UnitName')?.errors?.['required']">Please Enter Unit Name.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Row 2: Abbreviation, Min Value, Max Value -->
-              <div class="InputRow">
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Abbreviation <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="Abbreviation" placeholder="Enter Abbreviation" />
-                    <div *ngIf="UnitsForm.get('Abbreviation')?.touched && UnitsForm.get('Abbreviation')?.invalid" class="text-danger">
-                      <small *ngIf="UnitsForm.get('Abbreviation')?.errors?.['required']">Please Enter Abbreviation.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Minimum Value <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="MinimumValue" placeholder="Enter Minimum Value" maxlength="3" (keydown)="allowOnlyNumbers($event)" />
-                    <div *ngIf="UnitsForm.get('MinimumValue')?.touched && UnitsForm.get('MinimumValue')?.invalid" class="text-danger">
-                      <small *ngIf="UnitsForm.get('MinimumValue')?.errors?.['required']">Please Enter Minimum Value.</small>
-                      <small *ngIf="UnitsForm.get('MinimumValue')?.errors?.['pattern']">Only Numbers.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Maximum Value <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="MaximumValue" placeholder="Enter Maximum Value" maxlength="3" (keydown)="allowOnlyNumbers($event)" />
-                    <div *ngIf="UnitsForm.get('MaximumValue')?.touched && UnitsForm.get('MaximumValue')?.invalid" class="text-danger">
-                      <small *ngIf="UnitsForm.get('MaximumValue')?.errors?.['required']">Please Enter Maximum Value.</small>
-                      <small *ngIf="UnitsForm.get('MaximumValue')?.errors?.['pattern']">Only Numbers.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Row 3: Min Difference, Description, Toggle -->
-              <div class="InputRow">
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Minimum Difference <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="MinimumDifference" placeholder="Enter Minimum Difference" maxlength="3" (keydown)="allowOnlyNumbers($event)" />
-                    <div *ngIf="UnitsForm.get('MinimumDifference')?.touched && UnitsForm.get('MinimumDifference')?.invalid" class="text-danger">
-                      <small *ngIf="UnitsForm.get('MinimumDifference')?.errors?.['required']">Please Enter Minimum Difference.</small>
-                      <small *ngIf="UnitsForm.get('MinimumDifference')?.errors?.['pattern']">Only Numbers.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Description</label>
-                  <div class="input-with-error">
-                    <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="2"></textarea>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <div class="toggle-container" (click)="$event.stopPropagation()">
-                    <label class="switch">
-                      <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
-                      <span class="slider">
-                        <span
-                          class="toggle-text"
-                          [ngStyle]="{
-                            left: IsActiveStatus ? '42%' : '60%',
-                            fontSize: IsActiveStatus ? '9px' : '9px'
-                          }">
-                          {{ IsActiveStatus ? 'Active' : 'Inactive' }}
-                        </span>
-                      </span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-            </ng-container>
-
-            <ng-template #schoolWiseLayout>
-
-              <!-- Row 1: Academic Year, Unit Name, Abbreviation -->
-              <div class="InputRow">
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Academic Year <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <select class="inputField" formControlName="AcademicYear">
-                      <option value="0">-- Select Academic Year --</option>
-                      <option *ngFor="let ay of academicYearList" value="{{ay.ID}}">{{ay.Name}}</option>
-                    </select>
-                    <div *ngIf="UnitsForm.get('AcademicYear')?.hasError('min') && (UnitsForm.get('AcademicYear')?.touched || UnitsForm.get('AcademicYear')?.dirty)" class="text-danger">
-                      <small>Please Select Academic Year.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Unit Name <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="UnitName" placeholder="Enter Unit Name" />
-                    <div *ngIf="UnitsForm.get('UnitName')?.touched && UnitsForm.get('UnitName')?.invalid" class="text-danger">
-                      <small *ngIf="UnitsForm.get('UnitName')?.errors?.['required']">Please Enter Unit Name.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Abbreviation <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="Abbreviation" placeholder="Enter Abbreviation" />
-                    <div *ngIf="UnitsForm.get('Abbreviation')?.touched && UnitsForm.get('Abbreviation')?.invalid" class="text-danger">
-                      <small *ngIf="UnitsForm.get('Abbreviation')?.errors?.['required']">Please Enter Abbreviation.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Row 2: Min Value, Max Value, Min Difference -->
-              <div class="InputRow">
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Minimum Value <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="MinimumValue" placeholder="Enter Minimum Value" maxlength="3" (keydown)="allowOnlyNumbers($event)" />
-                    <div *ngIf="UnitsForm.get('MinimumValue')?.touched && UnitsForm.get('MinimumValue')?.invalid" class="text-danger">
-                      <small *ngIf="UnitsForm.get('MinimumValue')?.errors?.['required']">Please Enter Minimum Value.</small>
-                      <small *ngIf="UnitsForm.get('MinimumValue')?.errors?.['pattern']">Only Numbers.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Maximum Value <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="MaximumValue" placeholder="Enter Maximum Value" maxlength="3" (keydown)="allowOnlyNumbers($event)" />
-                    <div *ngIf="UnitsForm.get('MaximumValue')?.touched && UnitsForm.get('MaximumValue')?.invalid" class="text-danger">
-                      <small *ngIf="UnitsForm.get('MaximumValue')?.errors?.['required']">Please Enter Maximum Value.</small>
-                      <small *ngIf="UnitsForm.get('MaximumValue')?.errors?.['pattern']">Only Numbers.</small>
-                    </div>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Minimum Difference <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <input class="inputField" formControlName="MinimumDifference" placeholder="Enter Minimum Difference" maxlength="3" (keydown)="allowOnlyNumbers($event)" />
-                    <div *ngIf="UnitsForm.get('MinimumDifference')?.touched && UnitsForm.get('MinimumDifference')?.invalid" class="text-danger">
-                      <small *ngIf="UnitsForm.get('MinimumDifference')?.errors?.['required']">Please Enter Minimum Difference.</small>
-                      <small *ngIf="UnitsForm.get('MinimumDifference')?.errors?.['pattern']">Only Numbers.</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Row 3: Description, Toggle -->
-              <div class="InputRow">
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Description</label>
-                  <div class="input-with-error">
-                    <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="2"></textarea>
-                  </div>
-                </div>
-                <div class="InputFieldsContainer">
-                  <div class="toggle-container" (click)="$event.stopPropagation()">
-                    <label class="switch">
-                      <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
-                      <span class="slider">
-                        <span
-                          class="toggle-text"
-                          [ngStyle]="{
-                            left: IsActiveStatus ? '42%' : '60%',
-                            fontSize: IsActiveStatus ? '9px' : '9px'
-                          }">
-                          {{ IsActiveStatus ? 'Active' : 'Inactive' }}
-                        </span>
-                      </span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-            </ng-template>
-          </div>
-
-          <div class="ActionButtons">
-            <button type="button" *ngIf="ViewUnitClicked && canEdit()" (click)="UpdateUnit()">Update</button>
-            <button type="button" *ngIf="!ViewUnitClicked && canAdd()" (click)="SubmitUnit()">Submit</button>
-          </div>
-        </form>
+      <div class="sale-topbar-right">
+        <button class="save-btn" (click)="ViewUnitClicked ? UpdateUnit() : SubmitUnit()">
+          <mat-icon>save</mat-icon> SAVE
+        </button>
       </div>
     </div>
+
+    <form [formGroup]="UnitsForm" class="sale-form-wrap">
+
+      <!-- UNIT DETAILS section -->
+      <div class="sale-section">
+        <div class="sale-section-header">
+          <mat-icon>info</mat-icon>
+          <span>UNIT DETAILS</span>
+        </div>
+
+        <div class="sale-details-grid">
+
+          <!-- Admin: School -->
+          <div class="sale-field" *ngIf="isAdmin">
+            <label class="sale-label">SELECT SCHOOL <span class="required">*</span></label>
+            <select class="sale-select" formControlName="School" (change)="onAdminSchoolChange($event)">
+              <option value="0">-- Select School --</option>
+              <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+            </select>
+            <div *ngIf="UnitsForm.get('School')?.hasError('min') && (UnitsForm.get('School')?.touched || UnitsForm.get('School')?.dirty)" class="sale-error">
+              <small>Please Select School.</small>
+            </div>
+          </div>
+
+          <!-- Academic Year -->
+          <div class="sale-field">
+            <label class="sale-label">ACADEMIC YEAR <span class="required">*</span></label>
+            <select class="sale-select" formControlName="AcademicYear">
+              <option value="0">-- Select Academic Year --</option>
+              <option *ngFor="let ay of academicYearList" [value]="ay.ID">{{ ay.Name }}</option>
+            </select>
+            <div *ngIf="UnitsForm.get('AcademicYear')?.hasError('min') && (UnitsForm.get('AcademicYear')?.touched || UnitsForm.get('AcademicYear')?.dirty)" class="sale-error">
+              <small>Please Select Academic Year.</small>
+            </div>
+          </div>
+
+          <!-- Unit Name -->
+          <div class="sale-field">
+            <label class="sale-label">UNIT NAME <span class="required">*</span></label>
+            <input class="sale-input" formControlName="UnitName" placeholder="Enter Unit Name" />
+            <div *ngIf="UnitsForm.get('UnitName')?.touched && UnitsForm.get('UnitName')?.invalid" class="sale-error">
+              <small *ngIf="UnitsForm.get('UnitName')?.errors?.['required']">Please Enter Unit Name.</small>
+            </div>
+          </div>
+
+          <!-- Abbreviation -->
+          <div class="sale-field">
+            <label class="sale-label">ABBREVIATION <span class="required">*</span></label>
+            <input class="sale-input" formControlName="Abbreviation" placeholder="Enter Abbreviation" />
+            <div *ngIf="UnitsForm.get('Abbreviation')?.touched && UnitsForm.get('Abbreviation')?.invalid" class="sale-error">
+              <small *ngIf="UnitsForm.get('Abbreviation')?.errors?.['required']">Please Enter Abbreviation.</small>
+            </div>
+          </div>
+
+          <!-- Minimum Value -->
+          <div class="sale-field">
+            <label class="sale-label">MINIMUM VALUE <span class="required">*</span></label>
+            <input class="sale-input" formControlName="MinimumValue" placeholder="Enter Minimum Value" maxlength="3" (keydown)="allowOnlyNumbers($event)" />
+            <div *ngIf="UnitsForm.get('MinimumValue')?.touched && UnitsForm.get('MinimumValue')?.invalid" class="sale-error">
+              <small *ngIf="UnitsForm.get('MinimumValue')?.errors?.['required']">Please Enter Minimum Value.</small>
+              <small *ngIf="UnitsForm.get('MinimumValue')?.errors?.['pattern']">Only Numbers.</small>
+            </div>
+          </div>
+
+          <!-- Maximum Value -->
+          <div class="sale-field">
+            <label class="sale-label">MAXIMUM VALUE <span class="required">*</span></label>
+            <input class="sale-input" formControlName="MaximumValue" placeholder="Enter Maximum Value" maxlength="3" (keydown)="allowOnlyNumbers($event)" />
+            <div *ngIf="UnitsForm.get('MaximumValue')?.touched && UnitsForm.get('MaximumValue')?.invalid" class="sale-error">
+              <small *ngIf="UnitsForm.get('MaximumValue')?.errors?.['required']">Please Enter Maximum Value.</small>
+              <small *ngIf="UnitsForm.get('MaximumValue')?.errors?.['pattern']">Only Numbers.</small>
+            </div>
+          </div>
+
+          <!-- Minimum Difference -->
+          <div class="sale-field">
+            <label class="sale-label">MINIMUM DIFFERENCE <span class="required">*</span></label>
+            <input class="sale-input" formControlName="MinimumDifference" placeholder="Enter Minimum Difference" maxlength="3" (keydown)="allowOnlyNumbers($event)" />
+            <div *ngIf="UnitsForm.get('MinimumDifference')?.touched && UnitsForm.get('MinimumDifference')?.invalid" class="sale-error">
+              <small *ngIf="UnitsForm.get('MinimumDifference')?.errors?.['required']">Please Enter Minimum Difference.</small>
+              <small *ngIf="UnitsForm.get('MinimumDifference')?.errors?.['pattern']">Only Numbers.</small>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="sale-field">
+            <label class="sale-label">DESCRIPTION</label>
+            <input class="sale-input" formControlName="Description" placeholder="Enter Description" />
+          </div>
+
+          <!-- Status Toggle -->
+          <div class="sale-field">
+            <label class="sale-label">STATUS</label>
+            <div class="toggle-container" (click)="$event.stopPropagation()">
+              <label class="switch">
+                <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
+                <span class="slider">
+                  <span class="toggle-text"
+                    [ngStyle]="{ left: IsActiveStatus ? '42%' : '60%', fontSize: '9px' }">
+                    {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                  </span>
+                </span>
+              </label>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </form>
   </div>
+
 </div>
 
 <!-- Status Modal -->
