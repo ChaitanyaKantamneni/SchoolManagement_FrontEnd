@@ -1,0 +1,399 @@
+<div class="leave-management-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h2 class="page-title">
+        <mat-icon class="title-icon">assignment_late</mat-icon>
+        Student Leave Management
+      </h2>
+      <p class="page-subtitle">Manage and approve student leave applications</p>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="statistics-section">
+    <div class="stats-grid">
+      <mat-card class="stat-card">
+        <mat-card-content class="stat-content">
+          <div class="stat-icon total">
+            <mat-icon>assignment</mat-icon>
+          </div>
+          <div class="stat-details">
+            <div class="stat-value">{{ statistics.totalApplications }}</div>
+            <div class="stat-label">Total Applications</div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content class="stat-content">
+          <div class="stat-icon pending">
+            <mat-icon>pending_actions</mat-icon>
+          </div>
+          <div class="stat-details">
+            <div class="stat-value">{{ statistics.pendingApplications }}</div>
+            <div class="stat-label">Pending</div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content class="stat-content">
+          <div class="stat-icon approved">
+            <mat-icon>check_circle</mat-icon>
+          </div>
+          <div class="stat-details">
+            <div class="stat-value">{{ statistics.approvedApplications }}</div>
+            <div class="stat-label">Approved</div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content class="stat-content">
+          <div class="stat-icon rejected">
+            <mat-icon>cancel</mat-icon>
+          </div>
+          <div class="stat-details">
+            <div class="stat-value">{{ statistics.rejectedApplications }}</div>
+            <div class="stat-label">Rejected</div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <mat-card class="main-card">
+    <mat-card-header>
+      <mat-card-title>Leave Applications</mat-card-title>
+      <div class="header-actions">
+        <button mat-stroked-button (click)="exportToExcel()">
+          <mat-icon>download</mat-icon>
+          Export
+        </button>
+        <button mat-stroked-button (click)="printLeaveReport()">
+          <mat-icon>print</mat-icon>
+          Print
+        </button>
+      </div>
+    </mat-card-header>
+    <mat-card-content>
+      <!-- Tabs -->
+      <mat-tab-group [(selectedIndex)]="selectedTab" (selectedTabChange)="onTabChange($event)">
+        <!-- Pending Leaves Tab -->
+        <mat-tab label="Pending Approval">
+          <mat-badge [hidden]="statistics.pendingApplications === 0" 
+                     [content]="statistics.pendingApplications" 
+                     class="pending-badge">
+          </mat-badge>
+          
+          <div class="tab-content">
+            <div *ngIf="isLoading" class="loading-container">
+              <mat-spinner></mat-spinner>
+              <p>Loading pending leave applications...</p>
+            </div>
+            
+            <div *ngIf="!isLoading && pendingLeaves.length === 0" class="no-data">
+              <mat-icon class="no-data-icon">inbox</mat-icon>
+              <h3>No Pending Applications</h3>
+              <p>All leave applications have been processed.</p>
+            </div>
+            
+            <div *ngIf="!isLoading && pendingLeaves.length > 0" class="table-container">
+              <table mat-table [dataSource]="pendingLeaves" class="leaves-table">
+                <!-- Student Name Column -->
+                <ng-container matColumnDef="studentName">
+                  <th mat-header-cell *matHeaderCellDef>Student Name</th>
+                  <td mat-cell *matCellDef="let leave">
+                    <div class="student-info">
+                      <div class="student-avatar">
+                        <mat-icon>person</mat-icon>
+                      </div>
+                      <div class="student-details">
+                        <div class="student-name">{{ leave.studentName }}</div>
+                        <div class="student-class">{{ leave.className }} - {{ leave.divisionName }}</div>
+                      </div>
+                    </div>
+                  </td>
+                </ng-container>
+
+                <!-- Leave Type Column -->
+                <ng-container matColumnDef="leaveType">
+                  <th mat-header-cell *matHeaderCellDef>Leave Type</th>
+                  <td mat-cell *matCellDef="let leave">
+                    <div class="leave-type" [style.color]="getLeaveTypeColor(leave.leaveType)">
+                      <mat-icon>event_busy</mat-icon>
+                      {{ leave.leaveType }}
+                    </div>
+                  </td>
+                </ng-container>
+
+                <!-- From Date Column -->
+                <ng-container matColumnDef="fromDate">
+                  <th mat-header-cell *matHeaderCellDef>From Date</th>
+                  <td mat-cell *matCellDef="let leave">
+                    {{ formatDate(leave.fromDate) }}
+                  </td>
+                </ng-container>
+
+                <!-- To Date Column -->
+                <ng-container matColumnDef="toDate">
+                  <th mat-header-cell *matHeaderCellDef>To Date</th>
+                  <td mat-cell *matCellDef="let leave">
+                    {{ formatDate(leave.toDate) }}
+                  </td>
+                </ng-container>
+
+                <!-- Total Days Column -->
+                <ng-container matColumnDef="totalDays">
+                  <th mat-header-cell *matHeaderCellDef>Days</th>
+                  <td mat-cell *matCellDef="let leave">
+                    <span class="days-badge">{{ leave.totalDays }}</span>
+                  </td>
+                </ng-container>
+
+                <!-- Applied Date Column -->
+                <ng-container matColumnDef="appliedDate">
+                  <th mat-header-cell *matHeaderCellDef>Applied On</th>
+                  <td mat-cell *matCellDef="let leave">
+                    {{ formatDate(leave.appliedDate) }}
+                  </td>
+                </ng-container>
+
+                <!-- Actions Column -->
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef>Actions</th>
+                  <td mat-cell *matCellDef="let leave">
+                    <div class="action-buttons">
+                      <button mat-icon-button 
+                              color="primary" 
+                              (click)="viewLeaveDetails(leave)"
+                              matTooltip="View Details">
+                        <mat-icon>visibility</mat-icon>
+                      </button>
+                      <button mat-icon-button 
+                              color="warn" 
+                              (click)="rejectLeave(leave)"
+                              [disabled]="isProcessing"
+                              matTooltip="Reject">
+                        <mat-icon>cancel</mat-icon>
+                      </button>
+                      <button mat-icon-button 
+                              color="primary" 
+                              (click)="approveLeave(leave)"
+                              [disabled]="isProcessing"
+                              matTooltip="Approve">
+                        <mat-icon>check_circle</mat-icon>
+                      </button>
+                      <button mat-icon-button 
+                              *ngIf="leave.attachmentName"
+                              (click)="downloadAttachment(leave)"
+                              matTooltip="Download Attachment">
+                        <mat-icon>download</mat-icon>
+                      </button>
+                    </div>
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+              </table>
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- All Leaves Tab -->
+        <mat-tab label="All Applications">
+          <div class="tab-content">
+            <!-- Filters -->
+            <div class="filters-section">
+              <form [formGroup]="filterForm" class="filters-form">
+                <div class="filters-grid">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Status</mat-label>
+                    <mat-select formControlName="status">
+                      <mat-option value="">All Status</mat-option>
+                      <mat-option *ngFor="let status of leaveStatuses" [value]="status">
+                        {{ status }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Leave Type</mat-label>
+                    <mat-select formControlName="leaveType">
+                      <mat-option value="">All Types</mat-option>
+                      <mat-option *ngFor="let type of leaveTypes" [value]="type">
+                        {{ type }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>From Date</mat-label>
+                    <input matInput 
+                           [matDatepicker]="fromPicker" 
+                           formControlName="fromDate">
+                    <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #fromPicker></mat-datepicker>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>To Date</mat-label>
+                    <input matInput 
+                           [matDatepicker]="toPicker" 
+                           formControlName="toDate">
+                    <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #toPicker></mat-datepicker>
+                  </mat-form-field>
+                </div>
+
+                <div class="filter-actions">
+                  <button mat-stroked-button type="button" (click)="clearFilters()">
+                    Clear
+                  </button>
+                  <button mat-raised-button color="primary" type="button" (click)="applyFilters()">
+                    Apply Filters
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div *ngIf="isLoading" class="loading-container">
+              <mat-spinner></mat-spinner>
+              <p>Loading leave applications...</p>
+            </div>
+            
+            <div *ngIf="!isLoading && allLeaves.length === 0" class="no-data">
+              <mat-icon class="no-data-icon">inbox</mat-icon>
+              <h3>No Leave Applications Found</h3>
+              <p>No leave applications match current filters.</p>
+            </div>
+            
+            <div *ngIf="!isLoading && allLeaves.length > 0" class="table-container">
+              <table mat-table [dataSource]="allLeaves" class="leaves-table">
+                <!-- Student Name Column -->
+                <ng-container matColumnDef="studentName">
+                  <th mat-header-cell *matHeaderCellDef>Student Name</th>
+                  <td mat-cell *matCellDef="let leave">
+                    <div class="student-info">
+                      <div class="student-avatar">
+                        <mat-icon>person</mat-icon>
+                      </div>
+                      <div class="student-details">
+                        <div class="student-name">{{ leave.studentName }}</div>
+                        <div class="student-class">{{ leave.className }}</div>
+                      </div>
+                    </div>
+                  </td>
+                </ng-container>
+
+                <!-- Class Name Column -->
+                <ng-container matColumnDef="className">
+                  <th mat-header-cell *matHeaderCellDef>Class</th>
+                  <td mat-cell *matCellDef="let leave">
+                    {{ leave.className }}
+                  </td>
+                </ng-container>
+
+                <!-- Leave Type Column -->
+                <ng-container matColumnDef="leaveType">
+                  <th mat-header-cell *matHeaderCellDef>Leave Type</th>
+                  <td mat-cell *matCellDef="let leave">
+                    <div class="leave-type" [style.color]="getLeaveTypeColor(leave.leaveType)">
+                      <mat-icon>event_busy</mat-icon>
+                      {{ leave.leaveType }}
+                    </div>
+                  </td>
+                </ng-container>
+
+                <!-- From Date Column -->
+                <ng-container matColumnDef="fromDate">
+                  <th mat-header-cell *matHeaderCellDef>From Date</th>
+                  <td mat-cell *matCellDef="let leave">
+                    {{ formatDate(leave.fromDate) }}
+                  </td>
+                </ng-container>
+
+                <!-- To Date Column -->
+                <ng-container matColumnDef="toDate">
+                  <th mat-header-cell *matHeaderCellDef>To Date</th>
+                  <td mat-cell *matCellDef="let leave">
+                    {{ formatDate(leave.toDate) }}
+                  </td>
+                </ng-container>
+
+                <!-- Total Days Column -->
+                <ng-container matColumnDef="totalDays">
+                  <th mat-header-cell *matHeaderCellDef>Days</th>
+                  <td mat-cell *matCellDef="let leave">
+                    <span class="days-badge">{{ leave.totalDays }}</span>
+                  </td>
+                </ng-container>
+
+                <!-- Applied Date Column -->
+                <ng-container matColumnDef="appliedDate">
+                  <th mat-header-cell *matHeaderCellDef>Applied On</th>
+                  <td mat-cell *matCellDef="let leave">
+                    {{ formatDate(leave.appliedDate) }}
+                  </td>
+                </ng-container>
+
+                <!-- Status Column -->
+                <ng-container matColumnDef="status">
+                  <th mat-header-cell *matHeaderCellDef>Status</th>
+                  <td mat-cell *matCellDef="let leave">
+                    <span class="status-badge" [ngClass]="getStatusClass(leave.status)">
+                      {{ leave.status }}
+                    </span>
+                  </td>
+                </ng-container>
+
+                <!-- Actions Column -->
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef>Actions</th>
+                  <td mat-cell *matCellDef="let leave">
+                    <div class="action-buttons">
+                      <button mat-icon-button 
+                              color="primary" 
+                              (click)="viewLeaveDetails(leave)"
+                              matTooltip="View Details">
+                        <mat-icon>visibility</mat-icon>
+                      </button>
+                      <button mat-icon-button 
+                              *ngIf="leave.status === 'Pending'"
+                              color="warn" 
+                              (click)="rejectLeave(leave)"
+                              [disabled]="isProcessing"
+                              matTooltip="Reject">
+                        <mat-icon>cancel</mat-icon>
+                      </button>
+                      <button mat-icon-button 
+                              *ngIf="leave.status === 'Pending'"
+                              color="primary" 
+                              (click)="approveLeave(leave)"
+                              [disabled]="isProcessing"
+                              matTooltip="Approve">
+                        <mat-icon>check_circle</mat-icon>
+                      </button>
+                      <button mat-icon-button 
+                              *ngIf="leave.attachmentName"
+                              (click)="downloadAttachment(leave)"
+                              matTooltip="Download Attachment">
+                        <mat-icon>download</mat-icon>
+                      </button>
+                    </div>
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+              </table>
+            </div>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </mat-card-content>
+  </mat-card>
+</div>

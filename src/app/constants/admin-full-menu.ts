@@ -137,5 +137,15 @@ export const FULL_ADMIN_MENU: Module[] = [
       { id: 'notices', pageName: 'Notices', moduleID: 'notices', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
     ]
   },
+  {
+    id: 'hostelmanagement',
+    moduleName: 'Hostel Management',
+    pages: [
+      { id: 'hostelmaster', pageName: 'Hostel Master', moduleID: 'hostelmanagement', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
+      { id: 'roommaster', pageName: 'Room Master', moduleID: 'hostelmanagement', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
+      { id: 'roomallotment', pageName: 'Room Allotment', moduleID: 'hostelmanagement', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
+      { id: 'outpass', pageName: 'Outpass', moduleID: 'hostelmanagement', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
+    ]
+  },
 
 ];

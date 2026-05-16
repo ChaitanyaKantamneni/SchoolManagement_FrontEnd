@@ -1,0 +1,383 @@
+<div>
+  <app-dashboard-top-nav></app-dashboard-top-nav>
+</div>
+<div class="MainContentDiv">
+  <!-- LIST VIEW -->
+  <div *ngIf="!IsAddNewClicked" class="w-100">
+    <div class="ComponentTop">
+      <div class="ComponentTopHeader">
+        <h5>Room Allotment Management</h5>
+        <p>Total {{ AllotmentCount }} Records Found</p>
+      </div>
+      <div class="ComponentTopBottom">
+        <button *ngIf="canAdd()" (click)="AddNewClicked()">
+          <mat-icon>add_circle</mat-icon>New Allotment
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="admission-stats-grid"
+      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 10px;">
+      <div class="admission-stat-card"
+        style="background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 12px;">
+        <div class="admission-stat-icon"
+          style="background: #e0f2fe; color: #0284c7; padding: 10px; border-radius: 50%; display: flex;">
+          <mat-icon>people</mat-icon>
+        </div>
+        <div>
+          <strong style="font-size: 18px; display: block;">{{ TotalAllotments }}</strong>
+          <span style="color: #64748b; font-size: 12px;">Total Allotments</span>
+        </div>
+      </div>
+      <div class="admission-stat-card"
+        style="background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 12px;">
+        <div class="admission-stat-icon"
+          style="background: #dcfce7; color: #16a34a; padding: 10px; border-radius: 50%; display: flex;">
+          <mat-icon>check_circle</mat-icon>
+        </div>
+        <div>
+          <strong style="font-size: 18px; display: block;">{{ ActiveAllotments }}</strong>
+          <span style="color: #64748b; font-size: 12px;">Active Allotments</span>
+        </div>
+      </div>
+      <div class="admission-stat-card"
+        style="background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 12px;">
+        <div class="admission-stat-icon"
+          style="background: #ffe4e6; color: #9f1239; padding: 10px; border-radius: 50%; display: flex;">
+          <mat-icon>block</mat-icon>
+        </div>
+        <div>
+          <strong style="font-size: 18px; display: block;">{{ TotalAllotments - ActiveAllotments }}</strong>
+          <span style="color: #64748b; font-size: 12px;">Inactive Allotments</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ComponentRecords">
+      <div>
+        <div class="ComponentRecordsTop">
+          <div class="filterOptions">
+            <div class="searchreview input-container">
+              <input type="text" id="searchQuery" class="form-control floating-input" [(ngModel)]="searchQuery"
+                (ngModelChange)="onSearchChange()" placeholder="Search Student..." />
+              <mat-icon
+                style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
+            </div>
+            <div class="searchreview" *ngIf="isAdmin">
+              <select (change)="onFilterSchoolChange($event)" class="form-control" style="font-size: 11px;">
+                <option value="0">-- All Schools --</option>
+                <option *ngFor="let s of schoolList" [value]="s.ID">{{ s.Name }}</option>
+              </select>
+            </div>
+            <div class="searchreview">
+              <select (change)="onFilterYearChange($event)" class="form-control" style="font-size: 11px;">
+                <option value="0">-- All Years --</option>
+                <option *ngFor="let y of academicYearList" [value]="y.ID">{{ y.Name }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="reviewstable">
+          <table *ngIf="AllotmentList.length > 0" class="table table-bordered">
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Student Details</th>
+                <th>Hostel & Room</th>
+                <th>Bed Details</th>
+                <th>Date</th>
+                <th *ngIf="isAdmin">School</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of AllotmentList; let i = index">
+                <td data-label="S.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td data-label="Student">
+                  <div style="display: flex; flex-direction: column;">
+                    <span style="font-weight: 700;">{{ item.StudentName }}</span>
+                    <span style="font-size: 11px; color: #64748b;">Adm No: {{ item.AdmissionNo }}</span>
+                  </div>
+                </td>
+                <td data-label="Hostel/Room">
+                  <div style="display: flex; flex-direction: column;">
+                    <span>{{ item.HostelName }}</span>
+                    <small>Room: {{ item.RoomNumber }}</small>
+                  </div>
+                </td>
+                <td data-label="Beds">
+                  <div style="display: flex; flex-direction: column; font-size: 12px;">
+                    <span>Cap: {{ item.BedCapacity }}</span>
+                    <span [style.color]="(item.AvailableBeds || 0) > 0 ? '#16a34a' : '#dc2626'">
+                      Avail: {{ item.AvailableBeds || 0 }}
+                    </span>
+                  </div>
+                </td>
+                <td data-label="Date">{{ formatDate(item.AllotmentDate) }}</td>
+                <td data-label="School" *ngIf="isAdmin">{{ item.SchoolName }}</td>
+                <td data-label="Status">
+                  <span class="status-pill"
+                    [style.background]="(item.IsActive === 'Active' || item.IsActive === true) ? 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)' : 'linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%)'"
+                    [style.color]="(item.IsActive === 'Active' || item.IsActive === true) ? '#166534' : '#9f1239'"
+                    [style.borderColor]="(item.IsActive === 'Active' || item.IsActive === true) ? '#86efac' : '#fda4af'">
+                    {{ (item.IsActive === 'Active' || item.IsActive === true) ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+                <td data-label="Actions">
+                  <div class="d-flex justify-content-center align-items-center h-100">
+                    <button *ngIf="canEdit()" class="btn checkbtn edit" (click)="editRecord(item)">
+                      <mat-icon class="mat-edit-icon">edit</mat-icon>
+                    </button>
+                    <button *ngIf="canView()" class="btn checkbtn" (click)="viewRecord_(item)">
+                      <mat-icon class="mat-edit-icon">visibility</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div *ngIf="AllotmentList.length === 0" class="NoDataFound">
+            <div class="NoDataFoundImg">
+              <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="No data found">
+            </div>
+            <p>No data found.</p>
+          </div>
+
+          <div *ngIf="AllotmentCount > pageSize" class="pagination-controls">
+            <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1"
+              class="arrow-btn FirstandLastButton">First</button>
+            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
+            <button *ngFor="let page of getVisiblePageNumbers()" class="page-btn"
+              [ngClass]="{'active': page === currentPage}" (click)="goToPage(page)">
+              {{ page }}
+            </button>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()"
+              class="arrow-btn FirstandLastButton">Last</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD/EDIT FORM VIEW -->
+  <div *ngIf="IsAddNewClicked" class="w-100">
+    <div class="AddForm">
+      <div class="AddFormTop">
+        <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+        <p>{{ ViewRoomClicked ? 'Update Allotment' : 'Add New Allotment' }}</p>
+      </div>
+      <div class="AddFormConatiner">
+        <form [formGroup]="AllotmentForm">
+          <div class="FormInputRowsContainer">
+            <!-- Row 1 -->
+            <div class="InputRow">
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel">School <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="School" (change)="onAdminSchoolChange($event)">
+                    <option value="0">-- Select School --</option>
+                    <option *ngFor="let s of schoolList" [value]="s.ID">{{ s.Name }}</option>
+                  </select>
+                  <div *ngIf="AllotmentForm.get('School')?.touched && AllotmentForm.get('School')?.invalid"
+                    class="text-danger">
+                    <small>Required.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Academic Year <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="AcademicYear" (change)="onAcademicYearChange($event)">
+                    <option value="0">-- Select Academic Year --</option>
+                    <option *ngFor="let y of academicYearList" [value]="y.ID">{{ y.Name }}</option>
+                  </select>
+                  <div
+                    *ngIf="AllotmentForm.get('AcademicYear')?.touched && AllotmentForm.get('AcademicYear')?.value === '0'"
+                    class="text-danger">
+                    <small>Required.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Student <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="StudentID">
+                    <option value="0">-- Select Student --</option>
+                    <option *ngFor="let st of studentList" [value]="st.ID">{{ st.Name }}</option>
+                  </select>
+                  <div *ngIf="AllotmentForm.get('StudentID')?.touched && AllotmentForm.get('StudentID')?.value === '0'"
+                    class="text-danger">
+                    <small>Required.</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 2 -->
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Hostel <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="HostelID" (change)="onHostelChange($event)">
+                    <option value="0">-- Select Hostel --</option>
+                    <option *ngFor="let h of hostelList" [value]="h.ID">{{ h.HostelName }}</option>
+                  </select>
+                  <div *ngIf="AllotmentForm.get('HostelID')?.touched && AllotmentForm.get('HostelID')?.value === '0'"
+                    class="text-danger">
+                    <small>Required.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Room <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="RoomID">
+                    <option value="0">-- Select Room --</option>
+                    <option *ngFor="let r of roomList" [value]="r.ID" [disabled]="r.AvailableBeds <= 0">
+                      Room {{ r.RoomNumber }} (Avail: {{ r.AvailableBeds }})
+                    </option>
+                  </select>
+                  <div *ngIf="AllotmentForm.get('RoomID')?.touched && AllotmentForm.get('RoomID')?.value === '0'"
+                    class="text-danger">
+                    <small>Required.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Allotment Date <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input type="date" class="inputField" formControlName="AllotmentDate" />
+                  <div
+                    *ngIf="AllotmentForm.get('AllotmentDate')?.touched && AllotmentForm.get('AllotmentDate')?.invalid"
+                    class="text-danger">
+                    <small>Required.</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 3 -->
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Status Flag</label>
+                <div class="toggle-container" style="height:40px; display:flex; align-items:center;">
+                  <label class="switch">
+                    <input type="checkbox" formControlName="IsActive">
+                    <span class="slider">
+                      <span class="toggle-text"
+                        [ngStyle]="{ left: AllotmentForm.get('IsActive')?.value ? '42%' : '60%', fontSize: '9px' }">
+                        {{ AllotmentForm.get('IsActive')?.value ? 'Active' : 'Inactive' }}
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+              <div class="InputFieldsContainer" style="flex: 2;">
+                <label class="inputLabel">Remarks</label>
+                <div class="input-with-error">
+                  <textarea class="inputField" formControlName="Remarks" placeholder="Enter Remarks"
+                    rows="1"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ActionButtons">
+            <button type="button" *ngIf="ViewRoomClicked" (click)="SubmitAllotment()">Update</button>
+            <button type="button" *ngIf="!ViewRoomClicked" (click)="SubmitAllotment()">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Status Modal -->
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isStatusModalOpen}"
+  [style.display]="isStatusModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Application Status</h5>
+        <button type="button" class="close" (click)="closeStatusModal()">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>{{ statusMessage }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="handleOk()">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- View Details Modal -->
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}"
+  [style.display]="isViewModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Allotment Details</h5>
+        <button type="button" class="close" (click)="closeViewModal()">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-2" *ngIf="viewRecord?.StudentName">
+          <div class="col-4">Student Name</div>
+          <div class="col-8 viewfontsize"><strong>{{ viewRecord?.StudentName }}</strong></div>
+        </div>
+        <div class="row mb-2" *ngIf="viewRecord?.AdmissionNo">
+          <div class="col-4">Admission Number</div>
+          <div class="col-8 viewfontsize"><strong>{{ viewRecord?.AdmissionNo }}</strong></div>
+        </div>
+        <div class="row mb-2" *ngIf="viewRecord?.HostelName">
+          <div class="col-4">Hostel</div>
+          <div class="col-8 viewfontsize">{{ viewRecord?.HostelName }}</div>
+        </div>
+        <div class="row mb-2" *ngIf="viewRecord?.RoomNumber">
+          <div class="col-4">Room Number</div>
+          <div class="col-8 viewfontsize"><strong>{{ viewRecord?.RoomNumber }}</strong></div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-4">Bed Details</div>
+          <div class="col-8 viewfontsize">
+            Capacity: {{ viewRecord?.BedCapacity }} | Available: {{ viewRecord?.AvailableBeds }}
+          </div>
+        </div>
+        <div class="row mb-2" *ngIf="viewRecord?.AcademicYearName">
+          <div class="col-4">Academic Year</div>
+          <div class="col-8 viewfontsize">{{ viewRecord?.AcademicYearName }}</div>
+        </div>
+        <div class="row mb-2" *ngIf="viewRecord?.AllotmentDate">
+          <div class="col-4">Allotment Date</div>
+          <div class="col-8 viewfontsize">{{ formatDate(viewRecord?.AllotmentDate) }}</div>
+        </div>
+        <div class="row mb-2" *ngIf="viewRecord?.SchoolName">
+          <div class="col-4">School</div>
+          <div class="col-8 viewfontsize">{{ viewRecord?.SchoolName }}</div>
+        </div>
+        <div class="row mb-2" *ngIf="viewRecord?.Remarks">
+          <div class="col-4">Remarks</div>
+          <div class="col-8 viewfontsize">{{ viewRecord?.Remarks }}</div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-4">Status</div>
+          <div class="col-8">
+            <span class="badge"
+              [ngClass]="(viewRecord?.IsActive === 'Active' || viewRecord?.IsActive === true) ? 'badge-success' : 'badge-danger'">
+              {{ (viewRecord?.IsActive === 'Active' || viewRecord?.IsActive === true) ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

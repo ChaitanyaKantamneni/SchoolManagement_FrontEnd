@@ -1,4 +1,4 @@
-import { DatePipe, NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
+import { DatePipe, NgClass, NgFor, NgIf, NgStyle, DecimalPipe } from '@angular/common';
 import { Component, ChangeDetectorRef } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { DashboardTopNavComponent } from '../../../SignInAndSignUp/dashboard-top-nav/dashboard-top-nav.component';
@@ -12,9 +12,10 @@ import { HttpClient } from '@angular/common/http';
 import { RoleDetectionService } from '../../../Services/role-detection.service';
 import { SlicePipe } from '../../../pipes/slice.pipe';
 import { HomeworkSubmissionService, HomeworkSubmission } from '../../../Services/homework-submission.service';
+import { FileService } from '../../../Services/file.service';
 @Component({
   selector: 'app-homework',
-  imports: [NgIf, NgFor, NgClass, NgStyle, MatIconModule, DashboardTopNavComponent, ReactiveFormsModule, FormsModule, DatePipe, SlicePipe],
+  imports: [NgIf, NgFor, NgClass, NgStyle, MatIconModule, DashboardTopNavComponent, ReactiveFormsModule, FormsModule, DatePipe, SlicePipe, DecimalPipe],
   templateUrl: './homework.component.html',
   styleUrl: './homework.component.css'
 })
@@ -29,7 +30,8 @@ export class HomeworkComponent extends BasePermissionComponent {
     menuService: MenuServiceService,
     private roleDetectionService: RoleDetectionService,
     private homeworkSubmissionService: HomeworkSubmissionService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private fileService: FileService
   ) {
     super(menuService, router);
   }
@@ -89,6 +91,13 @@ export class HomeworkComponent extends BasePermissionComponent {
   selectedHomework: any = null;
   selectedFile: File | null = null;
   isSubmitting: boolean = false;
+
+  // ── File Upload Properties ───────────────────────────────────────────────
+  filePreviewUrl: string | null = null;
+  filePreviewType: 'image' | 'document' | null = null;
+  uploadedFileName: string = '';
+  uploadedFileUrl: string = '';
+  isPreviewVisible: boolean = false;
   submissionForm: FormGroup = new FormGroup({
     ID: new FormControl(''),
     HomeworkID: new FormControl('', [Validators.required]),
@@ -776,6 +785,205 @@ if (this.currentRoleUI === 'admin') {
     this.isModalOpen = false;
   }
 
+  // Check if existing attachment is image
+  isExistingAttachmentImage(): boolean {
+    const url = this.selectedSubmission?.AttachmentURL;
+    if (!url) return false;
+    const lowerUrl = url.toLowerCase();
+    return lowerUrl.endsWith('.jpg') || lowerUrl.endsWith('.jpeg') || lowerUrl.endsWith('.png') || lowerUrl.endsWith('.gif') || lowerUrl.endsWith('.webp');
+  }
+
+  // Check if existing attachment is PDF
+  isExistingAttachmentPdf(): boolean {
+    const url = this.selectedSubmission?.AttachmentURL;
+    if (!url) return false;
+    return url.toLowerCase().endsWith('.pdf');
+  }
+
+  // Get icon for existing attachment
+  getExistingAttachmentIcon(): string {
+    const url = this.selectedSubmission?.AttachmentURL;
+    if (!url) return 'insert_drive_file';
+    if (this.isExistingAttachmentPdf()) return 'picture_as_pdf';
+    if (url.toLowerCase().includes('.doc')) return 'description';
+    if (url.toLowerCase().endsWith('.txt')) return 'text_snippet';
+    return 'insert_drive_file';
+  }
+
+  // Get file name from URL
+  getAttachmentFileName(): string {
+    const url = this.selectedSubmission?.AttachmentURL;
+    if (!url) return 'Attachment';
+    return url.split('/').pop() || 'Attachment';
+  }
+
+  // Get full URL for submission attachment
+  getSubmissionAttachmentUrl(): string {
+    const url = this.selectedSubmission?.AttachmentURL || '';
+    return this.fileService.getFullFileUrl(url);
+  }
+
+  // Check if homework attachment is image
+  isHomeworkAttachmentImage(): boolean {
+    const url = this.selectedHomework?.attachmentURL;
+    if (!url) return false;
+    const lowerUrl = url.toLowerCase();
+    return lowerUrl.endsWith('.jpg') || lowerUrl.endsWith('.jpeg') || lowerUrl.endsWith('.png') || lowerUrl.endsWith('.gif') || lowerUrl.endsWith('.webp');
+  }
+
+  // Check if homework attachment is PDF
+  isHomeworkAttachmentPdf(): boolean {
+    const url = this.selectedHomework?.attachmentURL;
+    if (!url) return false;
+    return url.toLowerCase().endsWith('.pdf');
+  }
+
+  // Get icon for homework attachment
+  getHomeworkAttachmentIcon(): string {
+    const url = this.selectedHomework?.attachmentURL;
+    if (!url) return 'insert_drive_file';
+    if (this.isHomeworkAttachmentPdf()) return 'picture_as_pdf';
+    if (url.toLowerCase().includes('.doc')) return 'description';
+    if (url.toLowerCase().endsWith('.txt')) return 'text_snippet';
+    return 'insert_drive_file';
+  }
+
+  // Get homework attachment file name
+  getHomeworkAttachmentFileName(): string {
+    const url = this.selectedHomework?.attachmentURL;
+    if (!url) return 'Attachment';
+    return url.split('/').pop() || 'Attachment';
+  }
+
+  // Get full URL for homework attachment (handles relative paths)
+  getHomeworkAttachmentUrl(): string {
+    const url = this.selectedHomework?.attachmentURL;
+    return this.fileService.getFullFileUrl(url);
+  }
+
+  // Download homework attachment
+  downloadHomeworkAttachment(): void {
+    const url = this.selectedHomework?.attachmentURL;
+    if (url) {
+      this.fileService.downloadFile(url, this.getHomeworkAttachmentFileName());
+    }
+  }
+
+  // Download submission attachment
+  downloadSubmissionAttachment(): void {
+    const url = this.selectedSubmission?.AttachmentURL;
+    if (url) {
+      this.fileService.downloadFile(url, this.getAttachmentFileName());
+    }
+  }
+
+  // ── Existing Submission Attachment Helpers (for Edit Modal) ──────────────────
+
+  // Check if existing submission attachment (in form) is image
+  isExistingSubmissionAttachmentImage(): boolean {
+    const url = this.submissionForm.get('AttachmentURL')?.value;
+    if (!url) return false;
+    const lowerUrl = url.toLowerCase();
+    return lowerUrl.endsWith('.jpg') || lowerUrl.endsWith('.jpeg') || lowerUrl.endsWith('.png') || lowerUrl.endsWith('.gif') || lowerUrl.endsWith('.webp');
+  }
+
+  // Check if existing submission attachment (in form) is PDF
+  isExistingSubmissionAttachmentPdf(): boolean {
+    const url = this.submissionForm.get('AttachmentURL')?.value;
+    if (!url) return false;
+    return url.toLowerCase().endsWith('.pdf');
+  }
+
+  // Get icon for existing submission attachment (in form)
+  getExistingSubmissionAttachmentIcon(): string {
+    const url = this.submissionForm.get('AttachmentURL')?.value;
+    if (!url) return 'insert_drive_file';
+    if (this.isExistingSubmissionAttachmentPdf()) return 'picture_as_pdf';
+    if (url.toLowerCase().includes('.doc')) return 'description';
+    if (url.toLowerCase().endsWith('.txt')) return 'text_snippet';
+    return 'insert_drive_file';
+  }
+
+  // Get file name from URL (existing submission attachment in form)
+  getExistingSubmissionAttachmentFileName(): string {
+    const url = this.submissionForm.get('AttachmentURL')?.value;
+    if (!url) return 'Attachment';
+    return url.split('/').pop() || 'Attachment';
+  }
+
+  // Get full URL for existing submission attachment (in form)
+  getExistingSubmissionAttachmentUrl(): string {
+    const url = this.submissionForm.get('AttachmentURL')?.value || '';
+    return this.fileService.getFullFileUrl(url);
+  }
+
+  // Download existing submission attachment (from form)
+  downloadExistingSubmissionAttachment(): void {
+    const url = this.submissionForm.get('AttachmentURL')?.value;
+    if (url) {
+      this.fileService.downloadFile(url, this.getExistingSubmissionAttachmentFileName());
+    }
+  }
+
+  // Remove existing submission attachment (delete from server and update database)
+  removeExistingSubmissionAttachment(): void {
+    const url = this.submissionForm.get('AttachmentURL')?.value;
+    if (url) {
+      const submissionId = this.submissionForm.get('ID')?.value || 'temp';
+      const schoolId = this.selectedSchoolID || this.AdminselectedSchoolID || '';
+      
+      // Extract filename from URL
+      const urlParts = url.split('/');
+      const fileName = urlParts[urlParts.length - 1];
+      
+      if (fileName && schoolId && submissionId && submissionId !== 'temp') {
+        const deletePayload = {
+          SchoolId: schoolId,
+          SubmissionId: submissionId,
+          FileName: fileName,
+          ModifiedBy: this.ActiveUserId,
+          ModifiedIp: ''
+        };
+
+        this.fileService.deleteHomeworkSubmissionFile(deletePayload).subscribe({
+          next: (res) => {
+            console.log('[HOMEWORK] Attachment deleted successfully:', res);
+            // Clear from form
+            this.submissionForm.patchValue({ AttachmentURL: '' });
+            this.AminityInsStatus = 'Attachment removed successfully.';
+            this.isModalOpen = true;
+            
+            // Refresh the submission data to reflect the change
+            this.refreshSubmissionData();
+          },
+          error: (err) => {
+            console.error('[HOMEWORK] Failed to delete attachment:', err);
+            // Still clear from form even if server deletion failed
+            this.submissionForm.patchValue({ AttachmentURL: '' });
+            this.AminityInsStatus = 'Attachment removed from form. Server deletion may have failed.';
+            this.isModalOpen = true;
+          }
+        });
+      } else {
+        // Just clear from form if no valid filename or temp submission
+        this.submissionForm.patchValue({ AttachmentURL: '' });
+        this.AminityInsStatus = 'Attachment removed. Submit to save changes.';
+        this.isModalOpen = true;
+      }
+    }
+  }
+
+  // Refresh submission data after attachment removal
+  private refreshSubmissionData(): void {
+    const homeworkId = this.submissionForm.get('HomeworkID')?.value;
+    const studentAdmissionNo = this.selectedChildId;
+    
+    if (homeworkId && studentAdmissionNo) {
+      // Re-fetch the submission data to update the UI
+      this.fetchHomeworkSubmissions();
+    }
+  }
+
   closeSubmissionModal(): void {
     this.isSubmissionModalOpen = false;
     this.submissionForm.reset();
@@ -1313,17 +1521,34 @@ if (this.currentRoleUI === 'admin') {
       const hwId = parseInt(String(homework.id));
       const existingSubmission = this.submissionStatusMap.get(hwId);
       if (existingSubmission) {
+        const attachmentUrl = existingSubmission.attachmentURL || existingSubmission.AttachmentURL || '';
         this.submissionForm.patchValue({
           ID: existingSubmission.id || existingSubmission.ID || '',
           HomeworkID: homework.id,
           StudentAdmissionNo: this.selectedChildId,
           SubmissionText: existingSubmission.submissionText || existingSubmission.SubmissionText || '',
-          AttachmentURL: existingSubmission.attachmentURL || existingSubmission.AttachmentURL || '',
+          AttachmentURL: attachmentUrl,
           SubmissionStatus: existingSubmission.submissionStatus || existingSubmission.SubmissionStatus || 'Submitted',
           MarksObtained: existingSubmission.marksObtained || existingSubmission.MarksObtained || '',
           Remarks: existingSubmission.remarks || existingSubmission.Remarks || '',
           IsActive: existingSubmission.isActive !== false && existingSubmission.IsActive !== false
         });
+
+        // Populate file preview for existing attachment
+        if (attachmentUrl) {
+          this.uploadedFileName = attachmentUrl.split('/').pop() || 'attachment';
+          const lowerUrl = attachmentUrl.toLowerCase();
+          if (lowerUrl.endsWith('.jpg') || lowerUrl.endsWith('.jpeg') || lowerUrl.endsWith('.png') || lowerUrl.endsWith('.gif')) {
+            this.filePreviewType = 'image';
+            this.filePreviewUrl = this.fileService.getFullFileUrl(attachmentUrl);
+          } else {
+            this.filePreviewType = 'document';
+            this.filePreviewUrl = null;
+          }
+        } else {
+          this.clearParentSelectedFile();
+        }
+
         this.selectedFile = null;
       }
     }
@@ -1337,37 +1562,92 @@ if (this.currentRoleUI === 'admin') {
     this.submissionForm.reset();
   }
 
-  // Handle file selection for parent submission
+  // Handle parent file selection
   onParentFileSelect(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      
-      // Validate file size (5MB max)
-      if (file.size > 5 * 1024 * 1024) {
-        this.AminityInsStatus = 'File size must be less than 5MB';
-        this.isModalOpen = true;
-        input.value = '';
-        return;
-      }
-      
-      // Validate file type
-      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 
-                           'image/jpeg', 'image/png', 'text/plain'];
-      if (!allowedTypes.includes(file.type)) {
-        this.AminityInsStatus = 'Invalid file type. Please upload PDF, DOC, DOCX, JPG, PNG, or TXT files.';
-        this.isModalOpen = true;
-        input.value = '';
-        return;
-      }
-      
-      this.selectedFile = file;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    // Validate file size (max 5MB) - same as assign-homework
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      this.AminityInsStatus = 'File size exceeds 5MB limit.';
+      this.isModalOpen = true;
+      this.clearParentSelectedFile();
+      return;
     }
+
+    // Validate file type - same as assign-homework
+    const allowedTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'image/jpeg',
+      'image/png',
+      'image/jpg',
+      'text/plain'
+    ];
+    if (!allowedTypes.includes(file.type)) {
+      this.AminityInsStatus = 'Invalid file type. Allowed: PDF, DOC, DOCX, JPG, JPEG, PNG, TXT';
+      this.isModalOpen = true;
+      this.clearParentSelectedFile();
+      return;
+    }
+
+    this.selectedFile = file;
+    this.uploadedFileName = file.name;
+    console.log('[HOMEWORK] File selected:', file.name);
+
+    // Generate preview
+    this.generateFilePreview(file);
+  }
+
+  // Generate file preview
+  generateFilePreview(file: File): void {
+    const fileType = file.type;
+
+    if (fileType.startsWith('image/')) {
+      // For images, create data URL
+      this.filePreviewType = 'image';
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.filePreviewUrl = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    } else {
+      // For documents (PDF, DOC, TXT, etc.)
+      this.filePreviewType = 'document';
+      this.filePreviewUrl = null;
+    }
+  }
+
+  // Check if file is image
+  isImageFile(): boolean {
+    return this.filePreviewType === 'image';
+  }
+
+  // Check if file is PDF
+  isPdfFile(): boolean {
+    return this.selectedFile?.type === 'application/pdf';
+  }
+
+  // Get file icon based on type
+  getFileIcon(): string {
+    if (!this.selectedFile) return 'insert_drive_file';
+
+    const type = this.selectedFile.type;
+    if (type === 'application/pdf') return 'picture_as_pdf';
+    if (type.includes('word')) return 'description';
+    if (type === 'text/plain') return 'text_snippet';
+    return 'insert_drive_file';
   }
 
   // Clear selected file
   clearParentSelectedFile(): void {
     this.selectedFile = null;
+    this.filePreviewUrl = null;
+    this.filePreviewType = null;
+    this.uploadedFileName = '';
     const fileInput = document.getElementById('attachment') as HTMLInputElement;
     if (fileInput) {
       fileInput.value = '';
@@ -1430,17 +1710,6 @@ if (this.currentRoleUI === 'admin') {
       Offset: null
     };
 
-    // If there's a file, upload it first (simplified - in real app would use file upload service)
-    if (this.selectedFile) {
-      // For now, just set the filename as AttachmentURL
-      submissionData.AttachmentURL = this.selectedFile.name;
-    }
-
-    console.log('[HOMEWORK] === SUBMISSION DATA BEING SENT ===');
-    console.log('[HOMEWORK] submissionData:', JSON.stringify(submissionData, null, 2));
-    console.log('[HOMEWORK] selectedChildId:', this.selectedChildId);
-    console.log('[HOMEWORK] AdminselectedAcademivYearID:', this.AdminselectedAcademivYearID);
-
     // Check if already submitted using the submission status map (no API call needed)
     // Skip this check in edit mode since we're updating an existing submission
     if (!isEdit) {
@@ -1454,6 +1723,95 @@ if (this.currentRoleUI === 'admin') {
       }
     }
 
+    // Handle file operations based on mode and file selection
+    if (isEdit && this.selectedFile) {
+      // Edit mode with new file selected - delete old file first
+      const oldAttachmentUrl = this.submissionForm.get('AttachmentURL')?.value;
+      if (oldAttachmentUrl) {
+        console.log('[HOMEWORK] Edit mode: Deleting old file before uploading new one...');
+        this.deleteOldSubmissionFileThenUpload(submissionData, formData, child, oldAttachmentUrl);
+      } else {
+        console.log('[HOMEWORK] Edit mode: No old file, uploading new file...');
+        this.uploadSubmissionFileThenSubmit(submissionData, formData, child);
+      }
+    } else if (this.selectedFile) {
+      // Submit mode with new file
+      console.log('[HOMEWORK] Submit mode: Uploading file...');
+      this.uploadSubmissionFileThenSubmit(submissionData, formData, child);
+    } else {
+      // No file selected - keep existing AttachmentURL if in edit mode
+      if (isEdit) {
+        submissionData.AttachmentURL = this.submissionForm.get('AttachmentURL')?.value || '';
+      }
+      console.log('[HOMEWORK] No file, submitting directly...');
+      this.proceedWithSubmission(submissionData, formData, child);
+    }
+  }
+
+  // Delete old submission file then upload new one
+  deleteOldSubmissionFileThenUpload(submissionData: any, formData: any, child: any, oldAttachmentUrl: string): void {
+    const schoolId = child?.SchoolID || this.selectedSchoolID || this.AdminselectedSchoolID || '';
+    const submissionId = formData.ID || 'temp';
+    
+    // Extract filename from old URL
+    const urlParts = oldAttachmentUrl.split('/');
+    const fileName = urlParts[urlParts.length - 1];
+    
+    if (fileName && schoolId) {
+      const deletePayload = {
+        SchoolId: schoolId,
+        SubmissionId: submissionId,
+        FileName: fileName,
+        ModifiedBy: this.ActiveUserId,
+        ModifiedIp: ''
+      };
+
+      this.fileService.deleteHomeworkSubmissionFile(deletePayload).subscribe({
+        next: (res) => {
+          console.log('[HOMEWORK] Old file deleted successfully:', res);
+          // Now upload the new file
+          this.uploadSubmissionFileThenSubmit(submissionData, formData, child);
+        },
+        error: (err) => {
+          console.error('[HOMEWORK] Failed to delete old file, proceeding with upload:', err);
+          // Still proceed with upload even if deletion failed
+          this.uploadSubmissionFileThenSubmit(submissionData, formData, child);
+        }
+      });
+    } else {
+      // No valid filename, proceed with upload
+      this.uploadSubmissionFileThenSubmit(submissionData, formData, child);
+    }
+  }
+
+  // Upload file then submit
+  uploadSubmissionFileThenSubmit(submissionData: any, formData: any, child: any): void {
+    const schoolId = child?.SchoolID || this.selectedSchoolID || this.AdminselectedSchoolID || '';
+    const submissionId = formData.ID || 'temp';
+
+    const uploadFormData = new FormData();
+    uploadFormData.append('File', this.selectedFile!);
+    uploadFormData.append('SchoolId', schoolId);
+    uploadFormData.append('SubmissionId', submissionId);
+
+    this.fileService.uploadHomeworkSubmissionDoc(uploadFormData).subscribe({
+      next: (response: any) => {
+        console.log('[HOMEWORK] File uploaded:', response);
+        submissionData.AttachmentURL = response.url;
+        this.proceedWithSubmission(submissionData, formData, child);
+      },
+      error: (err) => {
+        console.error('[HOMEWORK] File upload failed:', err);
+        this.isSubmitting = false;
+        this.loader.hide();
+        this.AminityInsStatus = 'File upload failed. Please try again.';
+        this.isModalOpen = true;
+      }
+    });
+  }
+
+  // Proceed with submission after validation
+  proceedWithSubmission(submissionData: any, formData: any, child: any): void {
     // Test foreign key references before attempting INSERT
     this.validateForeignKeys(formData.HomeworkID, this.selectedChildId, child?.SchoolID || this.selectedSchoolID, this.AdminselectedAcademivYearID).then(
       (validationResult) => {
@@ -1464,18 +1822,18 @@ if (this.currentRoleUI === 'admin') {
           this.isModalOpen = true;
           return;
         }
-        
+
         // If validation passes, proceed with submission
         this.performSubmission(submissionData, formData);
-        
+
         // Also test with minimal data to isolate the issue
         console.log('[HOMEWORK] === TESTING MINIMAL INSERT ===');
         this.testMinimalInsert(formData.HomeworkID);
-        
+
         // Test if HomeworkID exists in database (foreign key validation)
         console.log('[HOMEWORK] === TESTING HOMEWORK EXISTENCE ===');
         this.testHomeworkExistence(formData.HomeworkID);
-        
+
         // Test table structure by fetching existing submissions
         console.log('[HOMEWORK] === TESTING TABLE STRUCTURE ===');
         this.testTableStructure();
@@ -1770,11 +2128,7 @@ if (this.currentRoleUI === 'admin') {
     // Find the homework item from the homework list - check both number and string match
     this.selectedHomework = this.homeworkList.find((hw: any) => hw.id === hwId || hw.id === homeworkId || String(hw.id) === String(homeworkId)) || null;
 
-    console.log('[HOMEWORK] View modal - homeworkId:', homeworkId, 'hwId:', hwId);
-    console.log('[HOMEWORK] View modal - found homework:', this.selectedHomework);
-    console.log('[HOMEWORK] View modal - found submission:', submission);
-    console.log('[HOMEWORK] View modal - homeworkList IDs:', this.homeworkList.map((hw: any) => hw.id));
-    console.log('[HOMEWORK] View modal - submissionMap keys:', Array.from(this.submissionStatusMap.keys()));
+    
 
     if (submission) {
       // Convert UTC date to local timezone
@@ -1843,11 +2197,7 @@ if (this.currentRoleUI === 'admin') {
     this.homeworkSubmissionService.getAllSubmissions(payload).subscribe({
       next: (res: any) => {
         const submissions = res?.data || [];
-        console.log('[HOMEWORK] Loaded', submissions.length, 'submissions for child in single API call');
-        console.log('[HOMEWORK] Submissions data:', submissions);
-
-        // Log all submissions for debugging
-        console.log('[HOMEWORK] All loaded submissions:', submissions);
+       
 
         // Check if we have any submissions at all
         if (submissions.length === 0) {
@@ -1922,16 +2272,25 @@ if (this.currentRoleUI === 'admin') {
 
   fetchTeacherStudents(): void {
     if (this.currentRoleUI !== 'teacher' || !this.AdminselectedAcademivYearID) return;
+    
+    // Ensure teacher has class/division assigned from allocation
+    if (!this.teacherAssignedClassID || !this.teacherAssignedDivisionID) {
+      console.warn('[HOMEWORK] Teacher class/division not available from allocation');
+      return;
+    }
 
     this.loader.show();
     const payload = {
-      Flag: '11',
+      Flag: '3',
       SchoolID: this.selectedSchoolID || this.schoolId,
       AcademicYear: this.AdminselectedAcademivYearID,
-      CreatedBy: this.currentUserId,
+      Class: this.teacherAssignedClassID,
+      Division: this.teacherAssignedDivisionID,
       SortColumn: 'AdmissionNo',
       SortDirection: 'asc'
     };
+
+    console.log('[HOMEWORK] Fetching teacher students with Class/Division:', payload);
 
     this.apiurl.post<any>('Tbl_StudentDetails_CRUD_Operations', payload).subscribe({
       next: (res: any) => {
@@ -1942,17 +2301,11 @@ if (this.currentRoleUI === 'admin') {
             Class: item.class,
             Division: item.division
           }));
-          // Only set class/division from students if not already set from teacher allocation
-          if (this.teacherStudentList.length > 0 && !this.teacherAssignedClassID) {
-            this.AdminselectedClassID = this.teacherStudentList[0].Class;
-            this.AdminselectedDivisionID = this.teacherStudentList[0].Division;
-            console.log('[HOMEWORK] Set class/division from first student:', {
-              class: this.AdminselectedClassID,
-              division: this.AdminselectedDivisionID
-            });
-          }
+          // Class/division already set from teacher allocation, just log for confirmation
+          console.log('[HOMEWORK] Teacher students loaded:', this.teacherStudentList.length);
         } else {
           this.teacherStudentList = [];
+          console.log('[HOMEWORK] No students found for teacher class/division');
         }
         this.loader.hide();
       },
@@ -2136,3 +2489,4 @@ if (this.currentRoleUI === 'admin') {
     this.FetchHomeworkList();
   }
 }
+

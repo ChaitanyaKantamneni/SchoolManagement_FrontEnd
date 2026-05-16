@@ -16,7 +16,7 @@ export interface HomeworkSubmission {
   SubmissionStatus?: string;
   MarksObtained?: string;
   Remarks?: string;
-  IsActive?: boolean;
+  IsActive?: string | number; // Allow both to match backend
   CreatedBy?: string;
   CreatedIp?: string;
   CreatedDate?: Date;
@@ -25,8 +25,10 @@ export interface HomeworkSubmission {
   ModifiedDate?: Date;
   HomeworkTitle?: string;
   StudentName?: string;
+  SubjectName?: string;
   Status?: string;
   totalcount?: number;
+  obj?: any;
 }
 
 @Injectable({
@@ -41,6 +43,10 @@ export class HomeworkSubmissionService {
       ...submission,
       Flag: '1'
     };
+    // Ensure IsActive is always sent as string
+    if (data.IsActive !== undefined && data.IsActive !== null) {
+      data.IsActive = data.IsActive.toString();
+    }
     return this.apiService.post('Tbl_HomeworkSubmission_CRUD_Operations', data);
   }
 
@@ -51,6 +57,7 @@ export class HomeworkSubmissionService {
     Class?: number;
     Division?: number;
     HomeworkID?: number;
+    StudentAdmissionNo?: string;
     SubmissionStatus?: string;
     IsActive?: boolean;
     Limit?: number;

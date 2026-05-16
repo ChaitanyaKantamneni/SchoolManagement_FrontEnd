@@ -1,0 +1,426 @@
+<div>
+  <app-dashboard-top-nav></app-dashboard-top-nav>
+</div>
+<div class="MainContentDiv">
+  <div *ngIf="!IsAddNewClicked" class="w-100">
+    <div class="ComponentTop">
+      <div class="ComponentTopHeader">
+        <h5>Room Master Management</h5>
+        <p>Total {{ RoomCount }} Rooms Added</p>
+      </div>
+      <div class="ComponentTopBottom">
+        <button *ngIf="canAdd()" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Room</button>
+      </div>
+    </div>
+
+    <!-- Dynamic Stats Grid -->
+    <div class="admission-stats-grid"
+      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 10px;">
+      <div class="admission-stat-card"
+        style="background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 12px;">
+        <div class="admission-stat-icon"
+          style="background: #e0f2fe; color: #0284c7; padding: 10px; border-radius: 50%; display: flex;">
+          <mat-icon>meeting_room</mat-icon>
+        </div>
+        <div>
+          <strong style="font-size: 18px; display: block;">{{ RoomCount }}</strong>
+          <span style="color: #64748b; font-size: 12px;">Total Rooms Added</span>
+        </div>
+      </div>
+      <div class="admission-stat-card"
+        style="background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 12px;">
+        <div class="admission-stat-icon"
+          style="background: #dcfce7; color: #16a34a; padding: 10px; border-radius: 50%; display: flex;">
+          <mat-icon>check_circle</mat-icon>
+        </div>
+        <div>
+          <strong style="font-size: 18px; display: block;">{{ ActiveRoomsCount }}</strong>
+          <span style="color: #64748b; font-size: 12px;">Active Rooms</span>
+        </div>
+      </div>
+      <div class="admission-stat-card"
+        style="background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 12px;">
+        <div class="admission-stat-icon"
+          style="background: #fef3c7; color: #d97706; padding: 10px; border-radius: 50%; display: flex;">
+          <mat-icon>king_bed</mat-icon>
+        </div>
+        <div>
+          <strong style="font-size: 18px; display: block;">{{ TotalBedCapacity }}</strong>
+          <span style="color: #64748b; font-size: 12px;">Total Bed Capacity</span>
+        </div>
+      </div>
+      <div class="admission-stat-card"
+        style="background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 12px;">
+        <div class="admission-stat-icon"
+          style="background: #ede9fe; color: #7c3aed; padding: 10px; border-radius: 50%; display: flex;">
+          <mat-icon>single_bed</mat-icon>
+        </div>
+        <div>
+          <strong style="font-size: 18px; display: block;">{{ TotalAvailableBeds }}</strong>
+          <span style="color: #64748b; font-size: 12px;">Total Available Beds</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ComponentRecords">
+      <div>
+        <div class="ComponentRecordsTop">
+          <div class="filterOptions">
+            <div class="searchreview input-container">
+              <input type="text" id="searchQuery" class="form-control floating-input" [(ngModel)]="searchQuery"
+                (ngModelChange)="onSearchChange()" placeholder="Search by Room Number..." />
+              <mat-icon
+                style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
+            </div>
+            <div class="searchreview" *ngIf="isAdmin">
+              <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
+                <option value="">-- Select School --</option>
+                <option value="0">All Schools</option>
+                <option *ngFor="let school of schoolList" [value]="school.ID">
+                  {{ school.Name }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="reviewstable">
+          <table id="roomTable" *ngIf="RoomList.length != 0" class="table table-bordered">
+            <thead>
+              <tr>
+                <th class="visually-hidden">Room ID</th>
+                <th>SI.No</th>
+                <th (click)="sort('RoomNumber')" class="sortable-column">
+                  <span class="column-text">Room Number</span>
+                  <span class="arrows">
+                    <mat-icon
+                      [style.color]="sortColumn === 'RoomNumber' && sortDirection === 'asc' ? 'red' : 'inherit'">keyboard_arrow_up</mat-icon>
+                    <mat-icon
+                      [style.color]="sortColumn === 'RoomNumber' && sortDirection === 'desc' ? 'red' : 'inherit'">keyboard_arrow_down</mat-icon>
+                  </span>
+                </th>
+                <th>Hostel Name</th>
+                <th>Bed Capacity</th>
+                <th>Occupied Beds</th>
+                <th>Available Beds</th>
+                <th>Academic Year</th>
+                <th *ngIf="isAdmin">School Name</th>
+                <!-- <th>Blocked/Occupied</th> -->
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let room of RoomList; let i = index">
+                <td data-label="ID" class="visually-hidden">{{ room.ID }}</td>
+                <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td data-label="RoomNumber"><strong>{{ room.RoomNumber }}</strong></td>
+                <td data-label="HostelName">{{ room.HostelName }}</td>
+                <td data-label="BedCapacity">{{ room.BedCapacity }}</td>
+                <td data-label="OccupiedBeds">{{ room.OccupiedBeds }}</td>
+                <td data-label="AvailableBeds">
+                  <strong [style.color]="room.AvailableBeds > 0 ? '#16a34a' : '#dc2626'">{{ room.AvailableBeds
+                    }}</strong>
+                </td>
+                <td data-label="AcademicYearName">{{ room.AcademicYearName }}</td>
+                <td data-label="SchoolName" *ngIf="isAdmin">{{ room.SchoolName }}</td>
+                <!-- <td data-label="Occupied">
+                  <span class="badge" [ngClass]="room.Occupied ? 'badge-danger' : 'badge-success'">
+                    {{ room.Occupied ? 'Yes' : 'No' }}
+                  </span>
+                </td> -->
+                <td data-label="Status">
+                  <span class="status-pill"
+                    [style.background]="(room.IsActive === true || room.IsActive === 'true' || room.IsActive === 'Active' || room.IsActive === 1) ? 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)' : 'linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%)'"
+                    [style.color]="(room.IsActive === true || room.IsActive === 'true' || room.IsActive === 'Active' || room.IsActive === 1) ? '#166534' : '#9f1239'"
+                    [style.borderColor]="(room.IsActive === true || room.IsActive === 'true' || room.IsActive === 'Active' || room.IsActive === 1) ? '#86efac' : '#fda4af'"
+                    [ngClass]="(room.IsActive === true || room.IsActive === 'true' || room.IsActive === 'Active' || room.IsActive === 1) ? 'status-active' : 'status-inactive'">
+                    {{ (room.IsActive === true || room.IsActive === 'true' || room.IsActive === 'Active' ||
+                    room.IsActive === 1) ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+                <td data-label="Actions">
+                  <div class="d-flex justify-content-center align-items-center h-100">
+                    <button *ngIf="canEdit()" class="btn checkbtn edit" data-tooltip="Edit"
+                      (click)="editreview(room.ID)">
+                      <mat-icon class="mat-edit-icon">edit</mat-icon>
+                    </button>
+                    <button *ngIf="canView()" class="btn checkbtn" data-tooltip="View" (click)="viewReview(room.ID)">
+                      <mat-icon class="mat-edit-icon">visibility</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div *ngIf="RoomList.length === 0" class="NoDataFound">
+            <div class="NoDataFoundImg">
+              <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
+            </div>
+            <p>No data found.</p>
+          </div>
+          <div *ngIf="RoomCount > pageSize" class="pagination-controls">
+            <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1"
+              class="arrow-btn FirstandLastButton">First</button>
+            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
+            <button *ngFor="let page of getVisiblePageNumbers()" class="page-btn"
+              [ngClass]="{'active': page === currentPage}" (click)="goToPage(page)">
+              {{ page }}
+            </button>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()"
+              class="arrow-btn FirstandLastButton">Last</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="IsAddNewClicked" class="w-100">
+    <div class="AddForm">
+      <div class="AddFormTop">
+        <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+        <p>{{ ViewRoomClicked ? 'Update Room' : 'Add Room' }}</p>
+      </div>
+      <div class="AddFormConatiner">
+        <form [formGroup]="RoomForm">
+          <div class="FormInputRowsContainer">
+            <!-- Row 1 -->
+            <div class="InputRow">
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="School">School <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="School" (change)="onAdminSchoolChange($event)">
+                    <option value="0">-- Select School --</option>
+                    <option *ngFor="let school of schoolList" value="{{school.ID}}">{{school.Name}}</option>
+                  </select>
+                  <div
+                    *ngIf="RoomForm.get('School')?.hasError('min') && (RoomForm.get('School')?.touched || RoomForm.get('School')?.dirty)"
+                    class="text-danger">
+                    <small>Please Select School.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="AcademicYear">Academic Year <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="AcademicYear" (change)="onAcademicYearChange($event)">
+                    <option value="0">-- Select Academic Year --</option>
+                    <option *ngFor="let year of academicYearList" value="{{year.ID}}">{{year.Name}}</option>
+                  </select>
+                  <div
+                    *ngIf="RoomForm.get('AcademicYear')?.hasError('min') && (RoomForm.get('AcademicYear')?.touched || RoomForm.get('AcademicYear')?.dirty)"
+                    class="text-danger">
+                    <small>Please Select Academic Year.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="HostelID">Hostel <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="HostelID" (change)="onHostelChange($event)">
+                    <option value="0">-- Select Hostel --</option>
+                    <option *ngFor="let hostel of hostelList" value="{{hostel.ID}}">{{hostel.HostelName}}</option>
+                  </select>
+                  <div
+                    *ngIf="RoomForm.get('HostelID')?.hasError('min') && (RoomForm.get('HostelID')?.touched || RoomForm.get('HostelID')?.dirty)"
+                    class="text-danger">
+                    <small>Please Select Hostel.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <label class="inputLabel" for="RoomNumber">Room Number <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="RoomNumber" placeholder="Enter Room Number" />
+                  <div *ngIf="RoomForm.get('RoomNumber')?.touched && RoomForm.get('RoomNumber')?.invalid"
+                    class="text-danger">
+                    <small *ngIf="RoomForm.get('RoomNumber')?.errors?.['required']">Please Enter Room Number.</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 2 -->
+            <div class="InputRow">
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="RoomNumber">Room Number <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" formControlName="RoomNumber" placeholder="Enter Room Number" />
+                  <div *ngIf="RoomForm.get('RoomNumber')?.touched && RoomForm.get('RoomNumber')?.invalid"
+                    class="text-danger">
+                    <small *ngIf="RoomForm.get('RoomNumber')?.errors?.['required']">Please Enter Room Number.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="BedCapacity">Bed Capacity <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" type="number" formControlName="BedCapacity" placeholder="Enter Bed Capacity"
+                    min="0" [readonly]="RoomForm.get('BedCapacity')?.disabled" />
+                  <div *ngIf="RoomForm.get('BedCapacity')?.touched && RoomForm.get('BedCapacity')?.invalid"
+                    class="text-danger">
+                    <small *ngIf="RoomForm.get('BedCapacity')?.errors?.['required']">Required.</small>
+                    <small *ngIf="RoomForm.get('BedCapacity')?.errors?.['min']">Cannot be negative.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" for="Remarks">Remarks</label>
+                <div class="input-with-error">
+                  <textarea class="inputField" formControlName="Remarks" placeholder="Enter Remarks"
+                    rows="1"></textarea>
+                </div>
+              </div>
+              <!-- <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <label class="inputLabel" style="display:block; margin-bottom:4px;">Blocked / Fully Occupied</label>
+                <div style="display:flex; align-items:center; height:40px;">
+                  <input type="checkbox" formControlName="Occupied" id="OccupiedCheck"
+                    style="cursor:pointer; width:16px; height:16px;" />
+                  <label for="OccupiedCheck" style="margin-left:8px; font-size:12px; cursor:pointer;">Set Room
+                    Occupied</label>
+                </div>
+              </div> -->
+            </div>
+
+            <!-- Row 3 -->
+            <div class="InputRow">
+              <!-- <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" style="display:block; margin-bottom:4px;">Blocked / Fully Occupied</label>
+                <div style="display:flex; align-items:center; height:40px;">
+                  <input type="checkbox" formControlName="Occupied" id="OccupiedCheckAdmin"
+                    style="cursor:pointer; width:16px; height:16px;" />
+                  <label for="OccupiedCheckAdmin" style="margin-left:8px; font-size:12px; cursor:pointer;">Set Room
+                    Occupied</label>
+                </div>
+              </div> -->
+              <div class="InputFieldsContainer">
+                <label class="inputLabel" style="display:block; margin-bottom:4px;">Status Flag</label>
+                <div class="toggle-container" (click)="$event.stopPropagation()"
+                  style="height:40px; display:flex; align-items:center;">
+                  <label class="switch">
+                    <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()"
+                      (click)="toggleChange()">
+                    <span class="slider">
+                      <span class="toggle-text" [ngStyle]="{ left: IsActiveStatus ? '42%' : '60%', fontSize: '9px' }">
+                        {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <span style="visibility: hidden; height: 3px;">spacer field alignment block</span>
+              </div>
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <span style="visibility: hidden; height: 3px;">spacer field alignment block</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="ActionButtons">
+            <button type="button" *ngIf="ViewRoomClicked && canEdit()" (click)="UpdateRoom()">Update</button>
+            <button type="button" *ngIf="!ViewRoomClicked && canAdd()" (click)="SubmitRoom()">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Status Modal -->
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isModalOpen}"
+  [style.display]="isModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Application Status</h5>
+        <button type="button" class="close" aria-label="Close" (click)="closeModal('status')">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>{{ AminityInsStatus }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="handleOk()">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- View Details Modal -->
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}"
+  [style.display]="isViewModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Room Details</h5>
+        <button type="button" class="close" (click)="closeModal('view')">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-2" *ngIf="viewRoom?.RoomNumber">
+          <div class="col-4">Room Number</div>
+          <div class="col-8 viewfontsize"><strong>{{ viewRoom?.RoomNumber }}</strong></div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewRoom?.HostelName">
+          <div class="col-4">Hostel Name</div>
+          <div class="col-8 viewfontsize">{{ viewRoom?.HostelName }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewRoom?.BedCapacity !== null && viewRoom?.BedCapacity !== undefined">
+          <div class="col-4">Bed Capacity</div>
+          <div class="col-8 viewfontsize">{{ viewRoom?.BedCapacity }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewRoom?.OccupiedBeds !== null && viewRoom?.OccupiedBeds !== undefined">
+          <div class="col-4">Occupied Beds</div>
+          <div class="col-8 viewfontsize">{{ viewRoom?.OccupiedBeds }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewRoom?.AvailableBeds !== null && viewRoom?.AvailableBeds !== undefined">
+          <div class="col-4">Available Beds</div>
+          <div class="col-8 viewfontsize">
+            <strong [style.color]="viewRoom?.AvailableBeds > 0 ? '#16a34a' : '#dc2626'">{{ viewRoom?.AvailableBeds
+              }}</strong>
+          </div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewRoom?.SchoolName">
+          <div class="col-4">School Name</div>
+          <div class="col-8 viewfontsize">{{ viewRoom?.SchoolName }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewRoom?.AcademicYearName">
+          <div class="col-4">Academic Year</div>
+          <div class="col-8 viewfontsize">{{ viewRoom?.AcademicYearName }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewRoom?.Remarks && viewRoom.Remarks.trim() !== ''">
+          <div class="col-4">Remarks</div>
+          <div class="col-8 viewfontsize">{{ viewRoom?.Remarks }}</div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewRoom?.Occupied !== null && viewRoom?.Occupied !== undefined">
+          <div class="col-4">Blocked/Occupied Flag</div>
+          <div class="col-8">
+            <span class="badge" [ngClass]="viewRoom?.Occupied ? 'badge-danger' : 'badge-success'">
+              {{ viewRoom?.Occupied ? 'Yes' : 'No' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="row mb-2" *ngIf="viewRoom?.IsActive !== null">
+          <div class="col-4">Status</div>
+          <div class="col-8">
+            <span class="badge" [ngClass]="viewRoom?.IsActive ? 'badge-success' : 'badge-danger'">
+              {{ viewRoom?.IsActive ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

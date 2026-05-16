@@ -102,6 +102,10 @@ import { NoticesComponent } from './Admin/Notices/notices/notices.component';
 import { StudentsReportComponent } from './Admin/Report/students-report/students-report.component';
 import { FeeReportComponent } from './Admin/Report/fee-report/fee-report.component';
 import { ParentDashboardComponent } from './Parent/parent-dashboard/parent-dashboard.component';
+import { HostelMasterComponent } from './Admin/hostel-management/hostel-master/hostel-master.component';
+import { RoomMasterComponent } from './Admin/hostel-management/room-master/room-master.component';
+import { RoomAllotmentComponent } from './Admin/hostel-management/room-allotment/room-allotment.component';
+import { OutPassComponent } from './Admin/hostel-management/out-pass/out-pass.component';
 
 export const routes: Routes = [
   { path: '', component: SignInComponent },
@@ -174,6 +178,10 @@ export const routes: Routes = [
       { path: 'StudentsReport', component: StudentsReportComponent },
       { path: 'StudentReport', redirectTo: 'StudentsReport', pathMatch: 'full' },
       { path: 'FeeReport', component: FeeReportComponent },
+      { path: 'HostelMaster', component: HostelMasterComponent },
+      { path: 'RoomMaster', component: RoomMasterComponent },
+      { path: 'RoomAllotment', component: RoomAllotmentComponent },
+      { path: 'Outpass', component: OutPassComponent },
     ]
   },
 
@@ -245,6 +253,10 @@ export const routes: Routes = [
       { path: 'StudentsReport', component: StudentsReportComponent },
       { path: 'StudentReport', redirectTo: 'StudentsReport', pathMatch: 'full' },
       { path: 'FeeReports', component: FeeReportComponent },
+      { path: 'HostelMaster', component: HostelMasterComponent },
+      { path: 'RoomMaster', component: RoomMasterComponent },
+      { path: 'RoomAllotment', component: RoomAllotmentComponent },
+      { path: 'Outpass', component: OutPassComponent },
     ]
   },
 
@@ -323,6 +335,10 @@ export const routes: Routes = [
       { path: 'StudentsReport', component: StudentsReportComponent },
       { path: 'StudentReport', redirectTo: 'StudentsReport', pathMatch: 'full' },
       { path: 'FeeReports', component: FeeReportComponent },
+      { path: 'HostelMaster', component: HostelMasterComponent },
+      { path: 'RoomMaster', component: RoomMasterComponent },
+      { path: 'RoomAllotment', component: RoomAllotmentComponent },
+      { path: 'Outpass', component: OutPassComponent },
     ]
   }
 ];

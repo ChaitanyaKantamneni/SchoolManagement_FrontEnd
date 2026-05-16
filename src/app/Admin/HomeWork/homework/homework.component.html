@@ -382,14 +382,14 @@
 
   <!-- Parent Homework Submission Modal -->
   <div *ngIf="isSubmissionModalOpen" class="modal fade show d-block" style="background-color: rgba(0,0,0,0.5);">
-    <div class="modal-dialog">
-      <div class="modal-content">
+    <div class="modal-dialog modal-lg" style="max-height: 85vh; margin: 1.75rem auto;">
+      <div class="modal-content" style="max-height: 85vh; overflow: hidden;">
         <div class="modal-header">
           <h5 class="modal-title">{{ submissionMode === 'edit' ? 'Edit Submission' : 'Submit Homework' }}</h5>
           <button type="button" class="btn-close" (click)="closeParentSubmissionModal()"></button>
         </div>
         <form [formGroup]="submissionForm" (ngSubmit)="submitParentHomework()">
-          <div class="modal-body">
+          <div class="modal-body" style="overflow-y: auto; max-height: calc(85vh - 120px);">
             <div class="row g-3">
               <!-- Homework Details in Single Row -->
               <div class="row mb-3">
@@ -418,10 +418,37 @@
                   <span class="text-muted">{{selectedHomework?.description}}</span>
                 </div>
               </div>
+              <!-- Homework Attachment Preview -->
               <div class="row mb-3" *ngIf="selectedHomework?.attachmentURL">
                 <div class="col-12">
-                  <strong>Reference Attachment:</strong><br>
-                  <a [href]="selectedHomework?.attachmentURL" target="_blank">{{selectedHomework?.attachmentURL}}</a>
+                  <strong>Reference Attachment:</strong>
+                  <div class="card border-light mt-2">
+                    <div class="card-body text-center">
+                      <!-- Image Preview -->
+                      <div *ngIf="isHomeworkAttachmentImage()" class="mb-2">
+                        <img [src]="getHomeworkAttachmentUrl()" alt="Homework attachment" style="max-height: 150px; max-width: 100%; border-radius: 4px;">
+                      </div>
+
+                      <!-- PDF Preview -->
+                      <div *ngIf="isHomeworkAttachmentPdf()" class="text-center p-2">
+                        <mat-icon style="font-size: 48px; color: #dc3545;">picture_as_pdf</mat-icon>
+                        <p class="mb-1 mt-2" style="font-size: 14px; color: #495057;">{{getHomeworkAttachmentFileName()}}</p>
+                      </div>
+
+                      <!-- Document Preview -->
+                      <div *ngIf="!isHomeworkAttachmentImage() && !isHomeworkAttachmentPdf()" class="text-center p-2">
+                        <mat-icon style="font-size: 48px; color: #6c757d;">{{getHomeworkAttachmentIcon()}}</mat-icon>
+                        <p class="mb-1 mt-2" style="font-size: 14px; color: #495057;">{{getHomeworkAttachmentFileName()}}</p>
+                      </div>
+
+                      <a [href]="getHomeworkAttachmentUrl()" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
+                        <mat-icon style="font-size:16px;vertical-align:middle;">visibility</mat-icon> View
+                      </a>
+                      <button type="button" (click)="downloadHomeworkAttachment()" class="btn btn-sm btn-outline-success mt-2 ms-2">
+                        <mat-icon style="font-size:16px;vertical-align:middle;">download</mat-icon> Download
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -440,12 +467,74 @@
                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.txt">
                 <small class="text-muted">Accepted formats: PDF, DOC, DOCX, JPG, PNG, TXT (Max 5MB)</small>
               </div>
+
+              <!-- Existing Submission Attachment (Edit Mode Only) -->
+              <div class="col-12" *ngIf="submissionMode === 'edit' && submissionForm.get('AttachmentURL')?.value">
+                <div class="card border-light">
+                  <div class="card-header bg-light">
+                    <strong>Current Submission Attachment</strong>
+                    <button type="button" class="btn btn-sm btn-outline-danger float-end" (click)="removeExistingSubmissionAttachment()">
+                      <i class="fas fa-trash"></i> Remove
+                    </button>
+                  </div>
+                  <div class="card-body text-center">
+                    <!-- Image Preview -->
+                    <div *ngIf="isExistingSubmissionAttachmentImage()" class="mb-2">
+                      <img [src]="getExistingSubmissionAttachmentUrl()" alt="Existing attachment" style="max-height: 150px; max-width: 100%; border-radius: 4px;">
+                    </div>
+
+                    <!-- PDF Preview -->
+                    <div *ngIf="isExistingSubmissionAttachmentPdf()" class="text-center p-3">
+                      <mat-icon style="font-size: 48px; color: #dc3545;">picture_as_pdf</mat-icon>
+                      <p class="mb-1 mt-2" style="font-size: 14px; color: #495057;">{{getExistingSubmissionAttachmentFileName()}}</p>
+                    </div>
+
+                    <!-- Document Preview -->
+                    <div *ngIf="!isExistingSubmissionAttachmentImage() && !isExistingSubmissionAttachmentPdf()" class="text-center p-3">
+                      <mat-icon style="font-size: 48px; color: #6c757d;">{{getExistingSubmissionAttachmentIcon()}}</mat-icon>
+                      <p class="mb-1 mt-2" style="font-size: 14px; color: #495057;">{{getExistingSubmissionAttachmentFileName()}}</p>
+                    </div>
+
+                    <a [href]="getExistingSubmissionAttachmentUrl()" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
+                      <mat-icon style="font-size:16px;vertical-align:middle;">visibility</mat-icon> View
+                    </a>
+                    <button type="button" (click)="downloadExistingSubmissionAttachment()" class="btn btn-sm btn-outline-success mt-2 ms-2">
+                      <mat-icon style="font-size:16px;vertical-align:middle;">download</mat-icon> Download
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- File Preview Section (New File Selected) -->
               <div class="col-12" *ngIf="selectedFile">
-                <strong>Selected File:</strong><br>
-                <span class="text-success">{{selectedFile.name}}</span>
-                <button type="button" class="btn btn-sm btn-outline-danger ms-2" (click)="clearParentSelectedFile()">
-                  <i class="fas fa-times"></i> Remove
-                </button>
+                <div class="card border-light">
+                  <div class="card-header bg-light">
+                    <strong>Selected File Preview</strong>
+                    <button type="button" class="btn btn-sm btn-outline-danger float-end" (click)="clearParentSelectedFile()">
+                      <i class="fas fa-times"></i> Remove
+                    </button>
+                  </div>
+                  <div class="card-body text-center">
+                    <!-- Image Preview -->
+                    <div *ngIf="isImageFile() && filePreviewUrl" class="mb-2">
+                      <img [src]="filePreviewUrl" alt="File preview" style="max-height: 150px; max-width: 100%; border-radius: 4px;">
+                    </div>
+
+                    <!-- PDF Preview -->
+                    <div *ngIf="isPdfFile()" class="text-center p-3">
+                      <mat-icon style="font-size: 48px; color: #dc3545;">picture_as_pdf</mat-icon>
+                      <p class="mb-1 mt-2" style="font-size: 14px; color: #495057;">{{uploadedFileName}}</p>
+                      <small class="text-muted">{{selectedFile?.size | number}} bytes</small>
+                    </div>
+
+                    <!-- Document Preview (DOC/TXT) -->
+                    <div *ngIf="!isImageFile() && !isPdfFile()" class="text-center p-3">
+                      <mat-icon style="font-size: 48px; color: #6c757d;">{{getFileIcon()}}</mat-icon>
+                      <p class="mb-1 mt-2" style="font-size: 14px; color: #495057;">{{uploadedFileName}}</p>
+                      <small class="text-muted">{{selectedFile?.size | number}} bytes</small>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -465,13 +554,13 @@
   <!-- Submission Details Modal -->
   <div *ngIf="selectedSubmission && isViewModalOpen" class="modal fade show d-block"
     style="background-color: rgba(0,0,0,0.5);">
-    <div class="modal-dialog">
-      <div class="modal-content">
+    <div class="modal-dialog modal-lg" style="max-height: 85vh; margin: 1.75rem auto;">
+      <div class="modal-content" style="max-height: 85vh; overflow: hidden;">
         <div class="modal-header">
           <h5 class="modal-title">View Submission</h5>
           <button type="button" class="btn-close" (click)="closeModal('view')"></button>
         </div>
-        <div class="modal-body" *ngIf="selectedSubmission">
+        <div class="modal-body" *ngIf="selectedSubmission" style="overflow-y: auto; max-height: calc(85vh - 80px);">
           <div class="row g-3">
             <!-- Homework Details - same as submission form -->
             <div class="row mb-3">
@@ -504,10 +593,37 @@
                 <span class="text-muted">{{selectedHomework?.description}}</span>
               </div>
             </div>
+            <!-- Homework Attachment Preview (View Modal) -->
             <div class="row mb-3" *ngIf="selectedHomework?.attachmentURL">
               <div class="col-12">
-                <strong>Reference Attachment:</strong><br>
-                <a [href]="selectedHomework?.attachmentURL" target="_blank">{{selectedHomework?.attachmentURL}}</a>
+                <strong>Reference Attachment:</strong>
+                <div class="card border-light mt-2">
+                  <div class="card-body text-center">
+                    <!-- Image Preview -->
+                    <div *ngIf="isHomeworkAttachmentImage()" class="mb-2">
+                      <img [src]="getHomeworkAttachmentUrl()" alt="Homework attachment" style="max-height: 150px; max-width: 100%; border-radius: 4px;">
+                    </div>
+
+                    <!-- PDF Preview -->
+                    <div *ngIf="isHomeworkAttachmentPdf()" class="text-center p-2">
+                      <mat-icon style="font-size: 48px; color: #dc3545;">picture_as_pdf</mat-icon>
+                      <p class="mb-1 mt-2" style="font-size: 14px; color: #495057;">{{getHomeworkAttachmentFileName()}}</p>
+                    </div>
+
+                    <!-- Document Preview -->
+                    <div *ngIf="!isHomeworkAttachmentImage() && !isHomeworkAttachmentPdf()" class="text-center p-2">
+                      <mat-icon style="font-size: 48px; color: #6c757d;">{{getHomeworkAttachmentIcon()}}</mat-icon>
+                      <p class="mb-1 mt-2" style="font-size: 14px; color: #495057;">{{getHomeworkAttachmentFileName()}}</p>
+                    </div>
+
+                    <a [href]="getHomeworkAttachmentUrl()" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
+                      <mat-icon style="font-size:16px;vertical-align:middle;">visibility</mat-icon> View
+                    </a>
+                    <button type="button" (click)="downloadHomeworkAttachment()" class="btn btn-sm btn-outline-success mt-2 ms-2">
+                      <mat-icon style="font-size:16px;vertical-align:middle;">download</mat-icon> Download
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -520,12 +636,36 @@
               </div>
             </div>
 
-            <!-- Attachment - same as form but readonly -->
+            <!-- Attachment Preview Section -->
             <div class="col-12" *ngIf="selectedSubmission.AttachmentURL">
-              <label class="form-label">Attachment</label><br>
-              <a [href]="selectedSubmission.AttachmentURL" target="_blank" class="btn btn-sm btn-outline-primary">
-                <mat-icon style="font-size:16px;vertical-align:middle;">download</mat-icon> Download Attachment
-              </a>
+              <label class="form-label">Attachment</label>
+              <div class="card border-light">
+                <div class="card-body text-center">
+                  <!-- Image Preview -->
+                  <div *ngIf="isExistingAttachmentImage()" class="mb-2">
+                    <img [src]="getSubmissionAttachmentUrl()" alt="Attachment preview" style="max-height: 150px; max-width: 100%; border-radius: 4px;">
+                  </div>
+
+                  <!-- PDF Preview -->
+                  <div *ngIf="isExistingAttachmentPdf()" class="text-center p-3">
+                    <mat-icon style="font-size: 48px; color: #dc3545;">picture_as_pdf</mat-icon>
+                    <p class="mb-1 mt-2" style="font-size: 14px; color: #495057;">{{getAttachmentFileName()}}</p>
+                  </div>
+
+                  <!-- Document Preview -->
+                  <div *ngIf="!isExistingAttachmentImage() && !isExistingAttachmentPdf()" class="text-center p-3">
+                    <mat-icon style="font-size: 48px; color: #6c757d;">{{getExistingAttachmentIcon()}}</mat-icon>
+                    <p class="mb-1 mt-2" style="font-size: 14px; color: #495057;">{{getAttachmentFileName()}}</p>
+                  </div>
+
+                  <a [href]="getSubmissionAttachmentUrl()" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
+                    <mat-icon style="font-size:16px;vertical-align:middle;">visibility</mat-icon> View
+                  </a>
+                  <button type="button" (click)="downloadSubmissionAttachment()" class="btn btn-sm btn-outline-success mt-2 ms-2">
+                    <mat-icon style="font-size:16px;vertical-align:middle;">download</mat-icon> Download
+                  </button>
+                </div>
+              </div>
             </div>
             <div class="col-12" *ngIf="!selectedSubmission.AttachmentURL">
               <label class="form-label">Attachment</label>
@@ -571,3 +711,5 @@
       </div>
     </div>
   </div>
+  
+  

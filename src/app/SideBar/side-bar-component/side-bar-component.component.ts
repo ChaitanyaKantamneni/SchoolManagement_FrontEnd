@@ -198,6 +198,10 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
       fares: 'Fares',
       dashboard: 'dashboard',
       holidaycalendar: 'HolidayCalendar',
+      hostelmaster: 'HostelMaster',
+      roommaster: 'RoomMaster',
+      roomallotment: 'RoomAllotment',
+      outpass: 'Outpass',
     };
 
     return alias[normalized] ?? compact;
@@ -320,7 +324,12 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
       'students report': 'school',
       'student report': 'school',
       'fee report': 'receipt',
-      'notices': 'campaign'
+      'notices': 'campaign',
+      'hostel master': 'apartment',
+      'room master': 'meeting_room',
+      'room allotment': 'hotel',
+      'outpass': 'exit_to_app',
+      'out pass': 'exit_to_app',
     };
     return map[key] || 'menu';
   }
@@ -339,7 +348,8 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
       'hr & payroll': 'account_balance',
       'leave management': 'event_note',
       homework: 'assignment',
-      'holiday calendar': 'event'
+      'holiday calendar': 'event',
+      'hostel management': 'apartment'
     };
 
     return map[key] || 'folder';

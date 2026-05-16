@@ -1,0 +1,392 @@
+<div class="parent-homework-container">
+
+  <!-- Header Section -->
+  <div class="homework-header">
+    <div class="tab-header">
+      <h2>Homework Management</h2>
+      <div class="tab-actions">
+        <div class="child-selector">
+          <button *ngFor="let child of childrenList" 
+                  mat-button
+                  (click)="selectChild(child.id)"
+                  [color]="selectedChildId === child.id ? 'primary' : 'accent'"
+                  [class.selected-child]="selectedChildId === child.id">
+            {{ child.name }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="tabs-container">
+    <mat-tab-group [(selectedIndex)]="currentTabIndex" (selectedTabChange)="onTabChange($event)">
+      <mat-tab label="Assigned Homework">
+        <div class="tab-content">
+          <!-- Loading State -->
+          <div *ngIf="loadingAssignments" class="loading-state">
+            <mat-spinner mode="indeterminate"></mat-spinner>
+            <p>Loading assignments...</p>
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="!loadingAssignments && assignmentsList.length === 0" class="empty-state">
+            <mat-icon class="empty-icon">assignment</mat-icon>
+            <h3>No Homework Assigned</h3>
+            <p>There are currently no homework assignments for {{ selectedChild?.name || 'your child' }}.</p>
+          </div>
+
+          <!-- Assignments List -->
+          <div *ngIf="!loadingAssignments && assignmentsList.length > 0" class="assignments-list">
+            <mat-card *ngFor="let assignment of assignmentsList" class="assignment-card">
+              <mat-card-header>
+                <mat-card-title>{{ assignment.title }}</mat-card-title>
+                <mat-card-subtitle>{{ assignment.subject }} • {{ assignment.className }} - {{ assignment.divisionName }}</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <p class="assignment-description">{{ assignment.description }}</p>
+                
+                <div class="assignment-meta">
+                  <div class="meta-item">
+                    <mat-icon>event</mat-icon>
+                    <span>Assigned: {{ assignment.assignedDate | date:'mediumDate' }}</span>
+                  </div>
+                  <div class="meta-item">
+                    <mat-icon>schedule</mat-icon>
+                    <span>Due: {{ assignment.submissionDate | date:'mediumDate' }}</span>
+                  </div>
+                  <div class="meta-item" *ngIf="assignment.attachmentURL">
+                    <mat-icon>attach_file</mat-icon>
+                    <button mat-stroked-button (click)="downloadAttachment(assignment.attachmentURL)" class="attachment-btn">
+                      View Attachment
+                    </button>
+                  </div>
+                </div>
+
+                <div class="status-section">
+                  <mat-chip 
+                    [ngClass]="getStatusClass(assignment.submissionStatus)"
+                    [color]="getStatusClass(assignment.submissionStatus) === 'status-success' ? 'primary' : 'accent'">
+                    <mat-icon>{{ getStatusIcon(assignment.submissionStatus) }}</mat-icon>
+                    {{ assignment.submissionStatus }}
+                  </mat-chip>
+                </div>
+              </mat-card-content>
+              <mat-card-actions>
+                <button mat-button (click)="viewHomeworkDetails(assignment)">
+                  <mat-icon>visibility</mat-icon>
+                  View Details
+                </button>
+                <button mat-raised-button color="primary" (click)="openSubmissionModal(assignment)"
+                        [disabled]="assignment.submissionStatus === 'Accepted'">
+                  <mat-icon>{{ assignment.submissionStatus === 'Submitted' ? 'edit' : 'upload' }}</mat-icon>
+                  {{ assignment.submissionStatus === 'Submitted' ? 'Edit Submission' : 'Submit Homework' }}
+                </button>
+              </mat-card-actions>
+            </mat-card>
+          </div>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Submitted">
+        <div class="tab-content">
+          <!-- Loading State -->
+          <div *ngIf="loadingSubmitted" class="loading-state">
+            <mat-spinner mode="indeterminate"></mat-spinner>
+            <p>Loading submitted work...</p>
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="!loadingSubmitted && submittedList.length === 0" class="empty-state">
+            <mat-icon class="empty-icon">upload_done</mat-icon>
+            <h3>No Submissions Yet</h3>
+            <p>Homework you submit will appear here. Go to <strong>Assigned Homework</strong> tab to submit.</p>
+          </div>
+
+          <!-- Submitted List -->
+          <div *ngIf="!loadingSubmitted && submittedList.length > 0" class="submitted-list">
+            <table mat-table [dataSource]="submittedList" class="submission-table">
+              <!-- Title Column -->
+              <ng-container matColumnDef="title">
+                <th mat-header-cell *matHeaderCellDef>Homework Title</th>
+                <td mat-cell *matCellDef="let submission">
+                  <div class="submission-title">{{ submission.HomeworkTitle }}</div>
+                  <div *ngIf="submission.SubmissionText" style="font-size:12px;color:#757575;margin-top:4px;">{{ submission.SubmissionText | slice:0:80 }}{{ submission.SubmissionText?.length > 80 ? '...' : '' }}</div>
+                </td>
+              </ng-container>
+
+              <!-- Subject Column -->
+              <ng-container matColumnDef="subject">
+                <th mat-header-cell *matHeaderCellDef>Subject</th>
+                <td mat-cell *matCellDef="let submission">{{ submission.SubjectName || 'N/A' }}</td>
+              </ng-container>
+
+              <!-- Submission Date Column -->
+              <ng-container matColumnDef="submissionDate">
+                <th mat-header-cell *matHeaderCellDef>Submitted On</th>
+                <td mat-cell *matCellDef="let submission">
+                  {{ submission.SubmissionDate | date:'mediumDate' }}
+                </td>
+              </ng-container>
+
+              <!-- Status Column -->
+              <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef>Status</th>
+                <td mat-cell *matCellDef="let submission">
+                  <span class="status-badge" [ngClass]="getStatusClass(submission.SubmissionStatus)">
+                    <mat-icon style="font-size:14px;width:14px;height:14px;vertical-align:middle;">{{ getStatusIcon(submission.SubmissionStatus) }}</mat-icon>
+                    {{ submission.SubmissionStatus || 'Submitted' }}
+                  </span>
+                </td>
+              </ng-container>
+
+              <!-- Attachment Column -->
+              <ng-container matColumnDef="attachment">
+                <th mat-header-cell *matHeaderCellDef>Attachment</th>
+                <td mat-cell *matCellDef="let submission">
+                  <button *ngIf="submission.AttachmentURL"
+                          mat-stroked-button
+                          color="primary"
+                          style="font-size:12px;padding:4px 10px;min-width:0;"
+                          (click)="downloadAttachment(submission.AttachmentURL, submission.ID)"
+                          matTooltip="Download attachment">
+                    <mat-icon style="font-size:16px;width:16px;height:16px;vertical-align:middle;margin-right:4px;">download</mat-icon>
+                    Download
+                  </button>
+                  <span *ngIf="!submission.AttachmentURL" class="no-attachment">No file</span>
+                </td>
+              </ng-container>
+
+              <!-- Actions Column -->
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef>Actions</th>
+                <td mat-cell *matCellDef="let submission">
+                  <button mat-icon-button (click)="viewSubmissionDetails(submission)" matTooltip="View details">
+                    <mat-icon>visibility</mat-icon>
+                  </button>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="submittedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: submittedColumns;"></tr>
+            </table>
+          </div>
+        </div>
+      </mat-tab>
+
+    </mat-tab-group>
+  </div>
+
+  <!-- Submission Detail View Modal -->
+  <div class="modal-overlay" *ngIf="isSubmissionViewModalOpen" (click)="closeSubmissionViewModal()"></div>
+  <div class="view-modal" *ngIf="isSubmissionViewModalOpen">
+    <div class="modal-header">
+      <h3>Submission Details</h3>
+      <button mat-icon-button (click)="closeSubmissionViewModal()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="modal-content" *ngIf="selectedSubmissionForView">
+      <div class="homework-details">
+
+        <div class="detail-row">
+          <span class="label">Homework Title:</span>
+          <span class="value">{{ selectedSubmissionForView.HomeworkTitle || '—' }}</span>
+        </div>
+
+        <div class="detail-row">
+          <span class="label">Subject:</span>
+          <span class="value">{{ selectedSubmissionForView.SubjectName || 'N/A' }}</span>
+        </div>
+
+        <div class="detail-row">
+          <span class="label">Submitted On:</span>
+          <span class="value">{{ selectedSubmissionForView.SubmissionDate | date:'mediumDate' }}</span>
+        </div>
+
+        <div class="detail-row">
+          <span class="label">Status:</span>
+          <span class="value">
+            <span class="status-badge" [ngClass]="getStatusClass(selectedSubmissionForView.SubmissionStatus || '')">
+              <mat-icon style="font-size:14px;width:14px;height:14px;vertical-align:middle;">{{ getStatusIcon(selectedSubmissionForView.SubmissionStatus || '') }}</mat-icon>
+              {{ selectedSubmissionForView.SubmissionStatus || 'Submitted' }}
+            </span>
+          </span>
+        </div>
+
+        <div class="detail-section" *ngIf="selectedSubmissionForView.SubmissionText">
+          <span class="label">Submission Text:</span>
+          <div class="description-text">{{ selectedSubmissionForView.SubmissionText }}</div>
+        </div>
+
+        <div class="detail-section" *ngIf="selectedSubmissionForView.AttachmentURL">
+          <span class="label">Attachment:</span>
+          <div class="attachment-link" style="display:flex;align-items:center;gap:8px;background:#f5f5f5;padding:8px 12px;border-radius:6px;margin-top:4px;">
+            <mat-icon style="color:#1976d2;">{{ getFileIcon(selectedSubmissionForView.AttachmentURL || '') }}</mat-icon>
+            <span class="file-name" style="flex:1;word-break:break-all;font-size:14px;color:#333;">{{ getCleanFileName(selectedSubmissionForView.AttachmentURL || '') }}</span>
+            <button mat-stroked-button color="primary" (click)="downloadAttachment(selectedSubmissionForView.AttachmentURL || '', selectedSubmissionForView.ID)">
+              <mat-icon style="font-size:16px;vertical-align:middle;margin-right:4px;">download</mat-icon>
+              Download
+            </button>
+          </div>
+        </div>
+
+        <div class="detail-row" *ngIf="selectedSubmissionForView.Remarks">
+          <span class="label">Teacher Remarks:</span>
+          <span class="value">{{ selectedSubmissionForView.Remarks }}</span>
+        </div>
+
+        <div class="detail-row" *ngIf="selectedSubmissionForView.MarksObtained">
+          <span class="label">Marks Obtained:</span>
+          <span class="value" style="font-weight:600;color:#2e7d32;">{{ selectedSubmissionForView.MarksObtained }}</span>
+        </div>
+
+      </div>
+
+      <div class="form-actions">
+        <button mat-button (click)="closeSubmissionViewModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="modal-overlay" *ngIf="isViewModalOpen" (click)="closeViewModal()"></div>
+  <div class="view-modal" *ngIf="isViewModalOpen">
+    <div class="modal-header">
+      <h3>Homework Details</h3>
+      <button mat-icon-button (click)="closeViewModal()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="modal-content" *ngIf="selectedHomeworkForView">
+      <div class="homework-details">
+        <h4>{{ selectedHomeworkForView.title }}</h4>
+        
+        <div class="detail-row">
+          <span class="label">Subject:</span>
+          <span class="value">{{ selectedHomeworkForView.subject }}</span>
+        </div>
+        
+        <div class="detail-row">
+          <span class="label">Assigned By:</span>
+          <span class="value">{{ selectedHomeworkForView.teacherName || 'Teacher/Admin' }}</span>
+        </div>
+        
+        <div class="detail-row">
+          <span class="label">Class:</span>
+          <span class="value">{{ selectedHomeworkForView.className }} - {{ selectedHomeworkForView.divisionName }}</span>
+        </div>
+        
+        <div class="detail-row">
+          <span class="label">Assigned Date:</span>
+          <span class="value">{{ selectedHomeworkForView.assignedDate | date:'mediumDate' }}</span>
+        </div>
+        
+        <div class="detail-row">
+          <span class="label">Submission Date:</span>
+          <span class="value">{{ selectedHomeworkForView.submissionDate | date:'mediumDate' }}</span>
+        </div>
+        
+        <div class="detail-section">
+          <span class="label">Homework Description:</span>
+          <div class="description-text">{{ selectedHomeworkForView.description }}</div>
+        </div>
+        
+        <div class="detail-section" *ngIf="selectedHomeworkForView.attachmentURL">
+          <span class="label">Attachment:</span>
+          <div class="attachment-link" style="display:flex;align-items:center;gap:8px;background:#f5f5f5;padding:8px 12px;border-radius:6px;margin-top:4px;">
+            <mat-icon style="color:#1976d2;">{{ getFileIcon(selectedHomeworkForView.attachmentURL) }}</mat-icon>
+            <span class="file-name" style="flex:1;word-break:break-all;font-size:14px;color:#333;">{{ getCleanFileName(selectedHomeworkForView.attachmentURL) }}</span>
+            <button mat-stroked-button color="primary" (click)="downloadAttachment(selectedHomeworkForView.attachmentURL)">
+              <mat-icon style="font-size:16px;vertical-align:middle;margin-right:4px;">download</mat-icon>
+              Download
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button mat-button (click)="closeViewModal()">Close</button>
+        <button mat-raised-button color="primary" (click)="closeViewModal(); openSubmissionModal(selectedHomeworkForView)"
+                [disabled]="selectedHomeworkForView.submissionStatus === 'Accepted'">
+          <mat-icon>{{ selectedHomeworkForView.submissionStatus === 'Submitted' ? 'edit' : 'upload' }}</mat-icon>
+          {{ selectedHomeworkForView.submissionStatus === 'Submitted' ? 'Edit Submission' : 'Submit Homework' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Submission Modal -->
+  <ng-container *ngIf="isEditModalOpen">
+    <div class="modal show" style="display:flex !important;" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document" style="max-width:600px;width:100%;">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">{{ editingSubmission ? 'Edit Submission' : 'Submit Homework' }}</h5>
+            <button type="button" class="close" (click)="closeSubmissionModal()"><span>&times;</span></button>
+          </div>
+          <div class="modal-body">
+            <form [formGroup]="submissionForm" (ngSubmit)="submitHomework()">
+              <!-- Assignment Info -->
+              <div class="assignment-info" *ngIf="selectedAssignment">
+                <h4>{{ selectedAssignment.title }}</h4>
+                <p>{{ selectedAssignment.subject }} &bull; Due: {{ selectedAssignment.submissionDate | date:'mediumDate' }}</p>
+              </div>
+
+              <!-- Text Submission -->
+              <div class="InputFieldsContainer" style="margin-bottom:16px;">
+                <label class="inputLabel">Homework Text *</label>
+                <textarea class="inputField" formControlName="SubmissionText" rows="4"
+                          placeholder="Enter your homework text here..."></textarea>
+                <div *ngIf="submissionForm.get('SubmissionText')?.invalid && submissionForm.get('SubmissionText')?.touched" 
+                     class="error-message">
+                  Homework text is required
+                </div>
+              </div>
+
+              <!-- File Upload -->
+              <div class="InputFieldsContainer" style="margin-bottom:16px;">
+                <label class="inputLabel">Attach File *</label>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <input type="file" #fileInput style="display:none"
+                         accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif"
+                         (change)="onFileSelected($event)">
+                  <input class="inputField" readonly style="flex:1;cursor:pointer;"
+                         [value]="uploadedFileName || 'No file selected'"
+                         (click)="fileInput.click()">
+                  <button type="button" class="btn btn-primary" style="white-space:nowrap;" (click)="fileInput.click()">
+                    <mat-icon style="font-size:16px;vertical-align:middle;">attach_file</mat-icon> Browse
+                  </button>
+                </div>
+                <div *ngIf="submissionForm.get('AttachmentURL')?.invalid && submissionForm.get('AttachmentURL')?.touched" 
+                     class="error-message">
+                  File attachment is required
+                </div>
+                <div *ngIf="uploadedFileName" style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+                  <mat-icon style="font-size:16px;">{{ getFileIcon(uploadedFileName) }}</mat-icon>
+                  <span style="font-size:13px;flex:1;">{{ uploadedFileName }}</span>
+                  <button type="button" class="btn btncancel" style="padding:2px 8px;" (click)="removeFile()">Remove</button>
+                </div>
+                <div *ngIf="filePreviewType === 'image' && filePreviewUrl" style="margin-top:10px;text-align:center;">
+                  <img [src]="filePreviewUrl" alt="Preview" style="max-width:100%;max-height:180px;border-radius:8px;">
+                </div>
+              </div>
+
+              <!-- Form Actions -->
+              <div class="modal-footer" style="justify-content:flex-end;gap:10px;">
+                <button type="button" class="btn btncancel" (click)="closeSubmissionModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary" [disabled]="submissionForm.invalid || isSubmitting">
+                  <mat-icon *ngIf="isSubmitting" style="font-size:16px;vertical-align:middle;animation:spin 1s linear infinite;">autorenew</mat-icon>
+                  {{ isSubmitting ? 'Submitting...' : (editingSubmission ? 'Update' : 'Submit') }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+</div><!-- /parent-homework-container -->

@@ -1,0 +1,540 @@
+.leave-application-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Header Styles */
+.page-header {
+  margin-bottom: 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 32px;
+  color: white;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+  text-align: center;
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 0 0 8px 0;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.title-icon {
+  font-size: 2rem;
+  width: 2rem;
+  height: 2rem;
+}
+
+.page-subtitle {
+  margin: 0;
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+/* Card Styles */
+mat-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+  border: none;
+}
+
+mat-card-header {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 20px 24px 16px;
+}
+
+mat-card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+mat-card-content {
+  padding: 24px;
+}
+
+/* Child Selection */
+.child-selector .full-width {
+  width: 100%;
+}
+
+.selected-child-info {
+  margin-top: 20px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border-left: 4px solid #3b82f6;
+}
+
+.child-details {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.child-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #3b82f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.child-avatar mat-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+.child-info h4 {
+  margin: 0 0 4px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.child-info p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+/* Balance Card */
+.balance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.balance-item {
+  text-align: center;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.balance-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.balance-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.balance-value.used {
+  color: #ef4444;
+}
+
+.breakdown-section {
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.breakdown-section h5 {
+  margin: 0 0 16px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #f9fafb;
+  border-radius: 6px;
+}
+
+.type-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.type-value {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* Form Styles */
+.form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.date-range-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.half-width {
+  width: 100%;
+}
+
+.file-upload-section {
+  position: relative;
+}
+
+.file-input-hidden {
+  display: none;
+}
+
+.selected-file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  border-radius: 6px;
+  color: #0369a1;
+  font-size: 0.875rem;
+}
+
+.selected-file mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.form-actions button {
+  min-width: 120px;
+}
+
+/* Recent Applications */
+.applications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.application-item {
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.application-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.application-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.application-type {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.application-type mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.application-status {
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-pending {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.status-approved {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.status-rejected {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.status-cancelled {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.application-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px;
+}
+
+.application-details p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.application-details strong {
+  color: #374151;
+}
+
+/* No Child Message */
+.no-child-message {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.no-child-message mat-card {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.large-icon {
+  font-size: 4rem;
+  width: 4rem;
+  height: 4rem;
+  color: #9ca3af;
+  margin-bottom: 16px;
+}
+
+.no-child-message h3 {
+  margin: 0 0 12px 0;
+  color: #374151;
+  font-size: 1.25rem;
+}
+
+.no-child-message p {
+  margin: 0;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+/* Material Design Overrides */
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline {
+  border-radius: 8px;
+}
+
+::ng-deep .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
+  color: #3b82f6;
+}
+
+::ng-deep .mat-select-value,
+::ng-deep .mat-input-element {
+  color: #374151;
+}
+
+::ng-deep .mat-form-field-label {
+  color: #6b7280;
+}
+
+::ng-deep .mat-raised-button {
+  border-radius: 8px;
+  font-weight: 500;
+  text-transform: none;
+}
+
+::ng-deep .mat-stroked-button {
+  border-radius: 8px;
+  font-weight: 500;
+  text-transform: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .leave-application-container {
+    padding: 12px;
+  }
+  
+  .page-header {
+    padding: 24px 20px;
+  }
+  
+  .page-title {
+    font-size: 1.5rem;
+  }
+  
+  .date-range-group {
+    grid-template-columns: 1fr;
+  }
+  
+  .balance-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .breakdown-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .application-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .application-details {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .form-actions button {
+    width: 100%;
+  }
+}
+
+/* Loading States */
+mat-spinner {
+  display: inline-block;
+  margin: 0 8px;
+}
+
+/* Success/Error Messages */
+::ng-deep .success-snackbar {
+  background: #059669 !important;
+  color: white !important;
+}
+
+::ng-deep .error-snackbar {
+  background: #dc2626 !important;
+  color: white !important;
+}
+
+/* Text Helper Classes */
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-left {
+  text-align: left;
+}
+
+
+
+.submit-application-btn {
+
+  pointer-events: auto !important;
+
+  opacity: 1 !important;
+
+  cursor: pointer !important;
+
+  position: relative !important;
+
+  z-index: 99999 !important;
+
+  min-width: 220px !important;
+
+  height: 48px !important;
+
+  border: none !important;
+}
+
+.submit-application-btn:disabled {
+
+  pointer-events: auto !important;
+
+  opacity: 1 !important;
+
+  cursor: pointer !important;
+}
+
+.form-actions {
+
+  position: relative !important;
+
+  z-index: 99999 !important;
+
+  pointer-events: auto !important;
+}
+
+/* FORCE ENABLE PAGE CLICKS */
+
+.leave-application-container,
+.form-section,
+.form-card,
+.form-grid,
+.form-actions,
+mat-card,
+mat-card-content,
+button {
+
+  pointer-events: auto !important;
+}
+
+/* REMOVE INVISIBLE OVERLAYS */
+
+::ng-deep .cdk-overlay-container,
+::ng-deep .cdk-global-overlay-wrapper,
+::ng-deep .cdk-overlay-backdrop {
+
+  pointer-events: none !important;
+}
+
+/* FORCE BUTTON CLICK */
+
+.submit-application-btn {
+
+  z-index: 999999 !important;
+
+  position: relative !important;
+
+  pointer-events: auto !important;
+}
