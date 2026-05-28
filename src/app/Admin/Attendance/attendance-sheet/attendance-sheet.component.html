@@ -105,7 +105,7 @@
                       id="attendanceDateTime"
                       type="date"
                       class="inputField"
-                      formControlName="AttendanceDateTime"
+                      formControlName="AttendanceDateTime" [min]="todayDate"
                     />
                     <div *ngIf="SyllabusForm.get('AttendanceDateTime')?.invalid && (SyllabusForm.get('AttendanceDateTime')?.touched || SyllabusForm.get('AttendanceDateTime')?.dirty)" class="text-danger">
                       <small>Please select attendance date and time.</small>
@@ -169,15 +169,32 @@
                     </div>
                   </div>
                 </div>
-                <div class="InputFieldsContainer" *ngIf="isTeacher">
-                  <label class="inputLabel" for="attendanceDateTime">Attendance Date <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <input id="attendanceDateTime" type="date" class="inputField" formControlName="AttendanceDateTime" />
-                    <div *ngIf="SyllabusForm.get('AttendanceDateTime')?.invalid && (SyllabusForm.get('AttendanceDateTime')?.touched || SyllabusForm.get('AttendanceDateTime')?.dirty)" class="text-danger">
-                      <small>Please select attendance date and time.</small>
-                    </div>
-                  </div>
-                </div>
+               <div class="InputFieldsContainer" *ngIf="isTeacher">
+  <label class="inputLabel" for="attendanceDateTime">
+    Attendance Date <span class="required">*</span>
+  </label>
+
+  <div class="input-with-error">
+
+    <input
+      id="attendanceDateTime"
+      type="date"
+      class="inputField"
+      formControlName="AttendanceDateTime"
+      [min]="todayDate"
+    />
+
+    <div
+      *ngIf="SyllabusForm.get('AttendanceDateTime')?.invalid &&
+      (SyllabusForm.get('AttendanceDateTime')?.touched ||
+      SyllabusForm.get('AttendanceDateTime')?.dirty)"
+      class="text-danger"
+    >
+      <small>Please select attendance date.</small>
+    </div>
+
+  </div>
+</div>
               </div>
               <div class="InputRow" *ngIf="!isTeacher">
                 <div class="InputFieldsContainer">
@@ -197,7 +214,7 @@
                 <div class="InputFieldsContainer">
                   <label class="inputLabel" for="attendanceDateTime">Attendance Date <span class="required">*</span></label>
                   <div class="input-with-error">
-                    <input id="attendanceDateTime" type="date" class="inputField" formControlName="AttendanceDateTime" />
+                    <input id="attendanceDateTime" type="date" class="inputField" formControlName="AttendanceDateTime"  [min]="todayDate"/>
                     <div *ngIf="SyllabusForm.get('AttendanceDateTime')?.invalid && (SyllabusForm.get('AttendanceDateTime')?.touched || SyllabusForm.get('AttendanceDateTime')?.dirty)" class="text-danger">
                       <small>Please select attendance date and time.</small>
                     </div>

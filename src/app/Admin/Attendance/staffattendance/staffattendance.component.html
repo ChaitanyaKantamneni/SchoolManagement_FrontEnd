@@ -76,7 +76,8 @@
                 <label class="inputLabel" for="attendanceDateTime">Attendance Date <span
                     class="required">*</span></label>
                 <div class="input-with-error">
-                  <input id="attendanceDateTime" type="date" class="inputField" formControlName="AttendanceDateTime" />
+                  <input id="attendanceDateTime" type="date" class="inputField" formControlName="AttendanceDateTime" [min]="todayDate"
+/>
                   <div
                     *ngIf="SyllabusForm.get('AttendanceDateTime')?.invalid && (SyllabusForm.get('AttendanceDateTime')?.touched || SyllabusForm.get('AttendanceDateTime')?.dirty)"
                     class="text-danger">
@@ -126,7 +127,8 @@
                   <label class="inputLabel" for="attendanceDateTime">Attendance Date <span
                       class="required">*</span></label>
                   <div class="input-with-error">
-                    <input id="attendanceDateTime" type="date" class="inputField" formControlName="AttendanceDateTime" />
+                    <input id="attendanceDateTime" type="date" class="inputField" formControlName="AttendanceDateTime" [min]="todayDate"
+/>
                     <div
                       *ngIf="SyllabusForm.get('AttendanceDateTime')?.invalid && (SyllabusForm.get('AttendanceDateTime')?.touched || SyllabusForm.get('AttendanceDateTime')?.dirty)"
                       class="text-danger">

@@ -241,7 +241,8 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
             Name:         `${admissionId} - ${studentName}`.trim(),
             Class:        String(classId),
             Division:     String(divisionId),
-            SchoolID:     String(schoolId)
+            SchoolID:     String(schoolId),
+            StudentName:String(studentName),
           };
         }).filter(c => c.ID && c.AdmissionNo);
 
@@ -474,6 +475,7 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
                Instructions:item.instructions,
                Class: item.className, 
                MaxMarks:item.maxMarks,         
+               PassMarks:item.passMarks,
                Divisions: item.divisionName,
                SchoolName: item.schoolName,
                AcademicYearName: item.academicYearName,

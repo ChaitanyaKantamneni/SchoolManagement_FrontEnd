@@ -1048,7 +1048,7 @@ export class ParentDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.schoolName = sessionStorage.getItem('schoolName') || '';
-    this.academicYear = sessionStorage.getItem('academicYear') || '';
+    this.academicYear = sessionStorage.getItem('AcademicYear') || '';
     this.parentEmail = sessionStorage.getItem('UserID') || sessionStorage.getItem('email') || '';
     this.schoolId = sessionStorage.getItem('SchoolID') || sessionStorage.getItem('schoolId') || '';
 
@@ -1530,27 +1530,99 @@ export class ParentDashboardComponent implements OnInit {
         console.log('Filtered exam results for selected child:', filteredData);
 
         // Map to exam records format matching Admin Exam Results
-        this.examRecords = filteredData.map((e: any) => {
-          const totalMarks = parseFloat(e.totalMarks || e.TotalMarks || '0');
-          const totalMaxMarks = parseFloat(e.totalMaxMarks || e.TotalMaxMarks || e.maxMarks || e.MaxMarks || '100');
-          const passThreshold = totalMaxMarks * 0.4;
+    const groupedExams = new Map();
 
-          return {
-            ExamType: e.examName || e.ExamType || e.examType || e.examTypeName || 'Exam',
-            AdmissionNo: e.admissionID || e.AdmissionID || e.studentAdmissionNo || e.StudentAdmissionNo || e.admissionNo || e.AdmissionNo || this.selectedChildId,
-            StudentName: e.studentName || e.StudentName || e.name || e.Name || this.selectedChild?.name || '—',
-            Class: e.className || e.ClassName || e.class || e.Class || this.selectedChild?.class || '—',
-            Division: e.divisionName || e.DivisionName || e.division || e.Division || this.selectedChild?.division || '—',
-            TotalMarks: totalMarks,
-            TotalMaxMarks: totalMaxMarks,
-            TotalPercentage: e.totalPercentage || e.TotalPercentage || 0,
-            Result: e.result || e.Result || (totalMarks >= passThreshold ? 'PASS' : 'FAIL'),
-            // Additional fields for detail view
-            examId: e.examId || e.ExamID || e.examID,
-            SchoolName: e.schoolName || e.SchoolName,
-            AcademicYearName: e.academicYearName || e.AcademicYearName
-          };
-        });
+filteredData.forEach((e: any) => {
+
+  const examKey =
+    `${e.examId || e.ExamID || e.examID}`;
+
+  if (!groupedExams.has(examKey)) {
+    groupedExams.set(examKey, []);
+  }
+
+  groupedExams.get(examKey).push(e);
+});
+
+this.examRecords = Array.from(groupedExams.values()).map((subjects: any[]) => {
+
+  const first = subjects[0];
+
+  const totalMarks =
+    parseFloat(first.totalMarks || first.TotalMarks || '0');
+
+  const totalMaxMarks =
+    parseFloat(
+      first.totalMaxMarks ||
+      first.TotalMaxMarks ||
+      '100'
+    );
+
+  // ✅ IMPORTANT
+  // if any subject FAIL => overall FAIL
+
+  const hasFail = subjects.some((s: any) =>
+    (s.subjectResult || s.SubjectResult || '')
+      .toUpperCase() === 'FAIL'
+  );
+
+  return {
+
+    ExamType:
+      first.examName ||
+      first.ExamType ||
+      first.examType ||
+      'Exam',
+
+    AdmissionNo:
+      first.admissionID ||
+      first.AdmissionID ||
+      this.selectedChildId,
+
+    StudentName:
+      first.studentName ||
+      first.StudentName ||
+      this.selectedChild?.name ||
+      '—',
+
+    Class:
+      first.className ||
+      first.ClassName ||
+      this.selectedChild?.class ||
+      '—',
+
+    Division:
+      first.divisionName ||
+      first.DivisionName ||
+      this.selectedChild?.division ||
+      '—',
+
+    TotalMarks: totalMarks,
+
+    TotalMaxMarks: totalMaxMarks,
+
+    TotalPercentage:
+      first.totalPercentage ||
+      first.TotalPercentage ||
+      0,
+
+    // ✅ FINAL RESULT
+    Result: hasFail ? 'FAIL' : 'PASS',
+
+    examId:
+      first.examId ||
+      first.ExamID ||
+      first.examID,
+
+    SchoolName:
+      first.schoolName ||
+      first.SchoolName,
+
+    AcademicYearName:
+      first.academicYearName ||
+      first.AcademicYearName
+  };
+});
 
         console.log('Mapped exam records:', this.examRecords);
 
@@ -1902,7 +1974,7 @@ export class ParentDashboardComponent implements OnInit {
       className: this.selectedChild.className || this.selectedChild.class || '',
       divisionId: this.selectedChild.divisionId || this.selectedChild.division || '',
       divisionName: this.selectedChild.divisionName || this.selectedChild.division || '',
-      academicYear: this.academicYear,
+      academicYear: this.selectedAcademicYearId,
       leaveType: LeaveType.PERSONAL_LEAVE,
       fromDate: from.toISOString().split('T')[0],
       toDate: to.toISOString().split('T')[0],

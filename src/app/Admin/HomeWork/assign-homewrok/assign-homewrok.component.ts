@@ -744,6 +744,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     this.clearFileSelection();
     this.uploadedFileUrl = '';
 
+
+    // Reset file upload state
+    this.clearFileSelection();
+    this.uploadedFileUrl = '';
+
     // For teachers, only trigger allocation sync when academic year is manually selected
     if (this.isTeacher) {
       console.log('[ASSIGN HOMEWORK] AddNewClicked - Setting up teacher form');
@@ -751,6 +756,7 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
       // Don't auto-select academic year - wait for user to select it
       // Allocation sync will be triggered in onAcademicYearChange when user selects academic year
     }
+
 
     this.IsAddNewClicked = !this.IsAddNewClicked;
     this.IsActiveStatus = true;
@@ -761,7 +767,10 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
   SubmitHomework() {
     console.log('[SUBMIT] Starting homework submission...');
     
+    console.log('[SUBMIT] Starting homework submission...');
+    
     if (this.HomeworkForm.invalid) {
+      console.log('[SUBMIT] Form is invalid:', this.HomeworkForm.errors);
       console.log('[SUBMIT] Form is invalid:', this.HomeworkForm.errors);
       this.HomeworkForm.markAllAsTouched();
       return;
@@ -813,7 +822,7 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
   }
 
   submitToDB(operation: 'insert' | 'update') {
-    const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
+    const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";    
     const attachmentUrl = this.HomeworkForm.get('AttachmentURL')?.value;
     
     const data = {
@@ -838,16 +847,22 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     };
 
     console.log(`[${operation.toUpperCase()}] Submitting to DB:`, JSON.stringify(data, null, 2));
+    console.log(`[${operation.toUpperCase()}] Submitting to DB:`, JSON.stringify(data, null, 2));
 
     this.apiurl.post("Tbl_Homework_CRUD_Operations", data).subscribe({
       next: (response: any) => {
+        console.log(`[${operation.toUpperCase()}] API Response:`, response);
         console.log(`[${operation.toUpperCase()}] API Response:`, response);
         if (response.statusCode === 200) {
           this.IsAddNewClicked = !this.IsAddNewClicked;
           this.isModalOpen = true;
           this.AminityInsStatus = operation === 'insert' ? "Homework Assigned Successfully!" : "Homework Updated Successfully!";
+          this.AminityInsStatus = operation === 'insert' ? "Homework Assigned Successfully!" : "Homework Updated Successfully!";
           this.HomeworkForm.reset();
           this.HomeworkForm.markAsPristine();
+          this.clearFileSelection();
+          this.uploadedFileUrl = '';
+          this.selectedFile = null;
           this.clearFileSelection();
           this.uploadedFileUrl = '';
           this.selectedFile = null;
@@ -855,13 +870,21 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
           this.pageCursors = [];
           this.lastCreatedDate = null;
           this.lastID = null;
+          // Reset filter state so FetchInitialData returns all records not just the edited one
+          this.AdminselectedAcademivYearID = '';
+          this.AdminselectedClassID = '';
+          this.AdminselectedDivisionID = '';
+          this.AdminselectedSubjectID = '';
           this.FetchInitialData({}, true);
         } else {
+          this.AminityInsStatus = response.message || `Error ${operation === 'insert' ? 'submitting' : 'updating'} homework.`;
           this.AminityInsStatus = response.message || `Error ${operation === 'insert' ? 'submitting' : 'updating'} homework.`;
           this.isModalOpen = true;
         }
       },
       error: (err: any) => {
+        console.error(`[${operation.toUpperCase()}] API Error:`, err);
+        this.AminityInsStatus = `Error ${operation === 'insert' ? 'submitting' : 'updating'} homework.`;
         console.error(`[${operation.toUpperCase()}] API Error:`, err);
         this.AminityInsStatus = `Error ${operation === 'insert' ? 'submitting' : 'updating'} homework.`;
         this.isModalOpen = true;
@@ -872,10 +895,39 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
   UpdateHomework() {
     console.log('[UPDATE] Starting homework update...');
     
+    console.log('[UPDATE] Starting homework update...');
+    
     if (this.HomeworkForm.invalid) {
+      console.log('[UPDATE] Form is invalid:', this.HomeworkForm.errors);
       console.log('[UPDATE] Form is invalid:', this.HomeworkForm.errors);
       this.HomeworkForm.markAllAsTouched();
       return;
+    }
+
+    // If new file selected, delete old file first then upload new file
+    if (this.selectedFile) {
+      console.log('[UPDATE] New file selected, handling replacement...');
+      
+      const oldUrl = this.HomeworkForm.get('AttachmentURL')?.value;
+      if (oldUrl) {
+        // Delete old file first
+        this.deleteOldFileBeforeUpload().subscribe({
+          next: () => {
+            console.log('[UPDATE] Old file deleted, now uploading new file');
+            this.uploadFileThenSubmit('update');
+          },
+          error: (err) => {
+            console.error('[UPDATE] Failed to delete old file, proceeding with upload:', err);
+            this.uploadFileThenSubmit('update');
+          }
+        });
+      } else {
+        // No old file, just upload new one
+        this.uploadFileThenSubmit('update');
+      }
+    } else {
+      console.log('[UPDATE] No new file, updating DB directly...');
+      this.submitToDB('update');
     }
 
     // If new file selected, delete old file first then upload new file
@@ -1412,6 +1464,18 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
           this.AdminselectedSubjectID = item.subjectID?.toString() || '0';
           this.IsActiveStatus = isActive;
           this.IsAddNewClicked = true;
+
+          // Set file upload state for existing attachment
+          if (item.attachmentURL) {
+            this.uploadedFileUrl = item.attachmentURL;
+            // Extract filename from URL
+            const urlParts = item.attachmentURL.split('/');
+            this.uploadedFileName = urlParts[urlParts.length - 1] || 'Attached File';
+          } else {
+            this.uploadedFileUrl = '';
+            this.uploadedFileName = '';
+          }
+
 
           // Set file upload state for existing attachment
           if (item.attachmentURL) {

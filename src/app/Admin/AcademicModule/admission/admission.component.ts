@@ -708,7 +708,7 @@ export class AdmissionComponent extends BasePermissionComponent {
     if(this.activeTab=="personal"){
       this.ModuleForm.markAllAsTouched();
       const personalFieldKeys = [
-        'School', 'AcademicYear','AdmissionNo', 'Class', 'Division', 'FirstName', 'MobileNo',
+        'AdmissionNo', 'Class', 'Division', 'FirstName',
         'Gender', 'Nationality', 'Religion'
       ];
 
@@ -1460,7 +1460,7 @@ export class AdmissionComponent extends BasePermissionComponent {
     if(this.activeTab=="personal"){
       this.ModuleForm.markAllAsTouched();
       const personalFieldKeys = [
-        'School', 'AcademicYear','AdmissionNo', 'Class', 'Division', 'FirstName', 'MobileNo',
+        'AdmissionNo', 'Class', 'Division', 'FirstName',
         'Gender', 'Nationality', 'Religion'
       ];
 
