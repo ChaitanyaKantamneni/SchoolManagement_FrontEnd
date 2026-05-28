@@ -105,7 +105,6 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
   currentPage = 1;
   pageSize = 10;
   visiblePageCount = 3;
-  pageCursors: { lastCreatedDate: any; lastID: number }[] = [];
 
   // Sort
   sortColumn = 'AdmissionNo';
@@ -303,7 +302,6 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
 
   private resetPagination() {
     this.currentPage = 1;
-    this.pageCursors = [];
   }
 
   fetchStudents(extra: any = {}) {
@@ -370,17 +368,12 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
       next: (countRes: any) => {
         this.totalCount = countRes?.data?.[0]?.totalcount ?? 0;
 
-        const cursor = !extra.offset && this.currentPage > 1
-          ? this.pageCursors[this.currentPage - 2] || null
-          : null;
-
         const payload: any = {
           Flag: this.searchQuery?.trim() ? '7' : '2',
           Limit: this.pageSize,
           SortColumn: this.sortColumn,
           SortDirection: this.sortDirection,
-          LastCreatedDate: cursor?.lastCreatedDate ?? null,
-          LastID: cursor?.lastID ?? null,
+          Offset: (this.currentPage - 1) * this.pageSize,
           ...extra
         };
         if (schoolIdToUse) payload.SchoolID = schoolIdToUse;
@@ -412,14 +405,6 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
               RollNo: item.rollNo,
               createdDate: item.createdDate
             }));
-
-            if (data.length > 0 && !this.pageCursors[this.currentPage - 1]) {
-              const last = data[data.length - 1];
-              this.pageCursors[this.currentPage - 1] = {
-                lastCreatedDate: last.createdDate,
-                lastID: Number(last.id)
-              };
-            }
             this.loader.hide();
           },
           error: () => { this.studentsList = []; this.loader.hide(); }
@@ -447,12 +432,7 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     if (page < 1) page = 1;
     if (page > total) page = total;
     this.currentPage = page;
-    const isBoundary = page === 1 || page === total || !this.pageCursors[page - 2];
-    if (isBoundary) {
-      this.fetchStudents({ offset: (page - 1) * this.pageSize });
-    } else {
-      this.fetchStudents();
-    }
+    this.fetchStudents();
   }
 
   previousPage() { if (this.currentPage > 1) this.goToPage(this.currentPage - 1); }
