@@ -1048,7 +1048,7 @@ export class ParentDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.schoolName = sessionStorage.getItem('schoolName') || '';
-    this.academicYear = sessionStorage.getItem('academicYear') || '';
+    this.academicYear = sessionStorage.getItem('AcademicYear') || '';
     this.parentEmail = sessionStorage.getItem('UserID') || sessionStorage.getItem('email') || '';
     this.schoolId = sessionStorage.getItem('SchoolID') || sessionStorage.getItem('schoolId') || '';
 
@@ -1974,7 +1974,7 @@ this.examRecords = Array.from(groupedExams.values()).map((subjects: any[]) => {
       className: this.selectedChild.className || this.selectedChild.class || '',
       divisionId: this.selectedChild.divisionId || this.selectedChild.division || '',
       divisionName: this.selectedChild.divisionName || this.selectedChild.division || '',
-      academicYear: this.academicYear,
+      academicYear: this.selectedAcademicYearId,
       leaveType: LeaveType.PERSONAL_LEAVE,
       fromDate: from.toISOString().split('T')[0],
       toDate: to.toISOString().split('T')[0],
