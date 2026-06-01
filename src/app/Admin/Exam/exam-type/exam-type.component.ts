@@ -33,6 +33,7 @@ export class ExamTypeComponent extends BasePermissionComponent {
   ngOnInit(): void {
     this.checkViewPermission();
     this.SchoolSelectionChange = false;
+    this.AdminSelectedActiveAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
     this.FetchSchoolsList();
     this.FetchInitialData();
   };
@@ -70,6 +71,8 @@ export class ExamTypeComponent extends BasePermissionComponent {
   isModalOpen = false;
   isViewModalOpen = false;
   SyllabusCount: number = 0;
+  SubjectsActiveCount: number = 0;
+  SubjectsInActiveCount: number = 0;
   ActiveUserId: string = localStorage.getItem('email')?.toString() || '';
   roleId = localStorage.getItem('RollID');
 
@@ -82,10 +85,15 @@ export class ExamTypeComponent extends BasePermissionComponent {
   editclicked: boolean = false;
   schoolList: any[] = [];
   selectedSchoolID: string = '';
-  SchoolSelectionChange: boolean = false;
+  selectedAcademicYearID: string = '';
+  selectedClassID: string = '';
+  SchoolSelectionChange:boolean=false;
+  SchoolAcademicYearChange:boolean=false;
+  SchoolClassChange:boolean=false;
   academicYearList:any[] = [];
   AdminselectedSchoolID:string = '';
   AdminselectedAcademivYearID:string = '';
+  AdminSelectedActiveAcademicYearID:string = sessionStorage.getItem('ActiveAcademicYearID') || '';
 
   SyllabusForm :any= new FormGroup({
     ID: new FormControl(''),
@@ -127,7 +135,12 @@ export class ExamTypeComponent extends BasePermissionComponent {
       );
   };
 FetchAcademicYearsList() {
-    const requestData = { SchoolID:this.AdminselectedSchoolID||'',Flag: '2' };
+  const schoolId =
+    this.SchoolSelectionChange
+      ? this.selectedSchoolID?.trim()
+      : this.AdminselectedSchoolID || '';
+
+    const requestData = { SchoolID:schoolId,Flag: '2' };
 
     this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)
       .subscribe(
@@ -158,16 +171,36 @@ FetchAcademicYearsList() {
 
   FetchAcademicYearCount(isSearch: boolean) {
     let SchoolIdSelected = '';
+    let AcademicYearIdSelected='';
+    let ClassSelected='';
 
     if (this.SchoolSelectionChange) {
       SchoolIdSelected = this.selectedSchoolID.trim();
     }
 
-    return this.apiurl.post<any>('Tbl_Examtype_CRUD_Operations', {
+    if(this.SchoolAcademicYearChange){
+      AcademicYearIdSelected=this.selectedAcademicYearID.trim();
+    }
+
+    if(this.SchoolClassChange){
+      ClassSelected=this.selectedClassID.trim();
+    }
+
+    const payload: any = {
       Flag: isSearch ? '8' : '6',
       SchoolID: SchoolIdSelected,
       ExamTypeName: isSearch ? this.searchQuery.trim() : null
-    });
+    };
+
+    // ✅ add only for admin
+    if (!this.isAdmin) {
+      payload.AcademicYear = this.AdminSelectedActiveAcademicYearID;
+    }
+    else if(this.isAdmin && this.SchoolAcademicYearChange){
+      payload.AcademicYear = AcademicYearIdSelected;
+    }
+
+    return this.apiurl.post<any>('Tbl_Examtype_CRUD_Operations', payload);
   }
 
   FetchInitialData(extra: any = {}) {
@@ -175,9 +208,19 @@ FetchAcademicYearsList() {
     const flag = isSearch ? '7' : '2';
 
     let SchoolIdSelected = '';
+    let AcademicYearIdSelected='';
+    let ClassSelected='';
 
     if (this.SchoolSelectionChange) {
       SchoolIdSelected = this.selectedSchoolID.trim();
+    }
+
+    if(this.SchoolAcademicYearChange){
+      AcademicYearIdSelected=this.selectedAcademicYearID.trim();
+    }
+
+    if(this.SchoolClassChange){
+      ClassSelected=this.selectedClassID.trim();
     }
 
     const cursor =
@@ -190,6 +233,8 @@ FetchAcademicYearsList() {
     this.FetchAcademicYearCount(isSearch).subscribe({
       next: (countResp: any) => {
         this.SyllabusCount = countResp?.data?.[0]?.totalcount ?? 0;
+        this.SubjectsActiveCount=countResp?.data?.[0]?.activeCount ?? 0;
+        this.SubjectsInActiveCount=countResp?.data?.[0]?.inactiveCount ?? 0;
 
         const payload: any = {
           Flag: flag,
@@ -199,9 +244,16 @@ FetchAcademicYearsList() {
           LastCreatedDate: cursor?.lastCreatedDate ?? null,
           LastID: cursor?.lastID ?? null,
           SchoolID: SchoolIdSelected,
-          AcademicYear: this.AdminselectedAcademivYearID || null,
+          // AcademicYear: this.AdminselectedAcademivYearID || null,
           ...extra
         };
+
+        if (!this.isAdmin) {
+          payload.AcademicYear = this.AdminSelectedActiveAcademicYearID;
+        }
+        else if(this.isAdmin && this.SchoolAcademicYearChange){
+          payload.AcademicYear = AcademicYearIdSelected;
+        }
 
         if (isSearch) payload.ExamTypeName = this.searchQuery.trim();
 
@@ -254,19 +306,24 @@ FetchAcademicYearsList() {
   };
 
   AddNewClicked() {
-      if (this.isAdmin) {
+    this.SyllabusForm.reset();
+    if (this.isAdmin) {
       this.SyllabusForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+      this.SyllabusForm.get('School').patchValue('0');
+      this.SyllabusForm.get('AcademicYear').patchValue('0');
     } else {
       this.SyllabusForm.get('School')?.clearValidators();
+      this.SyllabusForm.get('AcademicYear')?.disable({ emitEvent: false });
     }
     if(this.AdminselectedSchoolID==''){
       const schoolFromSession = sessionStorage.getItem('SchoolID') || localStorage.getItem('SchoolID') || '';
       this.AdminselectedSchoolID = schoolFromSession;
       this.FetchAcademicYearsList();
+      if(!this.isAdmin){
+        this.SyllabusForm.get('AcademicYear').patchValue(this.AdminSelectedActiveAcademicYearID);
+        // this.FetchCommonList('syllabus');
+      }  
     }
-    this.SyllabusForm.reset();
-    this.SyllabusForm.get('School').patchValue('0');
-    this.SyllabusForm.get('AcademicYear').patchValue('0');
     this.IsAddNewClicked = !this.IsAddNewClicked;
     this.IsActiveStatus = true;
     this.ViewSyllabusClicked = false;
@@ -592,6 +649,19 @@ else{
       this.selectedSchoolID = schoolID;
     }
     this.SchoolSelectionChange = true;
+    this.FetchAcademicYearsList();
+    this.FetchInitialData();
+  };
+
+  onAcademicYearChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    if(schoolID=="0"){
+      this.selectedAcademicYearID="";
+    }else{
+      this.selectedAcademicYearID = schoolID;
+    }    
+    this.SchoolAcademicYearChange = true;
     this.FetchInitialData();
   };
 
@@ -661,4 +731,25 @@ else{
     }   
     this.FetchAcademicYearsList();
   };
+
+  pageStartIndex(): number {
+    return this.SyllabusCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
+  }
+
+  pageEndIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.SyllabusCount);
+  }
+
+  CancelSyllabus(){
+    this.IsAddNewClicked=false;
+    this.AdminselectedSchoolID = '';
+    this.AdminselectedAcademivYearID = '';
+    this.SyllabusForm.reset();
+    this.FetchInitialData();
+  }
+
+  onRowsCountChange() {
+    this.currentPage = 1;
+    this.FetchInitialData();
+  }
 }

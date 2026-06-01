@@ -219,7 +219,7 @@
                   </div>
                 </div>
               </div>
-              <div class="InputFieldsContainer">
+              <!-- <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Class <span class="required">*</span></label>
                 <div class="input-with-error">
                   <div class="custom-multiselect" #dropdownContainer>
@@ -244,7 +244,64 @@
                       </div>
                   </div>
                 </div>                
-              </div>
+              </div> -->
+              <div class="InputFieldsContainer">
+  <label class="inputLabel" for="Class">
+    Class <span class="required">*</span>
+  </label>
+
+  <div class="input-with-error">
+    <div class="custom-multiselect" #dropdownContainer>
+      
+      <div class="select-box" (click)="toggleDropdown($event)">
+        {{
+          isAllSelected()
+            ? 'All Classes Selected'
+            : selectedCategories.length
+              ? selectedCategories.length + ' selected'
+              : 'Select Class'
+        }}
+        <span class="arrow">{{ dropdownOpen ? '▲' : '▼' }}</span>
+      </div>
+
+      <div class="options" *ngIf="dropdownOpen">
+
+        <!-- Select All Option -->
+        <label>
+          <input
+            type="checkbox"
+            [checked]="isAllSelected()"
+            (change)="toggleSelectAll($event)"
+          />
+          <strong>Select All</strong>
+        </label>
+
+        <!-- Class List -->
+        <label *ngFor="let cat of categories">
+          <input
+            type="checkbox"
+            [checked]="selectedCategories.includes(cat.ID)"
+            (change)="toggleSelection(cat.ID)"
+          />
+          {{ cat.Name }}
+        </label>
+
+      </div>
+    </div>
+
+    <div
+      *ngIf="
+        ModuleForm.get('Class')?.touched &&
+        ModuleForm.get('Class')?.invalid
+      "
+      class="text-danger"
+    >
+      <div *ngIf="ModuleForm.get('Class')?.errors?.['required']">
+        <small>Please Select Class.</small>
+      </div>
+    </div>
+  </div>
+</div>
               <div class="InputFieldsContainer" *ngIf="!isAdmin">
                 <label class="inputLabel" for="email">Subject Name <span class="required">*</span></label>
                 <div class="input-with-error">
