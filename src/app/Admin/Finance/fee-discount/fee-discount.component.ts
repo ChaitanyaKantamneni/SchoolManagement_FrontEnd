@@ -86,7 +86,7 @@ constructor(
   AdminselectedAcademivYearID:string = '';
   AdminselectedClassID:string = '';
   AdminselectedClassDivisionID:string = '';
-AdminSelectedActiveAcademicYearID:string = sessionStorage.getItem('ActiveAcademicYearID') || '';
+  AdminSelectedActiveAcademicYearID:string = sessionStorage.getItem('ActiveAcademicYearID') || '';
 
 
   ClassDivisionForm: any = new FormGroup({
@@ -145,6 +145,7 @@ AdminSelectedActiveAcademicYearID:string = sessionStorage.getItem('ActiveAcademi
     this.SchoolSelectionChange
       ? this.selectedSchoolID?.trim()
       : this.AdminselectedSchoolID || '';
+      
     const requestData = { SchoolID:schoolId,Flag: '3' };
 
     this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)

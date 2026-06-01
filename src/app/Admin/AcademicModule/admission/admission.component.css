@@ -203,8 +203,8 @@
   justify-content: center;
   border: none;
   border-radius: 12px;
-  background: rgba(15, 23, 42, 0.06);
-  color: #475569;
+  background: rgb(15 23 42 / 26%);
+  color: #bbbec3;
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease;
 }
@@ -1176,7 +1176,7 @@
   font-size: 12px;
 }
 
-.admission-footer-meta label select {
+/* .admission-footer-meta label select {
   height: 30px;
   min-width: 50px;
   border: 1px solid #d5e0ef;
@@ -1185,7 +1185,7 @@
   background: #fff;
   font-size: 13px;
   padding: 0 10px;
-}
+} */
 
 .admission-footer-meta p {
   margin: 0;

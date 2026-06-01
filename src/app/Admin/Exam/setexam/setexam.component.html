@@ -2,7 +2,7 @@
   <app-dashboard-top-nav></app-dashboard-top-nav>
 </div>
 <div class="MainContentDiv">
-  <div *ngIf="!IsAddNewClicked" class="w-100">
+  <div *ngIf="!IsAddNewClicked" class="w-100 admission-dashboard">
     <div class="ComponentTop">
       <div class="ComponentTopHeader">
         <h5>Exam Management</h5>
@@ -369,7 +369,7 @@
       </div>
     </div>
   </div>
-  </div>
+</div>
   
   <div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isStatusModalOpen}" [style.display]="isStatusModalOpen ? 'block' : 'none'">
   <div class="modal-dialog" role="document">
