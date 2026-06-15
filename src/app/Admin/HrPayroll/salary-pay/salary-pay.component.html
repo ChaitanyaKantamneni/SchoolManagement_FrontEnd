@@ -18,14 +18,21 @@
   </div>
 </div>
 <div class="MainContentDiv">
-  <div class="w-100">
-    <div class="AddForm">
-      <div class="AddFormTop">
-        <button type="button" class="salary-pay-top-spacer" tabindex="-1" aria-hidden="true">
-          <mat-icon>arrow_circle_left</mat-icon>
-        </button>
-        <p>SALARY PAY</p>
+  <div class="w-100 admission-dashboard">
+    <div class="admission-breadcrumb">
+      <span>HR & Payroll</span>
+      <mat-icon>chevron_right</mat-icon>
+      <strong>Salary Pay</strong>
+    </div>
+    <div class="AddFormTop">
+      <div class="admission-record-header p-0">
+        <div>
+          <h5>Salary Pay</h5>
+          <p>Configure and process staff monthly salary payments</p>
+        </div>
       </div>
+    </div>
+    <div class="AddForm">
       <div class="AddFormConatiner">
         <div class="FormInputRowsContainer">
           <div class="InputRow">
@@ -44,7 +51,7 @@
             <div class="InputFieldsContainer">
               <label class="inputLabel">Academic Year <span class="required">*</span></label>
               <div class="input-with-error">
-                <select class="inputField" [(ngModel)]="selectedAcademicYearID" (ngModelChange)="onAcademicYearChange()">
+                <select class="inputField" [(ngModel)]="selectedAcademicYearID" (ngModelChange)="onAcademicYearChange()" [disabled]="!isAdmin">
                   <option value="">-- Select Academic Year --</option>
                   <option *ngFor="let year of academicYearList" [value]="year.ID">{{ year.Name }}</option>
                 </select>
@@ -53,8 +60,6 @@
                 </div>
               </div>
             </div>
-          </div>
-          <div class="InputRow">
             <div class="InputFieldsContainer">
               <label class="inputLabel">Staff <span class="required">*</span></label>
               <div class="input-with-error">
@@ -67,7 +72,7 @@
                 </div>
               </div>
             </div>
-            <div class="InputFieldsContainer">
+            <div class="InputFieldsContainer" *ngIf="!isAdmin">
               <label class="inputLabel">Payment Mode <span class="required">*</span></label>
               <div class="input-with-error">
                 <select class="inputField" [(ngModel)]="form.paymentMode" (ngModelChange)="onPaymentModeChange()">
@@ -81,6 +86,18 @@
             </div>
           </div>
           <div class="InputRow">
+            <div class="InputFieldsContainer" *ngIf="isAdmin">
+              <label class="inputLabel">Payment Mode <span class="required">*</span></label>
+              <div class="input-with-error">
+                <select class="inputField" [(ngModel)]="form.paymentMode" (ngModelChange)="onPaymentModeChange()">
+                  <option value="">-- Select Payment Mode --</option>
+                  <option *ngFor="let mode of paymentModes" [value]="mode.Name">{{ mode.Name }}</option>
+                </select>
+                <div *ngIf="formSubmitAttempted && !form.paymentMode" class="text-danger">
+                  <small>Please select payment mode.</small>
+                </div>
+              </div>
+            </div>
             <div class="InputFieldsContainer">
               <label class="inputLabel">Start Date <span class="required">*</span></label>
               <div class="input-with-error">
@@ -99,7 +116,7 @@
                 </div>
               </div>
             </div>
-            <div class="InputFieldsContainer">
+            <div class="InputFieldsContainer" *ngIf="!isAdmin">
               <label class="inputLabel">
                 Reference No <span class="required" *ngIf="isReferenceNoRequired()">*</span>
               </label>
@@ -120,6 +137,34 @@
               </div>
             </div>
           </div>
+          <div class="InputRow" *ngIf="isAdmin">
+            <div class="InputFieldsContainer">
+              <label class="inputLabel">
+                Reference No <span class="required" *ngIf="isReferenceNoRequired()">*</span>
+              </label>
+              <div class="input-with-error">
+                <input
+                  class="inputField"
+                  type="text"
+                  [(ngModel)]="form.referenceNo"
+                  [required]="isReferenceNoRequired()"
+                  placeholder="Enter reference no"
+                />
+                <div
+                  *ngIf="formSubmitAttempted && isReferenceNoRequired() && !form.referenceNo?.trim()"
+                  class="text-danger"
+                >
+                  <small>Please enter Reference No.</small>
+                </div>
+              </div>
+            </div>
+            <div class="InputFieldsContainer">
+                <span style="visibility: hidden;">hello adding new academic year</span>
+              </div>
+              <div class="InputFieldsContainer">
+                <span style="visibility: hidden;">hello adding new academic year</span>
+              </div>
+          </div>
         </div>
 
         <div class="salary-pay-fetch-row">
@@ -128,8 +173,8 @@
           </button>
         </div>
 
-        <div *ngIf="salaryDetails" class="salary-pay-summary">
-          <table class="sp-table">
+        <div *ngIf="salaryDetails" class="salary-pay-summary reviewstable admission-table-wrap">
+          <table class="table table-bordered admission-table sp-table">
             <thead>
               <tr>
                 <th class="sp-th-head">SI.NO</th>
@@ -208,10 +253,13 @@
 
         <p *ngIf="statusMessage" class="salary-pay-status">{{ statusMessage }}</p>
 
-        <div class="ActionButtons">
-          <button type="button" (click)="paySalary()" [disabled]="!salaryDetails || isSubmitting || isPageLoading">
-            {{ isSubmitting || isPageLoading ? 'Processing...' : 'Pay Salary' }}
-          </button>
+        <div class="form-bottom">
+          <span class="footer-hint">Fields marked <span class="required">*</span> are required</span>
+          <div class="ActionButtons footer-actions">
+            <button type="button" class="submitbtn" (click)="paySalary()" [disabled]="!salaryDetails || isSubmitting || isPageLoading">
+              {{ isSubmitting || isPageLoading ? 'Processing...' : 'Pay Salary' }}
+            </button>
+          </div>
         </div>
       </div>
     </div>

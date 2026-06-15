@@ -2,11 +2,19 @@
   <app-dashboard-top-nav></app-dashboard-top-nav>
 </div>
 <div class="MainContentDiv">
-  <div class="w-100">
-    <div class="ComponentTop" *ngIf="!IsAddNewClicked">
-        <div class="ComponentTopHeader">
+  <div class="w-100 admission-dashboard">
+    <div class="admission-breadcrumb" *ngIf="!IsAddNewClicked">
+      <span>Time Table</span>
+      <mat-icon>chevron_right</mat-icon>
+      <strong>Teacher Time Table Management</strong>
+    </div>
+    <div class="AddFormTop" *ngIf="!IsAddNewClicked">
+      <div class="admission-record-header p-0">
+        <div>
           <h5>Teacher Time Table Management</h5>
+          <p>Configure and view teacher timetables</p>
         </div>
+      </div>
     </div> 
     <div>
       <div class="AddForm">           
@@ -116,15 +124,25 @@
                 </div> 
               </div>
             </div>
-            <div class="actionbuttons">
-              <button class="btnsubmit" (click)="SubmitFilterList()">Submit</button>
+            <div class="form-bottom">
+              <span class="footer-hint">Fields marked <span class="required">*</span> are required</span>
+              <div class="ActionButtons footer-actions">
+                <button type="button" class="submitbtn" (click)="SubmitFilterList()">Submit</button>
+              </div>
             </div>
           </form>
         </div>
       </div>
-      <div class="AddForm" *ngIf="IsFliterClicked">
+      <div class="ComponentRecords admission-record-card compact-table-section" *ngIf="IsFliterClicked">
         <div>          
-          <table class="table table-bordered" *ngIf="FreeStaffList.length>0">
+          <div class="ComponentRecordsTop admission-record-header">
+            <div>
+              <h5>Free Staff Records</h5>
+              <p>Showing {{ FreeStaffList.length }} employee{{ FreeStaffList.length === 1 ? '' : 's' }}</p>
+            </div>
+          </div>
+          <div class="reviewstable admission-table-wrap">
+            <table class="table table-bordered admission-table" *ngIf="FreeStaffList.length>0">
             <thead>
               <tr>
                 <th class="visually-hidden">Academic Year ID</th>
@@ -154,6 +172,7 @@
               </tr>
             </tbody>
           </table>
+        </div>
           <div *ngIf="FreeStaffList.length === 0" class="NoDataFound">
             <div class="NoDataFoundImg">
               <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">

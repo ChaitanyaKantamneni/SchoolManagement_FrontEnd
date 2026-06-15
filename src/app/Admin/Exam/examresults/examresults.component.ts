@@ -32,14 +32,26 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
     ngOnInit(): void {
       this.checkViewPermission();
       this.SchoolSelectionChange = false;
-      
-      // Initialize parent role detection
       this.initializeUserRole();
-      
+      this.FetchSchoolsList();
+      this.AdminSelectedActiveAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
       if (this.isAdmin) {
-        this.FetchSchoolsList();
+        this.SyllabusForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+        this.SyllabusForm.get('School').patchValue('0');
+        this.SyllabusForm.get('AcademicYear').patchValue('0');
+      } else {
+        this.SyllabusForm.get('School')?.clearValidators();
+        this.SyllabusForm.get('AcademicYear')?.disable({ emitEvent: false });
       }
-      this.FetchAcademicYearsList();
+
+      if(this.AdminselectedSchoolID==''){
+        this.FetchAcademicYearsList();
+        if(!this.isAdmin){
+          this.SyllabusForm.get('AcademicYear').patchValue(this.AdminSelectedActiveAcademicYearID);
+          this.FetchExamsList();
+          this.FetchClassList();
+        } 
+      }
     };
   
     allowOnlyNumbers(event: KeyboardEvent) {
@@ -89,7 +101,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
     editclicked: boolean = false;
     schoolList: any[] = [];
     selectedSchoolID: string = '';
-    SchoolSelectionChange: boolean = false;
+    selectedAcademicYearID: string = '';
+    selectedClassID: string = '';
+    SchoolSelectionChange:boolean=false;
+    SchoolAcademicYearChange:boolean=false;
+    SchoolClassChange:boolean=false;
     isTableModalOpen = false;
     academicYearList :any[]= [];
   
@@ -108,6 +124,7 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
     AdminselectedDiviosnID:string = '';
     AdminselecteExamID:string = '';
     AdminselectedStudentID:string='';
+    AdminSelectedActiveAcademicYearID:string = sessionStorage.getItem('ActiveAcademicYearID') || '';
   
   
     SyllabusForm :any= new FormGroup({
@@ -308,8 +325,13 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
 
         
     FetchAcademicYearsList() {
+      const schoolId =
+      this.SchoolSelectionChange
+        ? this.selectedSchoolID?.trim()
+        : this.AdminselectedSchoolID || '';
+
       const requestData = { 
-        SchoolID:this.AdminselectedSchoolID||'',
+        SchoolID:schoolId,
         Flag: '2' 
       };
   
@@ -334,10 +356,20 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
           }
         );
     };
+
   FetchClassList() {
+    const AcademicYearIdSelected =
+    this.isAdmin
+      ? (
+          this.SchoolAcademicYearChange
+            ? this.selectedAcademicYearID?.trim()
+            : this.AdminselectedAcademivYearID?.trim()
+        )
+      : this.AdminSelectedActiveAcademicYearID || '';
+
     const requestData = {
       SchoolID: this.AdminselectedSchoolID || '',
-      AcademicYear: this.AdminselectedAcademivYearID || '',
+      AcademicYear: AcademicYearIdSelected,
       Flag: '9'
     };
    
@@ -378,9 +410,18 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
   }
 
   FetchExamsList() {
+    const AcademicYearIdSelected =
+    this.isAdmin
+      ? (
+          this.SchoolAcademicYearChange
+            ? this.selectedAcademicYearID?.trim()
+            : this.AdminselectedAcademivYearID?.trim()
+        )
+      : this.AdminSelectedActiveAcademicYearID || '';
+
     const requestData = {
       SchoolID: this.AdminselectedSchoolID || '',
-      AcademicYear: this.AdminselectedAcademivYearID || '',
+      AcademicYear: AcademicYearIdSelected,
       Flag: '3'
     };
    
@@ -428,10 +469,20 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
         }
       );
   }
-    FetchMarkDetailReport() {
+
+  FetchMarkDetailReport() {
+    const AcademicYearIdSelected =
+    this.isAdmin
+      ? (
+          this.SchoolAcademicYearChange
+            ? this.selectedAcademicYearID?.trim()
+            : this.AdminselectedAcademivYearID?.trim()
+        )
+      : this.AdminSelectedActiveAcademicYearID || '';
+
     const requestData = {
       SchoolID: this.AdminselectedSchoolID || '',
-      AcademicYear: this.AdminselectedAcademivYearID || '',
+      AcademicYear: AcademicYearIdSelected,
       Class: this.AdminselectedClassID || '',
       Division: this.AdminselectedDiviosnID || '',
       ExamID: this.AdminselecteExamID || '',
@@ -496,12 +547,21 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
         this.studentReport = [];
       }
     );
-}
+  }
 
   FetchDivisionsList() {
+    const AcademicYearIdSelected =
+    this.isAdmin
+      ? (
+          this.SchoolAcademicYearChange
+            ? this.selectedAcademicYearID?.trim()
+            : this.AdminselectedAcademivYearID?.trim()
+        )
+      : this.AdminSelectedActiveAcademicYearID || '';
+
     const requestData = {
       SchoolID: this.AdminselectedSchoolID || '',
-      AcademicYear: this.AdminselectedAcademivYearID || '',
+      AcademicYear: AcademicYearIdSelected,
       Class :this.AdminselectedClassID || '',
       Flag: '3'
     };
@@ -542,9 +602,18 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
   }
   
   FetchExamsbyclassanddivisionList() {
+    const AcademicYearIdSelected =
+    this.isAdmin
+      ? (
+          this.SchoolAcademicYearChange
+            ? this.selectedAcademicYearID?.trim()
+            : this.AdminselectedAcademivYearID?.trim()
+        )
+      : this.AdminSelectedActiveAcademicYearID || '';
+
     const requestData = {
       SchoolID: this.AdminselectedSchoolID || '',
-      AcademicYear: this.AdminselectedAcademivYearID || '',
+      AcademicYear: AcademicYearIdSelected,
       Class :this.AdminselectedClassID || '',
       Divisions :this.AdminselectedDiviosnID || '',
       ExamType :this.AdminselecteExamID || '',
@@ -810,6 +879,15 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
   }
   
   onSubmit() {
+    const AcademicYearIdSelected =
+    this.isAdmin
+      ? (
+          this.SchoolAcademicYearChange
+            ? this.selectedAcademicYearID?.trim()
+            : this.AdminselectedAcademivYearID?.trim()
+        )
+      : this.AdminSelectedActiveAcademicYearID || '';
+
     if (this.isParent) {
       // For parents, use form validation
       this.SyllabusForm.markAllAsTouched();
@@ -826,7 +904,7 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
     }
 
     // For admin/teacher/school admin, check if required fields are selected
-    const academicYear = this.AdminselectedAcademivYearID;
+    const academicYear = AcademicYearIdSelected;
     const classId = this.AdminselectedClassID;
     const divisionId = this.AdminselectedDiviosnID;
     const examId = this.AdminselecteExamID;

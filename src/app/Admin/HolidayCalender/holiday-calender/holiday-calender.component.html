@@ -5,56 +5,88 @@
 <div class="MainContentDiv">
 
   <!-- ═══════════════════ LIST / CALENDAR VIEW ═══════════════════ -->
-  <div *ngIf="!isFormOpen" class="w-100">
+  <div *ngIf="!isFormOpen" class="w-100 admission-dashboard">
 
-    <div class="ComponentTop">
+    <div class="ComponentTop admission-hero">
       <div class="ComponentTopHeader">
+        <div class="admission-breadcrumb">
+          <span>Holiday Calendar</span>
+          <mat-icon>chevron_right</mat-icon>
+          <strong>Holidays</strong>
+        </div>
         <h5>Holiday Calendar</h5>
         <p>Total {{ holidayCount }} Holidays Added</p>
       </div>
-      <div class="ComponentTopBottom">
-        <button *ngIf="canAdd()" (click)="openAddForm()">
+      <div class="ComponentTopBottom admission-header-actions">
+        <button *ngIf="canAdd()" type="button" class="admission-btn admission-btn--primary admission-top-action" (click)="openAddForm()">
           <mat-icon>add_circle</mat-icon>Add Holiday
         </button>
       </div>
     </div>
 
-    <div class="ComponentRecords">
-      <div class="ComponentRecordsTop">
-        <div class="filterOptions">
-          <div class="searchreview input-container">
-            <input type="text" class="form-control floating-input"
-              [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search..." />
-            <mat-icon style="position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none;">search</mat-icon>
-          </div>
-          <div class="searchreview" *ngIf="isAdmin">
-            <select class="form-control" style="font-size:11px;" (change)="onSchoolFilterChange($event)">
-              <option value="0">-- Select School --</option>
-              <option value="all">All Schools</option>
-              <option *ngFor="let s of schoolList" [value]="s.ID">{{ s.Name }}</option>
-            </select>
-          </div>
-          <div class="searchreview">
-            <select class="form-control" style="font-size:11px;" (change)="onAcademicYearFilterChange($event)">
-              <option value="0">-- All Academic Years --</option>
-              <option *ngFor="let a of academicYearList" [value]="a.ID">{{ a.Name }}</option>
-            </select>
-          </div>
+    <div class="admission-stats-grid">
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--blue"><mat-icon>calendar_today</mat-icon></div>
+        <div>
+          <strong>{{ holidayCount }}</strong>
+          <span>Total Holidays</span>
         </div>
-        <!-- View toggle sits in the top-right of the filter row -->
-        <div class="view-toggle-btns">
-          <button [ngClass]="{'active-view': viewMode === 'table'}" (click)="viewMode = 'table'" title="Table View">
-            <mat-icon>table_rows</mat-icon>
-          </button>
-          <button [ngClass]="{'active-view': viewMode === 'calendar'}" (click)="viewMode = 'calendar'" title="Calendar View">
-            <mat-icon>calendar_month</mat-icon>
-          </button>
+      </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--green"><mat-icon>schedule</mat-icon></div>
+        <div>
+          <strong>{{ pageSize }}</strong>
+          <span>Rows Per Page</span>
+        </div>
+      </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--amber"><mat-icon>calendar_month</mat-icon></div>
+        <div>
+          <strong>{{ currentPage }}</strong>
+          <span>Current Page</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="admission-filter-row">
+      <div class="admission-searchbox">
+        <mat-icon>search</mat-icon>
+        <input type="text" id="searchQuery" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search holidays..." />
+      </div>
+      <button type="button" class="admission-chip admission-chip--active">All <span>{{ holidayCount }}</span></button>
+      
+      <select class="admission-select" *ngIf="isAdmin" (change)="onSchoolFilterChange($event)">
+        <option value="0">-- Select School --</option>
+        <option value="all">All Schools</option>
+        <option *ngFor="let s of schoolList" [value]="s.ID">{{ s.Name }}</option>
+      </select>
+      
+      <select class="admission-select" (change)="onAcademicYearFilterChange($event)" [disabled]="!isAdmin" [value]="filterAcademicYear">
+        <option value="0">-- All Academic Years --</option>
+        <option *ngFor="let a of academicYearList" [value]="a.ID">{{ a.Name }}</option>
+      </select>
+
+      <div class="view-toggle-btns" style="margin-left: auto;">
+        <button [ngClass]="{'active-view': viewMode === 'table'}" (click)="viewMode = 'table'" title="Table View">
+          <mat-icon>table_rows</mat-icon>
+        </button>
+        <button [ngClass]="{'active-view': viewMode === 'calendar'}" (click)="viewMode = 'calendar'" title="Calendar View">
+          <mat-icon>calendar_month</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <div class="ComponentRecords admission-record-card">
+      <div class="ComponentRecordsTop admission-record-header">
+        <div>
+          <h5>Holiday Records</h5>
+          <p>Showing {{ holidayList.length }} of {{ holidayCount }} records</p>
         </div>
       </div>
 
       <!-- ══════════ TABLE VIEW ══════════ -->
-      <div *ngIf="viewMode === 'table'" class="reviewstable">
-        <table *ngIf="holidayList.length > 0" class="table table-bordered">
+      <div *ngIf="viewMode === 'table'" class="reviewstable admission-table-wrap">
+        <table *ngIf="holidayList.length > 0" class="table table-bordered admission-table">
           <thead>
             <tr>
               <th>SI.No</th>
@@ -81,7 +113,7 @@
           <tbody>
             <tr *ngFor="let h of holidayList; let i = index">
               <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-              <td data-label="HolidayName">{{ h.HolidayName }}</td>
+              <td data-label="HolidayName"><strong>{{ h.HolidayName }}</strong></td>
               <td data-label="FromDate">{{ formatDate(h.FromDate) }}</td>
               <td data-label="ToDate">{{ formatDate(h.ToDate) }}</td>
               <td data-label="Type">{{ h.HolidayType }}</td>
@@ -89,9 +121,9 @@
               <td data-label="AcademicYear">{{ h.AcademicYearName }}</td>
               <td data-label="Status">
                 <span class="status-pill"
-                  [style.background]="h.IsActive ? 'linear-gradient(135deg,#dcfce7 0%,#bbf7d0 100%)' : 'linear-gradient(135deg,#ffe4e6 0%,#fecdd3 100%)'"
-                  [style.color]="h.IsActive ? '#166534' : '#9f1239'"
-                  [style.borderColor]="h.IsActive ? '#86efac' : '#fda4af'"
+                  [style.background]="h.IsActive ? '#d9f9e5' : '#fff0bd'"
+                  [style.color]="h.IsActive ? '#00823a' : '#c25b00'"
+                  [style.borderColor]="h.IsActive ? '#86efac' : '#f5d77a'"
                   [ngClass]="h.IsActive ? 'status-active' : 'status-inactive'">
                   {{ h.IsActive ? 'Active' : 'Inactive' }}
                 </span>
@@ -115,6 +147,20 @@
             <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="" />
           </div>
           <p>No data found.</p>
+        </div>
+
+        <div class="admission-footer-meta">
+          <label>
+            Rows:
+            <select aria-label="Rows per page" [(ngModel)]="pageSize"
+          (ngModelChange)="onRowsCountChange()">
+              <option [ngValue]="5">5</option>
+              <option [ngValue]="10">10</option>
+              <option [ngValue]="25">25</option>
+              <option [ngValue]="50">50</option>
+            </select>
+          </label>
+          <p>{{ pageStartIndex() }}&ndash;{{ pageEndIndex() }} of {{ holidayCount }} records</p>
         </div>
 
         <div *ngIf="holidayCount > pageSize" class="pagination-controls">
@@ -168,10 +214,25 @@
 
   <!-- ═══════════════════ ADD / EDIT FORM ═══════════════════ -->
   <div *ngIf="isFormOpen" class="w-100">
+    <div class="admission-breadcrumb">
+      <span>Holiday Calendar</span>
+      <mat-icon>chevron_right</mat-icon>
+      <span>Holidays</span>
+      <mat-icon>chevron_right</mat-icon>
+      <strong>{{ isEditMode ? 'Edit Holiday' : 'Add Holiday' }}</strong>
+    </div>
+    <div class="AddFormTop">
+      <button (click)="closeForm()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+      <div class="admission-record-header p-0">
+        <div>
+          <h5>{{ isEditMode ? 'Edit Holiday' : 'Add Holiday' }}</h5>
+          <p>Configure holiday settings and dates</p>
+        </div>
+      </div>
+    </div>
     <div class="AddForm">
-      <div class="AddFormTop">
-        <button (click)="closeForm()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
-        <p>{{ isEditMode ? 'Edit Holiday' : 'Add Holiday' }}</p>
+      <div class="form-top">
+        <p class="cc-title">Holiday Details</p>
       </div>
       <div class="AddFormConatiner">
         <form [formGroup]="holidayForm">
@@ -255,15 +316,27 @@
                   </div>
                 </div>
                 <div class="InputFieldsContainer">
-                  <div class="toggle-container" (click)="$event.stopPropagation()">
-                    <label class="switch">
-                      <input type="checkbox" [checked]="IsActiveStatus" (click)="toggleActive()" />
-                      <span class="slider">
-                        <span class="toggle-text" [ngStyle]="{left: IsActiveStatus ? '42%' : '60%', fontSize: '9px'}">
-                          {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                  <span style="visibility: hidden;">Spacer</span>
+                </div>
+              </div>
+              
+              <div class="InputRow">
+                <div class="noteActiveCard">
+                  <div class="noteSection">
+                    <span>Status</span>
+                    <p>Determine whether this holiday is currently active.</p>
+                  </div>
+                  <div class="InputFieldsContainer">
+                    <div class="toggle-container" (click)="$event.stopPropagation()">
+                      <label class="switch">
+                        <input type="checkbox" [checked]="IsActiveStatus" (click)="toggleActive()" />
+                        <span class="slider">
+                          <span class="toggle-text" [ngStyle]="{left: IsActiveStatus ? '42%' : '60%', fontSize: '9px'}">
+                            {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                          </span>
                         </span>
-                      </span>
-                    </label>
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -334,27 +407,36 @@
               </div>
 
               <div class="InputRow">
-                <div class="InputFieldsContainer">
-                  <div class="toggle-container" (click)="$event.stopPropagation()">
-                    <label class="switch">
-                      <input type="checkbox" [checked]="IsActiveStatus" (click)="toggleActive()" />
-                      <span class="slider">
-                        <span class="toggle-text" [ngStyle]="{left: IsActiveStatus ? '42%' : '60%', fontSize: '9px'}">
-                          {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                <div class="noteActiveCard">
+                  <div class="noteSection">
+                    <span>Status</span>
+                    <p>Determine whether this holiday is currently active.</p>
+                  </div>
+                  <div class="InputFieldsContainer">
+                    <div class="toggle-container" (click)="$event.stopPropagation()">
+                      <label class="switch">
+                        <input type="checkbox" [checked]="IsActiveStatus" (click)="toggleActive()" />
+                        <span class="slider">
+                          <span class="toggle-text" [ngStyle]="{left: IsActiveStatus ? '42%' : '60%', fontSize: '9px'}">
+                            {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                          </span>
                         </span>
-                      </span>
-                    </label>
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
             </ng-template>
-
-          </div>
-          <div class="ActionButtons">
-            <button type="button" *ngIf="isEditMode && canEdit()" (click)="updateHoliday()">Update</button>
-            <button type="button" *ngIf="!isEditMode && canAdd()" (click)="submitHoliday()">Submit</button>
           </div>
         </form>
+      </div>
+      <div class="form-bottom">
+        <span class="footer-hint">Fields marked <span class="required">*</span> are required</span>
+        <div class="ActionButtons footer-actions">
+          <button type="button" class="cancelbtn" (click)="closeForm()">Cancel</button>
+          <button type="button" class="submitbtn" *ngIf="isEditMode && canEdit()" (click)="updateHoliday()">Update</button>
+          <button type="button" class="submitbtn" *ngIf="!isEditMode && canAdd()" (click)="submitHoliday()">Submit</button>
+        </div>
       </div>
     </div>
   </div>

@@ -32,6 +32,9 @@ export class NoticesComponent extends BasePermissionComponent implements OnInit 
     this.checkViewPermission();
     this.fetchSchoolsList();
     this.fetchAcademicYearsList();
+    if (!this.isAdmin) {
+      this.noticesForm.get('AcademicYear')?.disable({ emitEvent: false });
+    }
     this.fetchData();
   }
 
@@ -70,7 +73,7 @@ export class NoticesComponent extends BasePermissionComponent implements OnInit 
 
   // ── Filter ─────────────────────────────────────────────────────────────────
   filterSchoolID = '';
-  filterAcademicYear = '';
+  filterAcademicYear = sessionStorage.getItem('ActiveAcademicYearID') || '';
   filterNoticeType = '';
   filterAudience = '';
 
@@ -87,7 +90,7 @@ export class NoticesComponent extends BasePermissionComponent implements OnInit 
     StartDate:     new FormControl('', Validators.required),
     EndDate:       new FormControl('', Validators.required),
     School:        new FormControl('0'),
-    AcademicYear:  new FormControl('0', [Validators.required, Validators.min(1)])
+    AcademicYear:  new FormControl(sessionStorage.getItem('ActiveAcademicYearID') || '0', [Validators.required, Validators.min(1)])
   });
 
 
@@ -204,11 +207,12 @@ export class NoticesComponent extends BasePermissionComponent implements OnInit 
     this.isEditMode = false;
     this.IsActiveStatus = true;
     this.noticesForm.reset();
-    this.noticesForm.patchValue({ NoticeType: 'General', Audience: 'All', School: '0', AcademicYear: '0' });
+    this.noticesForm.patchValue({ NoticeType: 'General', Audience: 'All', School: '0', AcademicYear: sessionStorage.getItem('ActiveAcademicYearID') || '0' });
     if (this.isAdmin) {
       this.noticesForm.get('School')?.setValidators([Validators.required, Validators.min(1)]);
     } else {
       this.noticesForm.get('School')?.clearValidators();
+      this.noticesForm.get('AcademicYear')?.disable({ emitEvent: false });
     }
     this.noticesForm.get('School')?.updateValueAndValidity();
     this.isFormOpen = true;
@@ -224,7 +228,7 @@ export class NoticesComponent extends BasePermissionComponent implements OnInit 
     if (this.noticesForm.invalid) { this.noticesForm.markAllAsTouched(); return; }
 
     const v = this.noticesForm.value;
-    const payload = {
+    const payload: any = {
       Flag: '1',
       Title:          v.Title,
       Description:    v.Description || null,
@@ -238,6 +242,10 @@ export class NoticesComponent extends BasePermissionComponent implements OnInit 
       CreatedBy:      Number(this.activeUserId) || null
     };
 
+    if (!this.isAdmin) {
+      payload.AcademicYear = sessionStorage.getItem('ActiveAcademicYearID') || '';
+    }
+
     this.loader.show();
     this.apiurl.post<any>('Tbl_Notices_CRUD_Operations', payload).subscribe({
       next: (res: any) => {
@@ -246,6 +254,7 @@ export class NoticesComponent extends BasePermissionComponent implements OnInit 
         this.isStatusModalOpen = true;
         this.isFormOpen = false;
         this.noticesForm.reset();
+        this.noticesForm.patchValue({ AcademicYear: sessionStorage.getItem('ActiveAcademicYearID') || '0' });
       },
       error: (err: any) => {
         this.loader.hide();
@@ -289,6 +298,7 @@ export class NoticesComponent extends BasePermissionComponent implements OnInit 
             this.noticesForm.get('School')?.setValidators([Validators.required, Validators.min(1)]);
           } else {
             this.noticesForm.get('School')?.clearValidators();
+            this.noticesForm.get('AcademicYear')?.disable({ emitEvent: false });
           }
           this.noticesForm.get('School')?.updateValueAndValidity();
           this.noticesForm.patchValue({
@@ -313,7 +323,7 @@ export class NoticesComponent extends BasePermissionComponent implements OnInit 
     if (this.noticesForm.invalid) { this.noticesForm.markAllAsTouched(); return; }
 
     const v = this.noticesForm.value;
-    const payload = {
+    const payload: any = {
       Flag:           '5',
       NoticeId:       v.NoticeId,
       Title:          v.Title,
@@ -328,6 +338,10 @@ export class NoticesComponent extends BasePermissionComponent implements OnInit 
       ModifiedBy:     Number(this.activeUserId) || null
     };
 
+    if (!this.isAdmin) {
+      payload.AcademicYear = sessionStorage.getItem('ActiveAcademicYearID') || '';
+    }
+
     this.loader.show();
     this.apiurl.post<any>('Tbl_Notices_CRUD_Operations', payload).subscribe({
       next: (res: any) => {
@@ -336,6 +350,7 @@ export class NoticesComponent extends BasePermissionComponent implements OnInit 
         this.isStatusModalOpen = true;
         this.isFormOpen = false;
         this.noticesForm.reset();
+        this.noticesForm.patchValue({ AcademicYear: sessionStorage.getItem('ActiveAcademicYearID') || '0' });
       },
       error: (err: any) => {
         this.loader.hide();
@@ -385,6 +400,20 @@ export class NoticesComponent extends BasePermissionComponent implements OnInit 
     const pages = [];
     for (let i = start; i <= end; i++) pages.push(i);
     return pages;
+  }
+
+  pageStartIndex(): number {
+    return this.noticesCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
+  }
+
+  pageEndIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.noticesCount);
+  }
+
+  onRowsCountChange() {
+    this.currentPage = 1;
+    this.pageCursors = [];
+    this.fetchData();
   }
 
   // ── Search ─────────────────────────────────────────────────────────────────
@@ -446,7 +475,7 @@ export class NoticesComponent extends BasePermissionComponent implements OnInit 
 
   onAdminSchoolFormChange(event: Event) {
     const val = (event.target as HTMLSelectElement).value;
-    this.noticesForm.get('AcademicYear')?.patchValue('0');
+    this.noticesForm.get('AcademicYear')?.patchValue(sessionStorage.getItem('ActiveAcademicYearID') || '0');
     this.fetchAcademicYearsList(val === '0' ? '' : val);
   }
 

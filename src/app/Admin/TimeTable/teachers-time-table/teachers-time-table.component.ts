@@ -38,17 +38,27 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       this.SchoolSelectionChange=false;
       this.ClassDivisionForm.reset();
       if (this.isAdmin) {
-        this.ClassDivisionForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
-      } else {
-        this.ClassDivisionForm.get('School')?.clearValidators();
-      }
+          this.ClassDivisionForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+          this.ClassDivisionForm.get('School').patchValue('0');
+          this.ClassDivisionForm.get('AcademicYear').patchValue('0');
+        } else {
+          this.ClassDivisionForm.get('School')?.clearValidators();
+          this.ClassDivisionForm.get('AcademicYear')?.disable({ emitEvent: false });
+        }
       if(this.AdminselectedSchoolID==''){
-        this.FetchAcademicYearsList();
-      }
+          this.FetchAcademicYearsList();
+          if(!this.isAdmin){
+            this.ClassDivisionForm.get('AcademicYear').patchValue(this.AdminSelectedActiveAcademicYearID);
+            this.FetchStaffBySchoolAcademicYearList(); 
+            this.FetchWorkingdaysList();
+            this.FetchSessionsList();
+          }      
+        }  
       this.ClassDivisionForm.get('School').patchValue('0');
-      this.ClassDivisionForm.get('AcademicYear').patchValue('0');
       this.ClassDivisionForm.get('Class').patchValue('0');
       this.ClassDivisionForm.get('Division').patchValue('0');
+      this.ClassDivisionForm.get('WorkingDay').patchValue('0');
+        this.ClassDivisionForm.get('TimeSlot').patchValue('0');
       this.FetchSchoolsList();
     };
   
@@ -109,6 +119,7 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
     selectedEndTime: string = '';
     AdminselectedClassDivisionID:string = '';
     SelectedTransitionID:string = '';
+    AdminSelectedActiveAcademicYearID:string = sessionStorage.getItem('ActiveAcademicYearID') || '';
   
     ClassDivisionForm: any = new FormGroup({
       ID: new FormControl(),
@@ -166,7 +177,12 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
     };
   
     FetchAcademicYearsList() {
-      const requestData = { SchoolID:this.AdminselectedSchoolID||'',Flag: '3' };
+      const schoolId =
+    this.SchoolSelectionChange
+      ? this.selectedSchoolID?.trim()
+      : this.AdminselectedSchoolID || '';
+
+      const requestData = { SchoolID:schoolId,Flag: '3' };
   
       this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)
         .subscribe(
@@ -196,9 +212,14 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
     } 
 
     FetchWorkingdaysList() {
+      const AcademicYearIdSelected =
+    this.isAdmin
+      ? this.AdminselectedAcademivYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
+
       const requestData = { 
         SchoolID:this.AdminselectedSchoolID,
-        AcademicYear:this.AdminselectedAcademivYearID,
+        AcademicYear:AcademicYearIdSelected,
         Flag: '3' };
   
       this.apiurl.post<any>('Tbl_WorkingDays_CRUD_Operations', requestData)
@@ -229,9 +250,14 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
     };
 
     FetchSessionsList() {
+      const AcademicYearIdSelected =
+    this.isAdmin
+      ? this.AdminselectedAcademivYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
+
       const requestData = { 
         SchoolID:this.AdminselectedSchoolID,
-        AcademicYear:this.AdminselectedAcademivYearID,
+        AcademicYear:AcademicYearIdSelected,
         Flag: '3' };
   
       this.apiurl.post<any>('Tbl_Session_CRUD_Operations', requestData)
@@ -290,20 +316,29 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
         this.isModalOpen = false;
         if (this.isAdmin) {
           this.ClassDivisionForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+          this.ClassDivisionForm.get('School').patchValue('0');
+          this.ClassDivisionForm.get('AcademicYear').patchValue('0');
         } else {
           this.ClassDivisionForm.get('School')?.clearValidators();
+          this.ClassDivisionForm.get('AcademicYear')?.disable({ emitEvent: false });
         }
-        this.ClassDivisionForm.get('School').patchValue('0');
-        this.ClassDivisionForm.get('AcademicYear').patchValue('0');
-        this.ClassDivisionForm.get('Class').patchValue('0');
-        this.ClassDivisionForm.get('Division').patchValue('0');
-        this.IsFliterClicked=false;
         if(this.AdminselectedSchoolID==''){
           this.FetchAcademicYearsList();
-        }
+          if(!this.isAdmin){
+            this.ClassDivisionForm.get('AcademicYear').patchValue(this.AdminSelectedActiveAcademicYearID);
+            this.FetchStaffBySchoolAcademicYearList(); 
+            this.FetchWorkingdaysList();
+            this.FetchSessionsList();
+          }      
+        }  
+        this.ClassDivisionForm.get('School').patchValue('0');
+        this.ClassDivisionForm.get('Class').patchValue('0');
+        this.ClassDivisionForm.get('Division').patchValue('0');
+        this.ClassDivisionForm.get('WorkingDay').patchValue('0');
+        this.ClassDivisionForm.get('TimeSlot').patchValue('0');
+        this.IsFliterClicked=false;
         this.isViewModalOpen=false;
-      }
-            
+      }            
     };
   
     toggleChange(){
@@ -380,9 +415,14 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
     };
 
     FetchStaffBySchoolAcademicYearList() {
+      const AcademicYearIdSelected =
+    this.isAdmin
+      ? this.AdminselectedAcademivYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
+
       const requestData = { 
         SchoolID: this.AdminselectedSchoolID,
-        AcademicYear: this.AdminselectedAcademivYearID,
+        AcademicYear: AcademicYearIdSelected,
         Flag: '9'
       };
 
@@ -411,9 +451,14 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
     }
 
     FetchTimeSlotsBySchoolAcademicYearList() {
+      const AcademicYearIdSelected =
+    this.isAdmin
+      ? this.AdminselectedAcademivYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
+
       const requestData = { 
         SchoolID: this.AdminselectedSchoolID,
-        AcademicYear: this.AdminselectedAcademivYearID,
+        AcademicYear: AcademicYearIdSelected,
         DayID: this.AdminselectedWorkingDayID,
         Flag: '10'
       };
@@ -467,9 +512,14 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
     };
 
     FetchFreeStaff() {
+      const AcademicYearIdSelected =
+    this.isAdmin
+      ? this.AdminselectedAcademivYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
+
       const requestData = { 
         SchoolID: this.AdminselectedSchoolID,
-        AcademicYear: this.AdminselectedAcademivYearID,
+        AcademicYear: AcademicYearIdSelected,
         StartTime: this.selectedStartTime,
         EndTime: this.selectedEndTime,
         DayID: this.AdminselectedWorkingDayID,
@@ -659,6 +709,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
         !extra.offset && this.currentPage > 1
           ? this.pageCursors[this.currentPage - 2] || null
           : null;
+
+      const AcademicYearIdSelected =
+    this.isAdmin
+      ? this.AdminselectedAcademivYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
   
       this.loader.show();
   
@@ -668,7 +723,7 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
   
           const payload: any = {
             SchoolID:this.AdminselectedSchoolID,
-            AcademicYear:this.AdminselectedAcademivYearID,
+            AcademicYear:AcademicYearIdSelected,
             Flag: flag,
             ...extra
           };
@@ -754,6 +809,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
         !extra.offset && this.currentPage > 1
           ? this.pageCursors[this.currentPage - 2] || null
           : null;
+
+      const AcademicYearIdSelected =
+    this.isAdmin
+      ? this.AdminselectedAcademivYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
   
       this.loader.show();
   
@@ -763,7 +823,7 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
   
           const payload: any = {
             SchoolID:this.AdminselectedSchoolID,
-            AcademicYear:this.AdminselectedAcademivYearID,
+            AcademicYear:AcademicYearIdSelected,
             StartTime: this.selectedStartTime,
             EndTime: this.selectedEndTime,
             DayID: this.AdminselectedWorkingDayID,

@@ -2,36 +2,72 @@
   <app-dashboard-top-nav></app-dashboard-top-nav>
 </div>
 <div class="MainContentDiv">
-  <div *ngIf="!IsAddNewClicked" class="w-100">
-    <div class="ComponentTop">
+  <div *ngIf="!IsAddNewClicked" class="w-100 admission-dashboard">
+    <div class="ComponentTop admission-hero">
       <div class="ComponentTopHeader">
-        <h5>Salary Settings</h5>
-        <p>Total {{ salarySettings.length }} staff salary settings</p>
+        <div class="admission-breadcrumb">
+          <span>HR & Payroll</span>
+          <mat-icon>chevron_right</mat-icon>
+          <strong>Salary Settings</strong>
+        </div>
+        <h5>Salary Settings Management</h5>
+        <p>Total {{ salarySettings.length }} staff salary settings added</p>
       </div>
-      <div class="ComponentTopBottom">
-        <button class="btnHover" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Salary Setting</button>
+      <div class="ComponentTopBottom admission-header-actions">
+        <button *ngIf="canAdd()" type="button" class="admission-btn admission-btn--primary admission-top-action" (click)="AddNewClicked()">
+          <mat-icon>add_circle_outline</mat-icon>
+          Add Salary Setting
+        </button>
       </div>
     </div>
-    <div class="ComponentRecords">
-      <div>
-        <div class="ComponentRecordsTop">
-          <div class="filterOptions">
-            <div class="searchreview input-container">
-              <input type="text" class="form-control floating-input" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search staff..." />
-              <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
-            </div>
-            <div class="searchreview school-filter" *ngIf="isAdmin">
-              <select [(ngModel)]="selectedListSchoolID" (change)="onSchoolFilterChange($event)" class="form-control" style="font-size: 11px;">
-                <option value="">All Schools</option>
-                <option *ngFor="let school of schoolList" [value]="school.ID">
-                  {{ school.Name }}
-                </option>
-              </select>
-            </div>
-          </div>
+
+    <div class="admission-stats-grid">
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--blue"><mat-icon>settings_suggest</mat-icon></div>
+        <div>
+          <strong>{{ salarySettings.length }}</strong>
+          <span>Total Salary Settings</span>
         </div>
-        <div class="reviewstable">
-          <table *ngIf="filteredSaved.length !== 0" class="table table-bordered">
+      </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--green"><mat-icon>schedule</mat-icon></div>
+        <div>
+          <strong>{{ pageSize }}</strong>
+          <span>Rows Per Page</span>
+        </div>
+      </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--amber"><mat-icon>calendar_month</mat-icon></div>
+        <div>
+          <strong>{{ currentPage }}</strong>
+          <span>Current Page</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="admission-filter-row">
+      <div class="admission-searchbox">
+        <mat-icon>search</mat-icon>
+        <input type="text" id="searchQuery" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search staff..." />
+      </div>
+      <button type="button" class="admission-chip admission-chip--active">All <span>{{ salarySettings.length }}</span></button>
+      <select class="admission-select" *ngIf="isAdmin" [(ngModel)]="selectedListSchoolID" (change)="onSchoolFilterChange($event)">
+        <option value="">All Schools</option>
+        <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+      </select>
+    </div>
+
+    <div class="ComponentRecords admission-record-card">
+      <div>
+        <div class="ComponentRecordsTop admission-record-header">
+          <div>
+            <h5>Salary Setting Records</h5>
+            <p>Showing {{ filteredSaved.length }} of {{ salarySettings.length }} records</p>
+          </div>
+          <div class="admission-table-actions"></div>
+        </div>
+        <div class="reviewstable admission-table-wrap">
+          <table id="classTable" *ngIf="filteredSaved.length != 0" class="table table-bordered admission-table">
             <thead>
               <tr>
                 <th>SI.No</th>
@@ -45,10 +81,10 @@
             <tbody>
               <tr *ngFor="let row of filteredSaved; let i = index">
                 <td>{{ i + 1 }}</td>
-                <td>{{ row.schoolName || '-' }}</td>
-                <td>{{ row.academicYearName || '-' }}</td>
-                <td>{{ row.staffName }}</td>
-                <td>{{ row.headsCount }}</td>
+                <td data-label="School">{{ row.schoolName || '-' }}</td>
+                <td data-label="AcademicYear">{{ row.academicYearName || '-' }}</td>
+                <td data-label="Staff"><strong>{{ row.staffName }}</strong></td>
+                <td data-label="ActiveHeads">{{ row.headsCount }}</td>
                 <td data-label="Actions">
                   <div class="d-flex justify-content-center align-items-center h-100">
                     <button type="button" class="btn checkbtn edit" data-tooltip="Edit" (click)="editReview(row)">
@@ -64,9 +100,34 @@
           </table>
           <div *ngIf="filteredSaved.length === 0" class="NoDataFound">
             <div class="NoDataFoundImg">
-              <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="" />
+              <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
             </div>
             <p>No data found.</p>
+          </div>
+          <div class="admission-footer-meta">
+            <label>
+              Rows:
+              <select aria-label="Rows per page" [(ngModel)]="pageSize"
+            (ngModelChange)="onRowsCountChange()">
+                <option [ngValue]="5">5</option>
+                <option [ngValue]="10">10</option>
+                <option [ngValue]="25">25</option>
+                <option [ngValue]="50">50</option>
+              </select>
+            </label>
+            <p>{{ pageStartIndex() }}&ndash;{{ pageEndIndex() }} of {{ settingsCount }} records</p>
+          </div>
+          <div *ngIf="settingsCount > pageSize" class="pagination-controls">
+            <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
+            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">&larr;</button>
+            <button *ngFor="let page of getVisiblePageNumbers()"
+                    class="page-btn"
+                    [ngClass]="{'active': page === currentPage}"
+                    (click)="goToPage(page)">
+              {{ page }}
+            </button>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">&rarr;</button>
+            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
           </div>
         </div>
       </div>
@@ -74,10 +135,25 @@
   </div>
 
   <div *ngIf="IsAddNewClicked" class="w-100">
+    <div class="admission-breadcrumb">
+      <span>HR & Payroll</span>
+      <mat-icon>chevron_right</mat-icon>
+      <span>Salary Settings</span>
+      <mat-icon>chevron_right</mat-icon>
+      <strong>{{ editModeId ? 'Edit Salary Setting' : 'Add Salary Setting' }}</strong>
+    </div>
+    <div class="AddFormTop">
+      <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+      <div class="admission-record-header p-0">
+        <div>
+          <h5>{{ editModeId ? 'Edit Salary Setting' : 'Add Salary Setting' }}</h5>
+          <p>Configure staff salary settings and pay head assignments</p>
+        </div>
+      </div>
+    </div>
     <div class="AddForm">
-      <div class="AddFormTop">
-        <button type="button" (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
-        <p>ADD SALARY SETTINGS</p>
+      <div class="form-top">
+        <p class="cc-title">Salary Settings Details</p>
       </div>
       <div class="AddFormConatiner">
         <div class="FormInputRowsContainer">
@@ -97,8 +173,8 @@
             <div class="InputFieldsContainer">
               <label class="inputLabel">Academic Year <span class="required">*</span></label>
               <div class="input-with-error">
-                <select class="inputField" [(ngModel)]="selectedAcademicYearID" (ngModelChange)="onAcademicYearChange()">
-                  <option value="">-- Select Academic Year --</option>
+                <select class="inputField" [(ngModel)]="selectedAcademicYearID" (ngModelChange)="onAcademicYearChange()" [disabled]="!isAdmin">
+                  <option value="0">-- Select Academic Year --</option>
                   <option *ngFor="let year of academicYearList" [value]="year.ID">{{ year.Name }}</option>
                 </select>
                 <div *ngIf="formSubmitAttempted && !selectedAcademicYearID" class="text-danger">
@@ -106,8 +182,6 @@
                 </div>
               </div>
             </div>
-          </div>
-          <div class="InputRow">
             <div class="InputFieldsContainer">
               <label class="inputLabel">Staff <span class="required">*</span></label>
               <div class="input-with-error">
@@ -123,12 +197,12 @@
           </div>
         </div>
 
-        <div class="reviewstable salary-settings-table">
-          <table class="table table-bordered">
+        <div class="reviewstable admission-table-wrap salary-settings-table mt-4">
+          <table class="table table-bordered admission-table">
             <thead>
               <tr>
                 <th>SI.No</th>
-                <th>Enable</th>
+                <th style="width: 150px; text-align: center;">Enable</th>
                 <th>Pay Head</th>
                 <th>Amount</th>
               </tr>
@@ -137,7 +211,7 @@
               <tr *ngFor="let line of salaryHeads; let i = index">
                 <td>{{ i + 1 }}</td>
                 <td>
-                  <div class="toggle-container cell-toggle" (click)="$event.stopPropagation()">
+                  <div class="toggle-container cell-toggle" (click)="$event.stopPropagation()" style="justify-content: center;">
                     <label class="switch">
                       <input
                         type="checkbox"
@@ -152,7 +226,7 @@
                     </label>
                   </div>
                 </td>
-                <td>{{ line.payHead }}</td>
+                <td><strong>{{ line.payHead }}</strong></td>
                 <td>
                   <input class="inputField" type="number" [(ngModel)]="line.amount" [disabled]="!line.enabled" placeholder="0" />
                 </td>
@@ -160,29 +234,33 @@
             </tbody>
           </table>
         </div>
-
-        <div class="ActionButtons">
-          <button type="button" (click)="saveSettings()">{{ editModeId ? 'Update Salary Setting' : 'Add Salary Setting' }}</button>
+      </div>
+      <div class="form-bottom">
+        <span class="footer-hint">Fields marked <span class="required">*</span> are required</span>
+        <div class="ActionButtons footer-actions">
+          <button type="button" class="cancelbtn" (click)="AddNewClicked()">Cancel</button>
+          <button type="button" class="submitbtn" (click)="saveSettings()">{{ editModeId ? 'Update' : 'Submit' }}</button>
         </div>
       </div>
     </div>
   </div>
 </div>
-<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
-  <div class="modal-dialog" role="document">
+
+<div class="modal" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Salary Settings Details</h5>
         <button type="button" class="close" (click)="closeViewModal()"><span>&times;</span></button>
       </div>
       <div class="modal-body" *ngIf="viewRow">
-        <div class="row mb-2"><div class="col-5">Staff</div><div class="col-7">{{ viewRow.staffName }}</div></div>
-        <div class="row mb-2"><div class="col-5">School</div><div class="col-7">{{ viewRow.schoolName }}</div></div>
-        <div class="row mb-2"><div class="col-5">Academic Year</div><div class="col-7">{{ viewRow.academicYearName }}</div></div>
-        <div class="row mb-2"><div class="col-5">Active Pay Heads</div><div class="col-7">{{ viewRow.headsCount }}</div></div>
+        <div class="row mb-2"><div class="col-6 viewHeadingfontsize">Staff</div><div class="col-6 viewfontsize">{{ viewRow.staffName }}</div></div>
+        <div class="row mb-2"><div class="col-6 viewHeadingfontsize">School</div><div class="col-6 viewfontsize">{{ viewRow.schoolName }}</div></div>
+        <div class="row mb-2"><div class="col-6 viewHeadingfontsize">Academic Year</div><div class="col-6 viewfontsize">{{ viewRow.academicYearName }}</div></div>
+        <div class="row mb-2"><div class="col-6 viewHeadingfontsize">Active Pay Heads</div><div class="col-6 viewfontsize">{{ viewRow.headsCount }}</div></div>
 
-        <div class="reviewstable salary-settings-table mt-3" *ngIf="viewPayHeads.length">
-          <table class="table table-bordered">
+        <div class="reviewstable admission-table-wrap mt-3" *ngIf="viewPayHeads.length">
+          <table class="table table-bordered admission-table">
             <thead>
               <tr>
                 <th>SI.No</th>
@@ -195,7 +273,7 @@
               <tr *ngFor="let line of viewPayHeads; let i = index">
                 <td>{{ i + 1 }}</td>
                 <td>{{ line.isEnabled ? 'On' : 'Off' }}</td>
-                <td>{{ line.payHead }}</td>
+                <td><strong>{{ line.payHead }}</strong></td>
                 <td>{{ line.amount }}</td>
               </tr>
             </tbody>
@@ -205,11 +283,12 @@
     </div>
   </div>
 </div>
-<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isModalOpen}" [style.display]="isModalOpen ? 'block' : 'none'">
-  <div class="modal-dialog modal-dialog-centered" role="document">
+
+<div class="modal" role="dialog" [ngClass]="{'show': isModalOpen}" [style.display]="isModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Salary Settings</h5>
+        <h5 class="modal-title">Salary Settings Status</h5>
         <button type="button" class="close" (click)="closeModal('status')"><span>&times;</span></button>
       </div>
       <div class="modal-body"><p>{{ statusMessage }}</p></div>

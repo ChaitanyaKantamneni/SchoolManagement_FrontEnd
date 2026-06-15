@@ -35,7 +35,7 @@
             <div class="InputFieldsContainer">
               <label class="inputLabel">Academic Year <span class="required">*</span></label>
               <div class="input-with-error">
-                <select class="inputField" (change)="onAcademicYearChange($event)" [(ngModel)]="AdminselectedAcademivYearID">
+                <select class="inputField" (change)="onAcademicYearChange($event)" [(ngModel)]="AdminselectedAcademivYearID" [disabled]="!isAdmin">
                   <option value="">-- Select Academic Year --</option>
                   <option *ngFor="let year of academicYearList" value="{{year.ID}}">{{year.Name}}</option>
                 </select>
@@ -88,7 +88,7 @@
             <div class="InputFieldsContainer">
               <label class="inputLabel">Academic Year <span class="required">*</span></label>
               <div class="input-with-error">
-                <select class="inputField" (change)="onAcademicYearChange($event)" [(ngModel)]="AdminselectedAcademivYearID">
+                <select class="inputField" (change)="onAcademicYearChange($event)" [(ngModel)]="AdminselectedAcademivYearID" [disabled]="!isAdmin">
                   <option value="">-- Select Academic Year --</option>
                   <option *ngFor="let year of academicYearList" value="{{year.ID}}">{{year.Name}}</option>
                 </select>
@@ -138,7 +138,7 @@
             <div class="InputFieldsContainer">
               <label class="inputLabel">Academic Year <span class="required">*</span></label>
               <div class="input-with-error">
-                <select class="inputField" (change)="onAcademicYearChange($event)" [(ngModel)]="AdminselectedAcademivYearID">
+                <select class="inputField" (change)="onAcademicYearChange($event)" [(ngModel)]="AdminselectedAcademivYearID" [disabled]="!isAdmin">
                   <option value="">-- Select Academic Year --</option>
                   <option *ngFor="let year of academicYearList" value="{{year.ID}}">{{year.Name}}</option>
                 </select>

@@ -33,6 +33,26 @@ export class ExammarksComponent extends BasePermissionComponent{
     this.checkViewPermission();
     this.SchoolSelectionChange = false;
 
+    this.AdminSelectedActiveAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
+      // this.FetchAcademicYearsList();
+    if (this.isAdmin) {
+        this.SyllabusForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+        this.SyllabusForm.get('School').patchValue('0');
+        this.SyllabusForm.get('AcademicYear').patchValue('0');
+    } else {
+        this.SyllabusForm.get('School')?.clearValidators();
+        this.SyllabusForm.get('AcademicYear')?.disable({ emitEvent: false });
+      }
+
+      if(this.AdminselectedSchoolID==''){
+        this.FetchAcademicYearsList();
+        if(!this.isAdmin){
+          this.SyllabusForm.get('AcademicYear').patchValue(this.AdminSelectedActiveAcademicYearID);
+          this.FetchExamsList();
+          this.FetchClassList();
+        } 
+      }
+
     if (this.isTeacher) {
       this.AdminselectedSchoolID = this.resolvedSchoolId || this.ss('SchoolID') || this.ss('schoolId');
       this.resolveStaffIdentity();
@@ -120,7 +140,11 @@ export class ExammarksComponent extends BasePermissionComponent{
   editclicked: boolean = false;
   schoolList: any[] = [];
   selectedSchoolID: string = '';
-  SchoolSelectionChange: boolean = false;
+  selectedAcademicYearID: string = '';
+  selectedClassID: string = '';
+  SchoolSelectionChange:boolean=false;
+  SchoolAcademicYearChange:boolean=false;
+  SchoolClassChange:boolean=false;
   isTableModalOpen = false;
   academicYearList :any[]= [];
   classLists:any[] = [];
@@ -138,6 +162,7 @@ export class ExammarksComponent extends BasePermissionComponent{
   selectedExamIDForAttendance!: number;
   selectedSubjectID!: number;
   attendanceMode: 'add' | 'view' = 'add';
+  AdminSelectedActiveAcademicYearID:string = sessionStorage.getItem('ActiveAcademicYearID') || '';
 
   SyllabusForm :any= new FormGroup({
     ID: new FormControl(''),
@@ -299,8 +324,17 @@ export class ExammarksComponent extends BasePermissionComponent{
       return;
     }
 
+    const AcademicYearIdSelected =
+    this.isAdmin
+      ? (
+          this.SchoolAcademicYearChange
+            ? this.selectedAcademicYearID?.trim()
+            : this.AdminselectedAcademivYearID?.trim()
+        )
+      : this.AdminSelectedActiveAcademicYearID || '';
+
     const schoolId = this.getCurrentSchoolId();
-    const academicYear = this.AdminselectedAcademivYearID || '';
+    const academicYear = AcademicYearIdSelected || '';
     const staffId = this.currentUserId || '';
 
     if (!schoolId || !academicYear || !staffId) {
@@ -378,8 +412,13 @@ export class ExammarksComponent extends BasePermissionComponent{
   }
   
   FetchAcademicYearsList() {
+    const schoolId =
+    this.SchoolSelectionChange
+      ? this.selectedSchoolID?.trim()
+      : this.AdminselectedSchoolID || '';
+      
     const requestData = { 
-      SchoolID:this.getCurrentSchoolId(),
+      SchoolID:schoolId,
       Flag: '2' 
     };
 
@@ -406,9 +445,18 @@ export class ExammarksComponent extends BasePermissionComponent{
   };
   
 FetchClassList() {
+  const AcademicYearIdSelected =
+    this.isAdmin
+      ? (
+          this.SchoolAcademicYearChange
+            ? this.selectedAcademicYearID?.trim()
+            : this.AdminselectedAcademivYearID?.trim()
+        )
+      : this.AdminSelectedActiveAcademicYearID || '';
+      
   const requestData = {
     SchoolID: this.getCurrentSchoolId(),
-    AcademicYear: this.AdminselectedAcademivYearID || '',
+    AcademicYear: AcademicYearIdSelected || '',
     Flag: '9'
   };
   this.apiurl.post<any>('Tbl_ClassDivision_CRUD_Operations', requestData)
@@ -438,6 +486,15 @@ FetchClassList() {
     );
 }
 FetchExamsList() {
+  const AcademicYearIdSelected =
+    this.isAdmin
+      ? (
+          this.SchoolAcademicYearChange
+            ? this.selectedAcademicYearID?.trim()
+            : this.AdminselectedAcademivYearID?.trim()
+        )
+      : this.AdminSelectedActiveAcademicYearID || '';
+
   if (this.isTeacher) {
     if (!this.AdminselectedAcademivYearID || !this.currentUserId) {
       this.examLists = [];
@@ -446,7 +503,7 @@ FetchExamsList() {
 
     const teacherPayload: any = {
       SchoolID: this.getCurrentSchoolId(),
-      AcademicYear: this.AdminselectedAcademivYearID || '',
+      AcademicYear: AcademicYearIdSelected || '',
       Divisions: this.teacherAssignedDivisionID || this.AdminselectedDiviosnID || '',
       StaffID: this.currentUserId || '-1',
       Flag: '12'
@@ -479,7 +536,7 @@ FetchExamsList() {
 
   const requestData = {
     SchoolID: this.getCurrentSchoolId(),
-    AcademicYear: this.AdminselectedAcademivYearID || '',
+    AcademicYear: AcademicYearIdSelected || '',
     Flag: '3'
   };
 
@@ -509,9 +566,18 @@ FetchExamsList() {
 }
 
 FetchDivisionsList() {
+  const AcademicYearIdSelected =
+    this.isAdmin
+      ? (
+          this.SchoolAcademicYearChange
+            ? this.selectedAcademicYearID?.trim()
+            : this.AdminselectedAcademivYearID?.trim()
+        )
+      : this.AdminSelectedActiveAcademicYearID || '';
+
   const requestData = {
     SchoolID: this.getCurrentSchoolId(),
-    AcademicYear: this.AdminselectedAcademivYearID || '',
+    AcademicYear: AcademicYearIdSelected || '',
     Class :this.AdminselectedClassID || '',
     Flag: '3'
   };
@@ -552,9 +618,18 @@ FetchDivisionsList() {
 }
 
 FetchExamsbyclassanddivisionList() {
+  const AcademicYearIdSelected =
+    this.isAdmin
+      ? (
+          this.SchoolAcademicYearChange
+            ? this.selectedAcademicYearID?.trim()
+            : this.AdminselectedAcademivYearID?.trim()
+        )
+      : this.AdminSelectedActiveAcademicYearID || '';
+
   const requestData = {
     SchoolID: this.getCurrentSchoolId(),
-    AcademicYear: this.AdminselectedAcademivYearID || '',
+    AcademicYear: AcademicYearIdSelected || '',
     // Class :this.AdminselectedClassID || '',
     // Divisions :this.AdminselectedDiviosnID || '',
     ExamType :this.AdminselecteExamID || '',
@@ -635,10 +710,19 @@ FetchExamsbyclassanddivisionList() {
 }
 checkAttendanceStatusForExams() {
 
+  const AcademicYearIdSelected =
+    this.isAdmin
+      ? (
+          this.SchoolAcademicYearChange
+            ? this.selectedAcademicYearID?.trim()
+            : this.AdminselectedAcademivYearID?.trim()
+        )
+      : this.AdminSelectedActiveAcademicYearID || '';
+
   const body = {
     Flag: '2',
     SchoolID: this.getCurrentSchoolId(),
-    AcademicYear: this.AdminselectedAcademivYearID,
+    AcademicYear: AcademicYearIdSelected || '',
     Class: this.AdminselectedClassID || '',
     Division: this.AdminselectedDiviosnID || ''
   };
@@ -661,9 +745,18 @@ checkAttendanceStatusForExams() {
     });
 }
   FetchClassStudentsList() {
+    const AcademicYearIdSelected =
+    this.isAdmin
+      ? (
+          this.SchoolAcademicYearChange
+            ? this.selectedAcademicYearID?.trim()
+            : this.AdminselectedAcademivYearID?.trim()
+        )
+      : this.AdminSelectedActiveAcademicYearID || '';
+
     const requestData = { 
       SchoolID:this.getCurrentSchoolId(),
-            AcademicYear:this.AdminselectedAcademivYearID || '',
+            AcademicYear:AcademicYearIdSelected || '',
             Class:this.AdminselectedClassID || '',
             Divisions:this.AdminselectedDiviosnID,
             ExamType:this.selectedExamIDForAttendance.toString(),    
@@ -708,9 +801,18 @@ checkAttendanceStatusForExams() {
   };
 
   FetchClassStudentsListAfterAttendance(){
+    const AcademicYearIdSelected =
+    this.isAdmin
+      ? (
+          this.SchoolAcademicYearChange
+            ? this.selectedAcademicYearID?.trim()
+            : this.AdminselectedAcademivYearID?.trim()
+        )
+      : this.AdminSelectedActiveAcademicYearID || '';
+
     const requestData = { 
       SchoolID:this.getCurrentSchoolId(),
-            AcademicYear:this.AdminselectedAcademivYearID || '',            
+            AcademicYear:AcademicYearIdSelected || '',            
             // Class:this.AdminselectedClassID || '',
             // Division:this.AdminselectedDiviosnID,
             ExamID:this.selectedExamIDForAttendance.toString(),
@@ -756,6 +858,15 @@ checkAttendanceStatusForExams() {
   }
 
   FetchAcademicYearCount(isSearch: boolean) {
+    const AcademicYearIdSelected =
+    this.isAdmin
+      ? (
+          this.SchoolAcademicYearChange
+            ? this.selectedAcademicYearID?.trim()
+            : this.AdminselectedAcademivYearID?.trim()
+        )
+      : this.AdminSelectedActiveAcademicYearID || '';
+
     let SchoolIdSelected = '';
 
     if (this.SchoolSelectionChange) {
@@ -764,7 +875,7 @@ checkAttendanceStatusForExams() {
 
     const payload: any = {
       SchoolID: this.getCurrentSchoolId(),
-      AcademicYear: this.AdminselectedAcademivYearID || '',
+      AcademicYear: AcademicYearIdSelected || '',
       Class: this.AdminselectedClassID || '',
       Divisions: this.AdminselectedDiviosnID || '',
       ExamType: this.AdminselecteExamID || '',
@@ -1167,10 +1278,19 @@ formatDateYYYYMMDD(dateStr: string | null) {
 
 
 submitAttendance() {
+  const AcademicYearIdSelected =
+    this.isAdmin
+      ? (
+          this.SchoolAcademicYearChange
+            ? this.selectedAcademicYearID?.trim()
+            : this.AdminselectedAcademivYearID?.trim()
+        )
+      : this.AdminSelectedActiveAcademicYearID || '';
+      
   const body = {
     Flag: '1',
     SchoolID: this.getCurrentSchoolId(),
-    AcademicYear: this.AdminselectedAcademivYearID,
+    AcademicYear: AcademicYearIdSelected,
     ExamID: this.selectedExamIDForAttendance.toString(),
     SubjectID: this.selectedSubjectID.toString(),
     Students: this.studentsList.map(student => ({
@@ -1196,6 +1316,15 @@ submitAttendance() {
 }
 
  UpdateAttendance() {
+  const AcademicYearIdSelected =
+    this.isAdmin
+      ? (
+          this.SchoolAcademicYearChange
+            ? this.selectedAcademicYearID?.trim()
+            : this.AdminselectedAcademivYearID?.trim()
+        )
+      : this.AdminSelectedActiveAcademicYearID || '';
+      
   const invalidStudent = this.studentsList.find(student =>
     student.AttendanceMarked === '1' && (
       student.Marks === undefined ||
@@ -1215,7 +1344,7 @@ submitAttendance() {
   const body = {
     Flag: '5',
     SchoolID: this.getCurrentSchoolId(),
-    AcademicYear: this.AdminselectedAcademivYearID,
+    AcademicYear: AcademicYearIdSelected,
     ExamID: this.selectedExamIDForAttendance.toString(),
     SubjectID: this.selectedSubjectID.toString(),
     Students: this.studentsList.map(student => ({
@@ -1488,5 +1617,18 @@ onPublishClick() {
   }
   this.togglePublish(this.SyllabusList[0]);
 }
+
+  CancelSyllabus(){
+    this.IsAddNewClicked=false;
+    this.resetTable();
+    this.SyllabusForm.reset();
+    this.SyllabusForm.get('School').patchValue('0');
+    this.SyllabusForm.get('AcademicYear').patchValue(this.AdminSelectedActiveAcademicYearID);
+    this.SyllabusForm.get('Class').patchValue('0');
+    this.SyllabusForm.get('Divisions').patchValue('0');
+    this.SyllabusForm.get('ExamType').patchValue('0');
+    this.FetchExamsList();
+    this.FetchClassList();
+  }
 }
 

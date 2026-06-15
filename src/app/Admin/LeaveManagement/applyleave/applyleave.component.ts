@@ -262,6 +262,7 @@ export class ApplyleaveComponent extends BasePermissionComponent implements OnIn
   }
 
   ngOnInit(): void {
+    this.selectedAcademicYearId = sessionStorage.getItem('ActiveAcademicYearID') || '';
     this.fetchRoles();
     this.applyValidators();
 
@@ -380,7 +381,8 @@ if (!this.isActuallyStudent && !this.isParent) {
   onSchoolChange(e: Event): void {
     this.selectedSchoolId = (e.target as HTMLSelectElement).value;
     this.academicYears = []; this.staffList = []; this.studentList = [];
-    this.selectedAcademicYearId = ''; this.selectedStaffId = '';
+    this.selectedAcademicYearId = this.isAdmin ? '' : (sessionStorage.getItem('ActiveAcademicYearID') || '');
+    this.selectedStaffId = '';
     this.selectedStaffName = ''; this.selectedStaffRoleId = '';
     this.leaveTypes = []; this.leaveHistory = [];
     this.yearsLoaded = false; this.staffLoaded = false;
@@ -1290,16 +1292,16 @@ private checkAndLoad(): void {
             Name: String(i.name ?? i.Name ?? i.academicYear ?? '')
           })).filter((y: any) => y.ID && y.Name);
 
-if (
-  this.academicYears.length &&
-  !this.selectedAcademicYearId &&
-  (this.isAdmin)
-) {
-  this.selectedAcademicYearId = this.academicYears[0].ID;
-  this.selectedAcademicYear = this.academicYears[0].Name;
-  this.checkAndLoad();
-  this.fetchHistory();
-}
+          const activeYearId = sessionStorage.getItem('ActiveAcademicYearID') || '';
+          const matchedYear = this.academicYears.find(y => y.ID === activeYearId);
+          if (matchedYear) {
+            this.selectedAcademicYearId = matchedYear.ID;
+            this.selectedAcademicYear = matchedYear.Name;
+          } else if (this.academicYears.length > 0 && !this.selectedAcademicYearId) {
+            this.selectedAcademicYearId = this.academicYears[0].ID;
+            this.selectedAcademicYear = this.academicYears[0].Name;
+          }
+          this.checkAndLoad();  this.fetchHistory();
           this.yearsLoaded = true;
         },
         error: () => {

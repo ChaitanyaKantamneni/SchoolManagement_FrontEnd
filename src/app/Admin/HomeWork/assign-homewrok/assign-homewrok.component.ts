@@ -80,7 +80,7 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
   SchoolSelectionChange: boolean = false;
   academicYearList: any[] = [];
   AdminselectedSchoolID: string = '';
-  AdminselectedAcademivYearID: string = '';
+  AdminselectedAcademivYearID: string = sessionStorage.getItem('ActiveAcademicYearID') || '';
   
   // Homework specific properties
   classList: any[] = [];
@@ -121,7 +121,7 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
   HomeworkForm: FormGroup = new FormGroup({
     ID: new FormControl(''),
     SchoolID: new FormControl(''),
-    AcademicYear: new FormControl(0, [Validators.required, Validators.min(1)]),
+    AcademicYear: new FormControl(sessionStorage.getItem('ActiveAcademicYearID') ? Number(sessionStorage.getItem('ActiveAcademicYearID')) : 0, [Validators.required, Validators.min(1)]),
     Class: new FormControl(0, [Validators.required, Validators.min(1)]),
     Division: new FormControl(0, [Validators.required, Validators.min(1)]),
     SubjectID: new FormControl(0, [Validators.required, Validators.min(1)]),
@@ -259,16 +259,23 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
       this.selectedSchoolID = this.resolvedSchoolId || this.schoolId;
       this.AdminselectedSchoolID = this.resolvedSchoolId || this.schoolId;
       this.FetchAcademicYearsList();
+      this.FetchClassList();
     } else if (this.currentRoleUI === 'admin') {
       // Super Admin - fetch all schools for selection
       this.FetchSchoolsList();
       this.selectedSchoolID = this.resolvedSchoolId || this.schoolId;
       this.AdminselectedSchoolID = this.resolvedSchoolId || this.schoolId;
       this.FetchAcademicYearsList();
+      if (this.AdminselectedSchoolID) {
+        this.FetchClassList();
+      }
     } else {
       // Other roles
       this.FetchSchoolsList();
       this.FetchAcademicYearsList();
+      if (this.AdminselectedSchoolID) {
+        this.FetchClassList();
+      }
     }
     
     this.FetchInitialData();
@@ -438,6 +445,10 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
 
     this.checkViewPermission();
     this.SchoolSelectionChange = false;
+
+    if (!this.isAdmin) {
+      this.HomeworkForm.get('AcademicYear')?.disable({ emitEvent: false });
+    }
 
     // Use dynamic role detection
     this.initializeRoleBasedUI();
@@ -731,7 +742,10 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     }
     this.HomeworkForm.reset();
     this.HomeworkForm.get('School')?.patchValue('0');
-    this.HomeworkForm.get('AcademicYear')?.patchValue('0');
+    this.HomeworkForm.get('AcademicYear')?.patchValue(sessionStorage.getItem('ActiveAcademicYearID') || '0');
+    if (!this.isAdmin) {
+      this.HomeworkForm.get('AcademicYear')?.disable({ emitEvent: false });
+    }
     this.HomeworkForm.get('Class')?.patchValue('0');
     this.HomeworkForm.get('Division')?.patchValue('0');
     this.HomeworkForm.get('SubjectID')?.patchValue('0');
@@ -744,19 +758,22 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     this.clearFileSelection();
     this.uploadedFileUrl = '';
 
-
     // Reset file upload state
     this.clearFileSelection();
     this.uploadedFileUrl = '';
 
-    // For teachers, only trigger allocation sync when academic year is manually selected
-    if (this.isTeacher) {
-      console.log('[ASSIGN HOMEWORK] AddNewClicked - Setting up teacher form');
-      console.log('[ASSIGN HOMEWORK] Teacher form ready - waiting for academic year selection');
-      // Don't auto-select academic year - wait for user to select it
-      // Allocation sync will be triggered in onAcademicYearChange when user selects academic year
+    // Automatically resolve classes and subjects for the active academic year
+    const activeYear = sessionStorage.getItem('ActiveAcademicYearID') || '';
+    if (activeYear) {
+      this.AdminselectedAcademivYearID = activeYear;
     }
 
+    if (this.isTeacher) {
+      console.log('[ASSIGN HOMEWORK] AddNewClicked - Setting up teacher form');
+      this.syncTeacherClassDivisionFromAllocation();
+    } else {
+      this.FetchClassList();
+    }
 
     this.IsAddNewClicked = !this.IsAddNewClicked;
     this.IsActiveStatus = true;
@@ -1457,6 +1474,9 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
             AttachmentURL: item.attachmentURL,
             IsActive: item.isActive === "1" || item.isActive === 1 || item.isActive === true
           });
+          if (!this.isAdmin) {
+            this.HomeworkForm.get('AcademicYear')?.disable({ emitEvent: false });
+          }
           this.AdminselectedSchoolID = item.schoolID?.toString() || '';
           this.AdminselectedAcademivYearID = item.academicYear?.toString() || '';
           this.AdminselectedClassID = item.class?.toString() || '0';
@@ -1504,6 +1524,20 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
   // ── Pagination Methods ───────────────────────────────────────────────────────
   totalPages(): number {
     return this.totalPagesCount;
+  }
+
+  pageStartIndex(): number {
+    return this.totalCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
+  }
+
+  pageEndIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.totalCount);
+  }
+
+  onRowsCountChange() {
+    this.currentPage = 1;
+    this.pageCursors = [];
+    this.FetchInitialData();
   }
 
   getVisiblePageNumbers(): number[] {
@@ -1578,7 +1612,7 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     this.classList = [];
     this.divisionList = [];
     this.subjectList = [];
-    this.HomeworkForm.get('AcademicYear')?.patchValue('0');
+    this.HomeworkForm.get('AcademicYear')?.patchValue(sessionStorage.getItem('ActiveAcademicYearID') || '0');
     this.HomeworkForm.get('Class')?.patchValue('0');
     this.HomeworkForm.get('Division')?.patchValue('0');
     this.HomeworkForm.get('SubjectID')?.patchValue('0');

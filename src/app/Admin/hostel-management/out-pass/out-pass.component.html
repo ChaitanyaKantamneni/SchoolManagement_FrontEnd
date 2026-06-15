@@ -1,240 +1,356 @@
-<div class="main-container">
+<div>
   <app-dashboard-top-nav></app-dashboard-top-nav>
-
-  <div class="content-wrapper">
-    <!-- Header Section -->
-    <div class="header-section">
-      <div class="title-group">
-        <div class="title-with-icon">
-          <mat-icon class="title-icon">exit_to_app</mat-icon>
-          <h1>Hostel Outpass</h1>
+</div>
+<div class="MainContentDiv">
+  <div *ngIf="!isAddNewClicked" class="w-100 admission-dashboard">
+    <div class="ComponentTop admission-hero">
+      <div class="ComponentTopHeader">
+        <div class="admission-breadcrumb">
+          <span>Hostel Management</span>
+          <mat-icon>chevron_right</mat-icon>
+          <strong>Hostel Outpass</strong>
         </div>
-        <p class="subtitle">Manage student leave and movement permissions</p>
+        <h5>Hostel Outpass Management</h5>
+        <p>Total {{ totalCount }} Outpass Records</p>
       </div>
-      <button class="btn-primary-gradient" (click)="AddNewClicked()">
-        <mat-icon>add</mat-icon>
-        Apply Outpass
-      </button>
-    </div>
-
-    <!-- KPI Cards -->
-    <div class="kpi-container">
-      <div class="kpi-card blue">
-        <div class="kpi-icon"><mat-icon>directions_walk</mat-icon></div>
-        <div class="kpi-info">
-          <span class="kpi-label">Currently Out</span>
-          <h2 class="kpi-value">{{currentlyOutCount}}</h2>
-        </div>
-      </div>
-      <div class="kpi-card yellow">
-        <div class="kpi-icon"><mat-icon>hourglass_empty</mat-icon></div>
-        <div class="kpi-info">
-          <span class="kpi-label">Pending Requests</span>
-          <h2 class="kpi-value">{{pendingCount}}</h2>
-        </div>
-      </div>
-      <div class="kpi-card green">
-        <div class="kpi-icon"><mat-icon>event_available</mat-icon></div>
-        <div class="kpi-info">
-          <span class="kpi-label">Expected Today</span>
-          <h2 class="kpi-value">{{expectedTodayCount}}</h2>
-        </div>
+      <div class="ComponentTopBottom admission-header-actions">
+        <button *ngIf="canAdd()" type="button" class="admission-btn admission-btn--primary admission-top-action" (click)="AddNewClicked()">
+          <mat-icon>add_circle</mat-icon>Apply Outpass
+        </button>
       </div>
     </div>
 
-    <!-- Main Content Area -->
-    <div class="data-card">
-      <div class="card-header">
-        <div class="header-left">
-          <mat-icon>history</mat-icon>
-          <span>Outpass History</span>
+    <!-- Stats Grid -->
+    <div class="admission-stats-grid">
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--blue"><mat-icon>directions_walk</mat-icon></div>
+        <div>
+          <strong>{{ currentlyOutCount }}</strong>
+          <span>Currently Out</span>
         </div>
-        <div class="header-filters">
-          <div class="filter-group" *ngIf="isAdmin">
-            <select [(ngModel)]="filterSchoolID" (change)="onFilterChange()">
-              <option value="">-- All Schools --</option>
-              <option *ngFor="let s of schoolList" [value]="s.ID">{{s.Name}}</option>
-            </select>
+      </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--amber"><mat-icon>hourglass_empty</mat-icon></div>
+        <div>
+          <strong>{{ pendingCount }}</strong>
+          <span>Pending Requests</span>
+        </div>
+      </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--green"><mat-icon>event_available</mat-icon></div>
+        <div>
+          <strong>{{ expectedTodayCount }}</strong>
+          <span>Expected Today</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="admission-filter-row">
+      <div class="admission-searchbox">
+        <mat-icon>search</mat-icon>
+        <input type="text" id="searchQuery" [(ngModel)]="searchQuery" (input)="onSearchChange()" placeholder="Search Student" />
+      </div>
+      <button type="button" class="admission-chip admission-chip--active">All <span>{{ totalCount }}</span></button>
+      <select class="admission-select" *ngIf="isAdmin" [(ngModel)]="filterSchoolID" (change)="onFilterChange()">
+        <option value="">All Schools</option>
+        <option *ngFor="let s of schoolList" [value]="s.ID">{{ s.Name }}</option>
+      </select>
+      <select class="admission-select" [disabled]="!isAdmin" [(ngModel)]="filterAcademicYear" (change)="onFilterChange()">
+        <option value="">All Academic Years</option>
+        <option *ngFor="let y of academicYearList" [value]="y.ID">{{ y.Name }}</option>
+      </select>
+    </div>
+
+    <!-- Records Table -->
+    <div class="ComponentRecords admission-record-card">
+      <div>
+        <div class="ComponentRecordsTop admission-record-header">
+          <div>
+            <h5>Outpass History Records</h5>
+            <p>Showing {{ Math.min(currentPage * pageSize, totalCount) }} of {{ totalCount }} records</p>
           </div>
-          <div class="filter-group">
-            <select [(ngModel)]="filterAcademicYear" (change)="onFilterChange()">
-              <option value="">-- All Years --</option>
-              <option *ngFor="let y of academicYearList" [value]="y.ID">{{y.Name}}</option>
-            </select>
+        </div>
+        <div class="reviewstable admission-table-wrap">
+          <table id="outpassTable" *ngIf="outPassList.length !== 0" class="table table-bordered admission-table">
+            <thead>
+              <tr>
+                <th>SI.No</th>
+                <th>Student Details</th>
+                <th>Departure / Return</th>
+                <th>Destination</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of outPassList; let i = index">
+                <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td data-label="Student">
+                  <div class="student-cell" style="display: flex; align-items: center; gap: 8px;">
+                    <div class="avatar" style="width: 30px; height: 30px; border-radius: 50%; background: #e0e7ff; color: #4f46e5; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">
+                      {{ item.studentName?.charAt(0) || 'S' }}
+                    </div>
+                    <div class="student-info" style="display: flex; flex-direction: column;">
+                      <span class="student-name" style="font-weight: 500;">{{ item.studentName || 'N/A' }}</span>
+                      <small class="admission-no" style="color: #6b7280;">ID: {{ item.studentID }}</small>
+                    </div>
+                  </div>
+                </td>
+                <td data-label="DateTime">
+                  <div class="datetime-cell" style="display: flex; flex-direction: column; font-size: 12px;">
+                    <span class="out-time" style="color: #ef4444;">Out: {{ formatDateTime(item.outDateTime) }}</span>
+                    <span class="in-time" style="color: #10b981;">Exp: {{ formatDateTime(item.expectedReturnDateTime) }}</span>
+                  </div>
+                </td>
+                <td data-label="Destination">{{ item.destination }}</td>
+                <td data-label="Status">
+                  <span
+                    class="status-pill"
+                    [style.background]="(item.status === 'Approved' || item.status === 'Returned') ? '#d9f9e5' : (item.status === 'Pending' ? '#fff0bd' : '#fef2f2')"
+                    [style.color]="(item.status === 'Approved' || item.status === 'Returned') ? '#00823a' : (item.status === 'Pending' ? '#c25b00' : '#ef4444')"
+                    [style.borderColor]="(item.status === 'Approved' || item.status === 'Returned') ? '#86efac' : (item.status === 'Pending' ? '#f5d77a' : '#fecaca')"
+                    [ngClass]="(item.status === 'Approved' || item.status === 'Returned') ? 'status-active' : 'status-inactive'">
+                    {{ item.status }}
+                  </span>
+                </td>
+                <td data-label="Actions">
+                  <div class="d-flex justify-content-center align-items-center h-100" style="gap: 4px;">
+                    <button class="btn checkbtn" data-tooltip="View" (click)="viewRecordDetails(item)">
+                      <mat-icon class="mat-edit-icon">visibility</mat-icon>
+                    </button>
+                    <button *ngIf="item.status === 'Pending'" class="btn checkbtn edit" data-tooltip="Approve" (click)="updateStatus(item, 'Approved')">
+                      <mat-icon class="mat-edit-icon" style="color: #10b981;">check_circle</mat-icon>
+                    </button>
+                    <button *ngIf="item.status === 'Approved'" class="btn checkbtn edit" data-tooltip="Returned" (click)="updateStatus(item, 'Returned')">
+                      <mat-icon class="mat-edit-icon" style="color: #3b82f6;">assignment_turned_in</mat-icon>
+                    </button>
+                    <button *ngIf="item.status === 'Pending'" class="btn checkbtn edit" data-tooltip="Reject" (click)="updateStatus(item, 'Rejected')">
+                      <mat-icon class="mat-edit-icon" style="color: #ef4444;">cancel</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div *ngIf="outPassList.length === 0" class="NoDataFound">
+            <div class="NoDataFoundImg">
+              <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
+            </div>
+            <p>No data found.</p>
           </div>
-          <div class="search-box">
-            <mat-icon>search</mat-icon>
-            <input type="text" [(ngModel)]="searchQuery" (input)="onSearchChange()" placeholder="Search student...">
+          <div class="admission-footer-meta">
+            <label>
+              Rows:
+              <select aria-label="Rows per page" [(ngModel)]="pageSize"
+            (ngModelChange)="onRowsCountChange()">
+                <option [ngValue]="5">5</option>
+                <option [ngValue]="10">10</option>
+                <option [ngValue]="25">25</option>
+                <option [ngValue]="50">50</option>
+              </select>
+            </label>
+            <p>{{ pageStartIndex() }}&ndash;{{ pageEndIndex() }} of {{ totalCount }} records</p>
+          </div>
+          <div *ngIf="totalCount > pageSize" class="pagination-controls">
+            <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
+            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">&larr;</button>
+            <button *ngFor="let page of getVisiblePageNumbers()"
+                    class="page-btn"
+                    [ngClass]="{'active': page === currentPage}"
+                    (click)="goToPage(page)">
+              {{ page }}
+            </button>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">&rarr;</button>
+            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
           </div>
         </div>
       </div>
+    </div>
+  </div>
 
-      <div class="table-responsive">
-        <table class="custom-table">
-          <thead>
-            <tr>
-              <th>S.No</th>
-              <th>STUDENT</th>
-              <th>DEPARTURE / RETURN</th>
-              <th>DESTINATION</th>
-              <th>STATUS</th>
-              <th>ACTIONS</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let item of outPassList; let i = index">
-              <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-              <td>
-                <div class="student-cell">
-                  <div class="avatar">{{item.studentName?.charAt(0) || 'S'}}</div>
-                  <div class="student-info">
-                    <span class="student-name">{{item.studentName || 'N/A'}}</span>
-                    <span class="admission-no">{{item.studentID}}</span>
+  <!-- Form Section -->
+  <div *ngIf="isAddNewClicked" class="w-100">
+    <div class="admission-breadcrumb">
+      <span>Hostel Management</span>
+      <mat-icon>chevron_right</mat-icon>
+      <span>Hostel Outpass</span>
+      <mat-icon>chevron_right</mat-icon>
+      <strong>Apply Outpass</strong>
+    </div>
+    <div class="AddFormTop">
+      <button (click)="closeModal()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+      <div class="admission-record-header p-0">
+        <div>
+          <h5>Apply for Outpass</h5>
+          <p>Configure and apply a new hostel movement outpass</p>
+        </div>
+      </div>
+    </div>
+    <div class="AddForm">
+      <div class="form-top">
+        <p class="cc-title">Outpass Details</p>
+      </div>
+      <div class="AddFormConatiner">
+        <form [formGroup]="OutPassForm" (ngSubmit)="SubmitOutPass()">
+          <div class="FormInputRowsContainer">
+            <div class="InputRow" *ngIf="isAdmin">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">School <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="School" (change)="onModalSchoolChange()">
+                    <option value="0">-- Select School --</option>
+                    <option *ngFor="let s of schoolList" [value]="s.ID">{{ s.Name }}</option>
+                  </select>
+                  <div *ngIf="OutPassForm.get('School')?.touched && OutPassForm.get('School')?.invalid" class="text-danger">
+                    <small>School is required.</small>
                   </div>
                 </div>
-              </td>
-              <td>
-                <div class="datetime-cell">
-                  <span class="out-time">Out: {{formatDateTime(item.outDateTime)}}</span>
-                  <span class="in-time">Exp: {{formatDateTime(item.expectedReturnDateTime)}}</span>
-                </div>
-              </td>
-              <td><span class="destination-text">{{item.destination}}</span></td>
-              <td>
-                <span class="status-badge" [ngClass]="getStatusClass(item.status)">
-                  {{item.status}}
-                </span>
-              </td>
-              <td>
-                <div class="action-buttons">
-                  <button class="action-btn view" title="View Details" (click)="viewRecordDetails(item)">
-                    <mat-icon>visibility</mat-icon>
-                  </button>
-                  <button *ngIf="item.status === 'Pending'" class="action-btn approve" title="Approve"
-                    (click)="updateStatus(item, 'Approved')">
-                    <mat-icon>check_circle</mat-icon>
-                  </button>
-                  <button *ngIf="item.status === 'Approved'" class="action-btn return" title="Mark as Returned"
-                    (click)="updateStatus(item, 'Returned')">
-                    <mat-icon>assignment_turned_in</mat-icon>
-                  </button>
-                  <button *ngIf="item.status === 'Pending'" class="action-btn reject" title="Reject"
-                    (click)="updateStatus(item, 'Rejected')">
-                    <mat-icon>cancel</mat-icon>
-                  </button>
-                </div>
-              </td>
-            </tr>
-            <tr *ngIf="outPassList.length === 0">
-              <td colspan="6" class="no-data">
-                <div class="no-data-content">
-                  <mat-icon>folder_open</mat-icon>
-                  <p>No data available</p>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+              </div>
+            </div>
 
-      <!-- Pagination -->
-      <div class="pagination-container" *ngIf="totalCount > 0">
-        <div class="pagination-info">
-          Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ Math.min(currentPage * pageSize, totalCount) }} of {{
-          totalCount }} entries
-        </div>
-        <div class="pagination-controls">
-          <button [disabled]="currentPage === 1" (click)="currentPage = currentPage - 1; FetchOutPassList()">
-            <mat-icon>chevron_left</mat-icon>
-          </button>
-          <button *ngFor="let p of getVisiblePageNumbers()" [class.active]="p === currentPage"
-            (click)="currentPage = p; FetchOutPassList()">
-            {{p}}
-          </button>
-          <button [disabled]="currentPage === totalPages()" (click)="currentPage = currentPage + 1; FetchOutPassList()">
-            <mat-icon>chevron_right</mat-icon>
-          </button>
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Academic Year <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="AcademicYear" (change)="onModalYearChange()">
+                    <option value="0">-- Select Academic Year --</option>
+                    <option *ngFor="let y of academicYearList" [value]="y.ID">{{ y.Name }}</option>
+                  </select>
+                  <div *ngIf="OutPassForm.get('AcademicYear')?.touched && OutPassForm.get('AcademicYear')?.invalid" class="text-danger">
+                    <small>Academic Year is required.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Student <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="StudentID" (change)="onStudentChange($event)">
+                    <option value="0">-- Select Student --</option>
+                    <option *ngFor="let s of studentList" [value]="s.ID">{{ s.Name }}</option>
+                  </select>
+                  <div *ngIf="OutPassForm.get('StudentID')?.touched && OutPassForm.get('StudentID')?.invalid" class="text-danger">
+                    <small>Student is required.</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Out Date & Time <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input type="datetime-local" class="inputField" formControlName="OutDateTime" />
+                  <div *ngIf="OutPassForm.get('OutDateTime')?.touched && OutPassForm.get('OutDateTime')?.invalid" class="text-danger">
+                    <small>Out Date & Time is required.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Expected Return Date & Time <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input type="datetime-local" class="inputField" formControlName="ExpectedReturnDateTime" />
+                  <div *ngIf="OutPassForm.get('ExpectedReturnDateTime')?.touched && OutPassForm.get('ExpectedReturnDateTime')?.invalid" class="text-danger">
+                    <small>Expected Return Date & Time is required.</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Destination <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input type="text" class="inputField" formControlName="Destination" placeholder="Where are you going?" />
+                  <div *ngIf="OutPassForm.get('Destination')?.touched && OutPassForm.get('Destination')?.invalid" class="text-danger">
+                    <small>Destination is required.</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Reason for Leave <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <textarea class="inputField" formControlName="Reason" rows="3" placeholder="Brief explanation..."></textarea>
+                  <div *ngIf="OutPassForm.get('Reason')?.touched && OutPassForm.get('Reason')?.invalid" class="text-danger">
+                    <small>Reason is required.</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Remarks</label>
+                <div class="input-with-error">
+                  <textarea class="inputField" formControlName="Remarks" rows="2" placeholder="Any additional comments..."></textarea>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </form>
+      </div>
+      <div class="form-bottom">
+        <span class="footer-hint">Fields marked <span class="required">*</span> are required</span>
+        <div class="ActionButtons footer-actions">
+          <button type="button" class="cancelbtn" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="submitbtn" *ngIf="canAdd()">Submit</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Apply OutPass Modal -->
-  <div class="modal-backdrop" *ngIf="isAddNewClicked" (click)="closeModal()">
-    <div class="modal-content glass-effect" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>Apply for Outpass</h2>
-        <button class="close-btn" (click)="closeModal()"><mat-icon>close</mat-icon></button>
+  <!-- Status Modal (Simple dialog styled matching admission standard) -->
+  <div class="modal-backdrop" *ngIf="isStatusModalOpen" (click)="closeStatusModal()" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+    <div class="admission-record-card" (click)="$event.stopPropagation()" style="max-width: 400px; padding: 24px; text-align: center; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      <div style="margin-bottom: 16px;">
+        <mat-icon [style.color]="statusMessage.toLowerCase().includes('success') ? '#10b981' : '#ef4444'" style="font-size: 48px; width: 48px; height: 48px;">
+          {{ statusMessage.toLowerCase().includes('success') ? 'check_circle' : 'error' }}
+        </mat-icon>
       </div>
-      <form [formGroup]="OutPassForm" (ngSubmit)="SubmitOutPass()">
-        <div class="modal-body">
-          <div class="form-row" *ngIf="isAdmin">
-            <div class="form-group full-width">
-              <label>SELECT SCHOOL *</label>
-              <select formControlName="School" (change)="onModalSchoolChange()">
-                <option value="0">-- Select School --</option>
-                <option *ngFor="let s of schoolList" [value]="s.ID">{{s.Name}}</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>ACADEMIC YEAR *</label>
-              <select formControlName="AcademicYear" (change)="onModalYearChange()">
-                <option value="0">-- Select Year --</option>
-                <option *ngFor="let y of academicYearList" [value]="y.ID">{{y.Name}}</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>SELECT STUDENT *</label>
-              <select formControlName="StudentID" (change)="onStudentChange($event)">
-                <option value="0">-- Select Student --</option>
-                <option *ngFor="let s of studentList" [value]="s.ID">{{s.Name}}</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>OUT DATE & TIME *</label>
-              <input type="datetime-local" formControlName="OutDateTime">
-            </div>
-            <div class="form-group">
-              <label>EXPECTED RETURN *</label>
-              <input type="datetime-local" formControlName="ExpectedReturnDateTime">
-            </div>
-          </div>
-
-          <div class="form-group full-width">
-            <label>DESTINATION *</label>
-            <div class="input-with-icon">
-              <mat-icon>location_on</mat-icon>
-              <input type="text" formControlName="Destination" placeholder="Where are you going?">
-            </div>
-          </div>
-
-          <div class="form-group full-width">
-            <label>REASON FOR LEAVE</label>
-            <textarea formControlName="Reason" rows="3" placeholder="Brief explanation..."></textarea>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn-secondary" (click)="closeModal()">Cancel</button>
-          <button type="submit" class="btn-primary">Submit Application</button>
-        </div>
-      </form>
+      <h5 style="margin-bottom: 12px; font-weight: 600; color: #1f2937;">Outpass Application Status</h5>
+      <p style="color: #4b5563; font-size: 14px; margin-bottom: 24px;">{{ statusMessage }}</p>
+      <button class="admission-btn admission-btn--primary" style="margin: 0 auto; display: block;" (click)="closeStatusModal()">OK</button>
     </div>
   </div>
 
-  <!-- Status Modal -->
-  <div class="status-modal-backdrop" *ngIf="isStatusModalOpen">
-    <div class="status-modal">
-      <div class="status-icon" [ngClass]="statusMessage.toLowerCase().includes('success') ? 'success' : 'error'">
-        <mat-icon>{{statusMessage.toLowerCase().includes('success') ? 'check_circle' : 'error'}}</mat-icon>
+  <!-- View Modal -->
+  <div class="modal-backdrop" *ngIf="isViewModalOpen" (click)="isViewModalOpen = false" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+    <div class="admission-record-card" (click)="$event.stopPropagation()" style="max-width: 500px; width: 90%; padding: 24px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      <div class="admission-record-header" style="padding: 0; border-bottom: 1px solid #e5e7eb; padding-bottom: 12px; margin-bottom: 16px;">
+        <div>
+          <h5 style="margin: 0; color: #1f2937;">Outpass Details</h5>
+          <p style="margin: 0; font-size: 12px; color: #6b7280;">Detailed information of the selected application</p>
+        </div>
+        <button (click)="isViewModalOpen = false" style="background: none; border: none; cursor: pointer; color: #9ca3af;">
+          <mat-icon>close</mat-icon>
+        </button>
       </div>
-      <p>{{statusMessage}}</p>
-      <button (click)="closeStatusModal()">OK</button>
+      <div style="display: flex; flex-direction: column; gap: 12px; font-size: 14px; color: #4b5563;" *ngIf="viewRecord">
+        <div><strong>Student ID:</strong> {{ viewRecord.studentID }}</div>
+        <div><strong>Student Name:</strong> {{ viewRecord.studentName || 'N/A' }}</div>
+        <div><strong>Out Date & Time:</strong> {{ formatDateTime(viewRecord.outDateTime) }}</div>
+        <div><strong>Expected Return:</strong> {{ formatDateTime(viewRecord.expectedReturnDateTime) }}</div>
+        <div><strong>Actual Return:</strong> {{ formatDateTime(viewRecord.actualReturnDateTime) }}</div>
+        <div><strong>Destination:</strong> {{ viewRecord.destination }}</div>
+        <div><strong>Reason:</strong> {{ viewRecord.reason }}</div>
+        <div><strong>Remarks:</strong> {{ viewRecord.remarks || '-' }}</div>
+        <div><strong>Status:</strong>
+          <span
+            class="status-pill"
+            [style.background]="(viewRecord.status === 'Approved' || viewRecord.status === 'Returned') ? '#d9f9e5' : (viewRecord.status === 'Pending' ? '#fff0bd' : '#fef2f2')"
+            [style.color]="(viewRecord.status === 'Approved' || viewRecord.status === 'Returned') ? '#00823a' : (viewRecord.status === 'Pending' ? '#c25b00' : '#ef4444')"
+            [style.borderColor]="(viewRecord.status === 'Approved' || viewRecord.status === 'Returned') ? '#86efac' : (viewRecord.status === 'Pending' ? '#f5d77a' : '#fecaca')">
+            {{ viewRecord.status }}
+          </span>
+        </div>
+      </div>
+      <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
+        <button class="admission-btn admission-btn--secondary" (click)="isViewModalOpen = false">Close</button>
+      </div>
     </div>
   </div>
 </div>

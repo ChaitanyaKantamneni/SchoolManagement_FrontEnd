@@ -3,6 +3,9 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { Observable } from 'rxjs';
+import { Router } from '@angular/router';
+import { MenuServiceService } from '../../../Services/menu-service.service';
+import { BasePermissionComponent } from '../../../shared/base-crud.component';
 import { DashboardTopNavComponent } from '../../../SignInAndSignUp/dashboard-top-nav/dashboard-top-nav.component';
 import { ApiServiceService } from '../../../Services/api-service.service';
 import { LoaderService } from '../../../Services/loader.service';
@@ -14,8 +17,17 @@ import { LoaderService } from '../../../Services/loader.service';
   templateUrl: './advance-salary.component.html',
   styleUrl: './advance-salary.component.css'
 })
-export class AdvanceSalaryComponent implements OnInit {
-  constructor(private apiurl: ApiServiceService, public loader: LoaderService) {}
+export class AdvanceSalaryComponent extends BasePermissionComponent implements OnInit {
+  pageName = 'Advance Salary';
+
+  constructor(
+    private apiurl: ApiServiceService,
+    public loader: LoaderService,
+    router: Router,
+    menuService: MenuServiceService
+  ) {
+    super(menuService, router);
+  }
   private readonly advanceSalaryEndpoints = [
     'Tbl_AdvanceSalary_CRUD_Operations',
     'Tbl_AdvanceSalary_CRUD_Operation',
@@ -76,43 +88,70 @@ export class AdvanceSalaryComponent implements OnInit {
     return this.filteredRecords.slice(start, start + this.pageSize);
   }
 
+AddNewClicked(): void {
+  this.IsAddNewClicked = !this.IsAddNewClicked;
+
+  if (!this.IsAddNewClicked) return;
+
+  // 🔥 STEP 1: RESET FIRST
+  this.editIndex = null;
+  this.formSubmitAttempted = false;
+  this.selectedSchoolID= this.isAdmin ? '' : this.resolveNonAdminSchoolId();
+  this.form = {
+    staffID: '',
+    amount: null,
+    date: '',
+    tenure: ''
+  };
+
+  this.staffList = [];
+  this.academicYearList = [];
+  this.selectedAcademicYearID = '';
+
+  // 🔥 STEP 2: SET DEFAULT VALUE
+  this.selectedAcademicYearID = this.isAdmin
+    ? ''
+    : (sessionStorage.getItem('ActiveAcademicYearID') || '');
+
+  // 🔥 STEP 3: LOAD MASTER DATA
+  this.FetchAcademicYearsList();
+
+  // 🔥 STEP 4: LOAD DEPENDENT DATA (only for non-admin)
+  if (!this.isAdmin && this.selectedAcademicYearID) {
+    this.FetchStaffList();
+  }
+}
+
   // AddNewClicked(): void {
   //   this.IsAddNewClicked = !this.IsAddNewClicked;
+  
   //   if (this.IsAddNewClicked) {
   //     this.editIndex = null;
   //     this.formSubmitAttempted = false;
+  
+  //     // ✅ Reset form
   //     this.form = { staffID: '', amount: null, date: '', tenure: '' };
+  
+  //     // 🔥 FIX: Reset dropdowns
+  //     this.selectedAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
+  //     this.staffList = [];
+  
+  //     // Optional (if you want full reset)
+  //     // this.selectedSchoolID = '';
+  
+  //     // Reload dependent data
+  //     this.FetchAcademicYearsList();
   //   }
   // }
 
-  AddNewClicked(): void {
-    this.IsAddNewClicked = !this.IsAddNewClicked;
-  
-    if (this.IsAddNewClicked) {
-      this.editIndex = null;
-      this.formSubmitAttempted = false;
-  
-      // ✅ Reset form
-      this.form = { staffID: '', amount: null, date: '', tenure: '' };
-  
-      // 🔥 FIX: Reset dropdowns
-      this.selectedAcademicYearID = '';
-      this.staffList = [];
-  
-      // Optional (if you want full reset)
-      // this.selectedSchoolID = '';
-  
-      // Reload dependent data
-      this.FetchAcademicYearsList();
-    }
-  }
-
-  get isAdmin(): boolean {
+  protected override get isAdmin(): boolean {
     const role = sessionStorage.getItem('RollID') || localStorage.getItem('RollID');
     return role === '1';
   }
 
   ngOnInit(): void {
+    this.checkViewPermission();
+    this.selectedAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
     if (this.isAdmin) {
       this.FetchSchoolsList();
     } else {
@@ -142,7 +181,7 @@ export class AdvanceSalaryComponent implements OnInit {
     if (!this.selectedSchoolID) {
       this.academicYearList = [];
       this.staffList = [];
-      this.selectedAcademicYearID = '';
+      this.selectedAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
       return;
     }
     this.loader.show();
@@ -157,7 +196,7 @@ export class AdvanceSalaryComponent implements OnInit {
 
           const hasSelectedYear = this.academicYearList.some((year: any) => `${year.ID}` === `${this.selectedAcademicYearID}`);
           if (!hasSelectedYear) {
-            this.selectedAcademicYearID = '';
+            this.selectedAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
           }
 
           if (!this.selectedAcademicYearID && this.academicYearList.length === 1) {
@@ -182,7 +221,7 @@ export class AdvanceSalaryComponent implements OnInit {
   onAdminSchoolChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     this.selectedSchoolID = target.value === '0' ? '' : target.value;
-    this.selectedAcademicYearID = '';
+    this.selectedAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
     this.staffList = [];
     this.form.staffID = '';
     this.FetchAcademicYearsList();
@@ -375,11 +414,11 @@ export class AdvanceSalaryComponent implements OnInit {
     const endpoint = this.advanceSalaryEndpoints[endpointIndex];
     return new Observable((observer) => {
       this.apiurl.post<any>(endpoint, payload).subscribe({
-        next: (response) => {
+        next: (response: any) => {
           observer.next(response);
           observer.complete();
         },
-        error: (error) => {
+        error: (error: any) => {
           if (error?.status === 404 && endpointIndex < this.advanceSalaryEndpoints.length - 1) {
             this.postAdvanceSalaryApi(payload, endpointIndex + 1).subscribe({
               next: (response: any) => {
@@ -401,7 +440,7 @@ export class AdvanceSalaryComponent implements OnInit {
     this.editIndex = null;
     this.formSubmitAttempted = false;
     this.form = { staffID: '', amount: null, date: '', tenure: '' };
-    this.selectedAcademicYearID = '';
+    this.selectedAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
     this.staffList = [];
   }
 
@@ -534,6 +573,18 @@ export class AdvanceSalaryComponent implements OnInit {
       return;
     }
     this.currentPage = Math.max(1, Math.min(pageNumber, total));
+  }
+
+  pageStartIndex(): number {
+    return this.filteredRecords.length === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
+  }
+
+  pageEndIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.filteredRecords.length);
+  }
+
+  onRowsCountChange() {
+    this.currentPage = 1;
   }
 
   totalPages(): number {

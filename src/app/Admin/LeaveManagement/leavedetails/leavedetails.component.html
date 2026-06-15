@@ -1,40 +1,73 @@
-<app-dashboard-top-nav></app-dashboard-top-nav>
-
+<div>
+  <app-dashboard-top-nav></app-dashboard-top-nav>
+</div>
 <div class="MainContentDiv">
   <!-- List View -->
-  <div *ngIf="!IsAddNewClicked" class="w-100">
-    <div class="ComponentTop">
+  <div *ngIf="!IsAddNewClicked" class="w-100 admission-dashboard">
+    <div class="ComponentTop admission-hero">
       <div class="ComponentTopHeader">
+        <div class="admission-breadcrumb">
+          <span>Leave Management</span>
+          <mat-icon>chevron_right</mat-icon>
+          <strong>Leave Policy</strong>
+        </div>
         <h5>Leave Policy Management</h5>
         <p>Total {{ PolicyCount }} Policies Added</p>
       </div>
-      <div class="ComponentTopBottom">
-        <button (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Leave Policy</button>
+      <div class="ComponentTopBottom admission-header-actions">
+        <button *ngIf="canAdd()" type="button" class="admission-btn admission-btn--primary admission-top-action" (click)="AddNewClicked()">
+          <mat-icon>add_circle</mat-icon>Add Leave Policy
+        </button>
       </div>
     </div>
 
-    <div class="ComponentRecords">
+    <div class="admission-stats-grid">
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--blue"><mat-icon>assignment</mat-icon></div>
+        <div>
+          <strong>{{ PolicyCount }}</strong>
+          <span>Total Policies</span>
+        </div>
+      </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--green"><mat-icon>schedule</mat-icon></div>
+        <div>
+          <strong>{{ pageSize }}</strong>
+          <span>Rows Per Page</span>
+        </div>
+      </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--amber"><mat-icon>calendar_month</mat-icon></div>
+        <div>
+          <strong>{{ currentPage }}</strong>
+          <span>Current Page</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="admission-filter-row">
+      <div class="admission-searchbox">
+        <mat-icon>search</mat-icon>
+        <input type="text" id="searchQuery" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search Leave Category" />
+      </div>
+      <button type="button" class="admission-chip admission-chip--active">All <span>{{ PolicyCount }}</span></button>
+      <select class="admission-select" *ngIf="isAdmin" (change)="onSchoolChange($event)">
+        <option value="0">All Schools</option>
+        <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+      </select>
+    </div>
+
+    <div class="ComponentRecords admission-record-card">
       <div>
-        <div class="ComponentRecordsTop">
-          <div class="filterOptions">
-            <div class="searchreview input-container">
-              <input type="text" class="form-control floating-input" [(ngModel)]="searchQuery"
-                (ngModelChange)="onSearchChange()" placeholder="Search... " />
-              <mat-icon
-                style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
-            </div>
-            <div class="searchreview" *ngIf="isAdmin">
-              <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
-                <option value="">-- Select School --</option>
-                <option value="0">All Schools</option>
-                <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
-              </select>
-            </div>
+        <div class="ComponentRecordsTop admission-record-header">
+          <div>
+            <h5>Leave Policy Records</h5>
+            <p>Showing {{ PolicyList.length }} of {{ PolicyCount }} records</p>
           </div>
         </div>
 
-        <div class="reviewstable">
-          <table class="table table-bordered" *ngIf="PolicyList.length != 0">
+        <div class="reviewstable admission-table-wrap">
+          <table class="table table-bordered admission-table" *ngIf="PolicyList.length != 0">
             <thead>
               <tr>
                 <th>SI.No</th>
@@ -48,25 +81,26 @@
             </thead>
             <tbody>
               <tr *ngFor="let p of PolicyList; let i = index">
-                <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-                <td *ngIf="isAdmin">{{ p.schoolName }}</td>
-                <td *ngIf="isAdmin">{{ p.academicYearName }}</td>
-                <td>{{ p.leaveType }}</td>
-                <td>{{ p.count }} Days</td>
-                <td>
+                <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td data-label="School" *ngIf="isAdmin">{{ p.schoolName }}</td>
+                <td data-label="AcademicYear" *ngIf="isAdmin">{{ p.academicYearName }}</td>
+                <td data-label="LeaveCategory"><strong>{{ p.leaveType }}</strong></td>
+                <td data-label="Allowance">{{ p.count }} Days</td>
+                <td data-label="Status">
                   <span class="status-pill"
-                    [style.background]="p.isActive ? 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)' : 'linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%)'"
-                    [style.color]="p.isActive ? '#166534' : '#9f1239'"
-                    [style.borderColor]="p.isActive ? '#86efac' : '#fda4af'">
+                    [style.background]="p.isActive ? '#d9f9e5' : '#fff0bd'"
+                    [style.color]="p.isActive ? '#00823a' : '#c25b00'"
+                    [style.borderColor]="p.isActive ? '#86efac' : '#f5d77a'"
+                    [ngClass]="p.isActive ? 'status-active' : 'status-inactive'">
                     {{ p.isActive ? 'Active' : 'Inactive' }}
                   </span>
                 </td>
-                <td>
+                <td data-label="Actions">
                   <div class="d-flex justify-content-center align-items-center h-100" style="gap: 5px;">
-                    <button class="btn checkbtn edit" (click)="editreview(p.id)">
+                    <button *ngIf="canEdit()" class="btn checkbtn edit" data-tooltip="Edit" (click)="editreview(p.id)">
                       <mat-icon class="mat-edit-icon">edit</mat-icon>
                     </button>
-                    <button class="btn checkbtn" (click)="viewReview(p.id)">
+                    <button *ngIf="canView()" class="btn checkbtn" data-tooltip="View" (click)="viewReview(p.id)">
                       <mat-icon class="mat-edit-icon">visibility</mat-icon>
                     </button>
                   </div>
@@ -82,6 +116,20 @@
             <p>No data found.</p>
           </div>
           
+          <div class="admission-footer-meta">
+            <label>
+              Rows:
+              <select aria-label="Rows per page" [(ngModel)]="pageSize"
+            (ngModelChange)="onRowsCountChange()">
+                <option [ngValue]="5">5</option>
+                <option [ngValue]="10">10</option>
+                <option [ngValue]="25">25</option>
+                <option [ngValue]="50">50</option>
+              </select>
+            </label>
+            <p>{{ pageStartIndex() }}&ndash;{{ pageEndIndex() }} of {{ PolicyCount }} records</p>
+          </div>
+
           <div *ngIf="PolicyCount > pageSize" class="pagination-controls">
             <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
             <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
@@ -101,10 +149,25 @@
 
   <!-- Add/Edit View -->
   <div *ngIf="IsAddNewClicked" class="w-100">
+    <div class="admission-breadcrumb">
+      <span>Leave Management</span>
+      <mat-icon>chevron_right</mat-icon>
+      <span>Leave Policy</span>
+      <mat-icon>chevron_right</mat-icon>
+      <strong>{{ editingId ? 'Edit Leave Policy' : 'Add Leave Policy' }}</strong>
+    </div>
+    <div class="AddFormTop">
+      <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+      <div class="admission-record-header p-0">
+        <div>
+          <h5>{{ editingId ? 'Edit Leave Policy' : 'Add Leave Policy' }}</h5>
+          <p>Configure leave policy details</p>
+        </div>
+      </div>
+    </div>
     <div class="AddForm">
-      <div class="AddFormTop">
-        <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
-        <p>{{ editingId ? 'Update Leave Policy' : 'Add Leave Policy' }}</p>
+      <div class="form-top">
+        <p class="cc-title">Leave Policy Details</p>
       </div>
       <div class="AddFormConatiner">
         <form [formGroup]="policyForm">
@@ -112,7 +175,7 @@
             <!-- Row 1: School & Academic Year -->
             <div class="InputRow">
               <div class="InputFieldsContainer" *ngIf="isAdmin">
-                <label class="inputLabel">SCHOOL <span class="required">*</span></label>
+                <label class="inputLabel">School <span class="required">*</span></label>
                 <div class="input-with-error">
                   <select class="inputField" formControlName="schoolId" (change)="onAdminSchoolChange($event)">
                     <option value="">-- Select School --</option>
@@ -121,7 +184,7 @@
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel">ACADEMIC YEAR <span class="required">*</span></label>
+                <label class="inputLabel">Academic Year <span class="required">*</span></label>
                 <div class="input-with-error">
                   <select class="inputField" formControlName="academicYearId">
                     <option value="">-- Select Academic Year --</option>
@@ -131,7 +194,7 @@
               </div>
               <!-- For School Login, Leave Category pulls up to this row -->
               <div class="InputFieldsContainer" *ngIf="!isAdmin">
-                <label class="inputLabel">LEAVE CATEGORY <span class="required">*</span></label>
+                <label class="inputLabel">Leave Category <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" formControlName="leaveType" placeholder="Enter Category" />
                 </div>
@@ -141,57 +204,53 @@
             <!-- Row 2: Leave Category & Allowance -->
             <div class="InputRow">
               <div class="InputFieldsContainer" *ngIf="isAdmin">
-                <label class="inputLabel">LEAVE CATEGORY <span class="required">*</span></label>
+                <label class="inputLabel">Leave Category <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" formControlName="leaveType" placeholder="Enter Category" />
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <label class="inputLabel">ALLOWANCE (DAYS) <span class="required">*</span></label>
+                <label class="inputLabel">Allowance (Days) <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" type="number" formControlName="count" placeholder="Enter Days" />
                 </div>
               </div>
-              <!-- For School Login, Status pulls up to this row -->
               <div class="InputFieldsContainer" *ngIf="!isAdmin">
-                <div class="toggle-container" (click)="$event.stopPropagation()" style="margin-top: 25px;">
-                  <label class="switch">
-                    <input type="checkbox" [checked]="IsActiveStatus" (change)="toggleChange()">
-                    <span class="slider">
-                      <span class="toggle-text" [ngStyle]="{left: IsActiveStatus ? '42%' : '60%', fontSize: '9px'}">
-                        {{ IsActiveStatus ? 'Active' : 'Inactive' }}
-                      </span>
-                    </span>
-                  </label>
-                </div>
+                <span style="visibility: hidden;">Spacer</span>
               </div>
             </div>
 
-            <!-- Row 3: Status (Admin Only) -->
-            <div class="InputRow" *ngIf="isAdmin">
-              <div class="InputFieldsContainer">
-                <div class="toggle-container" (click)="$event.stopPropagation()" style="margin-top: 20px;">
-                  <label class="switch">
-                    <input type="checkbox" [checked]="IsActiveStatus" (change)="toggleChange()">
-                    <span class="slider">
-                      <span class="toggle-text" [ngStyle]="{left: IsActiveStatus ? '42%' : '60%', fontSize: '9px'}">
-                        {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+            <!-- Row 3: Status -->
+            <div class="InputRow">
+              <div class="noteActiveCard">
+                <div class="noteSection">
+                  <span>Status</span>
+                  <p>Determine whether this leave policy is currently active.</p>
+                </div>
+                <div class="InputFieldsContainer">
+                  <div class="toggle-container" (click)="$event.stopPropagation()">
+                    <label class="switch">
+                      <input type="checkbox" [checked]="IsActiveStatus" (change)="toggleChange()">
+                      <span class="slider">
+                        <span class="toggle-text" [ngStyle]="{left: IsActiveStatus ? '42%' : '60%', fontSize: '9px'}">
+                          {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                        </span>
                       </span>
-                    </span>
-                  </label>
+                    </label>
+                  </div>
                 </div>
               </div>
-              <div class="InputFieldsContainer">
-                 <!-- Empty div to balance Row 3 for Admin -->
-              </div>
             </div>
-          </div>
-
-          <div class="ActionButtons" style="display: flex; justify-content: center; margin-top: 40px;">
-            <button type="button" *ngIf="editingId" (click)="UpdateSyllabus()">Update</button>
-            <button type="button" *ngIf="!editingId" (click)="SubmitSyllabus()">Submit</button>
           </div>
         </form>
+      </div>
+      <div class="form-bottom">
+        <span class="footer-hint">Fields marked <span class="required">*</span> are required</span>
+        <div class="ActionButtons footer-actions">
+          <button type="button" class="cancelbtn" (click)="AddNewClicked()">Cancel</button>
+          <button type="button" class="submitbtn" *ngIf="editingId" (click)="UpdateSyllabus()">Update</button>
+          <button type="button" class="submitbtn" *ngIf="!editingId" (click)="SubmitSyllabus()">Submit</button>
+        </div>
       </div>
     </div>
   </div>

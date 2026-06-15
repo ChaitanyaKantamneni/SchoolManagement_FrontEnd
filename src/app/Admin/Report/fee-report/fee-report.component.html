@@ -1,13 +1,20 @@
-<div>
+<div class="DashboardTopNav">
   <app-dashboard-top-nav></app-dashboard-top-nav>
 </div>
 
 <div class="MainContentDiv">
-  <div class="w-100">
-    <div class="ComponentTop">
-      <div class="ComponentTopHeader">
-        <h5>Fee Reports</h5>
-        <p>Total {{ totalCount }} report entries in the active analytics view</p>
+  <div class="w-100 admission-dashboard">
+    <div class="admission-breadcrumb">
+      <span>Reports</span>
+      <mat-icon>chevron_right</mat-icon>
+      <strong>Fee Reports</strong>
+    </div>
+    <div class="AddFormTop">
+      <div class="admission-record-header p-0">
+        <div>
+          <h5>Fee Reports</h5>
+          <p>Total {{ totalCount }} report entries in the active analytics view</p>
+        </div>
       </div>
     </div>
 

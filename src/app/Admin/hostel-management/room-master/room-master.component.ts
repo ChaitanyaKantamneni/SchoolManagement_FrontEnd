@@ -63,13 +63,16 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
   selectedSchoolID = '';
   AdminselectedSchoolID = '';
   SchoolSelectionChange = false;
+  selectedAcademicYearID = '';
+  SchoolAcademicYearChange = false;
+  AdminSelectedActiveAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
 
   RoomForm = new FormGroup({
     ID: new FormControl(),
     RoomNumber: new FormControl('', Validators.required),
     BedCapacity: new FormControl(0, [Validators.required, Validators.min(0)]),
     HostelID: new FormControl('0', [Validators.required, Validators.min(1)]),
-    AcademicYear: new FormControl('0', [Validators.required, Validators.min(1)]),
+    AcademicYear: new FormControl(sessionStorage.getItem('ActiveAcademicYearID') || '0', [Validators.required, Validators.min(1)]),
     Occupied: new FormControl(false),
     Remarks: new FormControl(''),
     School: new FormControl('0')
@@ -88,6 +91,9 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
   ngOnInit(): void {
     this.checkViewPermission();
     this.SchoolSelectionChange = false;
+    if (!this.isAdmin) {
+      this.RoomForm.get('AcademicYear')?.disable({ emitEvent: false });
+    }
     this.FetchSchoolsList();
     this.FetchInitialData();
   }
@@ -170,6 +176,10 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
       SchoolID: SchoolIdSelected || null
     };
 
+    if (!this.isAdmin) {
+      payload.AcademicYear = sessionStorage.getItem('ActiveAcademicYearID') || '';
+    }
+
     if (isSearch) {
       payload.RoomNumber = this.searchQuery.trim();
     }
@@ -204,6 +214,10 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
           SchoolID: SchoolIdSelected || null,
           ...extra
         };
+
+        if (!this.isAdmin) {
+          payload.AcademicYear = sessionStorage.getItem('ActiveAcademicYearID') || '';
+        }
 
         if (isSearch) {
           payload.RoomNumber = this.searchQuery.trim();
@@ -282,12 +296,16 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
     } else {
       this.RoomForm.get('School')?.clearValidators();
       const userSchoolId = sessionStorage.getItem('SchoolID')?.toString() || '';
+      const activeYear = sessionStorage.getItem('ActiveAcademicYearID') || '';
       this.FetchAcademicYearsList(userSchoolId);
-      this.FetchHostelsList(userSchoolId);
+      this.FetchHostelsList(userSchoolId, activeYear);
     }
     this.RoomForm.reset();
     this.RoomForm.get('School')?.patchValue('0');
-    this.RoomForm.get('AcademicYear')?.patchValue('0');
+    this.RoomForm.get('AcademicYear')?.patchValue(sessionStorage.getItem('ActiveAcademicYearID') || '0');
+    if (!this.isAdmin) {
+      this.RoomForm.get('AcademicYear')?.disable({ emitEvent: false });
+    }
     this.RoomForm.get('HostelID')?.patchValue('0');
     this.RoomForm.get('RoomNumber')?.patchValue('');
     this.RoomForm.get('BedCapacity')?.patchValue(0);
@@ -344,6 +362,10 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
           SchoolID: schoolId
         };
 
+        if (!this.isAdmin) {
+          payload.AcademicYear = sessionStorage.getItem('ActiveAcademicYearID') || '';
+        }
+
         this.roomService.crudOperations(payload).subscribe({
           next: (response: any) => {
             this.isModalOpen = true;
@@ -351,6 +373,7 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
             this.currentPage = 1;
             this.pageCursors = [];
             this.RoomForm.reset();
+            this.RoomForm.get('AcademicYear')?.patchValue(sessionStorage.getItem('ActiveAcademicYearID') || '0');
             this.FetchInitialData();
             this.IsAddNewClicked = false;
           },
@@ -408,7 +431,7 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
           const schoolId = item.schoolID || item.SchoolID;
           if (schoolId) {
             this.FetchAcademicYearsList(schoolId);
-            this.FetchHostelsList(schoolId);
+            this.FetchHostelsList(schoolId, item.academicYear);
           }
 
           this.RoomForm.patchValue({
@@ -421,6 +444,10 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
             Remarks: item.remarks || item.Remarks,
             School: schoolId
           });
+
+          if (!this.isAdmin) {
+            this.RoomForm.get('AcademicYear')?.disable({ emitEvent: false });
+          }
 
           // Sync BedCapacity from Hostel Metadata
           const selectedHostel = this.hostelList.find(h => String(h.ID) === String(item.hostelID || item.HostelID));
@@ -464,6 +491,9 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
 
     if (this.isAdmin) {
       payload.SchoolID = this.RoomForm.get('School')?.value;
+    } else {
+      payload.SchoolID = sessionStorage.getItem('SchoolID')?.toString() || '';
+      payload.AcademicYear = sessionStorage.getItem('ActiveAcademicYearID') || '';
     }
 
     this.roomService.crudOperations(payload).subscribe({
@@ -473,6 +503,7 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
         this.currentPage = 1;
         this.pageCursors = [];
         this.RoomForm.reset();
+        this.RoomForm.get('AcademicYear')?.patchValue(sessionStorage.getItem('ActiveAcademicYearID') || '0');
         this.FetchInitialData();
         this.IsAddNewClicked = false;
       },
@@ -510,7 +541,7 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
   onAdminSchoolChange(event: Event) {
     this.academicYearList = [];
     this.hostelList = [];
-    this.RoomForm.get('AcademicYear')?.patchValue('0');
+    this.RoomForm.get('AcademicYear')?.patchValue(sessionStorage.getItem('ActiveAcademicYearID') || '0');
     this.RoomForm.get('HostelID')?.patchValue('0');
     const target = event.target as HTMLSelectElement;
     const schoolID = target.value;
@@ -658,5 +689,11 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
 
   pageEndIndex(): number {
     return Math.min(this.currentPage * this.pageSize, this.RoomCount);
+  }
+
+  onRowsCountChange() {
+    this.currentPage = 1;
+    this.pageCursors = [];
+    this.FetchInitialData();
   }
 }
