@@ -1,18 +1,25 @@
-<div>
+<div class="DashboardTopNav">
   <app-dashboard-top-nav></app-dashboard-top-nav>
 </div>
 
 <div class="MainContentDiv">
-
-  <!-- ===== LIST VIEW ===== -->
-  <div *ngIf="!isDetailView" class="w-100">
-
-    <!-- Header -->
-    <div class="ComponentTop">
-      <div class="ComponentTopHeader">
-        <h5>Students Report</h5>
-        <p>Total {{ totalCount }} Students Added</p>
+  <div class="w-100 admission-dashboard">
+    <div class="admission-breadcrumb">
+      <span>Reports</span>
+      <mat-icon>chevron_right</mat-icon>
+      <strong>Students Report</strong>
+    </div>
+    <div class="AddFormTop" *ngIf="!isDetailView">
+      <div class="admission-record-header p-0">
+        <div>
+          <h5>Students Report</h5>
+          <p>Total {{ totalCount }} Students Added</p>
+        </div>
       </div>
+    </div>
+    
+    <!-- ===== LIST VIEW ===== -->
+    <div *ngIf="!isDetailView" class="w-100">
       <!-- Filters -->
       <div class="ComponentTopBottom" style="margin-top:10px;">
         <div class="filterOptions" style="gap:12px; flex-wrap:wrap; align-items:flex-end;">
@@ -83,7 +90,7 @@
         </div>
       </div>
 
-      <div class="reviewstable">
+      <div class="reviewstable admission-table-wrap">
         <!-- <table *ngIf="studentsList.length > 0" class="table table-bordered">
           <thead>
             <tr>
@@ -135,7 +142,7 @@
           </tbody>
         </table> -->
 
-        <table *ngIf="studentsList.length > 0" class="table table-bordered custom-student-table">
+        <table *ngIf="studentsList.length > 0" class="table table-bordered admission-table custom-student-table">
           <thead>
             <tr>
               <th class="col-slno">SI.No</th>
@@ -456,7 +463,6 @@
           </ng-template>
         </section>
       </div>
-    </div>
   </div>
-
+  </div>
 </div>

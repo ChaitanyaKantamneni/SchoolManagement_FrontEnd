@@ -1,22 +1,116 @@
+.MainContentDiv {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 18px;
+  min-height: auto;
+  background: transparent;
+  min-width: 0;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+.ComponentTop,
+.ComponentRecords,
+.AddForm {
+  width: 100%;
+}
+
 .FormInputRowsContainer {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
   flex-direction: column;
 }
 
 .InputRow {
-  width: 100% !important;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 10px;
   flex-direction: row !important;
+  width: 100% !important;
 }
 
-.searchreview.input-container .floating-input {
-  padding-left: 32px !important;
+.sortable-column {
+  cursor: pointer;
+  user-select: none;
 }
 
-.pagination-controls {
+.sortable-column .column-text {
+  display: inline-flex;
+  align-items: center;
+}
+
+.sortable-column .arrows {
+  display: inline-flex;
+  flex-direction: column;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.sortable-column .arrows mat-icon {
+  width: 13px;
+  height: 11px;
+  font-size: 16px;
+  line-height: 10px;
+}
+
+.noteActiveCard {
+  width: 100%;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-  width: 100%;
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: #f0f7ff;
+  border: 1px solid rgb(37 99 235 / 27%);
+  border-radius: 8px;
+  justify-content: space-between;
+}
+
+.noteActiveCard .noteSection span {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #2462e9;
+  margin-bottom: 3px;
+}
+
+.noteActiveCard .noteSection p {
+  font-size: 11px;
+  color: #62728a;
+  line-height: 1.5;
+  margin: 0 !important;
+}
+
+.noteActiveCard .InputFieldsContainer {
+  width: 25% !important;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: end !important;
+}
+
+.footer-actions {
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .MainContentDiv {
+    gap: 14px;
+  }
+
+  .InputRow,
+  .noteActiveCard {
+    flex-direction: column !important;
+  }
+
+  .noteActiveCard {
+    align-items: flex-start;
+  }
+
+  .noteActiveCard .InputFieldsContainer {
+    width: 100% !important;
+    justify-content: flex-start !important;
+  }
 }

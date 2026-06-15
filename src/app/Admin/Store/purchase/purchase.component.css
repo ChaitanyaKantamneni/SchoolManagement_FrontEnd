@@ -193,3 +193,19 @@
 .col-category { width: 18%; text-align: left !important; }
 /* Reduce col-item slightly to make room */
 .col-item { width: 22%; text-align: left !important; }
+
+.FormInputRowsContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.InputRow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-direction: row !important;
+  width: 100% !important;
+}

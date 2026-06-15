@@ -24,6 +24,7 @@ export class SalaryPayComponent implements OnInit {
   selectedSchoolID = '';
   selectedAcademicYearID = '';
   selectedStaffID = '';
+  AdminSelectedActiveAcademicYearID: string = sessionStorage.getItem('ActiveAcademicYearID') || '';
 
   form = {
     paymentMode: '',
@@ -69,6 +70,7 @@ export class SalaryPayComponent implements OnInit {
 
   ngOnInit(): void {
     this.setTodayDate();
+    this.selectedAcademicYearID = this.AdminSelectedActiveAcademicYearID;
 
     if (this.isAdmin) {
       this.FetchSchoolsList();
@@ -76,6 +78,10 @@ export class SalaryPayComponent implements OnInit {
       this.selectedSchoolID = this.resolveNonAdminSchoolId();
       this.FetchAcademicYearsList();
       this.FetchPaymentModes();
+      if (this.selectedAcademicYearID) {
+        this.FetchStaffList();
+        this.FetchPayrollHeadTypes();
+      }
     }
   }
 
@@ -122,6 +128,10 @@ export class SalaryPayComponent implements OnInit {
                 })
                 .filter((row: { ID: string; Name: string }) => !!row.ID)
             : [];
+          if (this.AdminSelectedActiveAcademicYearID) {
+            this.selectedAcademicYearID = this.AdminSelectedActiveAcademicYearID;
+            this.onAcademicYearChange();
+          }
         },
         error: () => {
           this.academicYearList = [];
@@ -207,7 +217,7 @@ export class SalaryPayComponent implements OnInit {
     const payload: any = {
       Flag: '9',
       SchoolID: this.selectedSchoolID || '',
-      AcademicYear: this.selectedAcademicYearID || ''
+      AcademicYear: this.isAdmin ? (this.selectedAcademicYearID || '') : this.AdminSelectedActiveAcademicYearID
     };
     this.startLoading();
     this.apiurl
@@ -273,7 +283,7 @@ export class SalaryPayComponent implements OnInit {
     const payload: any = {
       Flag: '2',
       SchoolID: this.toNumber(this.selectedSchoolID),
-      AcademicYear: this.toNumber(this.selectedAcademicYearID),
+      AcademicYear: this.toNumber(this.isAdmin ? this.selectedAcademicYearID : this.AdminSelectedActiveAcademicYearID),
       Limit: 500,
       Offset: 0
     };
@@ -338,7 +348,7 @@ export class SalaryPayComponent implements OnInit {
     const payload: any = {
       Flag: '2',
       SchoolID: this.toNumber(this.selectedSchoolID),
-      AcademicYear: this.toNumber(this.selectedAcademicYearID),
+      AcademicYear: this.toNumber(this.isAdmin ? this.selectedAcademicYearID : this.AdminSelectedActiveAcademicYearID),
       Limit: 500,
       Offset: 0
     };
@@ -404,7 +414,7 @@ export class SalaryPayComponent implements OnInit {
     const payload: any = {
       ID: null,
       SchoolID: this.toNumber(this.selectedSchoolID),
-      AcademicYear: this.toNumber(this.selectedAcademicYearID),
+      AcademicYear: this.toNumber(this.isAdmin ? this.selectedAcademicYearID : this.AdminSelectedActiveAcademicYearID),
       StaffID: this.toNumber(this.selectedStaffID),
       PayMonth: this.normalizeToMonthStart(this.form.startDate),
       PaymentMode: this.form.paymentMode || null,

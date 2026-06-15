@@ -211,3 +211,103 @@
 .compact-table-section .pagination-controls {
   margin: 12px 0 0 !important;
 }
+
+.MainContentDiv {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+  min-height: auto;
+  background: transparent;
+}
+
+.w-100,
+.ComponentRecords,
+.AddForm {
+  width: 100%;
+}
+
+.FormInputRowsContainer {
+  align-items: stretch;
+  gap: 12px;
+}
+
+.InputRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 16px;
+  width: 100% !important;
+  flex-direction: row !important;
+  flex-wrap: wrap;
+}
+
+.InputFieldsContainer {
+  flex: 1 1 calc(33.333% - 11px);
+  min-width: 240px;
+}
+
+.InputRow:last-child .InputFieldsContainer {
+  flex: 1 1 calc(33.333% - 11px);
+  max-width: calc(33.333% - 11px);
+}
+
+.form-bottom {
+  justify-content: end !important;
+}
+
+.footer-actions {
+  margin: 0;
+}
+
+.exam-footer-actions {
+  justify-content: flex-end !important;
+  padding: 14px !important;
+}
+
+.admission-record-card {
+  width: 100%;
+}
+
+.admission-record-header h5 {
+  margin: 0;
+}
+
+.reviewstable table th {
+  white-space: nowrap;
+}
+
+.reviewstable table td {
+  vertical-align: middle;
+  font-size: 12px;
+}
+
+.table .btn,
+.ComponentRecords .ActionButtons .btn,
+.ComponentRecords .ActionButtons .submitbtn {
+  background-color: #536ff7;
+  color: #fff;
+  border: none;
+  font-size: 11px;
+  border-radius: 6px;
+  padding: 6px 12px;
+  transition: background-color 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .InputRow {
+    flex-direction: column !important;
+    align-items: stretch;
+  }
+
+  .InputFieldsContainer,
+  .InputRow:last-child .InputFieldsContainer {
+    min-width: 100%;
+    max-width: none;
+    flex: 1 1 100%;
+  }
+
+  .exam-footer-actions {
+    justify-content: flex-start !important;
+  }
+}

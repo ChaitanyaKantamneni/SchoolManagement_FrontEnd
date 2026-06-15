@@ -64,7 +64,7 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
 
   // ── Filter / search ─────────────────────────────────────────
   filterSchoolID = '';
-  filterAcademicYear = '';
+  filterAcademicYear = sessionStorage.getItem('ActiveAcademicYearID') || '';
   SchoolSelectionChange = false;
 
   // ── Session ──────────────────────────────────────────────────
@@ -74,7 +74,7 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
   AllotmentForm = new FormGroup({
     ID: new FormControl(0),
     School: new FormControl('0'),
-    AcademicYear: new FormControl('0', [Validators.required, Validators.pattern(/^(?!0$).*$/)]),
+    AcademicYear: new FormControl(sessionStorage.getItem('ActiveAcademicYearID') || '0', [Validators.required, Validators.pattern(/^(?!0$).*$/)]),
     HostelID: new FormControl('0', [Validators.required, Validators.pattern(/^(?!0$).*$/)]),
     RoomID: new FormControl('0', [Validators.required, Validators.pattern(/^(?!0$).*$/)]),
     StudentID: new FormControl('0', [Validators.required, Validators.pattern(/^(?!0$).*$/)]),
@@ -101,9 +101,11 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
     // Fetch hostels & students for non-admin automatically
     if (!this.isAdmin) {
       const schoolId = sessionStorage.getItem('SchoolID') || '';
-      this.FetchHostelsList(schoolId);
+      const activeYear = sessionStorage.getItem('ActiveAcademicYearID') || '';
+      this.FetchHostelsList(schoolId, activeYear);
       this.FetchAcademicYearsList(schoolId);
-      this.FetchStudentList(schoolId);
+      this.FetchStudentList(schoolId, activeYear);
+      this.AllotmentForm.get('AcademicYear')?.disable({ emitEvent: false });
     }
   }
 
@@ -138,13 +140,18 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
     });
   }
 
-  FetchHostelsList(schoolId: string) {
+  FetchHostelsList(schoolId: string, academicYearId?: string) {
     this.hostelList = [];
     this.roomList = [];
     this.AllotmentForm.get('HostelID')?.patchValue('0');
     this.AllotmentForm.get('RoomID')?.patchValue('0');
 
-    this.apiurl.post<any>('Tbl_HostelMaster_CRUD_Operations', { SchoolID: schoolId, Flag: '3' }).subscribe({
+    const requestData: any = { SchoolID: schoolId, Flag: '3' };
+    if (academicYearId && academicYearId !== '0') {
+      requestData.AcademicYear = academicYearId;
+    }
+
+    this.apiurl.post<any>('Tbl_HostelMaster_CRUD_Operations', requestData).subscribe({
       next: (res: any) => {
         this.hostelList = Array.isArray(res?.data)
           ? res.data.map((i: any) => ({ ID: i.id || i.ID, HostelName: i.hostelName || i.HostelName }))
@@ -281,13 +288,16 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
     this.AllotmentForm.patchValue({
       ID: 0,
       School: '0',
-      AcademicYear: '0',
+      AcademicYear: sessionStorage.getItem('ActiveAcademicYearID') || '0',
       HostelID: '0',
       RoomID: '0',
       StudentID: '0',
       AllotmentDate: new Date().toISOString().split('T')[0],
       IsActive: true
     });
+    if (!this.isAdmin) {
+      this.AllotmentForm.get('AcademicYear')?.disable({ emitEvent: false });
+    }
     this.roomList = [];
     this.hostelList = [];
     if (this.isAdmin) {
@@ -295,8 +305,9 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
     } else {
       this.AllotmentForm.get('School')?.clearValidators();
       const schoolId = sessionStorage.getItem('SchoolID') || '';
-      this.FetchHostelsList(schoolId);
-      this.FetchStudentList(schoolId);
+      const activeYear = sessionStorage.getItem('ActiveAcademicYearID') || '';
+      this.FetchHostelsList(schoolId, activeYear);
+      this.FetchStudentList(schoolId, activeYear);
     }
     this.AllotmentForm.get('School')?.updateValueAndValidity();
 
@@ -307,9 +318,10 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
   editRecord(record: any) {
     this.AllotmentForm.reset();
     const schoolId = record.SchoolID || record.schoolID;
+    const academicYearId = record.AcademicYear || record.academicYear;
     this.FetchAcademicYearsList(schoolId);
-    this.FetchHostelsList(schoolId);
-    this.FetchStudentList(schoolId);
+    this.FetchHostelsList(schoolId, academicYearId);
+    this.FetchStudentList(schoolId, academicYearId);
     this.FetchRoomsList(record.HostelID || record.hostelID, true);
     this.AllotmentForm.patchValue({
       ID: record.ID || record.id,
@@ -322,6 +334,9 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
       Remarks: record.Remarks || record.remarks,
       IsActive: ['Active', '1', 1, true].includes(record.IsActive || record.isActive)
     });
+    if (!this.isAdmin) {
+      this.AllotmentForm.get('AcademicYear')?.disable({ emitEvent: false });
+    }
     if (this.isAdmin) {
       this.AllotmentForm.get('School')?.setValidators([Validators.required]);
     } else {
@@ -337,14 +352,15 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
     const schoolId = (event.target as HTMLSelectElement).value;
     this.studentList = [];
     this.studentMap = {};
-    this.AllotmentForm.get('AcademicYear')?.patchValue('0');
+    this.AllotmentForm.get('AcademicYear')?.patchValue(sessionStorage.getItem('ActiveAcademicYearID') || '0');
     this.AllotmentForm.get('StudentID')?.patchValue('0');
     this.AllotmentForm.get('HostelID')?.patchValue('0');
     this.AllotmentForm.get('RoomID')?.patchValue('0');
     if (schoolId && schoolId !== '0') {
+      const activeYear = sessionStorage.getItem('ActiveAcademicYearID') || '0';
       this.FetchAcademicYearsList(schoolId);
-      this.FetchHostelsList(schoolId);
-      this.FetchStudentList(schoolId);
+      this.FetchHostelsList(schoolId, activeYear);
+      this.FetchStudentList(schoolId, activeYear);
     }
   }
 
@@ -354,9 +370,13 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
       ? this.AllotmentForm.get('School')?.value
       : sessionStorage.getItem('SchoolID');
     this.AllotmentForm.get('StudentID')?.patchValue('0');
+    this.AllotmentForm.get('HostelID')?.patchValue('0');
+    this.AllotmentForm.get('RoomID')?.patchValue('0');
     if (schoolId && schoolId !== '0' && yearId && yearId !== '0') {
+      this.FetchHostelsList(schoolId, yearId);
       this.FetchStudentList(schoolId, yearId);
     } else {
+      this.hostelList = [];
       this.studentList = [];
     }
   }
@@ -400,6 +420,11 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
       CreatedBy: isUpdate ? undefined : this.ActiveUserId,
       ModifiedBy: isUpdate ? this.ActiveUserId : undefined
     };
+
+    if (!this.isAdmin) {
+      payload.AcademicYear = sessionStorage.getItem('ActiveAcademicYearID') || '';
+    }
+
     this.loader.show();
     this.allotmentService.crudOperations(payload).subscribe({
       next: (res: any) => {
@@ -522,6 +547,11 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
 
   pageStartIndex(): number { return this.AllotmentCount === 0 ? 0 : (this.currentPage - 1) * this.pageSize + 1; }
   pageEndIndex(): number { return Math.min(this.currentPage * this.pageSize, this.AllotmentCount); }
+
+  onRowsCountChange() {
+    this.currentPage = 1;
+    this.FetchAllotments();
+  }
 
   closeFormModal() { this.IsAddNewClicked = false; }
   closeViewModal() { this.isViewModalOpen = false; this.viewRecord = null; }

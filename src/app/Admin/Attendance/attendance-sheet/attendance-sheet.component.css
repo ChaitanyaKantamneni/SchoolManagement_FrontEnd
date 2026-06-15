@@ -1,80 +1,183 @@
+/* ==========================================
+   Base styles matching time-table.component.css
+   ========================================== */
+
 .FormInputRowsContainer{
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
+    flex-direction: column;
 }
 
 .InputRow{
-    width: 100% !important;
     flex-direction: row !important;
+    width: 100% !important;
+}
+
+.inputrowdescription{
+    align-items: start !important;
+}
+
+.sortable-column .column-text{
+  margin-right: 15px;
+}
+
+.arrows{
+    display: flex;
+    flex-direction: row;
+    position: absolute;
+    right: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    gap: 0px;
+}
+
+.AddForm{
+  margin-top: 10px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  border: 1px solid #d7e0ec;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(29, 78, 216, 0.04);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.ComponentTop .ComponentTopHeader{
+  border-bottom: none;
+}
+
+.MainContentDiv{
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+  min-height: auto;
+  background: transparent;
+}
+
+.w-100,
+.ComponentRecords,
+.AddForm {
+  width: 100%;
+}
+
+.FormInputRowsContainer {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.InputRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .InputFieldsContainer {
-  flex: 1 1 0;
-  min-width: 0;
+  flex: 1 1 calc(33.333% - 11px);
+  min-width: 240px;
 }
 
-.InputFieldsContainer select.inputField {
+.form-bottom {
+  justify-content: end !important;
+}
+
+.footer-actions {
+  margin: 0;
+}
+
+.admission-record-card {
   width: 100%;
 }
 
-.InputFieldsContainer input.inputField {
+.admission-record-header h5 {
+  margin: 0;
+}
+
+.admission-table-wrap {
   width: 100%;
-  box-sizing: border-box;
-}
-/* default for paired fields */
-.InputFieldsContainer {
-  flex: 1 1 0;
-  min-width: 0;
+  overflow-x: auto;
 }
 
-/* Keep single-field rows same width as normal half-row fields */
-/* make sure select follows container width */
-.InputFieldsContainer select.inputField {
-  width: 100%;
-  box-sizing: border-box;
+.reviewstable table th {
+  white-space: nowrap;
 }
 
-.full-width-field {
-  flex: 1 1 100%;
-  max-width: 523px;
+.reviewstable table td {
+  vertical-align: middle;
+  font-size: 12px;
 }
 
-.ComponentRecords .ActionButtons{
+.compact-table-section {
+  margin-top: 10px;
+  padding-bottom: 8px;
+}
+
+.viewmodel .ActionButtons{
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 20px;
-  gap: 12px;
-  flex-wrap: wrap;
+  gap: 5px;
 }
 
-.ComponentRecords .ActionButtons .btn{
+.viewmodel .ActionButtons .btn{
   background-color: #536ff7;
   color: #fff;
   border: none;
-  font-size: smaller;
-  border-radius: 5px;
-  padding: 5px 10px;
-  margin-left: 10px;
-  transition: background-color 0.3s ease;
-}
-
-.table .btn{
-  background-color: #536ff7;
-  color: #fff;
-  border: none;
-  font-size: smaller;
+  font-size: 10px;
   border-radius: 5px;
   padding: 5px 10px;
   transition: background-color 0.3s ease;
 }
 
-.table-action-buttons {
-  justify-content: flex-end;
-  padding: 16px 0 8px;
+.viewmodel .modal-dialog {
+    position: relative;
+    margin: 4% auto;
+    max-width: 80%;
 }
+
+.viewmodel .actionbuttons,.AddForm .actionbuttons{
+  display: flex;
+  justify-content: end;
+  align-items: center;
+  gap: 10px;
+}
+
+.viewmodel .actionbuttons .btncancel,.AddForm .actionbuttons .btncancel{
+  background-color: #f8fafc;
+  color: #153e90;
+  border: 1px solid #d7e0ec;
+  font-size: smaller;
+  border-radius: 10px;
+  padding: 8px 14px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.viewmodel .actionbuttons .btnsubmit,.AddForm .actionbuttons .btnsubmit{
+  background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
+  color: #fff;
+  border: 1px solid transparent;
+  font-size: smaller;
+  border-radius: 10px;
+  padding: 8px 14px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Responsive table for smaller screens */
+@media (max-width: 768px) {
+  .InputRow {
+    flex-direction: column !important;
+    align-items: stretch;
+  }
+
+  .InputFieldsContainer {
+    min-width: 100%;
+    flex: 1 1 100%;
+  }
+}
+
+/* ==========================================
+   Attendance Sheet Specific Styles
+   ========================================== */
 
 .status-column {
   min-width: 170px;
@@ -83,13 +186,12 @@
 }
 
 .late-minutes-column {
-  min-width: 95px;
-  width: 95px;
+  min-width: 120px;
+  width: 120px;
 }
 
 .late-minutes-column .inputField {
-  width: 70px;
-  margin: 0 auto;
+  width: 100%;
   text-align: center;
 }
 
@@ -120,10 +222,7 @@
 .toggle-container .switch .slider {
   position: absolute;
   cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   background-color: #ccc;
   transition: 0.4s;
   border-radius: 34px;
@@ -149,52 +248,8 @@
   transform: translateX(40px);
 }
 
-.toggle-container .switch .toggle-text {
-  position: absolute;
-  top: 0;
-  transform: translateX(-50%);
-  color: #fff;
-  font-weight: bold;
-  line-height: 20px;
-  pointer-events: none;
-}
-
 .status-label {
   font-size: 10px;
   font-weight: 400;
   color: #333;
-}
-
-/* Keep AttendanceSheet page compact: no extra blank scroll area under table */
-:host {
-  display: block;
-}
-
-.MainContentDiv {
-  justify-content: flex-start !important;
-  margin-bottom: 0 !important;
-  padding-bottom: 0 !important;
-}
-
-.MainContentDiv > .ComponentRecords {
-  margin-bottom: 0 !important;
-  padding-bottom: 8px !important;
-}
-
-.MainContentDiv > .ComponentRecords > div {
-  margin-bottom: 0 !important;
-  padding-bottom: 0 !important;
-}
-
-.MainContentDiv > .ComponentRecords .reviewstable {
-  overflow-y: visible !important;
-}
-
-.MainContentDiv > .ComponentRecords .table {
-  margin-bottom: 0 !important;
-}
-
-.MainContentDiv > .ComponentRecords .table-action-buttons {
-  margin-bottom: 0 !important;
-  padding-bottom: 0 !important;
 }

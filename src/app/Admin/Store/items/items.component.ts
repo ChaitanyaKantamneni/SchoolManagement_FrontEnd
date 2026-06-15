@@ -19,6 +19,7 @@ import { HttpClient } from '@angular/common/http';
 })
 export class ItemsComponent extends BasePermissionComponent {
   pageName = 'Items';
+  Math = Math;
 
   constructor(
     private http: HttpClient,
@@ -35,6 +36,9 @@ export class ItemsComponent extends BasePermissionComponent {
     this.SchoolSelectionChange = false;
     this.FetchSchoolsList();
     this.FetchInitialData();
+    if (!this.isAdmin) {
+      this.ItemsForm.get('AcademicYear')?.disable({ emitEvent: false });
+    }
   }
 
   allowOnlyNumbers(event: KeyboardEvent) {
@@ -102,13 +106,13 @@ export class ItemsComponent extends BasePermissionComponent {
   categoriesList: any[] = [];
   unitsList: any[] = [];
   AdminselectedSchoolID: string = '';
-  AdminselectedAcademicYearID: string = '';
+  AdminselectedAcademicYearID: string = sessionStorage.getItem('ActiveAcademicYearID') || '';
 
   ItemsForm: any = new FormGroup({
     ID: new FormControl(''),
     SchoolID: new FormControl(''),
     School: new FormControl(0),
-    AcademicYear: new FormControl(0, [Validators.required, Validators.min(1)]),
+    AcademicYear: new FormControl(sessionStorage.getItem('ActiveAcademicYearID') ? Number(sessionStorage.getItem('ActiveAcademicYearID')) : 0, [Validators.required, Validators.min(1)]),
     CategoryID: new FormControl(0, [Validators.required, Validators.min(1)]),
     UnitID: new FormControl(0, [Validators.required, Validators.min(1)]),
     ItemName: new FormControl(null, [Validators.required]),
@@ -216,12 +220,14 @@ export class ItemsComponent extends BasePermissionComponent {
       SchoolIdSelected = this.selectedSchoolID.trim();
     }
 
-    return this.apiurl.post<any>('Tbl_Items_CRUD_Operations', {
+    const payload: any = {
       Flag: isSearch ? '8' : '6',
       SchoolID: SchoolIdSelected,
-      AcademicYear: this.AdminselectedAcademicYearID || null,
+      AcademicYear: this.isAdmin ? (this.AdminselectedAcademicYearID || null) : (sessionStorage.getItem('ActiveAcademicYearID') || null),
       ItemName: isSearch ? this.searchQuery.trim() : null
-    });
+    };
+
+    return this.apiurl.post<any>('Tbl_Items_CRUD_Operations', payload);
   }
 
   FetchInitialData(extra: any = {}) {
@@ -252,7 +258,7 @@ export class ItemsComponent extends BasePermissionComponent {
           LastCreatedDate: cursor?.lastCreatedDate ?? null,
           LastID: cursor?.lastID ?? null,
           SchoolID: SchoolIdSelected,
-          AcademicYear: this.AdminselectedAcademicYearID || null,
+          AcademicYear: this.isAdmin ? (this.AdminselectedAcademicYearID || null) : (sessionStorage.getItem('ActiveAcademicYearID') || null),
           ...extra
         };
 
@@ -323,7 +329,10 @@ export class ItemsComponent extends BasePermissionComponent {
     }
     this.ItemsForm.reset();
     this.ItemsForm.get('School').patchValue('0');
-    this.ItemsForm.get('AcademicYear').patchValue('0');
+    this.ItemsForm.get('AcademicYear').patchValue(sessionStorage.getItem('ActiveAcademicYearID') ? Number(sessionStorage.getItem('ActiveAcademicYearID')) : 0);
+    if (!this.isAdmin) {
+      this.ItemsForm.get('AcademicYear')?.disable({ emitEvent: false });
+    }
     this.ItemsForm.get('CategoryID').patchValue('0');
     this.ItemsForm.get('UnitID').patchValue('0');
     this.IsAddNewClicked = !this.IsAddNewClicked;
@@ -340,7 +349,7 @@ export class ItemsComponent extends BasePermissionComponent {
     const IsActiveStatusNumeric = this.IsActiveStatus ? '1' : '0';
     const data = {
       SchoolID: this.ItemsForm.get('School')?.value,
-      AcademicYear: this.ItemsForm.get('AcademicYear')?.value,
+      AcademicYear: this.isAdmin ? this.ItemsForm.get('AcademicYear')?.value : (sessionStorage.getItem('ActiveAcademicYearID') || this.ItemsForm.get('AcademicYear')?.value),
       CategoryID: this.ItemsForm.get('CategoryID')?.value,
       UnitID: this.ItemsForm.get('UnitID')?.value,
       ItemName: this.ItemsForm.get('ItemName')?.value,
@@ -362,6 +371,7 @@ export class ItemsComponent extends BasePermissionComponent {
           this.isModalOpen = true;
           this.ItemInsStatus = 'Item Details Submitted!';
           this.ItemsForm.reset();
+          this.ItemsForm.get('AcademicYear').patchValue(sessionStorage.getItem('ActiveAcademicYearID') ? Number(sessionStorage.getItem('ActiveAcademicYearID')) : 0);
           this.ItemsForm.markAsPristine();
           this.currentPage = 1;
           this.pageCursors = [];
@@ -448,6 +458,9 @@ export class ItemsComponent extends BasePermissionComponent {
             TaxSGST: item.taxSGST,
             Description: item.description
           });
+          if (!this.isAdmin) {
+            this.ItemsForm.get('AcademicYear')?.disable({ emitEvent: false });
+          }
           this.IsActiveStatus = isActive;
           this.IsAddNewClicked = true;
         }
@@ -466,7 +479,7 @@ export class ItemsComponent extends BasePermissionComponent {
     const data = {
       ID: this.ItemsForm.get('ID')?.value || '',
       SchoolID: this.ItemsForm.get('School')?.value,
-      AcademicYear: this.ItemsForm.get('AcademicYear')?.value || '',
+      AcademicYear: this.isAdmin ? (this.ItemsForm.get('AcademicYear')?.value || '') : (sessionStorage.getItem('ActiveAcademicYearID') || this.ItemsForm.get('AcademicYear')?.value || ''),
       CategoryID: this.ItemsForm.get('CategoryID')?.value || '',
       UnitID: this.ItemsForm.get('UnitID')?.value || '',
       ItemName: this.ItemsForm.get('ItemName')?.value || '',
@@ -488,6 +501,7 @@ export class ItemsComponent extends BasePermissionComponent {
           this.isModalOpen = true;
           this.ItemInsStatus = 'Item Details Updated!';
           this.ItemsForm.reset();
+          this.ItemsForm.get('AcademicYear').patchValue(sessionStorage.getItem('ActiveAcademicYearID') ? Number(sessionStorage.getItem('ActiveAcademicYearID')) : 0);
           this.ItemsForm.markAsPristine();
           this.FetchInitialData();
         }
@@ -540,6 +554,20 @@ export class ItemsComponent extends BasePermissionComponent {
 
   totalPages() {
     return Math.ceil(this.ItemsCount / this.pageSize);
+  }
+
+  pageStartIndex(): number {
+    return this.ItemsCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
+  }
+
+  pageEndIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.ItemsCount);
+  }
+
+  onRowsCountChange() {
+    this.currentPage = 1;
+    this.pageCursors = [];
+    this.FetchInitialData();
   }
 
   getVisiblePageNumbers() {
@@ -626,7 +654,7 @@ export class ItemsComponent extends BasePermissionComponent {
     this.academicYearList = [];
     this.categoriesList = [];
     this.unitsList = [];
-    this.ItemsForm.get('AcademicYear').patchValue('0');
+    this.ItemsForm.get('AcademicYear').patchValue(sessionStorage.getItem('ActiveAcademicYearID') ? Number(sessionStorage.getItem('ActiveAcademicYearID')) : 0);
     this.ItemsForm.get('CategoryID').patchValue('0');
     this.ItemsForm.get('UnitID').patchValue('0');
     const target = event.target as HTMLSelectElement;

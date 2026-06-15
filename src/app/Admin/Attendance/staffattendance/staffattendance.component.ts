@@ -39,15 +39,27 @@ export class StaffattendanceComponent extends BasePermissionComponent {
   this.todayDate = `${year}-${month}-${day}`;
     this.checkViewPermission();
     this.SchoolSelectionChange = false;
+    this.AdminSelectedActiveAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
+
+    const schoolFromSession = sessionStorage.getItem('SchoolID') || localStorage.getItem('SchoolID') || '';
+    if (!this.AdminselectedSchoolID) {
+      this.AdminselectedSchoolID = schoolFromSession;
+    }
+
+    if (this.isAdmin) {
+      this.SyllabusForm.get('AcademicYear')?.enable({ emitEvent: false });
+    } else {
+      this.SyllabusForm.get('AcademicYear')?.disable({ emitEvent: false });
+    }
+
+    this.SyllabusForm.get('School').patchValue(this.isAdmin ? 0 : this.AdminselectedSchoolID);
+    this.SyllabusForm.get('AcademicYear').patchValue(this.AdminSelectedActiveAcademicYearID);
+    this.AdminselectedAcademivYearID = this.AdminSelectedActiveAcademicYearID;
+    this.FetchSessionsList();
     this.FetchSchoolsList();
     if (this.isAdmin) {
       this.FetchRoleList();
     } else {
-      this.AdminselectedSchoolID =
-        sessionStorage.getItem('SchoolID')?.toString() ||
-        sessionStorage.getItem('schoolId')?.toString() ||
-        '';
-      this.SyllabusForm.patchValue({ School: this.AdminselectedSchoolID || '0' });
       this.FetchAcademicYearsList();
       this.FetchRoleList();
     }
@@ -119,6 +131,7 @@ export class StaffattendanceComponent extends BasePermissionComponent {
   StaffTypeListBySchoolId: any[] = [];
   AdminselectedSchoolID: string = '';
   AdminselectedAcademivYearID: string = '';
+  AdminSelectedActiveAcademicYearID: string = sessionStorage.getItem('ActiveAcademicYearID') || '';
   AdminselectedClassID: string = '';
   AdminselectedDiviosnID: string = '';
   AdminselecteExamID: string = '';
@@ -1199,9 +1212,14 @@ export class StaffattendanceComponent extends BasePermissionComponent {
     this.applySelectedSessionTimes();
   }
   FetchSessionsList() {
+    const AcademicYearIdSelected =
+    this.isAdmin
+      ? this.AdminselectedAcademivYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
+
     const requestData = {
       SchoolID: this.AdminselectedSchoolID || '',
-      AcademicYear: this.AdminselectedAcademivYearID || '',
+      AcademicYear: AcademicYearIdSelected,
       Flag: '2'
     };
 
@@ -1271,7 +1289,7 @@ export class StaffattendanceComponent extends BasePermissionComponent {
   resetFilters(level: 'school' | 'academic' | 'class' | 'submit') {
 
     if (level === 'school') {
-      this.AdminselectedAcademivYearID = '';
+      this.AdminselectedAcademivYearID = this.isAdmin ? '' : this.AdminSelectedActiveAcademicYearID;
       this.AdminselectedClassID = '';
       this.AdminselectedDiviosnID = '';
       this.AdminselecteExamID = '';
@@ -1283,7 +1301,7 @@ export class StaffattendanceComponent extends BasePermissionComponent {
       this.examLists = [];
 
       this.SyllabusForm.patchValue({
-        AcademicYear: '0',
+        AcademicYear: this.isAdmin ? '0' : this.AdminSelectedActiveAcademicYearID,
         Class: '0',
         Divisions: '0',
         Session: '0',

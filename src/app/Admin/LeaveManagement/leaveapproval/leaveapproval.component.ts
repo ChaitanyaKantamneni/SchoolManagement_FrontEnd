@@ -165,6 +165,8 @@ export class LeaveapprovalComponent extends BasePermissionComponent implements O
       resolvedSchoolId: this.resolvedSchoolId
     });
 
+    this.selectedAcademicYearId = sessionStorage.getItem('ActiveAcademicYearID') || '';
+
     // Set default user type based on role
     if (this.isTeacher) {
       this.userTypeFilter = 'Student'; // Teachers can only see students
@@ -174,18 +176,16 @@ export class LeaveapprovalComponent extends BasePermissionComponent implements O
 
     if (this.isAdmin) {
       this.selectedSchoolId = '0';
-      this.selectedAcademicYearId = '';
       this.fetchSchools();
+      this.fetchAcademicYears();
       this.fetchLeaveRequests(); // Auto-fetch on load
     } else if (this.isSchoolAdmin) {
       this.selectedSchoolId = this.resolvedSchoolId || this.schoolId;
-      this.selectedAcademicYearId = '';
       console.log('[LEAVE APPROVAL] SchoolAdmin/Principal - selectedSchoolId:', this.selectedSchoolId);
       this.fetchAcademicYears();
       this.fetchLeaveRequests(); // Auto-fetch on load
     } else if (this.isTeacher) {
       this.selectedSchoolId = this.schoolId;
-      this.selectedAcademicYearId = '';
       this.fetchAcademicYears();
       this.resolveStaffIdentity(); // Will call fetchLeaveRequests() after StaffID is resolved
     }
@@ -195,7 +195,7 @@ export class LeaveapprovalComponent extends BasePermissionComponent implements O
   onSchoolChange(e: Event): void {
     this.selectedSchoolId = (e.target as HTMLSelectElement).value;
     this.academicYears = []; 
-    this.selectedAcademicYearId = ''; 
+    this.selectedAcademicYearId = this.isAdmin ? '' : (sessionStorage.getItem('ActiveAcademicYearID') || ''); 
     this.RequestList = [];
     this.rawData = [];
     this.roleList = [];
@@ -478,7 +478,14 @@ console.log('[LEAVE APPROVAL] Teacher payload - currentUserId:', this.currentUse
       next: (res: any) => {
         const list = Array.isArray(res?.data) ? res.data : (Array.isArray(res?.Data) ? res.Data : []);
         this.academicYears = list.map((i: any) => ({ ID: String(i.id ?? i.ID ?? ''), Name: String(i.name ?? i.Name ?? '') }));
-        // Don't auto-select academic year - let user choose manually
+        const activeYearId = sessionStorage.getItem('ActiveAcademicYearID') || '';
+        const matchedYear = this.academicYears.find(y => y.ID === activeYearId);
+        if (matchedYear) {
+          this.selectedAcademicYearId = matchedYear.ID;
+        } else if (this.academicYears.length > 0 && !this.selectedAcademicYearId) {
+          this.selectedAcademicYearId = this.academicYears[0].ID;
+        }
+        this.fetchLeaveRequests();
       },
       error: () => { this.academicYears = []; }
     });

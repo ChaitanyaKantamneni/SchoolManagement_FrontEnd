@@ -1,62 +1,61 @@
-<app-dashboard-top-nav></app-dashboard-top-nav>
-
+<div>
+  <app-dashboard-top-nav></app-dashboard-top-nav>
+</div>
 <div class="MainContentDiv">
-
-  <!-- ═══════════════════════════════════════════
-       LIST VIEW
-  ════════════════════════════════════════════ -->
-  <div *ngIf="!IsAddNewClicked" class="w-100">
-    <div class="ComponentTop">
+  <div *ngIf="!IsAddNewClicked" class="w-100 admission-dashboard">
+    <div class="ComponentTop admission-hero">
       <div class="ComponentTopHeader">
+        <div class="admission-breadcrumb">
+          <span>Store</span>
+          <mat-icon>chevron_right</mat-icon>
+          <strong>Sales</strong>
+        </div>
         <h5>Sales Management</h5>
         <p>Total {{ SalesCount }} Sales Added</p>
       </div>
-      <div class="ComponentTopBottom">
-        <button *ngIf="canAdd()" (click)="AddNewClicked()">
+      <div class="ComponentTopBottom admission-header-actions">
+        <button *ngIf="canAdd()" type="button" class="admission-btn admission-btn--primary admission-top-action" (click)="AddNewClicked()">
           <mat-icon>add_circle</mat-icon>New Sale
         </button>
       </div>
     </div>
 
-    <div class="ComponentRecords">
+    <!-- Filters -->
+    <div class="admission-filter-row">
+      <div class="admission-searchbox">
+        <mat-icon>search</mat-icon>
+        <input type="text" id="searchQuery" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search by Admission No..." />
+      </div>
+      <button type="button" class="admission-chip admission-chip--active">All <span>{{ SalesCount }}</span></button>
+      <select class="admission-select" *ngIf="isAdmin" (change)="onSchoolChange($event)">
+        <option value="0">All Schools</option>
+        <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+      </select>
+    </div>
+
+    <!-- Records Table -->
+    <div class="ComponentRecords admission-record-card">
       <div>
-        <div class="ComponentRecordsTop">
-          <div class="filterOptions">
-            <div class="searchreview input-container">
-              <input type="text" class="form-control floating-input"
-                [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()"
-                placeholder="Search by Admission No..." />
-              <mat-icon style="position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none;">
-                search
-              </mat-icon>
-            </div>
-            <div class="searchreview" *ngIf="isAdmin">
-              <select (change)="onSchoolChange($event)" class="form-control" style="font-size:11px;">
-                <option value="">-- Select School --</option>
-                <option value="0">All Schools</option>
-                <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
-              </select>
-            </div>
+        <div class="ComponentRecordsTop admission-record-header">
+          <div>
+            <h5>Sales Records</h5>
+            <p>Showing {{ SalesList.length }} of {{ SalesCount }} records</p>
           </div>
         </div>
-
-        <div class="reviewstable">
-          <table class="table table-bordered" *ngIf="SalesList.length != 0">
+        <div class="reviewstable admission-table-wrap">
+          <table id="salesTable" *ngIf="SalesList.length != 0" class="table table-bordered admission-table">
             <thead>
               <tr>
                 <th>SI.No</th>
-                <!-- <th>Student Name</th> -->
                 <th>Admission No</th>
                 <th>Categories</th>
-                 <th>Items</th>
-                <!-- <th>Class</th>
-                <th>Division</th> -->
+                <th>Items</th>
                 <th>Sale Date</th>
                 <th>Payment Mode</th>
                 <th>Items Count</th>
                 <th>Total Tax (₹)</th>
                 <th>Grand Total (₹)</th>
-                <th *ngIf="isAdmin">School</th>
+                <th *ngIf="isAdmin">School Name</th>
                 <th *ngIf="isAdmin">Academic Year</th>
                 <th>Status</th>
                 <th>Actions</th>
@@ -64,30 +63,29 @@
             </thead>
             <tbody>
               <tr *ngFor="let s of SalesList; let i = index">
-                <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-                <!-- <td>{{ s.studentName }}</td> -->
-                <td>{{ s.admissionNo }}</td>
-                <td>{{ s.categoryNames }}</td>
-<td>{{ s.itemNames }}</td>
-                <!-- <td>{{ s.className }}</td>
-                <td>{{ s.divisionName }}</td> -->
-                <td>{{ s.saleDate }}</td>
-                <td>{{ s.paymentMode }}</td>
-                <td>{{ s.itemIDs ? s.itemIDs.split(',').length : 0 }}</td>
-                <td>₹{{ s.totalTaxAmount | number:'1.2-2' }}</td>
-                <td><strong>₹{{ s.grandTotalAmount | number:'1.2-2' }}</strong></td>
-                <td *ngIf="isAdmin">{{ s.schoolName }}</td>
-                <td *ngIf="isAdmin">{{ s.academicYearName }}</td>
-                <td>
-                  <span class="status-pill"
-                    [style.background]="s.isActive ? 'linear-gradient(135deg,#dcfce7 0%,#bbf7d0 100%)' : 'linear-gradient(135deg,#ffe4e6 0%,#fecdd3 100%)'"
-                    [style.color]="s.isActive ? '#166534' : '#9f1239'"
-                    [style.borderColor]="s.isActive ? '#86efac' : '#fda4af'">
+                <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td data-label="Admission No">{{ s.admissionNo }}</td>
+                <td data-label="Categories">{{ s.categoryNames }}</td>
+                <td data-label="Items">{{ s.itemNames }}</td>
+                <td data-label="Sale Date">{{ s.saleDate }}</td>
+                <td data-label="Payment Mode">{{ s.paymentMode }}</td>
+                <td data-label="Items Count">{{ s.itemIDs ? s.itemIDs.split(',').length : 0 }}</td>
+                <td data-label="Total Tax">₹{{ s.totalTaxAmount | number:'1.2-2' }}</td>
+                <td data-label="Grand Total"><strong>₹{{ s.grandTotalAmount | number:'1.2-2' }}</strong></td>
+                <td data-label="School Name" *ngIf="isAdmin">{{ s.schoolName }}</td>
+                <td data-label="Academic Year" *ngIf="isAdmin">{{ s.academicYearName }}</td>
+                <td data-label="Status">
+                  <span
+                    class="status-pill"
+                    [style.background]="s.isActive ? '#d9f9e5' : '#fff0bd'"
+                    [style.color]="s.isActive ? '#00823a' : '#c25b00'"
+                    [style.borderColor]="s.isActive ? '#86efac' : '#f5d77a'"
+                    [ngClass]="s.isActive ? 'status-active' : 'status-inactive'">
                     {{ s.isActive ? 'Active' : 'Inactive' }}
                   </span>
                 </td>
-                <td>
-                  <div class="d-flex justify-content-center align-items-center h-100" style="gap:5px;">
+                <td data-label="Actions">
+                  <div class="d-flex justify-content-center align-items-center h-100">
                     <button *ngIf="canEdit()" class="btn checkbtn edit" data-tooltip="Edit" (click)="editreview(s.id)">
                       <mat-icon class="mat-edit-icon">edit</mat-icon>
                     </button>
@@ -99,426 +97,360 @@
               </tr>
             </tbody>
           </table>
-
           <div *ngIf="SalesList.length === 0" class="NoDataFound">
             <div class="NoDataFoundImg">
               <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
             </div>
             <p>No data found.</p>
           </div>
-
+          <div class="admission-footer-meta">
+            <label>
+              Rows:
+              <select aria-label="Rows per page" [(ngModel)]="pageSize"
+            (ngModelChange)="onRowsCountChange()">
+                <option [ngValue]="5">5</option>
+                <option [ngValue]="10">10</option>
+                <option [ngValue]="25">25</option>
+                <option [ngValue]="50">50</option>
+              </select>
+            </label>
+            <p>{{ pageStartIndex() }}&ndash;{{ pageEndIndex() }} of {{ SalesCount }} records</p>
+          </div>
           <div *ngIf="SalesCount > pageSize" class="pagination-controls">
-            <button *ngIf="totalPages() > 3" (click)="goToPage(1)"
-              [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
+            <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
             <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
             <button *ngFor="let page of getVisiblePageNumbers()"
-              class="page-btn" [ngClass]="{'active': page === currentPage}"
-              (click)="goToPage(page)">{{ page }}</button>
+                    class="page-btn"
+                    [ngClass]="{'active': page === currentPage}"
+                    (click)="goToPage(page)">
+              {{ page }}
+            </button>
             <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
-            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())"
-              [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
+            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════════
-       ADD / EDIT VIEW
-  ════════════════════════════════════════════ -->
+  <!-- Form View -->
   <div *ngIf="IsAddNewClicked" class="w-100">
-
-    <!-- Top bar -->
-    <div class="sale-topbar">
-      <div class="sale-topbar-left">
-        <button class="back-btn" (click)="IsAddNewClicked = false" title="Back">
-          <mat-icon>arrow_circle_left</mat-icon>
-        </button>
-        <div class="sale-title-block">
-          <div class="sale-icon-wrap">
-            <mat-icon>point_of_sale</mat-icon>
-          </div>
-          <div>
-            <h5 class="sale-title">Stock Sale</h5>
-            <span class="sale-subtitle">
-              <span class="dot-active"></span>
-              {{ editingId ? 'UPDATE SALE' : 'REGISTER SALE' }}
-            </span>
-          </div>
+    <div class="admission-breadcrumb">
+      <span>Store</span>
+      <mat-icon>chevron_right</mat-icon>
+      <span>Sales</span>
+      <mat-icon>chevron_right</mat-icon>
+      <strong>{{ editingId ? 'Edit Sale' : 'Add Sale' }}</strong>
+    </div>
+    <div class="AddFormTop">
+      <button (click)="IsAddNewClicked = false" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+      <div class="admission-record-header p-0">
+        <div>
+          <h5>{{ editingId ? 'Edit Sale' : 'Add Sale' }}</h5>
+          <p>Configure sales details and items sold</p>
         </div>
-      </div>
-      <div class="sale-topbar-right">
-        <div class="grand-total-display">
-          <span class="grand-total-label">GRAND TOTAL</span>
-          <span class="grand-total-value">₹{{ grandTotalAmount | number:'1.0-0' }}</span>
-        </div>
-        <button class="save-btn" (click)="editingId ? UpdateSale() : SubmitSale()">
-          <mat-icon>save</mat-icon> SAVE
-        </button>
       </div>
     </div>
+    <div class="AddForm">
+      <div class="form-top">
+        <p class="cc-title">Sales Header Info</p>
+      </div>
+      <div class="AddFormConatiner">
+        <form [formGroup]="salesForm">
+          <div class="FormInputRowsContainer">
+            <div class="InputRow" *ngIf="isAdmin">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">School <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="schoolId" (change)="onAdminSchoolChange($event)">
+                    <option value="">-- Select School --</option>
+                    <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+                  </select>
+                  <div *ngIf="salesForm.get('schoolId')?.touched && salesForm.get('schoolId')?.invalid" class="text-danger">
+                    <small>School is required.</small>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-    <form [formGroup]="salesForm" class="sale-form-wrap">
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Academic Year <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="academicYearId" *ngIf="isAdmin" (change)="onAdminAcademicYearChange($event)">
+                    <option value="">-- Select Academic Year --</option>
+                    <option *ngFor="let ay of academicYearList" [value]="ay.ID">{{ ay.Name }}</option>
+                  </select>
+                  <select class="inputField" formControlName="academicYearId" *ngIf="!isAdmin" (change)="onAcademicYearChangeNonAdmin($event)">
+                    <option value="">-- Select Academic Year --</option>
+                    <option *ngFor="let ay of academicYearList" [value]="ay.ID">{{ ay.Name }}</option>
+                  </select>
+                  <div *ngIf="salesForm.get('academicYearId')?.touched && salesForm.get('academicYearId')?.invalid" class="text-danger">
+                    <small>Academic Year is required.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Class <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="classId" (change)="onClassChange($event)">
+                    <option value="">-- Select Class --</option>
+                    <option *ngFor="let cls of classLists" [value]="cls.ID">{{ cls.Name }}</option>
+                  </select>
+                  <div *ngIf="salesForm.get('classId')?.touched && salesForm.get('classId')?.invalid" class="text-danger">
+                    <small>Class is required.</small>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-      <!-- SALE DETAILS section -->
-      <div class="sale-section">
-        <div class="sale-section-header">
-          <mat-icon>receipt_long</mat-icon>
-          <span>SALE DETAILS</span>
-        </div>
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Division <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="divisionId" (change)="onDivisionChange($event)">
+                    <option value="">-- Select Division --</option>
+                    <option *ngFor="let div of divisionsList" [value]="div.ID">{{ div.Name }}</option>
+                  </select>
+                  <div *ngIf="salesForm.get('divisionId')?.touched && salesForm.get('divisionId')?.invalid" class="text-danger">
+                    <small>Division is required.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Student <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="admissionNo" [disabled]="!AdminselectedDivisionID">
+                    <option value="">-- Select Student --</option>
+                    <option *ngFor="let student of studentsList" [value]="student.AdmissionNo">{{ student.Name }}</option>
+                  </select>
+                  <div *ngIf="salesForm.get('admissionNo')?.touched && salesForm.get('admissionNo')?.invalid" class="text-danger">
+                    <small>Student is required.</small>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-        <div class="sale-details-grid">
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Sale Date <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input type="date" class="inputField" formControlName="saleDate" />
+                  <div *ngIf="salesForm.get('saleDate')?.touched && salesForm.get('saleDate')?.invalid" class="text-danger">
+                    <small>Sale Date is required.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Payment Mode <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="paymentMode">
+                    <option *ngFor="let mode of paymentModes" [value]="mode">{{ mode }}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
 
-          <!-- Admin: School -->
-          <div class="sale-field" *ngIf="isAdmin">
-            <label class="sale-label">SELECT SCHOOL <span class="required">*</span></label>
-            <select class="sale-select" formControlName="schoolId" (change)="onAdminSchoolChange($event)">
-              <option value="">Select an option</option>
-              <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
-            </select>
-            <div *ngIf="salesForm.get('schoolId')?.touched && salesForm.get('schoolId')?.invalid" class="sale-error">
-              <small>Please Select School.</small>
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Notes</label>
+                <div class="input-with-error">
+                  <input type="text" class="inputField" formControlName="notes" placeholder="Enter Notes" />
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <span style="visibility: hidden;">Spacer</span>
+              </div>
+            </div>
+
+            <div class="InputRow">
+              <div class="noteActiveCard">
+                <div class="noteSection">
+                  <span>Status</span>
+                  <p>Determine whether this sale is currently active.</p>
+                </div>
+                <div class="InputFieldsContainer">
+                  <div class="toggle-container" (click)="$event.stopPropagation()">
+                    <label class="switch">
+                      <input type="checkbox" [checked]="IsActiveStatus" (click)="toggleChange()">
+                      <span class="slider">
+                        <span class="toggle-text" [ngStyle]="{ left: IsActiveStatus ? '42%' : '60%', fontSize: '9px' }">
+                          {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dynamic Items Rows Section -->
+            <div style="width: 100%; border-top: 1px solid #e5e7eb; margin-top: 24px; padding-top: 24px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h5 style="margin: 0; font-size: 16px; font-weight: 600; color: #1f2937;">Items Sold</h5>
+                <button type="button" class="admission-btn admission-btn--primary" (click)="addItemRow()">
+                  <mat-icon>add</mat-icon> Add Item
+                </button>
+              </div>
+
+              <div class="reviewstable admission-table-wrap">
+                <table class="table table-bordered admission-table">
+                  <thead>
+                    <tr>
+                      <th>Category</th>
+                      <th>Select Item</th>
+                      <th>Current Stock</th>
+                      <th>Selling Price (₹)</th>
+                      <th>Tax Amount (₹)</th>
+                      <th>Sub-Total</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let row of saleItems; let i = index">
+                      <td>
+                        <select class="admission-select" [(ngModel)]="row.categoryId" [ngModelOptions]="{standalone: true}" (change)="onCategorySelect(i, $event)" style="width: 100%; min-width: 120px;">
+                          <option value="">-- Category --</option>
+                          <option *ngFor="let cat of categoriesList" [value]="cat.ID">{{ cat.Name }}</option>
+                        </select>
+                      </td>
+                      <td>
+                        <select class="admission-select" [(ngModel)]="row.itemId" [ngModelOptions]="{standalone: true}" (change)="onItemSelect(i, $event)" [disabled]="!row.categoryId" style="width: 100%; min-width: 150px;">
+                          <option value="">SELECT PRODUCT...</option>
+                          <option *ngFor="let item of row.filteredItems" [value]="item.ID">{{ item.Name }}</option>
+                        </select>
+                      </td>
+                      <td>
+                        <span style="font-weight: 500;">{{ row.currentStock ?? '-' }}</span>
+                      </td>
+                      <td>
+                        <input type="number" class="inputField" [(ngModel)]="row.sellingPrice" [ngModelOptions]="{standalone: true}" min="0" (ngModelChange)="onPriceChange(i)" style="padding: 6px; width: 120px;" />
+                      </td>
+                      <td>
+                        <span style="font-weight: 500;">₹{{ row.taxAmount | number:'1.2-2' }}</span>
+                      </td>
+                      <td>
+                        <span style="font-weight: 600; color: #4f46e5;">₹{{ row.subTotal | number:'1.2-2' }}</span>
+                      </td>
+                      <td>
+                        <button type="button" class="btn checkbtn" style="color: #ef4444;" (click)="removeItemRow(i)" [disabled]="saleItems.length === 1">
+                          <mat-icon>delete_outline</mat-icon>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Summary Area -->
+              <div style="display: flex; justify-content: flex-end; gap: 32px; margin-top: 16px; font-size: 14px; color: #4b5563; padding: 16px; background: #f9fafb; border-radius: 6px;">
+                <div>Total Tax: <strong style="color: #1f2937;">₹{{ totalTaxAmount | number:'1.2-2' }}</strong></div>
+                <div>Items Count: <strong style="color: #1f2937;">{{ itemsCount }}</strong></div>
+                <div>Grand Total: <strong style="color: #4f46e5; font-size: 18px;">₹{{ grandTotalAmount | number:'1.0-0' }}</strong></div>
+              </div>
             </div>
           </div>
-
-          <!-- Admin: Academic Year -->
-          <div class="sale-field" *ngIf="isAdmin">
-            <label class="sale-label">ACADEMIC YEAR <span class="required">*</span></label>
-            <select class="sale-select" formControlName="academicYearId" (change)="onAdminAcademicYearChange($event)">
-              <option value="">Select an option</option>
-              <option *ngFor="let ay of academicYearList" [value]="ay.ID">{{ ay.Name }}</option>
-            </select>
-            <div *ngIf="salesForm.get('academicYearId')?.touched && salesForm.get('academicYearId')?.invalid" class="sale-error">
-              <small>Please Select Academic Year.</small>
-            </div>
-          </div>
-
-          <!-- Non-Admin: Academic Year -->
-          <div class="sale-field" *ngIf="!isAdmin">
-            <label class="sale-label">ACADEMIC YEAR <span class="required">*</span></label>
-            <select class="sale-select" formControlName="academicYearId" (change)="onAcademicYearChangeNonAdmin($event)">
-              <option value="">Select an option</option>
-              <option *ngFor="let ay of academicYearList" [value]="ay.ID">{{ ay.Name }}</option>
-            </select>
-            <div *ngIf="salesForm.get('academicYearId')?.touched && salesForm.get('academicYearId')?.invalid" class="sale-error">
-              <small>Please Select Academic Year.</small>
-            </div>
-          </div>
-
-          <!-- Class -->
-          <div class="sale-field">
-            <label class="sale-label">SELECT CLASS <span class="required">*</span></label>
-            <select class="sale-select" formControlName="classId" (change)="onClassChange($event)">
-              <option value="">Select an option</option>
-              <option *ngFor="let cls of classLists" [value]="cls.ID">{{ cls.Name }}</option>
-            </select>
-            <div *ngIf="salesForm.get('classId')?.touched && salesForm.get('classId')?.invalid" class="sale-error">
-              <small>Please Select Class.</small>
-            </div>
-          </div>
-
-          <!-- Division -->
-          <div class="sale-field">
-            <label class="sale-label">SELECT DIVISION <span class="required">*</span></label>
-            <select class="sale-select" formControlName="divisionId" (change)="onDivisionChange($event)">
-              <option value="">Select an option</option>
-              <option *ngFor="let div of divisionsList" [value]="div.ID">{{ div.Name }}</option>
-            </select>
-            <div *ngIf="salesForm.get('divisionId')?.touched && salesForm.get('divisionId')?.invalid" class="sale-error">
-              <small>Please Select Division.</small>
-            </div>
-          </div>
-
-        <!-- Admission No -->
-<div class="sale-field">
-  <label class="sale-label">SELECT STUDENT <span class="required">*</span></label>
-  <select class="sale-select" formControlName="admissionNo"
-    [disabled]="!AdminselectedDivisionID">
-    <option value="">Select Student...</option>
-    <option *ngFor="let student of studentsList" [value]="student.AdmissionNo">
-      {{ student.Name }}
-    </option>
-  </select>
-  <div *ngIf="salesForm.get('admissionNo')?.touched && salesForm.get('admissionNo')?.invalid" class="sale-error">
-    <small>Please Select Student.</small>
-  </div>
-</div>
-
-          <!-- Sale Date -->
-          <div class="sale-field">
-            <label class="sale-label">SALE DATE <span class="required">*</span></label>
-            <input type="date" class="sale-input" formControlName="saleDate" />
-            <div *ngIf="salesForm.get('saleDate')?.touched && salesForm.get('saleDate')?.invalid" class="sale-error">
-              <small>Please Select Sale Date.</small>
-            </div>
-          </div>
-
-          <!-- Payment Mode -->
-          <div class="sale-field">
-            <label class="sale-label">PAYMENT MODE <span class="required">*</span></label>
-            <select class="sale-select" formControlName="paymentMode">
-              <option *ngFor="let mode of paymentModes" [value]="mode">{{ mode }}</option>
-            </select>
-          </div>
-
-          <!-- Notes -->
-          <div class="sale-field">
-            <label class="sale-label">NOTES</label>
-            <input type="text" class="sale-input" formControlName="notes" placeholder="Details..." />
-          </div>
-
-          <!-- Toggle -->
-          <div class="sale-field">
-            <label class="sale-label">STATUS</label>
-            <div class="toggle-container" (click)="$event.stopPropagation()">
-              <label class="switch">
-                <input type="checkbox" [checked]="IsActiveStatus" (click)="toggleChange()">
-                <span class="slider">
-                  <span class="toggle-text"
-                    [ngStyle]="{ left: IsActiveStatus ? '42%' : '60%', fontSize: '9px' }">
-                    {{ IsActiveStatus ? 'Active' : 'Inactive' }}
-                  </span>
-                </span>
-              </label>
-            </div>
-          </div>
-
+        </form>
+      </div>
+      <div class="form-bottom">
+        <span class="footer-hint">Fields marked <span class="required">*</span> are required</span>
+        <div class="ActionButtons footer-actions">
+          <button type="button" class="cancelbtn" (click)="IsAddNewClicked = false">Cancel</button>
+          <button type="button" class="submitbtn" *ngIf="editingId && canEdit()" (click)="UpdateSale()">Update</button>
+          <button type="button" class="submitbtn" *ngIf="!editingId && canAdd()" (click)="SubmitSale()">Submit</button>
         </div>
       </div>
+    </div>
+  </div>
 
-      <!-- ITEMS TO SELL section -->
-      <div class="sale-section">
-        <div class="sale-section-header" style="justify-content:space-between;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <mat-icon>inventory_2</mat-icon>
-            <span>ITEMS TO SELL</span>
-          </div>
-          <button type="button" class="add-item-btn" (click)="addItemRow()">
-            <mat-icon>add</mat-icon> ADD ITEM
-          </button>
+  <!-- Status Modal -->
+  <div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal('status')" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+    <div class="admission-record-card" (click)="$event.stopPropagation()" style="max-width: 400px; padding: 24px; text-align: center; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      <div style="margin-bottom: 16px;">
+        <mat-icon [style.color]="SaleInsStatus.toLowerCase().includes('submitted') || SaleInsStatus.toLowerCase().includes('updated') ? '#10b981' : '#ef4444'" style="font-size: 48px; width: 48px; height: 48px;">
+          {{ SaleInsStatus.toLowerCase().includes('submitted') || SaleInsStatus.toLowerCase().includes('updated') ? 'check_circle' : 'error' }}
+        </mat-icon>
+      </div>
+      <h5 style="margin-bottom: 12px; font-weight: 600; color: #1f2937;">Status Notification</h5>
+      <p style="color: #4b5563; font-size: 14px; margin-bottom: 24px;">{{ SaleInsStatus }}</p>
+      <button class="admission-btn admission-btn--primary" style="margin: 0 auto; display: block;" (click)="handleOk()">OK</button>
+    </div>
+  </div>
+
+  <!-- View Modal -->
+  <div class="modal-backdrop" *ngIf="isViewModalOpen" (click)="closeModal('view')" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+    <div class="admission-record-card" (click)="$event.stopPropagation()" style="max-width: 700px; width: 90%; padding: 24px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      <div class="admission-record-header" style="padding: 0; border-bottom: 1px solid #e5e7eb; padding-bottom: 12px; margin-bottom: 16px;">
+        <div>
+          <h5 style="margin: 0; color: #1f2937;">Sale Invoice Details</h5>
+          <p style="margin: 0; font-size: 12px; color: #6b7280;">Detailed billing of the selected sale record</p>
+        </div>
+        <button (click)="closeModal('view')" style="background: none; border: none; cursor: pointer; color: #9ca3af;">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 12px; font-size: 14px; color: #4b5563;" *ngIf="viewSale">
+        <div style="display: flex; justify-content: space-between;">
+          <div><strong>Student:</strong> {{ viewSale.studentName }}</div>
+          <div><strong>Admission No:</strong> {{ viewSale.admissionNo }}</div>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <div><strong>Class:</strong> {{ viewSale.className }}</div>
+          <div><strong>Division:</strong> {{ viewSale.divisionName }}</div>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <div><strong>Sale Date:</strong> {{ viewSale.saleDate }}</div>
+          <div><strong>Payment Mode:</strong> {{ viewSale.paymentMode }}</div>
+        </div>
+        <div *ngIf="viewSale.notes"><strong>Notes:</strong> {{ viewSale.notes }}</div>
+        <div style="display: flex; justify-content: space-between;" *ngIf="viewSale.schoolName">
+          <div><strong>School:</strong> {{ viewSale.schoolName }}</div>
+          <div><strong>Academic Year:</strong> {{ viewSale.academicYearName }}</div>
         </div>
 
-        <div class="items-table-wrap">
-          <table class="items-table">
+        <hr style="margin: 8px 0; border-color: #e5e7eb;" />
+        <h6 style="margin: 0; font-weight: 600; color: #1f2937;">Items List</h6>
+        <div class="reviewstable admission-table-wrap" style="max-height: 200px; overflow-y: auto;">
+          <table class="table table-bordered admission-table" style="font-size: 12px;">
             <thead>
               <tr>
-                <th class="col-category">CATEGORY</th>
-                <th class="col-item">SELECT ITEM</th>
-                <th class="col-stock">CURRENT STOCK</th>
-                <th class="col-price">SELLING PRICE (₹)</th>
-                <th class="col-tax">TAX AMOUNT (₹)</th>
-                <th class="col-subtotal">SUB-TOTAL (₹)</th>
-                <th class="col-action"></th>
+                <th>#</th>
+                <th>Item</th>
+                <th>Price (₹)</th>
+                <th>Tax Amount (₹)</th>
+                <th>Sub-Total</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let row of saleItems; let i = index">
-
-                <!-- Category -->
-                <td class="col-category">
-                  <select class="item-select"
-                    [(ngModel)]="row.categoryId"
-                    [ngModelOptions]="{standalone: true}"
-                    (change)="onCategorySelect(i, $event)">
-                    <option value="">-- Category --</option>
-                    <option *ngFor="let cat of categoriesList" [value]="cat.ID">{{ cat.Name }}</option>
-                  </select>
-                </td>
-
-                <!-- Item -->
-                <td class="col-item">
-                  <select class="item-select"
-                    [(ngModel)]="row.itemId"
-                    [ngModelOptions]="{standalone: true}"
-                    (change)="onItemSelect(i, $event)"
-                    [disabled]="!row.categoryId">
-                    <option value="">SELECT PRODUCT...</option>
-                    <option *ngFor="let item of row.filteredItems" [value]="item.ID">{{ item.Name }}</option>
-                  </select>
-                </td>
-
-                <!-- Current Stock -->
-                <td class="col-stock">
-                  <span class="stock-badge">{{ row.currentStock ?? '-' }}</span>
-                </td>
-
-                <!-- Selling Price -->
-                <td class="col-price">
-                  <div class="price-input-wrap">
-                    <span class="currency-prefix">₹</span>
-                    <input type="number" class="item-number-input with-prefix"
-                      [(ngModel)]="row.sellingPrice"
-                      [ngModelOptions]="{standalone: true}"
-                      min="0" (ngModelChange)="onPriceChange(i)" />
-                  </div>
-                </td>
-
-                <!-- Tax Amount -->
-                <td class="col-tax">
-                  <span class="tax-value">₹{{ row.taxAmount | number:'1.2-2' }}</span>
-                </td>
-
-                <!-- Sub Total -->
-                <td class="col-subtotal">
-                  <span class="subtotal-value">₹{{ row.subTotal | number:'1.2-2' }}</span>
-                </td>
-
-                <!-- Delete -->
-                <td class="col-action">
-                  <button type="button" class="delete-row-btn"
-                    (click)="removeItemRow(i)"
-                    [disabled]="saleItems.length === 1">
-                    <mat-icon>delete_outline</mat-icon>
-                  </button>
-                </td>
-
+              <tr *ngFor="let row of getViewItemRows(); let j = index">
+                <td>{{ j + 1 }}</td>
+                <td>{{ row.name }}</td>
+                <td>{{ row.price | number:'1.2-2' }}</td>
+                <td>{{ row.taxAmount | number:'1.2-2' }}</td>
+                <td><strong>₹{{ row.subTotal | number:'1.2-2' }}</strong></td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- Summary footer -->
-        <div class="sale-summary-footer">
-          <div class="summary-left">
-            <div class="summary-block">
-              <span class="summary-label">TOTAL TAX</span>
-              <span class="summary-value">₹{{ totalTaxAmount | number:'1.2-2' }}</span>
-            </div>
-            <div class="summary-divider"></div>
-            <div class="summary-block">
-              <span class="summary-label">ITEMS COUNT</span>
-              <span class="summary-value">{{ itemsCount }} Items</span>
-            </div>
-          </div>
-          <div class="summary-right">
-            <span class="summary-total-label">TOTAL AMOUNT</span>
-            <span class="summary-total-value">₹{{ grandTotalAmount | number:'1.0-0' }}</span>
-          </div>
+        <div style="display: flex; justify-content: flex-end; gap: 32px; font-size: 14px; margin-top: 12px;">
+          <div>Total Tax: <strong>₹{{ viewSale.totalTaxAmount | number:'1.2-2' }}</strong></div>
+          <div>Grand Total: <strong style="color: #4f46e5; font-size: 16px;">₹{{ viewSale.grandTotalAmount | number:'1.2-2' }}</strong></div>
         </div>
 
+        <div style="margin-top: 8px;">
+          <strong>Status:</strong>
+          <span
+            class="status-pill"
+            [style.background]="viewSale.isActive ? '#d9f9e5' : '#fff0bd'"
+            [style.color]="viewSale.isActive ? '#00823a' : '#c25b00'"
+            [style.borderColor]="viewSale.isActive ? '#86efac' : '#f5d77a'">
+            {{ viewSale.isActive ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
       </div>
-
-    </form>
-  </div>
-</div>
-
-<!-- STATUS MODAL -->
-<div class="modal" tabindex="-1" role="dialog"
-  [ngClass]="{'show': isModalOpen}"
-  [style.display]="isModalOpen ? 'block' : 'none'">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Application Status</h5>
-        <button type="button" class="close" (click)="closeModal('status')">
-          <span>&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <p>{{ SaleInsStatus }}</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" (click)="handleOk()">OK</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- VIEW MODAL -->
-<div class="modal" tabindex="-1" role="dialog"
-  [ngClass]="{'show': isViewModalOpen}"
-  [style.display]="isViewModalOpen ? 'block' : 'none'">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Sale Details</h5>
-        <button type="button" class="close" (click)="closeModal('view')">
-          <span>&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div class="row mb-2">
-          <div class="col-4 viewHeadingfontsize">Student Name</div>
-          <div class="col-8 viewfontsize">{{ viewSale?.studentName }}</div>
-        </div>
-        <div class="row mb-2">
-          <div class="col-4 viewHeadingfontsize">Admission No</div>
-          <div class="col-8 viewfontsize">{{ viewSale?.admissionNo }}</div>
-        </div>
-        <div class="row mb-2">
-          <div class="col-4 viewHeadingfontsize">Class</div>
-          <div class="col-8 viewfontsize">{{ viewSale?.className }}</div>
-        </div>
-        <div class="row mb-2">
-          <div class="col-4 viewHeadingfontsize">Division</div>
-          <div class="col-8 viewfontsize">{{ viewSale?.divisionName }}</div>
-        </div>
-        <div class="row mb-2">
-          <div class="col-4 viewHeadingfontsize">Sale Date</div>
-          <div class="col-8 viewfontsize">{{ viewSale?.saleDate }}</div>
-        </div>
-        <div class="row mb-2">
-          <div class="col-4 viewHeadingfontsize">Payment Mode</div>
-          <div class="col-8 viewfontsize">{{ viewSale?.paymentMode }}</div>
-        </div>
-        <div class="row mb-2" *ngIf="viewSale?.notes">
-          <div class="col-4 viewHeadingfontsize">Notes</div>
-          <div class="col-8 viewfontsize">{{ viewSale?.notes }}</div>
-        </div>
-        <div class="row mb-2" *ngIf="isAdmin">
-          <div class="col-4 viewHeadingfontsize">School</div>
-          <div class="col-8 viewfontsize">{{ viewSale?.schoolName }}</div>
-        </div>
-        <div class="row mb-2" *ngIf="isAdmin">
-          <div class="col-4 viewHeadingfontsize">Academic Year</div>
-          <div class="col-8 viewfontsize">{{ viewSale?.academicYearName }}</div>
-        </div>
-        
-
-        <hr />
-        <h6 style="font-weight:600;margin-bottom:10px;">Items Sold</h6>
-        <table class="table table-sm table-bordered" style="font-size:12px;">
-          <thead style="background:#f1f5f9;">
-            <tr>
-              <th>#</th>
-              <th>Item</th>
-              <th>Selling Price (₹)</th>
-              <th>Tax Amount (₹)</th>
-              <th>Sub-Total (₹)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let row of getViewItemRows(); let j = index">
-              <td>{{ j + 1 }}</td>
-              <td>{{ row.name }}</td>
-              <td>{{ row.price | number:'1.2-2' }}</td>
-              <td>{{ row.taxAmount | number:'1.2-2' }}</td>
-              <td><strong>{{ row.subTotal | number:'1.2-2' }}</strong></td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div class="d-flex justify-content-end" style="gap:30px;margin-top:10px;">
-          <div style="text-align:right;">
-            <div style="font-size:12px;color:#64748b;">Total Tax</div>
-            <div style="font-weight:600;">₹{{ viewSale?.totalTaxAmount | number:'1.2-2' }}</div>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-size:12px;color:#64748b;">Grand Total</div>
-            <div style="font-size:18px;font-weight:700;color:#10b981;">
-              ₹{{ viewSale?.grandTotalAmount | number:'1.2-2' }}
-            </div>
-          </div>
-        </div>
-
-        <div class="row mt-3">
-          <div class="col-4 viewHeadingfontsize">Status</div>
-          <div class="col-8">
-            <span class="badge" [ngClass]="viewSale?.isActive ? 'badge-success' : 'badge-danger'">
-              {{ viewSale?.isActive ? 'Active' : 'Inactive' }}
-            </span>
-          </div>
-        </div>
+      <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
+        <button class="admission-btn admission-btn--secondary" (click)="closeModal('view')">Close</button>
       </div>
     </div>
   </div>

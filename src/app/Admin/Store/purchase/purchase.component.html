@@ -1,47 +1,49 @@
-<app-dashboard-top-nav></app-dashboard-top-nav>
-
+<div>
+  <app-dashboard-top-nav></app-dashboard-top-nav>
+</div>
 <div class="MainContentDiv">
-
-  <!-- ═══════════════════════════════════════════════
-       LIST VIEW
-  ════════════════════════════════════════════════ -->
-  <div *ngIf="!IsAddNewClicked" class="w-100">
-    <div class="ComponentTop">
+  <div *ngIf="!IsAddNewClicked" class="w-100 admission-dashboard">
+    <div class="ComponentTop admission-hero">
       <div class="ComponentTopHeader">
+        <div class="admission-breadcrumb">
+          <span>Store</span>
+          <mat-icon>chevron_right</mat-icon>
+          <strong>Purchase</strong>
+        </div>
         <h5>Purchase Management</h5>
         <p>Total {{ PurchaseCount }} Purchases Added</p>
       </div>
-      <div class="ComponentTopBottom">
-        <button *ngIf="canAdd()" (click)="AddNewClicked()">
+      <div class="ComponentTopBottom admission-header-actions">
+        <button *ngIf="canAdd()" type="button" class="admission-btn admission-btn--primary admission-top-action" (click)="AddNewClicked()">
           <mat-icon>add_circle</mat-icon>New Purchase
         </button>
       </div>
     </div>
 
-    <div class="ComponentRecords">
+    <!-- Filters -->
+    <div class="admission-filter-row">
+      <div class="admission-searchbox">
+        <mat-icon>search</mat-icon>
+        <input type="text" id="searchQuery" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search by Payment Mode..." />
+      </div>
+      <button type="button" class="admission-chip admission-chip--active">All <span>{{ PurchaseCount }}</span></button>
+      <select class="admission-select" *ngIf="isAdmin" (change)="onSchoolChange($event)">
+        <option value="0">All Schools</option>
+        <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+      </select>
+    </div>
+
+    <!-- Records Table -->
+    <div class="ComponentRecords admission-record-card">
       <div>
-        <div class="ComponentRecordsTop">
-          <div class="filterOptions">
-            <div class="searchreview input-container">
-              <input type="text" class="form-control floating-input"
-                [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()"
-                placeholder="Search by Payment Mode..." />
-              <mat-icon style="position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none;">
-                search
-              </mat-icon>
-            </div>
-            <div class="searchreview" *ngIf="isAdmin">
-              <select (change)="onSchoolChange($event)" class="form-control" style="font-size:11px;">
-                <option value="">-- Select School --</option>
-                <option value="0">All Schools</option>
-                <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
-              </select>
-            </div>
+        <div class="ComponentRecordsTop admission-record-header">
+          <div>
+            <h5>Purchase Records</h5>
+            <p>Showing {{ PurchaseList.length }} of {{ PurchaseCount }} records</p>
           </div>
         </div>
-
-        <div class="reviewstable">
-          <table class="table table-bordered" *ngIf="PurchaseList.length != 0">
+        <div class="reviewstable admission-table-wrap">
+          <table id="purchaseTable" *ngIf="PurchaseList.length != 0" class="table table-bordered admission-table">
             <thead>
               <tr>
                 <th>SI.No</th>
@@ -51,7 +53,7 @@
                 <th>Items Count</th>
                 <th>Total Tax (₹)</th>
                 <th>Grand Total (₹)</th>
-                <th *ngIf="isAdmin">School</th>
+                <th *ngIf="isAdmin">School Name</th>
                 <th *ngIf="isAdmin">Academic Year</th>
                 <th>Status</th>
                 <th>Actions</th>
@@ -59,25 +61,27 @@
             </thead>
             <tbody>
               <tr *ngFor="let p of PurchaseList; let i = index">
-                <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-                <td>{{ p.supplierName }}</td>
-                <td>{{ p.purchaseDate }}</td>
-                <td>{{ p.paymentMode }}</td>
-                <td>{{ p.itemIDs ? p.itemIDs.split(',').length : 0 }}</td>
-                <td>₹{{ p.totalTaxAmount | number:'1.2-2' }}</td>
-                <td><strong>₹{{ p.grandTotalAmount | number:'1.2-2' }}</strong></td>
-                <td *ngIf="isAdmin">{{ p.schoolName }}</td>
-                <td *ngIf="isAdmin">{{ p.academicYearName }}</td>
-                <td>
-                  <span class="status-pill"
-                    [style.background]="p.isActive ? 'linear-gradient(135deg,#dcfce7 0%,#bbf7d0 100%)' : 'linear-gradient(135deg,#ffe4e6 0%,#fecdd3 100%)'"
-                    [style.color]="p.isActive ? '#166534' : '#9f1239'"
-                    [style.borderColor]="p.isActive ? '#86efac' : '#fda4af'">
+                <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td data-label="Supplier">{{ p.supplierName }}</td>
+                <td data-label="Purchase Date">{{ p.purchaseDate }}</td>
+                <td data-label="Payment Mode">{{ p.paymentMode }}</td>
+                <td data-label="Items Count">{{ p.itemIDs ? p.itemIDs.split(',').length : 0 }}</td>
+                <td data-label="Total Tax">₹{{ p.totalTaxAmount | number:'1.2-2' }}</td>
+                <td data-label="Grand Total"><strong>₹{{ p.grandTotalAmount | number:'1.2-2' }}</strong></td>
+                <td data-label="School Name" *ngIf="isAdmin">{{ p.schoolName }}</td>
+                <td data-label="Academic Year" *ngIf="isAdmin">{{ p.academicYearName }}</td>
+                <td data-label="Status">
+                  <span
+                    class="status-pill"
+                    [style.background]="p.isActive ? '#d9f9e5' : '#fff0bd'"
+                    [style.color]="p.isActive ? '#00823a' : '#c25b00'"
+                    [style.borderColor]="p.isActive ? '#86efac' : '#f5d77a'"
+                    [ngClass]="p.isActive ? 'status-active' : 'status-inactive'">
                     {{ p.isActive ? 'Active' : 'Inactive' }}
                   </span>
                 </td>
-                <td>
-                  <div class="d-flex justify-content-center align-items-center h-100" style="gap:5px;">
+                <td data-label="Actions">
+                  <div class="d-flex justify-content-center align-items-center h-100">
                     <button *ngIf="canEdit()" class="btn checkbtn edit" data-tooltip="Edit" (click)="editreview(p.id)">
                       <mat-icon class="mat-edit-icon">edit</mat-icon>
                     </button>
@@ -89,410 +93,317 @@
               </tr>
             </tbody>
           </table>
-
           <div *ngIf="PurchaseList.length === 0" class="NoDataFound">
             <div class="NoDataFoundImg">
               <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
             </div>
             <p>No data found.</p>
           </div>
-
+          <div class="admission-footer-meta">
+            <label>
+              Rows:
+              <select aria-label="Rows per page" [(ngModel)]="pageSize"
+            (ngModelChange)="onRowsCountChange()">
+                <option [ngValue]="5">5</option>
+                <option [ngValue]="10">10</option>
+                <option [ngValue]="25">25</option>
+                <option [ngValue]="50">50</option>
+              </select>
+            </label>
+            <p>{{ pageStartIndex() }}&ndash;{{ pageEndIndex() }} of {{ PurchaseCount }} records</p>
+          </div>
           <div *ngIf="PurchaseCount > pageSize" class="pagination-controls">
-            <button *ngIf="totalPages() > 3" (click)="goToPage(1)"
-              [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
+            <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
             <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
             <button *ngFor="let page of getVisiblePageNumbers()"
-              class="page-btn" [ngClass]="{'active': page === currentPage}"
-              (click)="goToPage(page)">{{ page }}</button>
+                    class="page-btn"
+                    [ngClass]="{'active': page === currentPage}"
+                    (click)="goToPage(page)">
+              {{ page }}
+            </button>
             <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
-            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())"
-              [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
+            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════════════
-       ADD / EDIT VIEW  (invoice-style like screenshot)
-  ════════════════════════════════════════════════ -->
+  <!-- Form View -->
   <div *ngIf="IsAddNewClicked" class="w-100">
-
-    <!-- ── Top bar: back + title + Grand Total + Save ── -->
-    <div class="purchase-topbar">
-      <div class="purchase-topbar-left">
-        <button class="back-btn" (click)="IsAddNewClicked = false" title="Back">
-          <mat-icon>arrow_circle_left</mat-icon>
-        </button>
-        <div class="purchase-title-block">
-          <div class="purchase-icon-wrap">
-            <mat-icon>shopping_cart</mat-icon>
-          </div>
-          <div>
-            <h5 class="purchase-title">Stock Purchase</h5>
-            <span class="purchase-subtitle">
-              <span class="dot-active"></span>
-              {{ editingId ? 'UPDATE PURCHASE' : 'REGISTER PURCHASE' }}
-            </span>
-          </div>
+    <div class="admission-breadcrumb">
+      <span>Store</span>
+      <mat-icon>chevron_right</mat-icon>
+      <span>Purchase</span>
+      <mat-icon>chevron_right</mat-icon>
+      <strong>{{ editingId ? 'Edit Purchase' : 'Add Purchase' }}</strong>
+    </div>
+    <div class="AddFormTop">
+      <button (click)="IsAddNewClicked = false" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+      <div class="admission-record-header p-0">
+        <div>
+          <h5>{{ editingId ? 'Edit Purchase' : 'Add Purchase' }}</h5>
+          <p>Configure purchase details and item list</p>
         </div>
-      </div>
-      <div class="purchase-topbar-right">
-        <div class="grand-total-display">
-          <span class="grand-total-label">GRAND TOTAL</span>
-          <span class="grand-total-value">₹{{ grandTotalAmount | number:'1.0-0' }}</span>
-        </div>
-        <button class="save-btn" (click)="editingId ? UpdatePurchase() : SubmitPurchase()">
-          <mat-icon>save</mat-icon> SAVE
-        </button>
       </div>
     </div>
-
-    <form [formGroup]="purchaseForm" class="purchase-form-wrap">
-
-      <!-- ── PURCHASE DETAILS section ── -->
-      <div class="purchase-section">
-        <div class="purchase-section-header">
-          <mat-icon>receipt_long</mat-icon>
-          <span>PURCHASE DETAILS</span>
-        </div>
-
-        <div class="purchase-details-grid">
-
-          <!-- Admin: School -->
-          <div class="purchase-field" *ngIf="isAdmin">
-            <label class="purchase-label">SELECT SCHOOL <span class="required">*</span></label>
-            <select class="purchase-select" formControlName="schoolId"
-              (change)="onAdminSchoolChange($event)">
-              <option value="">Select an option</option>
-              <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
-            </select>
-            <div *ngIf="purchaseForm.get('schoolId')?.touched && purchaseForm.get('schoolId')?.invalid"
-              class="purchase-error">
-              <small>Please Select School.</small>
+    <div class="AddForm">
+      <div class="form-top">
+        <p class="cc-title">Purchase Header Info</p>
+      </div>
+      <div class="AddFormConatiner">
+        <form [formGroup]="purchaseForm">
+          <div class="FormInputRowsContainer">
+            <div class="InputRow" *ngIf="isAdmin">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">School <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="schoolId" (change)="onAdminSchoolChange($event)">
+                    <option value="">-- Select School --</option>
+                    <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+                  </select>
+                  <div *ngIf="purchaseForm.get('schoolId')?.touched && purchaseForm.get('schoolId')?.invalid" class="text-danger">
+                    <small>School is required.</small>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- Admin: Academic Year -->
-          <div class="purchase-field" *ngIf="isAdmin">
-            <label class="purchase-label">ACADEMIC YEAR <span class="required">*</span></label>
-            <select class="purchase-select" formControlName="academicYearId"
-              (change)="onAdminAcademicYearChange($event)">
-              <option value="">Select an option</option>
-              <option *ngFor="let ay of academicYearList" [value]="ay.ID">{{ ay.Name }}</option>
-            </select>
-            <div *ngIf="purchaseForm.get('academicYearId')?.touched && purchaseForm.get('academicYearId')?.invalid"
-              class="purchase-error">
-              <small>Please Select Academic Year.</small>
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Academic Year <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="academicYearId" *ngIf="isAdmin" (change)="onAdminAcademicYearChange($event)">
+                    <option value="">-- Select Academic Year --</option>
+                    <option *ngFor="let ay of academicYearList" [value]="ay.ID">{{ ay.Name }}</option>
+                  </select>
+                  <select class="inputField" formControlName="academicYearId" *ngIf="!isAdmin" (change)="onAcademicYearChangeNonAdmin($event)">
+                    <option value="">-- Select Academic Year --</option>
+                    <option *ngFor="let ay of academicYearList" [value]="ay.ID">{{ ay.Name }}</option>
+                  </select>
+                  <div *ngIf="purchaseForm.get('academicYearId')?.touched && purchaseForm.get('academicYearId')?.invalid" class="text-danger">
+                    <small>Academic Year is required.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Supplier <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="supplierId">
+                    <option value="">-- Select Supplier --</option>
+                    <option *ngFor="let s of suppliersList" [value]="s.ID">{{ s.Name }}</option>
+                  </select>
+                  <div *ngIf="purchaseForm.get('supplierId')?.touched && purchaseForm.get('supplierId')?.invalid" class="text-danger">
+                    <small>Supplier is required.</small>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- Non-Admin: Academic Year -->
-          <div class="purchase-field" *ngIf="!isAdmin">
-            <label class="purchase-label">ACADEMIC YEAR <span class="required">*</span></label>
-            <select class="purchase-select" formControlName="academicYearId"
-              (change)="onAcademicYearChangeNonAdmin($event)">
-              <option value="">Select an option</option>
-              <option *ngFor="let ay of academicYearList" [value]="ay.ID">{{ ay.Name }}</option>
-            </select>
-            <div *ngIf="purchaseForm.get('academicYearId')?.touched && purchaseForm.get('academicYearId')?.invalid"
-              class="purchase-error">
-              <small>Please Select Academic Year.</small>
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Purchase Date <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input type="date" class="inputField" formControlName="purchaseDate" />
+                  <div *ngIf="purchaseForm.get('purchaseDate')?.touched && purchaseForm.get('purchaseDate')?.invalid" class="text-danger">
+                    <small>Purchase Date is required.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Payment Mode <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="paymentMode">
+                    <option *ngFor="let mode of paymentModes" [value]="mode">{{ mode }}</option>
+                  </select>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- Supplier -->
-          <div class="purchase-field">
-            <label class="purchase-label">SELECT SUPPLIER <span class="required">*</span></label>
-            <select class="purchase-select" formControlName="supplierId">
-              <option value="">Select an option</option>
-              <option *ngFor="let s of suppliersList" [value]="s.ID">{{ s.Name }}</option>
-            </select>
-            <div *ngIf="purchaseForm.get('supplierId')?.touched && purchaseForm.get('supplierId')?.invalid"
-              class="purchase-error">
-              <small>Please Select Supplier.</small>
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Notes</label>
+                <div class="input-with-error">
+                  <input type="text" class="inputField" formControlName="notes" placeholder="Enter Notes" />
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- Purchase Date -->
-          <div class="purchase-field">
-            <label class="purchase-label">PURCHASE DATE <span class="required">*</span></label>
-            <input type="date" class="purchase-input" formControlName="purchaseDate" />
-            <div *ngIf="purchaseForm.get('purchaseDate')?.touched && purchaseForm.get('purchaseDate')?.invalid"
-              class="purchase-error">
-              <small>Please Select Purchase Date.</small>
+            <!-- Dynamic Items Rows Section -->
+            <div style="width: 100%; border-top: 1px solid #e5e7eb; margin-top: 24px; padding-top: 24px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h5 style="margin: 0; font-size: 16px; font-weight: 600; color: #1f2937;">Purchase Items</h5>
+                <button type="button" class="admission-btn admission-btn--primary" (click)="addItemRow()">
+                  <mat-icon>add</mat-icon> Add Item
+                </button>
+              </div>
+
+              <div class="reviewstable admission-table-wrap">
+                <table class="table table-bordered admission-table">
+                  <thead>
+                    <tr>
+                      <th>Category</th>
+                      <th>Select Item</th>
+                      <th>Current Stock</th>
+                      <th>Quantity</th>
+                      <th>Price (₹)</th>
+                      <th>CGST %</th>
+                      <th>SGST %</th>
+                      <th>Sub-Total</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let row of purchaseItems; let i = index">
+                      <td>
+                        <select class="admission-select" [(ngModel)]="row.categoryId" [ngModelOptions]="{standalone: true}" (change)="onCategorySelect(i, $event)" style="width: 100%; min-width: 120px;">
+                          <option value="">-- Category --</option>
+                          <option *ngFor="let cat of categoriesList" [value]="cat.ID">{{ cat.Name }}</option>
+                        </select>
+                      </td>
+                      <td>
+                        <select class="admission-select" [(ngModel)]="row.itemId" [ngModelOptions]="{standalone: true}" (change)="onItemSelect(i, $event)" [disabled]="!row.categoryId" style="width: 100%; min-width: 150px;">
+                          <option value="">SELECT PRODUCT...</option>
+                          <option *ngFor="let item of row.filteredItems" [value]="item.ID">{{ item.Name }}</option>
+                        </select>
+                      </td>
+                      <td>
+                        <span style="font-weight: 500;">{{ row.currentStock ?? '-' }}</span>
+                      </td>
+                      <td>
+                        <input type="number" class="inputField" [(ngModel)]="row.quantity" [ngModelOptions]="{standalone: true}" min="1" (ngModelChange)="onQuantityChange(i)" style="padding: 6px; width: 80px;" />
+                      </td>
+                      <td>
+                        <input type="number" class="inputField" [(ngModel)]="row.price" [ngModelOptions]="{standalone: true}" min="0" (ngModelChange)="onPriceChange(i)" style="padding: 6px; width: 100px;" />
+                      </td>
+                      <td>
+                        <input type="number" class="inputField" [(ngModel)]="row.cgst" [ngModelOptions]="{standalone: true}" min="0" max="100" (ngModelChange)="onCgstChange(i)" style="padding: 6px; width: 70px;" />
+                      </td>
+                      <td>
+                        <input type="number" class="inputField" [(ngModel)]="row.sgst" [ngModelOptions]="{standalone: true}" min="0" max="100" (ngModelChange)="onSgstChange(i)" style="padding: 6px; width: 70px;" />
+                      </td>
+                      <td>
+                        <span style="font-weight: 600; color: #4f46e5;">₹{{ row.subTotal | number:'1.2-2' }}</span>
+                      </td>
+                      <td>
+                        <button type="button" class="btn checkbtn" style="color: #ef4444;" (click)="removeItemRow(i)" [disabled]="purchaseItems.length === 1">
+                          <mat-icon>delete_outline</mat-icon>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Summary Area -->
+              <div style="display: flex; justify-content: flex-end; gap: 32px; margin-top: 16px; font-size: 14px; color: #4b5563; padding: 16px; background: #f9fafb; border-radius: 6px;">
+                <div>Total Tax: <strong style="color: #1f2937;">₹{{ totalTaxAmount | number:'1.2-2' }}</strong></div>
+                <div>Items Count: <strong style="color: #1f2937;">{{ itemsCount }}</strong></div>
+                <div>Grand Total: <strong style="color: #4f46e5; font-size: 18px;">₹{{ grandTotalAmount | number:'1.0-0' }}</strong></div>
+              </div>
             </div>
-          </div>
 
-          <!-- Payment Mode -->
-          <div class="purchase-field">
-            <label class="purchase-label">PAYMENT MODE <span class="required">*</span></label>
-            <select class="purchase-select" formControlName="paymentMode">
-              <option *ngFor="let mode of paymentModes" [value]="mode">{{ mode }}</option>
-            </select>
           </div>
-
-          <!-- Notes -->
-          <div class="purchase-field purchase-field-notes">
-            <label class="purchase-label">NOTES</label>
-            <input type="text" class="purchase-input" formControlName="notes" placeholder="Details..." />
-          </div>
-
+        </form>
+      </div>
+      <div class="form-bottom">
+        <span class="footer-hint">Fields marked <span class="required">*</span> are required</span>
+        <div class="ActionButtons footer-actions">
+          <button type="button" class="cancelbtn" (click)="IsAddNewClicked = false">Cancel</button>
+          <button type="button" class="submitbtn" *ngIf="editingId && canEdit()" (click)="UpdatePurchase()">Update</button>
+          <button type="button" class="submitbtn" *ngIf="!editingId && canAdd()" (click)="SubmitPurchase()">Submit</button>
         </div>
       </div>
+    </div>
+  </div>
 
-      <!-- ── ITEMS TO BUY section ── -->
-      <div class="purchase-section">
-        <div class="purchase-section-header" style="justify-content: space-between;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <mat-icon>inventory_2</mat-icon>
-            <span>ITEMS TO BUY</span>
-          </div>
-          <button type="button" class="add-item-btn" (click)="addItemRow()">
-            <mat-icon>add</mat-icon> ADD ITEM
-          </button>
+  <!-- Status Modal -->
+  <div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal('status')" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+    <div class="admission-record-card" (click)="$event.stopPropagation()" style="max-width: 400px; padding: 24px; text-align: center; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      <div style="margin-bottom: 16px;">
+        <mat-icon [style.color]="PurchaseInsStatus.toLowerCase().includes('submitted') || PurchaseInsStatus.toLowerCase().includes('updated') ? '#10b981' : '#ef4444'" style="font-size: 48px; width: 48px; height: 48px;">
+          {{ PurchaseInsStatus.toLowerCase().includes('submitted') || PurchaseInsStatus.toLowerCase().includes('updated') ? 'check_circle' : 'error' }}
+        </mat-icon>
+      </div>
+      <h5 style="margin-bottom: 12px; font-weight: 600; color: #1f2937;">Status Notification</h5>
+      <p style="color: #4b5563; font-size: 14px; margin-bottom: 24px;">{{ PurchaseInsStatus }}</p>
+      <button class="admission-btn admission-btn--primary" style="margin: 0 auto; display: block;" (click)="handleOk()">OK</button>
+    </div>
+  </div>
+
+  <!-- View Modal -->
+  <div class="modal-backdrop" *ngIf="isViewModalOpen" (click)="closeModal('view')" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+    <div class="admission-record-card" (click)="$event.stopPropagation()" style="max-width: 700px; width: 90%; padding: 24px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      <div class="admission-record-header" style="padding: 0; border-bottom: 1px solid #e5e7eb; padding-bottom: 12px; margin-bottom: 16px;">
+        <div>
+          <h5 style="margin: 0; color: #1f2937;">Purchase Invoice Details</h5>
+          <p style="margin: 0; font-size: 12px; color: #6b7280;">Detailed billing of the selected stock purchase</p>
+        </div>
+        <button (click)="closeModal('view')" style="background: none; border: none; cursor: pointer; color: #9ca3af;">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 12px; font-size: 14px; color: #4b5563;" *ngIf="viewPurchase">
+        <div style="display: flex; justify-content: space-between;">
+          <div><strong>Supplier:</strong> {{ viewPurchase.supplierName }}</div>
+          <div><strong>Date:</strong> {{ viewPurchase.purchaseDate }}</div>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <div><strong>Payment Mode:</strong> {{ viewPurchase.paymentMode }}</div>
+          <div *ngIf="viewPurchase.notes"><strong>Notes:</strong> {{ viewPurchase.notes }}</div>
+        </div>
+        <div style="display: flex; justify-content: space-between;" *ngIf="viewPurchase.schoolName">
+          <div><strong>School:</strong> {{ viewPurchase.schoolName }}</div>
+          <div><strong>Academic Year:</strong> {{ viewPurchase.academicYearName }}</div>
         </div>
 
-        <!-- Items table -->
-        <div class="items-table-wrap">
-          <table class="items-table">
+        <hr style="margin: 8px 0; border-color: #e5e7eb;" />
+        <h6 style="margin: 0; font-weight: 600; color: #1f2937;">Items List</h6>
+        <div class="reviewstable admission-table-wrap" style="max-height: 200px; overflow-y: auto;">
+          <table class="table table-bordered admission-table" style="font-size: 12px;">
             <thead>
               <tr>
-                <th class="col-category">CATEGORY</th>
-                <th class="col-item">SELECT ITEM</th>
-                <th class="col-stock">CURRENT STOCK</th>
-                <th class="col-qty">QUANTITY</th>
-                <th class="col-price">PRICE (₹)</th>
-                <th class="col-cgst">CGST %</th>
-                <th class="col-sgst">SGST %</th>
-                <th class="col-subtotal">SUB-TOTAL</th>
-                <th class="col-action"></th>
+                <th>#</th>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Price (₹)</th>
+                <th>CGST %</th>
+                <th>SGST %</th>
+                <th>Sub-Total</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let row of purchaseItems; let i = index">
-
-                   <!-- Category Select -->
-                <td class="col-category">
-                <select class="item-select"
-    [(ngModel)]="row.categoryId"
-    [ngModelOptions]="{standalone: true}"
-    (change)="onCategorySelect(i, $event)">
-                    <option value="">-- Category --</option>
-                    <option *ngFor="let cat of categoriesList" [value]="cat.ID">{{ cat.Name }}</option>
-                </select>
-                </td>
-
-                <!-- Item Select — filtered by chosen category -->
-                <td class="col-item">
-                <select class="item-select"
-    [(ngModel)]="row.itemId"
-    [ngModelOptions]="{standalone: true}"
-    (change)="onItemSelect(i, $event)"
-    [disabled]="!row.categoryId">
-                    <option value="">SELECT PRODUCT...</option>
-                    <option *ngFor="let item of row.filteredItems" [value]="item.ID">{{ item.Name }}</option>
-                </select>
-                </td>
-
-                <!-- Current Stock -->
-                <td class="col-stock">
-                  <span class="stock-badge">{{ row.currentStock ?? '-' }}</span>
-                </td>
-
-                <!-- Quantity -->
-                <td class="col-qty">
-                  <input type="number" class="item-number-input" [(ngModel)]="row.quantity"
-                    [ngModelOptions]="{standalone: true}" min="1"
-                    (ngModelChange)="onQuantityChange(i)" />
-                </td>
-
-                <!-- Price -->
-                <td class="col-price">
-                  <div class="price-input-wrap">
-                    <span class="currency-prefix">₹</span>
-                    <input type="number" class="item-number-input with-prefix"
-                      [(ngModel)]="row.price" [ngModelOptions]="{standalone: true}"
-                      min="0" (ngModelChange)="onPriceChange(i)" />
-                  </div>
-                </td>
-
-                <!-- CGST -->
-                <td class="col-cgst">
-                  <input type="number" class="item-number-input" [(ngModel)]="row.cgst"
-                    [ngModelOptions]="{standalone: true}" min="0" max="100"
-                    (ngModelChange)="onCgstChange(i)" />
-                </td>
-
-                <!-- SGST -->
-                <td class="col-sgst">
-                  <input type="number" class="item-number-input" [(ngModel)]="row.sgst"
-                    [ngModelOptions]="{standalone: true}" min="0" max="100"
-                    (ngModelChange)="onSgstChange(i)" />
-                </td>
-
-                <!-- Sub Total -->
-                <td class="col-subtotal">
-                  <span class="subtotal-value">₹{{ row.subTotal | number:'1.2-2' }}</span>
-                </td>
-
-                <!-- Delete -->
-                <td class="col-action">
-                  <button type="button" class="delete-row-btn"
-                    (click)="removeItemRow(i)"
-                    [disabled]="purchaseItems.length === 1">
-                    <mat-icon>delete_outline</mat-icon>
-                  </button>
-                </td>
-
+              <tr *ngFor="let row of getViewItemRows(); let j = index">
+                <td>{{ j + 1 }}</td>
+                <td>{{ row.name }}</td>
+                <td>{{ row.qty }}</td>
+                <td>{{ row.price | number:'1.2-2' }}</td>
+                <td>{{ row.cgst }}</td>
+                <td>{{ row.sgst }}</td>
+                <td><strong>₹{{ row.subTotal | number:'1.2-2' }}</strong></td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- ── Summary footer ── -->
-        <div class="purchase-summary-footer">
-          <div class="summary-left">
-            <div class="summary-block">
-              <span class="summary-label">TOTAL TAX</span>
-              <span class="summary-value">₹{{ totalTaxAmount | number:'1.2-2' }}</span>
-            </div>
-            <div class="summary-divider"></div>
-            <div class="summary-block">
-              <span class="summary-label">ITEMS COUNT</span>
-              <span class="summary-value">{{ itemsCount }} Items</span>
-            </div>
-          </div>
-          <div class="summary-right">
-            <span class="summary-total-label">TOTAL AMOUNT</span>
-            <span class="summary-total-value">₹{{ grandTotalAmount | number:'1.0-0' }}</span>
-          </div>
+        <div style="display: flex; justify-content: flex-end; gap: 32px; font-size: 14px; margin-top: 12px;">
+          <div>Total Tax: <strong>₹{{ viewPurchase.totalTaxAmount | number:'1.2-2' }}</strong></div>
+          <div>Grand Total: <strong style="color: #4f46e5; font-size: 16px;">₹{{ viewPurchase.grandTotalAmount | number:'1.2-2' }}</strong></div>
         </div>
 
+        <div style="margin-top: 8px;">
+          <strong>Status:</strong>
+          <span
+            class="status-pill"
+            [style.background]="viewPurchase.isActive ? '#d9f9e5' : '#fff0bd'"
+            [style.color]="viewPurchase.isActive ? '#00823a' : '#c25b00'"
+            [style.borderColor]="viewPurchase.isActive ? '#86efac' : '#f5d77a'">
+            {{ viewPurchase.isActive ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
       </div>
-
-    </form>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════
-     STATUS MODAL
-════════════════════════════════════════════════ -->
-<div class="modal" tabindex="-1" role="dialog"
-  [ngClass]="{'show': isModalOpen}"
-  [style.display]="isModalOpen ? 'block' : 'none'">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Application Status</h5>
-        <button type="button" class="close" (click)="closeModal('status')">
-          <span>&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <p>{{ PurchaseInsStatus }}</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" (click)="handleOk()">OK</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════
-     VIEW MODAL
-════════════════════════════════════════════════ -->
-<div class="modal" tabindex="-1" role="dialog"
-  [ngClass]="{'show': isViewModalOpen}"
-  [style.display]="isViewModalOpen ? 'block' : 'none'">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Purchase Details</h5>
-        <button type="button" class="close" (click)="closeModal('view')">
-          <span>&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-
-        <!-- Header details -->
-        <div class="row mb-2">
-          <div class="col-4 viewHeadingfontsize">Supplier</div>
-          <div class="col-8 viewfontsize">{{ viewPurchase?.supplierName }}</div>
-        </div>
-        <div class="row mb-2">
-          <div class="col-4 viewHeadingfontsize">Purchase Date</div>
-          <div class="col-8 viewfontsize">{{ viewPurchase?.purchaseDate }}</div>
-        </div>
-        <div class="row mb-2">
-          <div class="col-4 viewHeadingfontsize">Payment Mode</div>
-          <div class="col-8 viewfontsize">{{ viewPurchase?.paymentMode }}</div>
-        </div>
-        <div class="row mb-2" *ngIf="viewPurchase?.notes">
-          <div class="col-4 viewHeadingfontsize">Notes</div>
-          <div class="col-8 viewfontsize">{{ viewPurchase?.notes }}</div>
-        </div>
-        <div class="row mb-2" *ngIf="isAdmin">
-          <div class="col-4 viewHeadingfontsize">School</div>
-          <div class="col-8 viewfontsize">{{ viewPurchase?.schoolName }}</div>
-        </div>
-        <div class="row mb-2" *ngIf="isAdmin">
-          <div class="col-4 viewHeadingfontsize">Academic Year</div>
-          <div class="col-8 viewfontsize">{{ viewPurchase?.academicYearName }}</div>
-        </div>
-
-        <!-- Items breakdown table -->
-        <hr />
-        <h6 style="font-weight:600;margin-bottom:10px;">Items Purchased</h6>
-        <table class="table table-sm table-bordered" style="font-size:12px;">
-          <thead style="background:#f1f5f9;">
-            <tr>
-              <th>#</th>
-              <th>Item</th>
-              <th>Qty</th>
-              <th>Price (₹)</th>
-              <th>CGST %</th>
-              <th>SGST %</th>
-              <th>Sub-Total (₹)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let row of getViewItemRows(); let j = index">
-              <td>{{ j + 1 }}</td>
-              <td>{{ row.name }}</td>
-              <td>{{ row.qty }}</td>
-              <td>{{ row.price | number:'1.2-2' }}</td>
-              <td>{{ row.cgst }}</td>
-              <td>{{ row.sgst }}</td>
-              <td><strong>{{ row.subTotal | number:'1.2-2' }}</strong></td>
-            </tr>
-          </tbody>
-        </table>
-
-        <!-- Totals -->
-        <div class="d-flex justify-content-end" style="gap:30px;margin-top:10px;">
-          <div style="text-align:right;">
-            <div style="font-size:12px;color:#64748b;">Total Tax</div>
-            <div style="font-weight:600;">₹{{ viewPurchase?.totalTaxAmount | number:'1.2-2' }}</div>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-size:12px;color:#64748b;">Grand Total</div>
-            <div style="font-size:18px;font-weight:700;color:#4f46e5;">
-              ₹{{ viewPurchase?.grandTotalAmount | number:'1.2-2' }}
-            </div>
-          </div>
-        </div>
-
-        <!-- Status -->
-        <div class="row mt-3">
-          <div class="col-4 viewHeadingfontsize">Status</div>
-          <div class="col-8">
-            <span class="badge" [ngClass]="viewPurchase?.isActive ? 'badge-success' : 'badge-danger'">
-              {{ viewPurchase?.isActive ? 'Active' : 'Inactive' }}
-            </span>
-          </div>
-        </div>
-
+      <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
+        <button class="admission-btn admission-btn--secondary" (click)="closeModal('view')">Close</button>
       </div>
     </div>
   </div>

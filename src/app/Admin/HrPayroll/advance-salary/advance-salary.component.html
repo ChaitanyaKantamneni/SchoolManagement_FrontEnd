@@ -2,28 +2,68 @@
   <app-dashboard-top-nav></app-dashboard-top-nav>
 </div>
 <div class="MainContentDiv">
-  <div *ngIf="!IsAddNewClicked" class="w-100">
-    <div class="ComponentTop">
+  <div *ngIf="!IsAddNewClicked" class="w-100 admission-dashboard">
+    <div class="ComponentTop admission-hero">
       <div class="ComponentTopHeader">
-        <h5>Advance Salary</h5>
-        <p>Total {{ records.length }} advance entries</p>
+        <div class="admission-breadcrumb">
+          <span>HR & Payroll</span>
+          <mat-icon>chevron_right</mat-icon>
+          <strong>Advance Salary</strong>
+        </div>
+        <h5>Advance Salary Management</h5>
+        <p>Total {{ records.length }} advance entries added</p>
       </div>
-      <div class="ComponentTopBottom">
-        <button class="btnHover" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Advance Salary</button>
+      <div class="ComponentTopBottom admission-header-actions">
+        <button *ngIf="canAdd()" type="button" class="admission-btn admission-btn--primary admission-top-action" (click)="AddNewClicked()">
+          <mat-icon>add_circle_outline</mat-icon>
+          Add Advance Salary
+        </button>
       </div>
     </div>
-    <div class="ComponentRecords">
-      <div>
-        <div class="ComponentRecordsTop">
-          <div class="filterOptions">
-            <div class="searchreview input-container">
-              <input type="text" class="form-control floating-input" [(ngModel)]="searchQuery" (ngModelChange)="currentPage = 1" placeholder="Search..." />
-              <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
-            </div>
-          </div>
+
+    <div class="admission-stats-grid">
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--blue"><mat-icon>request_quote</mat-icon></div>
+        <div>
+          <strong>{{ records.length }}</strong>
+          <span>Total Advance Entries</span>
         </div>
-        <div class="reviewstable">
-          <table *ngIf="filteredRecords.length !== 0" class="table table-bordered">
+      </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--green"><mat-icon>schedule</mat-icon></div>
+        <div>
+          <strong>{{ pageSize }}</strong>
+          <span>Rows Per Page</span>
+        </div>
+      </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--amber"><mat-icon>calendar_month</mat-icon></div>
+        <div>
+          <strong>{{ currentPage }}</strong>
+          <span>Current Page</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="admission-filter-row">
+      <div class="admission-searchbox">
+        <mat-icon>search</mat-icon>
+        <input type="text" id="searchQuery" [(ngModel)]="searchQuery" (ngModelChange)="currentPage = 1" placeholder="Search staff..." />
+      </div>
+      <button type="button" class="admission-chip admission-chip--active">All <span>{{ records.length }}</span></button>
+    </div>
+
+    <div class="ComponentRecords admission-record-card">
+      <div>
+        <div class="ComponentRecordsTop admission-record-header">
+          <div>
+            <h5>Advance Salary Records</h5>
+            <p>Showing {{ filteredRecords.length }} of {{ records.length }} records</p>
+          </div>
+          <div class="admission-table-actions"></div>
+        </div>
+        <div class="reviewstable admission-table-wrap">
+          <table id="classTable" *ngIf="filteredRecords.length != 0" class="table table-bordered admission-table">
             <thead>
               <tr>
                 <th>SI.No</th>
@@ -39,12 +79,12 @@
             <tbody>
               <tr *ngFor="let row of pagedFilteredRecords; let i = index">
                 <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-                <td>{{ row.schoolName }}</td>
-                <td>{{ row.academicYearName }}</td>
-                <td>{{ row.staffName }}</td>
-                <td>{{ row.amount }}</td>
-                <td>{{ row.tenure }}</td>
-                <td>{{ row.date }}</td>
+                <td data-label="School">{{ row.schoolName }}</td>
+                <td data-label="AcademicYear">{{ row.academicYearName }}</td>
+                <td data-label="Staff"><strong>{{ row.staffName }}</strong></td>
+                <td data-label="Amount">{{ row.amount }}</td>
+                <td data-label="Tenure">{{ row.tenure }}</td>
+                <td data-label="Date">{{ row.date }}</td>
                 <td data-label="Actions">
                   <div class="d-flex justify-content-center align-items-center h-100">
                     <button type="button" class="btn checkbtn edit" data-tooltip="Edit" (click)="editReview(row)">
@@ -60,20 +100,33 @@
           </table>
           <div *ngIf="filteredRecords.length === 0" class="NoDataFound">
             <div class="NoDataFoundImg">
-              <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="" />
+              <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
             </div>
             <p>No data found.</p>
           </div>
+          <div class="admission-footer-meta">
+            <label>
+              Rows:
+              <select aria-label="Rows per page" [(ngModel)]="pageSize"
+            (ngModelChange)="onRowsCountChange()">
+                <option [ngValue]="5">5</option>
+                <option [ngValue]="10">10</option>
+                <option [ngValue]="25">25</option>
+                <option [ngValue]="50">50</option>
+              </select>
+            </label>
+            <p>{{ pageStartIndex() }}&ndash;{{ pageEndIndex() }} of {{ filteredRecords.length }} records</p>
+          </div>
           <div *ngIf="filteredRecords.length > pageSize" class="pagination-controls">
             <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
-            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
+            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">&larr;</button>
             <button *ngFor="let page of getVisiblePageNumbers()"
                     class="page-btn"
                     [ngClass]="{'active': page === currentPage}"
                     (click)="goToPage(page)">
               {{ page }}
             </button>
-            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">&rarr;</button>
             <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
           </div>
         </div>
@@ -82,10 +135,25 @@
   </div>
 
   <div *ngIf="IsAddNewClicked" class="w-100">
+    <div class="admission-breadcrumb">
+      <span>HR & Payroll</span>
+      <mat-icon>chevron_right</mat-icon>
+      <span>Advance Salary</span>
+      <mat-icon>chevron_right</mat-icon>
+      <strong>{{ editIndex !== null ? 'Edit Advance Salary' : 'Add Advance Salary' }}</strong>
+    </div>
+    <div class="AddFormTop">
+      <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+      <div class="admission-record-header p-0">
+        <div>
+          <h5>{{ editIndex !== null ? 'Edit Advance Salary' : 'Add Advance Salary' }}</h5>
+          <p>Configure staff advance salary details</p>
+        </div>
+      </div>
+    </div>
     <div class="AddForm">
-      <div class="AddFormTop">
-        <button type="button" (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
-        <p>ADD ADVANCE SALARY</p>
+      <div class="form-top">
+        <p class="cc-title">Advance Details</p>
       </div>
       <div class="AddFormConatiner">
         <div class="FormInputRowsContainer">
@@ -105,7 +173,7 @@
             <div class="InputFieldsContainer">
               <label class="inputLabel">Academic Year <span class="required">*</span></label>
               <div class="input-with-error">
-                <select class="inputField" [(ngModel)]="selectedAcademicYearID" (ngModelChange)="onAcademicYearChange()">
+                <select class="inputField" [(ngModel)]="selectedAcademicYearID" (ngModelChange)="onAcademicYearChange()" [disabled]="!isAdmin">
                   <option value="">-- Select Academic Year --</option>
                   <option *ngFor="let year of academicYearList" [value]="year.ID">{{ year.Name }}</option>
                 </select>
@@ -114,8 +182,6 @@
                 </div>
               </div>
             </div>
-          </div>
-          <div class="InputRow">
             <div class="InputFieldsContainer">
               <label class="inputLabel">Staff <span class="required">*</span></label>
               <div class="input-with-error">
@@ -128,7 +194,7 @@
                 </div>
               </div>
             </div>
-            <div class="InputFieldsContainer">
+            <div class="InputFieldsContainer" *ngIf="!isAdmin">
               <label class="inputLabel">Amount <span class="required">*</span></label>
               <div class="input-with-error">
                 <input class="inputField" type="number" [(ngModel)]="form.amount" placeholder="Amount" />
@@ -139,6 +205,15 @@
             </div>
           </div>
           <div class="InputRow">
+            <div class="InputFieldsContainer" *ngIf="isAdmin">
+              <label class="inputLabel">Amount <span class="required">*</span></label>
+              <div class="input-with-error">
+                <input class="inputField" type="number" [(ngModel)]="form.amount" placeholder="Amount" />
+                <div *ngIf="formSubmitAttempted && !form.amount" class="text-danger">
+                  <small>Please enter amount.</small>
+                </div>
+              </div>
+            </div>
             <div class="InputFieldsContainer">
               <label class="inputLabel">Date <span class="required">*</span></label>
               <div class="input-with-error">
@@ -168,30 +243,24 @@
                 </div>
               </div>
             </div>
+            <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <span style="visibility: hidden;">hello adding new academic year</span>
+              </div>
           </div>
         </div>
-        <div class="ActionButtons">
-          <button type="button" (click)="addAdvanceSalary()">{{ editIndex !== null ? 'Update' : 'Add Advance Salary' }}</button>
+      </div>
+      <div class="form-bottom">
+        <span class="footer-hint">Fields marked <span class="required">*</span> are required</span>
+        <div class="ActionButtons footer-actions">
+          <button type="button" class="cancelbtn" (click)="AddNewClicked()">Cancel</button>
+          <button type="button" class="submitbtn" (click)="addAdvanceSalary()">{{ editIndex !== null ? 'Update' : 'Submit' }}</button>
         </div>
       </div>
     </div>
   </div>
 </div>
-<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isModalOpen}" [style.display]="isModalOpen ? 'block' : 'none'">
-  <div class="modal-dialog modal-dialog-centered" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Advance Salary</h5>
-        <button type="button" class="close" (click)="closeModal('status')"><span>&times;</span></button>
-      </div>
-      <div class="modal-body"><p>{{ statusMessage }}</p></div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" (click)="handleOk()">OK</button>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
+
+<div class="modal" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -199,10 +268,25 @@
         <button type="button" class="close" (click)="closeViewModal()"><span>&times;</span></button>
       </div>
       <div class="modal-body" *ngIf="viewRow">
-        <div class="row mb-2"><div class="col-5">Staff</div><div class="col-7">{{ viewRow.staffName }}</div></div>
-        <div class="row mb-2"><div class="col-5">Amount</div><div class="col-7">{{ viewRow.amount }}</div></div>
-        <div class="row mb-2"><div class="col-5">Tenure In Months</div><div class="col-7">{{ viewRow.tenure }}</div></div>
-        <div class="row mb-2"><div class="col-5">Date</div><div class="col-7">{{ viewRow.date }}</div></div>
+        <div class="row mb-2"><div class="col-6 viewHeadingfontsize">Staff</div><div class="col-6 viewfontsize">{{ viewRow.staffName }}</div></div>
+        <div class="row mb-2"><div class="col-6 viewHeadingfontsize">Amount</div><div class="col-6 viewfontsize">{{ viewRow.amount }}</div></div>
+        <div class="row mb-2"><div class="col-6 viewHeadingfontsize">Tenure In Months</div><div class="col-6 viewfontsize">{{ viewRow.tenure }}</div></div>
+        <div class="row mb-2"><div class="col-6 viewHeadingfontsize">Date</div><div class="col-6 viewfontsize">{{ viewRow.date }}</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" role="dialog" [ngClass]="{'show': isModalOpen}" [style.display]="isModalOpen ? 'block' : 'none'">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Advance Salary Status</h5>
+        <button type="button" class="close" (click)="closeModal('status')"><span>&times;</span></button>
+      </div>
+      <div class="modal-body"><p>{{ statusMessage }}</p></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="handleOk()">OK</button>
       </div>
     </div>
   </div>

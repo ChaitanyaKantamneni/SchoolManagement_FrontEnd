@@ -1,26 +1,37 @@
-<div>
+<div class="DashboardTopNav">
   <app-dashboard-top-nav></app-dashboard-top-nav>
 </div>
 <div class="MainContentDiv">
-  <div class="w-100">
-    <div class="ComponentTop">
-      <div class="ComponentTopHeader">
-        <h5>Salary Issued</h5>
-        <p>Total {{ issuedCount }} salary records</p>
+  <div class="w-100 admission-dashboard">
+    <div class="admission-breadcrumb">
+      <span>HR & Payroll</span>
+      <mat-icon>chevron_right</mat-icon>
+      <strong>Salary Issued</strong>
+    </div>
+    <div class="AddFormTop">
+      <div class="admission-record-header p-0">
+        <div>
+          <h5>Salary Issued Management</h5>
+          <p>Track and view all issued employee salaries</p>
+        </div>
       </div>
     </div>
-    <div class="ComponentRecords">
+    <div class="ComponentRecords admission-record-card compact-table-section">
       <div>
-        <div class="ComponentRecordsTop">
-          <div class="filterOptions">
+        <div class="ComponentRecordsTop admission-record-header">
+          <div>
+            <h5>Salary Issued Records</h5>
+            <p>Showing {{ filteredRows.length }} record{{ filteredRows.length === 1 ? '' : 's' }}</p>
+          </div>
+          <div class="filterOptions admission-hero p-0 d-flex gap-2 align-items-center">
             <div class="searchreview" *ngIf="isAdmin">
-              <select class="form-control" [ngModel]="selectedSchoolID" (ngModelChange)="selectedSchoolID = $event" (change)="onAdminSchoolChange($event)" style="font-size: 11px;">
+              <select class="admission-select" [ngModel]="selectedSchoolID" (ngModelChange)="selectedSchoolID = $event" (change)="onAdminSchoolChange($event)">
                 <option value="">All Schools</option>
                 <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
               </select>
             </div>
             <div class="searchreview">
-              <select class="form-control" [(ngModel)]="selectedAcademicYearID" (ngModelChange)="onAcademicYearChange()" style="font-size: 11px;">
+              <select class="admission-select" [(ngModel)]="selectedAcademicYearID" (ngModelChange)="onAcademicYearChange()">
                 <option value="">All Academic Years</option>
                 <option *ngFor="let year of academicYearList" [value]="year.ID">{{ year.Name }}</option>
               </select>
@@ -31,8 +42,8 @@
             </div>
           </div>
         </div>
-        <div class="reviewstable">
-          <table *ngIf="filteredRows.length !== 0" class="table table-bordered">
+        <div class="reviewstable admission-table-wrap">
+          <table *ngIf="filteredRows.length !== 0" class="table table-bordered admission-table">
             <thead>
               <tr>
                 <th>SI.No</th>

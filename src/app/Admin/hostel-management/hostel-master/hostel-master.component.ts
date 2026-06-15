@@ -60,6 +60,9 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
   selectedSchoolID = '';
   AdminselectedSchoolID = '';
   SchoolSelectionChange = false;
+  selectedAcademicYearID = '';
+  SchoolAcademicYearChange = false;
+  AdminSelectedActiveAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
 
   HostelForm = new FormGroup({
     ID: new FormControl(),
@@ -70,7 +73,7 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
     Address: new FormControl(''),
     Remarks: new FormControl(''),
     School: new FormControl('0'),
-    AcademicYear: new FormControl('0', [Validators.required, Validators.min(1)])
+    AcademicYear: new FormControl(sessionStorage.getItem('ActiveAcademicYearID') || '0', [Validators.required, Validators.min(1)])
   });
 
   constructor(
@@ -86,6 +89,9 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
   ngOnInit(): void {
     this.checkViewPermission();
     this.SchoolSelectionChange = false;
+    if (!this.isAdmin) {
+      this.HostelForm.get('AcademicYear')?.disable({ emitEvent: false });
+    }
     this.FetchSchoolsList();
     this.FetchInitialData();
   }
@@ -144,6 +150,10 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
       SchoolID: SchoolIdSelected || null
     };
 
+    if (!this.isAdmin) {
+      payload.AcademicYear = sessionStorage.getItem('ActiveAcademicYearID') || '';
+    }
+
     if (isSearch) {
       payload.HostelName = this.searchQuery.trim();
     }
@@ -178,6 +188,10 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
           SchoolID: SchoolIdSelected || null,
           ...extra
         };
+
+        if (!this.isAdmin) {
+          payload.AcademicYear = sessionStorage.getItem('ActiveAcademicYearID') || '';
+        }
 
         if (isSearch) {
           payload.HostelName = this.searchQuery.trim();
@@ -254,7 +268,10 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
     }
     this.HostelForm.reset();
     this.HostelForm.get('School')?.patchValue('0');
-    this.HostelForm.get('AcademicYear')?.patchValue('0');
+    this.HostelForm.get('AcademicYear')?.patchValue(sessionStorage.getItem('ActiveAcademicYearID') || '0');
+    if (!this.isAdmin) {
+      this.HostelForm.get('AcademicYear')?.disable({ emitEvent: false });
+    }
     this.HostelForm.get('HostelType')?.patchValue('');
     this.HostelForm.get('TotalRooms')?.patchValue(0);
     this.HostelForm.get('BedCapacity')?.patchValue(0);
@@ -286,6 +303,7 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
       payload.SchoolID = this.HostelForm.get('School')?.value;
     } else {
       payload.SchoolID = sessionStorage.getItem('SchoolID')?.toString() || '';
+      payload.AcademicYear = sessionStorage.getItem('ActiveAcademicYearID') || '';
     }
 
     this.hostelService.crudOperations(payload).subscribe({
@@ -294,6 +312,7 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
         this.AminityInsStatus = 'Hostel Details Submitted Successfully!';
         this.currentPage = 1;
         this.HostelForm.reset();
+        this.HostelForm.get('AcademicYear')?.patchValue(sessionStorage.getItem('ActiveAcademicYearID') || '0');
         this.FetchInitialData();
         this.IsAddNewClicked = false;
       },
@@ -363,6 +382,10 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
             AcademicYear: item.academicYear || item.AcademicYear
           });
 
+          if (!this.isAdmin) {
+            this.HostelForm.get('AcademicYear')?.disable({ emitEvent: false });
+          }
+
           if (this.isAdmin) {
             this.AdminselectedSchoolID = schoolId;
           }
@@ -399,6 +422,9 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
 
     if (this.isAdmin) {
       payload.SchoolID = this.HostelForm.get('School')?.value;
+    } else {
+      payload.SchoolID = sessionStorage.getItem('SchoolID')?.toString() || '';
+      payload.AcademicYear = sessionStorage.getItem('ActiveAcademicYearID') || '';
     }
 
     this.hostelService.crudOperations(payload).subscribe({
@@ -407,6 +433,7 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
         this.AminityInsStatus = 'Hostel Details Updated Successfully!';
         this.currentPage = 1;
         this.HostelForm.reset();
+        this.HostelForm.get('AcademicYear')?.patchValue(sessionStorage.getItem('ActiveAcademicYearID') || '0');
         this.FetchInitialData();
         this.IsAddNewClicked = false;
       },
@@ -443,7 +470,7 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
 
   onAdminSchoolChange(event: Event) {
     this.academicYearList = [];
-    this.HostelForm.get('AcademicYear')?.patchValue('0');
+    this.HostelForm.get('AcademicYear')?.patchValue(sessionStorage.getItem('ActiveAcademicYearID') || '0');
     const target = event.target as HTMLSelectElement;
     const schoolID = target.value;
     if (schoolID === '0') {
@@ -566,5 +593,11 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
 
   pageEndIndex(): number {
     return Math.min(this.currentPage * this.pageSize, this.HostelCount);
+  }
+
+  onRowsCountChange() {
+    this.currentPage = 1;
+    this.pageCursors = [];
+    this.FetchInitialData();
   }
 }

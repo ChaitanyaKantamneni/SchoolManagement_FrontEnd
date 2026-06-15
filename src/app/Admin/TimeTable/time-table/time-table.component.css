@@ -39,7 +39,7 @@
 }
 
 .MainContentDiv{
-  margin-top: 60px;
+  margin-top: 0px;
 }
 
 .viewmodel .ActionButtons{
@@ -271,4 +271,25 @@
   .timetable-table .day-cell {
     width: 90px;
   }
+}
+
+.admission-btn--primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #2f66e9 !important;
+  border: 1px solid #2f66e9 !important;
+  color: #fff !important;
+}
+
+.AddForm .ComponentRecords .ComponentRecordsTop .admission-hero .ComponentTopBottom .admission-btn--outline {
+  background: #fff !important;
+  border: 1px solid #cdd9eb !important;
+  color: #163466 !important;
+}
+
+.admission-header-actions {
+  margin: 0;
+  gap: 12px;
 }

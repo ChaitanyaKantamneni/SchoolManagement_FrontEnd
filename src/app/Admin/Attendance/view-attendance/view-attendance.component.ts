@@ -68,27 +68,40 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
   ngOnInit(): void {
     this.checkViewPermission();
     this.configureRoleBasedForm();
+    this.AdminSelectedActiveAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
+
+    const schoolFromSession = sessionStorage.getItem('SchoolID') || localStorage.getItem('SchoolID') || '';
+    if (!this.AdminselectedSchoolID) {
+      this.AdminselectedSchoolID = this.resolvedSchoolId || schoolFromSession;
+    }
+
+    if (this.isAdmin) {
+      this.SyllabusForm.get('AcademicYear')?.enable({ emitEvent: false });
+    } else {
+      this.SyllabusForm.get('AcademicYear')?.disable({ emitEvent: false });
+    }
+
+    this.SyllabusForm.get('School').patchValue(this.isAdmin ? 0 : this.AdminselectedSchoolID);
+    this.SyllabusForm.get('AcademicYear').patchValue(this.AdminSelectedActiveAcademicYearID);
+    this.AdminselectedAcademivYearID = this.AdminSelectedActiveAcademicYearID;
 
     if (this.isTeacher) {
-      this.AdminselectedSchoolID = this.resolvedSchoolId || this.ss('SchoolID') || this.ss('schoolId');
-      this.SyllabusForm.patchValue({ School: this.AdminselectedSchoolID || '0' });
       this.resolveStaffIdentity();
       this.FetchAcademicYearsList();
     } else if (this.isParent) {
-      this.AdminselectedSchoolID = this.resolvedSchoolId || this.ss('SchoolID') || this.ss('schoolId');
-      this.SyllabusForm.patchValue({ School: this.AdminselectedSchoolID || '0' });
       this.FetchAcademicYearsList();
     } else {
-      if (!this.isAdmin) {
-        this.AdminselectedSchoolID =
-          this.ss('SchoolID') ||
-          this.ss('schoolId') ||
-          '';
-        this.SyllabusForm.patchValue({ School: this.AdminselectedSchoolID || '0' });
-      }
       this.FetchSchoolsList();
       this.FetchAcademicYearsList();
     }
+
+    if (this.isTeacher && this.AdminselectedAcademivYearID) {
+      this.syncTeacherClassDivisionFromAllocation();
+    } else {
+      this.FetchClassList();
+    }
+    
+    this.FetchSessionsList();
   }
 
   schoolList: any[] = [];
@@ -100,6 +113,7 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
 
   AdminselectedSchoolID = '';
   AdminselectedAcademivYearID = '';
+  AdminSelectedActiveAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
   AdminselectedClassID = '';
   AdminselectedDiviosnID = '';
   AdminSelectedSessionID = '';
@@ -457,9 +471,14 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
   }
 
   FetchClassList() {
+    const AcademicYearIdSelected =
+    this.isAdmin
+      ? this.AdminselectedAcademivYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
+
     this.apiurl.post<any>('Tbl_ClassDivision_CRUD_Operations', {
       SchoolID: this.getCurrentSchoolId(),
-      AcademicYear: this.AdminselectedAcademivYearID,
+      AcademicYear: AcademicYearIdSelected,
       Flag: '9'
     }).subscribe(
       (response: any) => {
@@ -472,9 +491,14 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
   }
 
   FetchDivisionsList() {
+    const AcademicYearIdSelected =
+    this.isAdmin
+      ? this.AdminselectedAcademivYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
+
     this.apiurl.post<any>('Tbl_ClassDivision_CRUD_Operations', {
       SchoolID: this.getCurrentSchoolId(),
-      AcademicYear: this.AdminselectedAcademivYearID,
+      AcademicYear: AcademicYearIdSelected,
       Class: this.AdminselectedClassID,
       Flag: '3'
     }).subscribe(
@@ -488,9 +512,14 @@ export class ViewAttendanceComponent extends BasePermissionComponent {
   }
 
   FetchSessionsList() {
+    const AcademicYearIdSelected =
+    this.isAdmin
+      ? this.AdminselectedAcademivYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
+
     this.apiurl.post<any>('Tbl_Session_CRUD_Operations', {
       SchoolID: this.getCurrentSchoolId(),
-      AcademicYear: this.AdminselectedAcademivYearID,
+      AcademicYear: AcademicYearIdSelected,
       Flag: '2'
     }).subscribe(
       (response: any) => {
