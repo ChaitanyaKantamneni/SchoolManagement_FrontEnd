@@ -22,7 +22,6 @@ import { HttpClient } from '@angular/common/http';
 })
 export class FeeDiscountCategoryComponent extends BasePermissionComponent {
   pageName = 'Fee Discount Category';
-  private readonly loggedInSchoolId = sessionStorage.getItem('schoolId') || '';
 
 constructor(
     private http: HttpClient,
@@ -38,9 +37,7 @@ constructor(
     this.checkViewPermission();
     this.SchoolSelectionChange=false;
     this.SyllabusList=[];
-    if (!this.isAdmin && this.loggedInSchoolId) {
-      this.AdminselectedSchoolID = this.loggedInSchoolId;
-    }
+this.AdminSelectedActiveAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
     this.FetchSchoolsList();
     this.FetchInitialData();
   };
@@ -57,6 +54,8 @@ constructor(
   private readonly SEARCH_DEBOUNCE = 300;
   ClassList: any[] =[];
   ClassCount: number = 0;
+  SubjectsActiveCount: number = 0;
+  SubjectsInActiveCount: number = 0;
   SyllabusList: any[] =[];
   isViewMode = false;
   viewSyllabus: any = null;
@@ -75,12 +74,17 @@ constructor(
   editclicked:boolean=false;
   schoolList: any[] = [];
   selectedSchoolID: string = '';
+  selectedAcademicYearID: string = '';
+  selectedClassID: string = '';
   SchoolSelectionChange:boolean=false;
+  SchoolAcademicYearChange:boolean=false;
+  SchoolClassChange:boolean=false;
   academicYearList:any[] = [];
   feecategorylist:any[] = [];
   AdminselectedSchoolID:string = '';
   AdminselectedAcademivYearID:string = '';
   FineCollectionTypePercentage:boolean=false;
+AdminSelectedActiveAcademicYearID:string = sessionStorage.getItem('ActiveAcademicYearID') || '';
 
   ClassForm: any = new FormGroup({
     ID: new FormControl(),
@@ -140,7 +144,11 @@ constructor(
   };
 
   FetchAcademicYearsList() {
-    const requestData = { SchoolID:this.AdminselectedSchoolID||'',Flag: '2' };
+const schoolId =
+    this.SchoolSelectionChange
+      ? this.selectedSchoolID?.trim()
+      : this.AdminselectedSchoolID || '';
+    const requestData = { SchoolID:schoolId ,Flag: '2' };
 
     this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)
       .subscribe(
@@ -163,10 +171,25 @@ constructor(
         }
       );
   };
-   FetchFeeCategoryList() {
+
+protected override get isAdmin(): boolean {
+    const role = sessionStorage.getItem('RollID') || localStorage.getItem('RollID');
+    return role === '1';
+  }
+
+  FetchFeeCategoryList() {
+    const AcademicYearIdSelected =
+      this.isAdmin
+        ? (
+            this.SchoolAcademicYearChange
+              ? this.selectedAcademicYearID?.trim()
+              : this.AdminselectedAcademivYearID?.trim()
+          )
+        : this.AdminSelectedActiveAcademicYearID || '';
+        
     const requestData = { 
       SchoolID:this.AdminselectedSchoolID||'',
-      AcademicYear: this.AdminselectedAcademivYearID,
+      AcademicYear: AcademicYearIdSelected,
       Flag: '3'
      };
 
@@ -192,23 +215,39 @@ constructor(
       );
   };
 
-  protected override get isAdmin(): boolean {
-    const role = sessionStorage.getItem('RollID') || localStorage.getItem('RollID');
-    return role === '1';
-  }
+  
 
   FetchAcademicYearCount(isSearch: boolean) {
     let SchoolIdSelected = '';
+let AcademicYearIdSelected='';
+    let ClassSelected='';
 
     if (this.SchoolSelectionChange) {
       SchoolIdSelected = this.selectedSchoolID.trim();
     }
 
-    return this.apiurl.post<any>('Tbl_FeeDiscountCategory_CRUD_Operations', {
+    if(this.SchoolAcademicYearChange){
+      AcademicYearIdSelected=this.selectedAcademicYearID.trim();
+    }
+
+    if(this.SchoolClassChange){
+      ClassSelected=this.selectedClassID.trim();
+    }
+
+    const payload: any = {
       Flag: isSearch ? '8' : '6',
-      SchoolID:SchoolIdSelected,
+      SchoolID: SchoolIdSelected,
       FeeCategoryName: isSearch ? this.searchQuery.trim() : null
-    });
+    };
+
+    if (!this.isAdmin) {
+      payload.AcademicYear = this.AdminSelectedActiveAcademicYearID;
+    }
+    else if(this.isAdmin && this.SchoolAcademicYearChange){
+      payload.AcademicYear = AcademicYearIdSelected;
+    }
+
+    return this.apiurl.post<any>('Tbl_FeeDiscountCategory_CRUD_Operations', payload);
   }
 
   FetchInitialData(extra: any = {}) {
@@ -216,9 +255,19 @@ constructor(
     const flag = isSearch ? '7' : '2';
 
     let SchoolIdSelected = '';
+    let AcademicYearIdSelected='';
+    let ClassSelected='';
 
     if (this.SchoolSelectionChange) {
       SchoolIdSelected = this.selectedSchoolID.trim();
+    }
+
+    if(this.SchoolAcademicYearChange){
+      AcademicYearIdSelected=this.selectedAcademicYearID.trim();
+    }
+
+    if(this.SchoolClassChange){
+      ClassSelected=this.selectedClassID.trim();
     }
 
     const cursor =
@@ -231,6 +280,8 @@ constructor(
     this.FetchAcademicYearCount(isSearch).subscribe({
       next: (countResp: any) => {
         this.ClassCount = countResp?.data?.[0]?.totalcount ?? 0;
+        this.SubjectsActiveCount=countResp?.data?.[0]?.activeCount ?? 0;
+        this.SubjectsInActiveCount=countResp?.data?.[0]?.inactiveCount ?? 0;
 
         const payload: any = {
           Flag: flag,
@@ -242,6 +293,13 @@ constructor(
           SchoolID:SchoolIdSelected,
           ...extra
         };
+
+        if (!this.isAdmin) {
+          payload.AcademicYear = this.AdminSelectedActiveAcademicYearID;
+        }
+        else if(this.isAdmin && this.SchoolAcademicYearChange){
+          payload.AcademicYear = AcademicYearIdSelected;
+        }
 
         if (isSearch) payload.Name = this.searchQuery.trim();
 
@@ -295,20 +353,25 @@ constructor(
   };
 
   AddNewClicked(){
+    this.ClassForm.reset(); 
     if (this.isAdmin) {
       this.ClassForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+      this.ClassForm.get('School').patchValue('0');
+      this.ClassForm.get('AcademicYear').patchValue('0');
     } else {
       this.ClassForm.get('School')?.clearValidators();
+      this.ClassForm.get('AcademicYear')?.disable({ emitEvent: false });
     }
-    this.ClassForm.get('School')?.updateValueAndValidity();
-    if (!this.AdminselectedSchoolID && !this.isAdmin) {
-      this.AdminselectedSchoolID = this.loggedInSchoolId;
+
+    if(this.AdminselectedSchoolID==''){
+      this.FetchAcademicYearsList();
+      if(!this.isAdmin){
+        this.ClassForm.get('AcademicYear').patchValue(this.AdminSelectedActiveAcademicYearID);
+        this.FetchFeeCategoryList();
+      } 
     }
-    this.FetchAcademicYearsList();
-    this.ClassForm.reset();  
+     
     this.ClassForm.patchValue({
-      School: this.isAdmin ? 0 : (this.AdminselectedSchoolID || 0),
-      AcademicYear: 0,
       Name: '',
       StartDate: '',
       EndDate: '',
@@ -323,30 +386,6 @@ constructor(
     this.ViewClassClicked=false;
     
   };
-
-  // FetchSyllabusList() {
-  //   const requestData = { Flag: '3' };
-
-  //   this.apiurl.post<any>('Tbl_FeeCategory_CRUD_Operations', requestData)
-  //     .subscribe(
-  //       (response: any) => {
-  //         if (response && Array.isArray(response.data)) {
-  //           this.SyllabusList = response.data.map((item: any) => {
-  //             const isActiveString = item.isActive === "1" ? "Active" : "InActive";
-  //             return {
-  //               ID: item.id,
-  //               Name: item.name
-  //             };
-  //           });
-  //         } else {
-  //           this.SyllabusList = [];
-  //         }
-  //       },
-  //       (error) => {
-  //         this.SyllabusList = [];
-  //       }
-  //     );
-  // };
 
   SubmitClass(){
     if(this.ClassForm.invalid){
@@ -369,7 +408,7 @@ constructor(
         MinAmountForDiscount: this.ClassForm.get('MinAmountForDiscount')?.value,
         DiscountValuePerInstallment: discountValue,
         Description: this.ClassForm.get('Description')?.value,
-        SchoolID: this.getEffectiveSchoolId(),
+        SchoolID: this.ClassForm.get('School')?.value,
         AcademicYear: this.ClassForm.get('AcademicYear')?.value,
         IsActive:IsActiveStatusNumeric,
         Flag: '1'
@@ -500,7 +539,7 @@ constructor(
         MinAmountForDiscount: this.ClassForm.get('MinAmountForDiscount')?.value,
         DiscountValuePerInstallment: discountValue,
         Description: this.ClassForm.get('Description')?.value,
-        SchoolID: this.getEffectiveSchoolId(),
+        SchoolID: this.ClassForm.get('School')?.value,
         AcademicYear: this.ClassForm.get('AcademicYear')?.value,
         IsActive:IsActiveStatusNumeric,
         Flag: '5'
@@ -673,6 +712,19 @@ constructor(
       this.selectedSchoolID = schoolID;
     }    
     this.SchoolSelectionChange = true;
+    this.FetchAcademicYearsList();
+    this.FetchInitialData();
+  };
+
+  onAcademicYearChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    if(schoolID=="0"){
+      this.selectedAcademicYearID="";
+    }else{
+      this.selectedAcademicYearID = schoolID;
+    }    
+    this.SchoolAcademicYearChange = true;
     this.FetchInitialData();
   };
 
@@ -788,12 +840,12 @@ constructor(
     this.FetchFeeCategoryList();
   }
 
-  private getEffectiveSchoolId(): string | number {
-    if (this.isAdmin) {
-      return this.ClassForm.get('School')?.value;
-    }
-    return this.AdminselectedSchoolID || this.loggedInSchoolId || this.ClassForm.get('School')?.value || '';
-  }
+  // private getEffectiveSchoolId(): string | number {
+  //   if (this.isAdmin) {
+  //     return this.ClassForm.get('School')?.value;
+  //   }
+  //   return this.AdminselectedSchoolID || this.loggedInSchoolId || this.ClassForm.get('School')?.value || '';
+  // }
 
 
   onFineTypeChange(event: Event) {
@@ -809,4 +861,25 @@ constructor(
     }   
     this.ClassForm.get('FineIncrementIn')?.updateValueAndValidity();
   };
+
+  pageStartIndex(): number {
+    return this.ClassCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
+  }
+
+  pageEndIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.ClassCount);
+  }
+
+  CancelSyllabus(){
+    this.IsAddNewClicked=false;
+    this.AdminselectedSchoolID = '';
+    this.AdminselectedAcademivYearID = '';
+    this.ClassForm.reset();
+    this.FetchInitialData();
+  }
+
+  onRowsCountChange() {
+    this.currentPage = 1;
+    this.FetchInitialData();
+  }
 }

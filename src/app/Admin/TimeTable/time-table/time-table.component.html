@@ -2,11 +2,34 @@
   <app-dashboard-top-nav></app-dashboard-top-nav>
 </div>
 <div class="MainContentDiv">
-  <div class="w-100">
-    <div class="ComponentTop" *ngIf="!IsAddNewClicked">
-        <div class="ComponentTopHeader">
+  <div class="w-100 admission-dashboard">
+    <div class="admission-breadcrumb" *ngIf="!IsAddNewClicked">
+      <span>Time Table</span>
+      <mat-icon>chevron_right</mat-icon>
+      <strong>Time Table Management</strong>
+    </div>
+    <div class="AddFormTop" *ngIf="!IsAddNewClicked">
+      <div class="admission-record-header p-0">
+        <div>
           <h5>Time Table Management</h5>
+          <p>Configure class timetables</p>
         </div>
+      </div>
+    </div>
+
+    <div class="admission-breadcrumb" *ngIf="IsAddNewClicked">
+      <span>Time Table</span>
+      <mat-icon>chevron_right</mat-icon>
+      <strong>{{ editclicked ? 'Edit Time Table' : 'Add Time Table' }}</strong>
+    </div>
+    <div class="AddFormTop" *ngIf="IsAddNewClicked">
+      <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+      <div class="admission-record-header p-0">
+        <div>
+          <h5>{{ editclicked ? 'Edit Time Table' : 'Add Time Table' }}</h5>
+          <p>Configure timetable details</p>
+        </div>
+      </div>
     </div> 
     <div *ngIf="!IsAddNewClicked">
       <div class="AddForm">           
@@ -84,56 +107,66 @@
                 </div> 
               </div>
             </div>
-            <div class="actionbuttons">
-              <button class="btnsubmit" (click)="SubmitFilterList()">Submit</button>
+            <div class="form-bottom">
+              <span class="footer-hint">Fields marked <span class="required">*</span> are required</span>
+              <div class="ActionButtons footer-actions">
+                <button type="button" class="submitbtn" (click)="SubmitFilterList()">Submit</button>
+              </div>
             </div>
           </form>
         </div>
       </div>
-      <div class="AddForm" *ngIf="IsFliterClicked">
+      <div class="ComponentRecords admission-record-card compact-table-section mt-2" *ngIf="IsFliterClicked">
         <div>
-          <div class="ComponentTop">
-            <div class="ComponentTopHeader">
-              <!-- <h5></h5> -->
+          <div class="ComponentRecordsTop admission-record-header">
+            <div>
+              <h5>Timetable Records</h5>
+              <p>Showing {{ StudentsList.length }} record{{ StudentsList.length === 1 ? '' : 's' }}</p>
             </div>
-            <div class="ComponentTopBottom">
-              <button *ngIf="canAdd() && StudentsList.length === 0" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Time Table</button>
+            <div class="admission-hero" *ngIf="canAdd() && StudentsList.length === 0">
+              <div class="ComponentTopBottom admission-header-actions">
+                <button type="button" class="admission-btn admission-btn--primary admission-top-action" (click)="AddNewClicked()">
+                  <mat-icon>add_circle_outline</mat-icon>Add Time Table
+                </button>
+              </div>
             </div>
           </div> 
-          <table class="table table-bordered" *ngIf="StudentsList.length>0">
-            <thead>
-              <tr>
-                <th class="visually-hidden">Academic Year ID</th>
-                <th>SI.No</th>
-                <th>Date From</th>
-                <th>Date To</th>
-                <th>School Name</th>
-                <th>Academic Year</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let student of StudentsList; let i = index">
-                <td data-label="ID" class="visually-hidden">{{ student.ID }}</td>
-                <td>{{ i + 1 }}</td>
-                <td>{{ student.DateFrom }}</td>
-                <td>{{ student.DateTo }}</td>
-                <td>{{ student.SchoolName }}</td>
-                <td>{{ student.AcademicYearName }}</td>
-                <td data-label="Actions">
-                  <div class="d-flex justify-content-center align-items-center h-100">
-                    <!-- (click)="editreview(aminitie.propertyTypeID)" -->
-                    <button *ngIf="canEdit()" class="btn checkbtn edit" data-tooltip="Edit" (click)="editreview(student.ID)">
-                      <mat-icon class="mat-edit-icon">edit</mat-icon>
-                    </button>
-                    <button *ngIf="canView()" class="btn checkbtn" data-tooltip="View" (click)="viewReview(student.ID)">
-                      <mat-icon class="mat-edit-icon">visibility</mat-icon>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="reviewstable admission-table-wrap">
+            <table class="table table-bordered admission-table" *ngIf="StudentsList.length>0">
+              <thead>
+                <tr>
+                  <th class="visually-hidden">Academic Year ID</th>
+                  <th>SI.No</th>
+                  <th>Date From</th>
+                  <th>Date To</th>
+                  <th>School Name</th>
+                  <th>Academic Year</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let student of StudentsList; let i = index">
+                  <td data-label="ID" class="visually-hidden">{{ student.ID }}</td>
+                  <td>{{ i + 1 }}</td>
+                  <td>{{ student.DateFrom }}</td>
+                  <td>{{ student.DateTo }}</td>
+                  <td>{{ student.SchoolName }}</td>
+                  <td>{{ student.AcademicYearName }}</td>
+                  <td data-label="Actions">
+                    <div class="d-flex justify-content-center align-items-center h-100">
+                      <!-- (click)="editreview(aminitie.propertyTypeID)" -->
+                      <button *ngIf="canEdit()" class="btn checkbtn edit" data-tooltip="Edit" (click)="editreview(student.ID)">
+                        <mat-icon class="mat-edit-icon">edit</mat-icon>
+                      </button>
+                      <button *ngIf="canView()" class="btn checkbtn" data-tooltip="View" (click)="viewReview(student.ID)">
+                        <mat-icon class="mat-edit-icon">visibility</mat-icon>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
           <div *ngIf="StudentsList.length === 0" class="NoDataFound">
             <div class="NoDataFoundImg">
               <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
@@ -145,10 +178,6 @@
     </div>
     <div *ngIf="IsAddNewClicked">
       <div class="AddForm">     
-        <div class="AddFormTop">
-        <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
-        <p>Add Time Table</p>
-      </div>      
         <div class="AddFormConatiner">
           <form [formGroup]="ClassDivisionForm">
             <div class="FormInputRowsContainer">
@@ -307,9 +336,13 @@
 
               </div>
             </div>
-            <div class="actionbuttons">
-              <button class="btnsubmit" *ngIf="!editclicked" (click)="SubmitTimeTable()">Submit Timetable</button>
-              <button class="btnsubmit" *ngIf="editclicked" (click)="UpdateTimeTable()">Update Timetable</button>
+            <div class="form-bottom">
+              <span class="footer-hint">Fields marked <span class="required">*</span> are required</span>
+              <div class="ActionButtons footer-actions">
+                <button type="button" class="cancelbtn" (click)="AddNewClicked()">Cancel</button>
+                <button type="button" class="submitbtn" *ngIf="editclicked" (click)="UpdateTimeTable()">Update</button>
+                <button type="button" class="submitbtn" *ngIf="!editclicked" (click)="SubmitTimeTable()">Submit</button>
+              </div>
             </div>
           </form>
         </div>

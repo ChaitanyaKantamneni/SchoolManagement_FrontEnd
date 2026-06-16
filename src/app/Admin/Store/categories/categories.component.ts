@@ -19,6 +19,7 @@ import { HttpClient } from '@angular/common/http';
 })
 export class CategoriesComponent extends BasePermissionComponent {
   pageName = 'Categories';
+  Math = Math;
 
   constructor(
     private http: HttpClient,
@@ -35,6 +36,9 @@ export class CategoriesComponent extends BasePermissionComponent {
     this.SchoolSelectionChange = false;
     this.FetchSchoolsList();
     this.FetchInitialData();
+    if (!this.isAdmin) {
+      this.CategoriesForm.get('AcademicYear')?.disable({ emitEvent: false });
+    }
   };
 
   allowOnlyNumbers(event: KeyboardEvent) {
@@ -84,7 +88,7 @@ export class CategoriesComponent extends BasePermissionComponent {
   SchoolSelectionChange: boolean = false;
   academicYearList: any[] = [];
   AdminselectedSchoolID: string = '';
-  AdminselectedAcademicYearID: string = '';
+  AdminselectedAcademicYearID: string = sessionStorage.getItem('ActiveAcademicYearID') || '';
 
   CategoriesForm: any = new FormGroup({
     ID: new FormControl(''),
@@ -92,7 +96,7 @@ export class CategoriesComponent extends BasePermissionComponent {
     CategoryName: new FormControl(null, [Validators.required]),
     Description: new FormControl(''),
     School: new FormControl(),
-    AcademicYear: new FormControl(0, [Validators.required, Validators.min(1)])
+    AcademicYear: new FormControl(sessionStorage.getItem('ActiveAcademicYearID') ? Number(sessionStorage.getItem('ActiveAcademicYearID')) : 0, [Validators.required, Validators.min(1)])
   });
 
   FetchSchoolsList() {
@@ -157,12 +161,14 @@ export class CategoriesComponent extends BasePermissionComponent {
       SchoolIdSelected = this.selectedSchoolID.trim();
     }
 
-    return this.apiurl.post<any>('Tbl_Categories_CRUD_Operations', {
+    const payload: any = {
       Flag: isSearch ? '8' : '6',
       SchoolID: SchoolIdSelected,
-      AcademicYear: this.AdminselectedAcademicYearID || null,
+      AcademicYear: this.isAdmin ? (this.AdminselectedAcademicYearID || null) : (sessionStorage.getItem('ActiveAcademicYearID') || null),
       CategoryName: isSearch ? this.searchQuery.trim() : null
-    });
+    };
+
+    return this.apiurl.post<any>('Tbl_Categories_CRUD_Operations', payload);
   }
 
   FetchInitialData(extra: any = {}) {
@@ -194,7 +200,7 @@ export class CategoriesComponent extends BasePermissionComponent {
           LastCreatedDate: cursor?.lastCreatedDate ?? null,
           LastID: cursor?.lastID ?? null,
           SchoolID: SchoolIdSelected,
-          AcademicYear: this.AdminselectedAcademicYearID || null,
+          AcademicYear: this.isAdmin ? (this.AdminselectedAcademicYearID || null) : (sessionStorage.getItem('ActiveAcademicYearID') || null),
           ...extra
         };
 
@@ -255,7 +261,10 @@ export class CategoriesComponent extends BasePermissionComponent {
     }
     this.CategoriesForm.reset();
     this.CategoriesForm.get('School').patchValue('0');
-    this.CategoriesForm.get('AcademicYear').patchValue('0');
+    this.CategoriesForm.get('AcademicYear').patchValue(sessionStorage.getItem('ActiveAcademicYearID') ? Number(sessionStorage.getItem('ActiveAcademicYearID')) : 0);
+    if (!this.isAdmin) {
+      this.CategoriesForm.get('AcademicYear')?.disable({ emitEvent: false });
+    }
     this.IsAddNewClicked = !this.IsAddNewClicked;
     this.IsActiveStatus = true;
     this.ViewCategoryClicked = false;
@@ -272,7 +281,7 @@ export class CategoriesComponent extends BasePermissionComponent {
       CategoryName: this.CategoriesForm.get('CategoryName')?.value,
       Description: this.CategoriesForm.get('Description')?.value,
       SchoolID: this.CategoriesForm.get('School')?.value,
-      AcademicYear: this.CategoriesForm.get('AcademicYear')?.value,
+      AcademicYear: this.isAdmin ? this.CategoriesForm.get('AcademicYear')?.value : (sessionStorage.getItem('ActiveAcademicYearID') || this.CategoriesForm.get('AcademicYear')?.value),
       IsActive: IsActiveStatusNumeric,
       Flag: '1'
     };
@@ -284,6 +293,7 @@ export class CategoriesComponent extends BasePermissionComponent {
           this.isModalOpen = true;
           this.AminityInsStatus = "Category Details Submitted!";
           this.CategoriesForm.reset();
+          this.CategoriesForm.get('AcademicYear').patchValue(sessionStorage.getItem('ActiveAcademicYearID') ? Number(sessionStorage.getItem('ActiveAcademicYearID')) : 0);
           this.CategoriesForm.markAsPristine();
           this.currentPage = 1;
           this.pageCursors = [];
@@ -350,6 +360,9 @@ export class CategoriesComponent extends BasePermissionComponent {
             CategoryName: item.categoryName,
             Description: item.description
           });
+          if (!this.isAdmin) {
+            this.CategoriesForm.get('AcademicYear')?.disable({ emitEvent: false });
+          }
           this.AdminselectedSchoolID = item.schoolID;
           this.AdminselectedAcademicYearID = item.academicYear;
           this.FetchAcademicYearsList();
@@ -373,7 +386,7 @@ export class CategoriesComponent extends BasePermissionComponent {
     const data = {
       ID: this.CategoriesForm.get('ID')?.value || '',
       SchoolID: this.CategoriesForm.get('School')?.value,
-      AcademicYear: this.CategoriesForm.get('AcademicYear')?.value || '',
+      AcademicYear: this.isAdmin ? (this.CategoriesForm.get('AcademicYear')?.value || '') : (sessionStorage.getItem('ActiveAcademicYearID') || this.CategoriesForm.get('AcademicYear')?.value || ''),
       CategoryName: this.CategoriesForm.get('CategoryName')?.value || '',
       Description: this.CategoriesForm.get('Description')?.value || '',
       IsActive: IsActiveStatusNumeric,
@@ -387,6 +400,7 @@ export class CategoriesComponent extends BasePermissionComponent {
           this.isModalOpen = true;
           this.AminityInsStatus = "Category Details Updated!";
           this.CategoriesForm.reset();
+          this.CategoriesForm.get('AcademicYear').patchValue(sessionStorage.getItem('ActiveAcademicYearID') ? Number(sessionStorage.getItem('ActiveAcademicYearID')) : 0);
           this.CategoriesForm.markAsPristine();
           this.FetchInitialData();
         }
@@ -448,7 +462,21 @@ export class CategoriesComponent extends BasePermissionComponent {
 
   totalPages() {
     return Math.ceil(this.CategoriesCount / this.pageSize);
-  };
+  }
+
+  pageStartIndex(): number {
+    return this.CategoriesCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
+  }
+
+  pageEndIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.CategoriesCount);
+  }
+
+  onRowsCountChange() {
+    this.currentPage = 1;
+    this.pageCursors = [];
+    this.FetchInitialData();
+  }
 
   getVisiblePageNumbers() {
     const totalPages = this.totalPages();
@@ -593,7 +621,7 @@ export class CategoriesComponent extends BasePermissionComponent {
 
   onAdminSchoolChange(event: Event) {
     this.academicYearList = [];
-    this.CategoriesForm.get('AcademicYear').patchValue('0');
+    this.CategoriesForm.get('AcademicYear').patchValue(sessionStorage.getItem('ActiveAcademicYearID') ? Number(sessionStorage.getItem('ActiveAcademicYearID')) : 0);
     const target = event.target as HTMLSelectElement;
     const schoolID = target.value;
     if (schoolID == "0") {

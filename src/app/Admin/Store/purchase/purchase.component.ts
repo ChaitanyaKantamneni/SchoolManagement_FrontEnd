@@ -71,6 +71,7 @@ interface PurchaseRow {
 })
 export class PurchaseComponent extends BasePermissionComponent implements OnInit {
   pageName = 'Purchase';
+  Math = Math;
 
   constructor(
     private http: HttpClient,
@@ -86,6 +87,9 @@ export class PurchaseComponent extends BasePermissionComponent implements OnInit
     this.checkViewPermission();
     this.FetchSchoolsList();
     this.today = new Date().toISOString().split('T')[0];
+    if (!this.isAdmin) {
+      this.purchaseForm.get('academicYearId')?.disable({ emitEvent: false });
+    }
   }
 
   // ── state ─────────────────────────────────────────────────────────────────────
@@ -135,7 +139,7 @@ export class PurchaseComponent extends BasePermissionComponent implements OnInit
 
   editingId: string | null = null;
   selectedAdminSchoolID: string = '';
-  selectedAdminAcademicYearID: string = '';
+  selectedAdminAcademicYearID: string = sessionStorage.getItem('ActiveAcademicYearID') || '';
 
   purchaseItems: PurchaseItemRow[] = [];
 
@@ -150,7 +154,7 @@ export class PurchaseComponent extends BasePermissionComponent implements OnInit
 
   purchaseForm = new FormGroup({
     schoolId: new FormControl('', Validators.required),
-    academicYearId: new FormControl('', Validators.required),
+    academicYearId: new FormControl(sessionStorage.getItem('ActiveAcademicYearID') || '', Validators.required),
     supplierId: new FormControl('', Validators.required),
     purchaseDate: new FormControl('', Validators.required),
     paymentMode: new FormControl('Cash', Validators.required),
@@ -238,7 +242,7 @@ export class PurchaseComponent extends BasePermissionComponent implements OnInit
 
     this.purchaseForm.reset({
       schoolId: this.isAdmin ? '' : this.currentSchoolId,
-      academicYearId: '', supplierId: '',
+      academicYearId: sessionStorage.getItem('ActiveAcademicYearID') || '', supplierId: '',
       purchaseDate: this.today, paymentMode: 'Cash', notes: ''
     });
 
@@ -249,6 +253,9 @@ export class PurchaseComponent extends BasePermissionComponent implements OnInit
       this.selectedAdminSchoolID = this.currentSchoolId;
       this.FetchAcademicYearsList(this.currentSchoolId);
       this.FetchSuppliersList();
+    }
+    if (!this.isAdmin) {
+      this.purchaseForm.get('academicYearId')?.disable({ emitEvent: false });
     }
 
     this.IsAddNewClicked = true;
@@ -313,6 +320,9 @@ export class PurchaseComponent extends BasePermissionComponent implements OnInit
             paymentMode: mapped.paymentMode,
             notes: mapped.notes
           });
+          if (!this.isAdmin) {
+            this.purchaseForm.get('academicYearId')?.disable({ emitEvent: false });
+          }
 
           this.IsActiveStatus = mapped.isActive;
           this.IsAddNewClicked = true;
@@ -403,7 +413,7 @@ export class PurchaseComponent extends BasePermissionComponent implements OnInit
     const payload = {
       ID: this.editingId || '0',
       SchoolID: String(this.purchaseForm.get('schoolId')?.value || this.currentSchoolId),
-      AcademicYear: String(this.purchaseForm.get('academicYearId')?.value),
+      AcademicYear: this.isAdmin ? String(this.purchaseForm.get('academicYearId')?.value) : (sessionStorage.getItem('ActiveAcademicYearID') || String(this.purchaseForm.get('academicYearId')?.value)),
       SupplierID: String(this.purchaseForm.get('supplierId')?.value),
       PurchaseDate: this.purchaseForm.get('purchaseDate')?.value,
       PaymentMode: String(this.purchaseForm.get('paymentMode')?.value),
@@ -478,7 +488,7 @@ export class PurchaseComponent extends BasePermissionComponent implements OnInit
           LastCreatedDate: cursor?.lastCreatedDate ?? null,
           LastID: cursor?.lastID ?? null,
           SchoolID: schoolIdForQuery,
-          AcademicYear: '',
+          AcademicYear: this.isAdmin ? (sessionStorage.getItem('ActiveAcademicYearID') || '') : (sessionStorage.getItem('ActiveAcademicYearID') || ''),
           PaymentMode: isSearch ? this.searchQuery.trim() : null,
           ...extra
         };
@@ -552,7 +562,7 @@ export class PurchaseComponent extends BasePermissionComponent implements OnInit
     return this.apiurl.post<any>('Tbl_Purchase_CRUD_Operations', {
       Flag: isSearch ? '8' : '6',
       SchoolID: schoolIdForQuery,
-      AcademicYear: ''
+      AcademicYear: this.isAdmin ? (sessionStorage.getItem('ActiveAcademicYearID') || '') : (sessionStorage.getItem('ActiveAcademicYearID') || '')
     });
   }
 
@@ -675,7 +685,7 @@ export class PurchaseComponent extends BasePermissionComponent implements OnInit
     this.suppliersList = [];
     this.categoriesList = [];
     this.itemsList = [];
-    this.purchaseForm.get('academicYearId')?.patchValue('');
+    this.purchaseForm.get('academicYearId')?.patchValue(sessionStorage.getItem('ActiveAcademicYearID') || '');
     this.purchaseForm.get('supplierId')?.patchValue('');
     this.selectedAdminSchoolID = schoolId === '0' ? '' : schoolId;
     if (this.selectedAdminSchoolID) {
@@ -773,6 +783,20 @@ export class PurchaseComponent extends BasePermissionComponent implements OnInit
 
   totalPages(): number { return Math.ceil(this.PurchaseCount / this.pageSize); }
 
+  pageStartIndex(): number {
+    return this.PurchaseCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
+  }
+
+  pageEndIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.PurchaseCount);
+  }
+
+  onRowsCountChange() {
+    this.currentPage = 1;
+    this.pageCursors = [];
+    this.FetchInitialData();
+  }
+
   getVisiblePageNumbers(): number[] {
     const totalPages = this.totalPages();
     const pages: number[] = [];
@@ -788,7 +812,7 @@ export class PurchaseComponent extends BasePermissionComponent implements OnInit
   }
 
   exportPurchases(type: 'pdf' | 'excel' | 'print'): void {
-    const payload: any = { Flag: '2', SchoolID: this.selectedSchoolID || null, AcademicYear: '' };
+    const payload: any = { Flag: '2', SchoolID: this.selectedSchoolID || null, AcademicYear: this.isAdmin ? null : (sessionStorage.getItem('ActiveAcademicYearID') || '') };
     this.loader.show();
     const url = `${this.apiurl.api_url}/ExportPurchases?type=${type}`;
     this.http.post(url, payload, { responseType: 'blob' }).subscribe({

@@ -2,14 +2,20 @@
   <app-dashboard-top-nav></app-dashboard-top-nav>
 </div>
 <div class="MainContentDiv">
-  <div *ngIf="!IsAddNewClicked" class="w-100">
-    <div class="ComponentTop">
-      <div class="ComponentTopHeader">
-        <h5>Exam Results</h5>
-        <p>Total {{ SyllabusCount }} Students</p>
+  <!-- <div *ngIf="!IsAddNewClicked" class="w-100 admission-dashboard">
+    <div class="admission-breadcrumb">
+      <span>Exam</span>
+      <mat-icon>chevron_right</mat-icon>
+      <strong>Exam Results</strong>
+    </div>
+    <div class="AddFormTop">
+      <div class="admission-record-header p-0">
+        <div>
+          <h5>Exam Results</h5>
+          <p>Filter published exam results and view detailed marksheets</p>
+        </div>
       </div>
       
-      <!-- Child Tab Slider for Parent View - Top Right -->
       <div class="child-tab-slider-top-right" *ngIf="isParent && parentChildren.length > 0">
         <div class="children-label">Children:</div>
         <div class="child-tabs-container">
@@ -27,12 +33,40 @@
      
     </div>
     
-  </div>
-  <div  class="w-100">
+  </div> -->
+  <div  class="w-100 admission-dashboard">
+    <div class="admission-breadcrumb">
+      <span>Exam</span>
+      <mat-icon>chevron_right</mat-icon>
+      <strong>Exam Results</strong>
+    </div>
+    <div class="AddFormTop">
+      <div class="admission-record-header p-0">
+        <div>
+          <h5>Exam Results</h5>
+          <p>Filter published exam results and view detailed marksheets</p>
+        </div>
+      </div>
+      
+      <!-- Child Tab Slider for Parent View - Top Right -->
+      <div class="child-tab-slider-top-right" *ngIf="isParent && parentChildren.length > 0">
+        <div class="children-label">Children:</div>
+        <div class="child-tabs-container">
+          <button
+            *ngFor="let child of parentChildren; let i = index"
+            type="button"
+            class="child-tab-btn"
+            [class.active]="selectedChildIndex === i"
+            (click)="selectChild(i)">
+            <mat-icon>person</mat-icon>
+            {{ child.Name }}
+          </button>
+        </div>
+      </div>
+    </div>
     <div class="AddForm">
-      <div class="AddFormTop">
-        <!-- <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>  -->
-         <p>Exam Results</p>
+      <div class="form-top">
+        <p class="cc-title">Result Filters</p>
       </div>
       <div class="AddFormConatiner">
         <form [formGroup]="SyllabusForm">
@@ -207,16 +241,21 @@
               </ng-container>
             </ng-template>
           </div>
-          <div class="ActionButtons" *ngIf="!isParent">
-            <button type="button" (click)="onSubmit()">Submit</button>
-          </div>
         </form>
       </div>
+      <div class="form-bottom" *ngIf="!isParent">
+        <div class="ActionButtons footer-actions">
+          <button type="button" class="submitbtn" (click)="onSubmit()">Submit</button>
+        </div>
+      </div>
     </div>
-  </div>
-  <div *ngIf="hasSubmittedSearch" class="ComponentRecords compact-table-section">
+    <div *ngIf="hasSubmittedSearch" class="ComponentRecords admission-record-card compact-table-section mt-2">
       <div>
-        <div class="ComponentRecordsTop">
+        <div class="ComponentRecordsTop admission-record-header">
+          <div>
+            <h5>Result Records</h5>
+            <p>Showing {{ pagedExamResults.length }} of {{ examResultsList.length }} records</p>
+          </div>
           <div class="filterOptions">
             <!-- <div class="searchreview input-container" >
               <input type="text" id="searchQuery" class="form-control floating-input"
@@ -246,13 +285,13 @@
                 <th class="visually-hidden">Academic Year ID</th>
                 <th>SI.No</th>
                 <th (click)="sort('ExamTypeName')" class="sortable-column">
-                  <span class="column-text">ExamName</span>
+                  <span class="column-text">Exam Name</span>
                   <span class="arrows">
                     <mat-icon [style.color]="sortColumn === 'ExamTypeName' && sortDirection === 'asc' ? 'red' : 'inherit'">keyboard_arrow_up</mat-icon>
                     <mat-icon [style.color]="sortColumn === 'ExamTypeName' && sortDirection === 'desc' ? 'red' : 'inherit'">keyboard_arrow_down</mat-icon>
                   </span>
                 </th>
-                <th>AdmissionNo</th>                
+                <th>Admission No</th>
                 <th>Student Name</th>
                 <th>Class</th>  
                 <th>Division</th>
@@ -269,7 +308,7 @@
               <tr *ngFor="let Syllabus of pagedExamResults; let i = index">
                 <td data-label="ID" class="visually-hidden">{{ Syllabus.RowID }}</td>
                 <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-                <td data-label="ExamType">{{ Syllabus.ExamType }}</td>
+                <td data-label="ExamType"><strong>{{ Syllabus.ExamType }}</strong></td>
                 <td data-label="AdmissionNo">{{ Syllabus.AdmissionNo }}</td>
                 <td data-label="StudentName">{{ Syllabus.StudentName }}</td>
                 <td data-label="Class">{{ Syllabus.Class }}</td>
@@ -307,20 +346,20 @@
           </div>
           <div *ngIf="examResultsList.length > pageSize" class="pagination-controls">
             <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
-            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
+            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">&larr;</button>
             <button *ngFor="let page of getVisiblePageNumbers()"
                     class="page-btn"
                     [ngClass]="{'active': page === currentPage}"
                     (click)="goToPage(page)">
               {{ page }}
             </button>
-            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">&rarr;</button>
             <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
           </div>
         </div>
       </div>
     </div>
-
+  </div>
 </div>
 <div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isModalOpen}" [style.display]="isModalOpen ? 'block' : 'none'">
   <div class="modal-dialog" role="document">

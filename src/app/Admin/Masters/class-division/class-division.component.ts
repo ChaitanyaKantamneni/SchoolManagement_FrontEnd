@@ -867,7 +867,6 @@ export class ClassDivisionComponent extends BasePermissionComponent {
     }else{
       this.AdminselectedSchoolID = schoolID;
     }  
-    console.log('this.AdminselectedSchoolID',this.AdminselectedSchoolID);  
     this.FetchAcademicYearsList();
   };
 

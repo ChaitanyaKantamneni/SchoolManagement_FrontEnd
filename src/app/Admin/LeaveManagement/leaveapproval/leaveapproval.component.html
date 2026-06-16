@@ -1,46 +1,58 @@
 <app-dashboard-top-nav></app-dashboard-top-nav>
 
 <div class="MainContentDiv">
-  <div class="ComponentTop">
-    <div class="ComponentTopHeader">
-      <h5>Leave Approval Management</h5>
-      <p>Total {{ RequestCount }} Requests Found</p>
+  <div class="w-100 admission-dashboard">
+    <div class="admission-breadcrumb">
+      <span>Leave Management</span>
+      <mat-icon>chevron_right</mat-icon>
+      <strong>Leave Approval</strong>
     </div>
-  </div>
+    <div class="AddFormTop">
+      <div class="admission-record-header p-0">
+        <div>
+          <h5>Leave Approval Management</h5>
+          <p>Review and process student/staff leave requests</p>
+        </div>
+      </div>
+    </div>
 
-  <div class="ComponentRecords">
+  <div class="ComponentRecords admission-record-card compact-table-section">
     <div>
-      <div class="ComponentRecordsTop">
-        <div class="filterOptions">
+      <div class="ComponentRecordsTop admission-record-header">
+        <div>
+          <h5>Leave Request Records</h5>
+          <p>Showing {{ filteredList.length }} request{{ filteredList.length === 1 ? '' : 's' }}</p>
+        </div>
+        <div class="filterOptions admission-hero p-0 d-flex gap-2 align-items-center">
           <div class="searchreview input-container">
             <input type="text" class="form-control floating-input" 
                    placeholder="Search applicant..." [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()">
             <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #64748b; pointer-events: none;">search</mat-icon>
           </div>
 
-          <div class="searchreview" *ngIf="isAdmin" style="width: 180px;">
-            <select class="form-control" style="font-size: 11px;" [(ngModel)]="selectedSchoolId" (change)="onSchoolChange($event)">
+          <div class="searchreview" *ngIf="isAdmin">
+            <select class="admission-select" [(ngModel)]="selectedSchoolId" (change)="onSchoolChange($event)">
               <option value="">-- Select School --</option>
               <option value="0">All Schools</option>
               <option *ngFor="let s of schoolList" [value]="s.ID">{{ s.Name }}</option>
             </select>
           </div>
 
-          <div class="searchreview" style="width: 150px;">
-            <select class="form-control" style="font-size: 11px;" [(ngModel)]="selectedAcademicYearId" (change)="onYearChange($event)">
+          <div class="searchreview">
+            <select class="admission-select" [(ngModel)]="selectedAcademicYearId" (change)="onYearChange($event)" [disabled]="!isAdmin">
               <option value="">-- Select Year --</option>
               <option *ngFor="let y of academicYears" [value]="y.ID">{{ y.Name }}</option>
             </select>
           </div>
 
-          <div class="searchreview" style="width: 130px;">
-            <select class="form-control" style="font-size: 11px;" [(ngModel)]="userTypeFilter" (change)="fetchLeaveRequests()">
+          <div class="searchreview">
+            <select class="admission-select" [(ngModel)]="userTypeFilter" (change)="fetchLeaveRequests()">
               <option *ngFor="let type of availableUserTypes" [value]="type.value">{{ type.label }}</option>
             </select>
           </div>
 
-          <div class="searchreview" style="width: 130px;">
-            <select class="form-control" style="font-size: 11px;" [(ngModel)]="statusFilter" (change)="applyFilters()">
+          <div class="searchreview">
+            <select class="admission-select" [(ngModel)]="statusFilter" (change)="applyFilters()">
               <option value="All">All Status</option>
               <option value="Pending">Pending</option>
               <option value="Approved">Approved</option>
@@ -50,8 +62,8 @@
         </div>
       </div>
 
-      <div class="reviewstable">
-        <table class="table table-bordered" *ngIf="filteredList.length != 0">
+      <div class="reviewstable admission-table-wrap">
+        <table class="table table-bordered admission-table" *ngIf="filteredList.length != 0">
           <thead>
             <tr>
               <th>SI.No</th>

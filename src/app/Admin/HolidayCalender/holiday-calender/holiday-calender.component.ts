@@ -32,6 +32,9 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
     this.checkViewPermission();
     this.fetchSchoolsList();
     this.fetchAcademicYearsList();
+    if (!this.isAdmin) {
+      this.holidayForm.get('AcademicYear')?.disable({ emitEvent: false });
+    }
     this.fetchData();
   }
 
@@ -81,7 +84,7 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
 
   // ── Filter ─────────────────────────────────────────────────────────────────
   filterSchoolID = '';
-  filterAcademicYear = '';
+  filterAcademicYear = sessionStorage.getItem('ActiveAcademicYearID') || '';
 
   // ── Session ────────────────────────────────────────────────────────────────
   activeUserId = sessionStorage.getItem('email') || '';
@@ -95,7 +98,7 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
     HolidayType:  new FormControl('0', [Validators.required, Validators.min(1)]),
     Description:  new FormControl(''),
     School:       new FormControl('0'),
-    AcademicYear: new FormControl('0', [Validators.required, Validators.min(1)])
+    AcademicYear: new FormControl(sessionStorage.getItem('ActiveAcademicYearID') || '0', [Validators.required, Validators.min(1)])
   });
 
   readonly HOLIDAY_TYPES = ['Public Holiday', 'School Holiday', 'National Holiday', 'Religious Holiday', 'Other'];
@@ -203,11 +206,12 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
     this.isEditMode = false;
     this.IsActiveStatus = true;
     this.holidayForm.reset();
-    this.holidayForm.patchValue({ HolidayType: '0', School: '0', AcademicYear: '0' });
+    this.holidayForm.patchValue({ HolidayType: '0', School: '0', AcademicYear: sessionStorage.getItem('ActiveAcademicYearID') || '0' });
     if (this.isAdmin) {
       this.holidayForm.get('School')?.setValidators([Validators.required, Validators.min(1)]);
     } else {
       this.holidayForm.get('School')?.clearValidators();
+      this.holidayForm.get('AcademicYear')?.disable({ emitEvent: false });
     }
     this.holidayForm.get('School')?.updateValueAndValidity();
     this.isFormOpen = true;
@@ -223,7 +227,7 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
     if (this.holidayForm.invalid) { this.holidayForm.markAllAsTouched(); return; }
 
     const v = this.holidayForm.value;
-    const payload = {
+    const payload: any = {
       Flag: '1',
       HolidayName:  v.HolidayName,
       FromDate:     v.FromDate,
@@ -236,6 +240,10 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
       CreatedBy:    this.activeUserId
     };
 
+    if (!this.isAdmin) {
+      payload.AcademicYear = sessionStorage.getItem('ActiveAcademicYearID') || '';
+    }
+
     this.loader.show();
     this.apiurl.post<any>('Tbl_HolidayCalendar_CRUD_Operations', payload).subscribe({
       next: (res: any) => {
@@ -244,6 +252,7 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
         this.isStatusModalOpen = true;
         this.isFormOpen = false;
         this.holidayForm.reset();
+        this.holidayForm.patchValue({ AcademicYear: sessionStorage.getItem('ActiveAcademicYearID') || '0' });
       },
       error: (err: any) => {
         this.loader.hide();
@@ -284,6 +293,7 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
             this.holidayForm.get('School')?.setValidators([Validators.required, Validators.min(1)]);
           } else {
             this.holidayForm.get('School')?.clearValidators();
+            this.holidayForm.get('AcademicYear')?.disable({ emitEvent: false });
           }
           this.holidayForm.get('School')?.updateValueAndValidity();
           this.holidayForm.patchValue({
@@ -307,7 +317,7 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
     if (this.holidayForm.invalid) { this.holidayForm.markAllAsTouched(); return; }
 
     const v = this.holidayForm.value;
-    const payload = {
+    const payload: any = {
       Flag:         '5',
       ID:           v.ID,
       HolidayName:  v.HolidayName,
@@ -321,6 +331,10 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
       ModifiedBy:   this.activeUserId
     };
 
+    if (!this.isAdmin) {
+      payload.AcademicYear = sessionStorage.getItem('ActiveAcademicYearID') || '';
+    }
+
     this.loader.show();
     this.apiurl.post<any>('Tbl_HolidayCalendar_CRUD_Operations', payload).subscribe({
       next: (res: any) => {
@@ -329,6 +343,7 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
         this.isStatusModalOpen = true;
         this.isFormOpen = false;
         this.holidayForm.reset();
+        this.holidayForm.patchValue({ AcademicYear: sessionStorage.getItem('ActiveAcademicYearID') || '0' });
       },
       error: (err: any) => {
         this.loader.hide();
@@ -380,6 +395,20 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
     return pages;
   }
 
+  pageStartIndex(): number {
+    return this.holidayCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
+  }
+
+  pageEndIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.holidayCount);
+  }
+
+  onRowsCountChange() {
+    this.currentPage = 1;
+    this.pageCursors = [];
+    this.fetchData();
+  }
+
   // ── Search ─────────────────────────────────────────────────────────────────
   onSearchChange() {
     clearTimeout(this.searchTimer);
@@ -423,7 +452,7 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
 
   onAdminSchoolFormChange(event: Event) {
     const val = (event.target as HTMLSelectElement).value;
-    this.holidayForm.get('AcademicYear')?.patchValue('0');
+    this.holidayForm.get('AcademicYear')?.patchValue(sessionStorage.getItem('ActiveAcademicYearID') || '0');
     this.fetchAcademicYearsList(val === '0' ? '' : val);
   }
 

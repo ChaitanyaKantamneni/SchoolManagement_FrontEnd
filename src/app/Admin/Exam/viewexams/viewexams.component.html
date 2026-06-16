@@ -2,21 +2,23 @@
   <app-dashboard-top-nav></app-dashboard-top-nav>
 </div>
 <div class="MainContentDiv">
-  <div *ngIf="!IsAddNewClicked" class="w-100">
-    <div class="ComponentTop">
-      <div class="ComponentTopHeader">
-        <h5>Exam Management</h5>
-        <p>Total {{ SyllabusCount }} Exams Added</p>
-      </div>
-     
+  <div  class="w-100 admission-dashboard">
+    <div class="admission-breadcrumb">
+      <span>Exam</span>
+      <mat-icon>chevron_right</mat-icon>
+      <strong>View Exams</strong>
     </div>
-    
-  </div>
-  <div  class="w-100">
+    <div class="AddFormTop">
+      <div class="admission-record-header p-0">
+        <div>
+          <h5>View Exams</h5>
+          <p>Filter scheduled exams by academic year, class, division and exam type</p>
+        </div>
+      </div>
+    </div>
     <div class="AddForm">
-      <div class="AddFormTop">
-        <!-- <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>  -->
-         <p>View Exam</p>
+      <div class="form-top">
+        <p class="cc-title">Exam Filters</p>
       </div>
       <div class="AddFormConatiner">
         <form [formGroup]="SyllabusForm">
@@ -145,16 +147,21 @@
               </div>
             </ng-template>
           </div>
-          <div class="ActionButtons">
-            <button type="button" (click)="onSubmit()">Submit</button>
-          </div>
         </form>
       </div>
+      <div class="form-bottom">
+        <div class="ActionButtons footer-actions">
+          <button type="button" class="submitbtn" (click)="onSubmit()">Submit</button>
+        </div>
+      </div>
     </div>
-  </div>
-  <div class="ComponentRecords compact-table-section">
+    <div class="ComponentRecords admission-record-card compact-table-section mt-2">
       <div>
-        <div class="ComponentRecordsTop">
+        <div class="ComponentRecordsTop admission-record-header">
+          <div>
+            <h5>Exam Records</h5>
+            <p>Showing {{ SyllabusList.length }} of {{ SyllabusCount }} records</p>
+          </div>
           <div class="filterOptions">
             <!-- <div class="searchreview input-container" >
               <input type="text" id="searchQuery" class="form-control floating-input"
@@ -183,7 +190,7 @@
               <tr>
                 <th class="visually-hidden">Academic Year ID</th>
                 <th>SI.No</th>
-                <th (click)="sort('ExamTypeName')" class="sortable-column">
+                <!-- <th (click)="sort('ExamTypeName')" class="sortable-column">
                   <span class="column-text">Name</span>
                   <span class="arrows">
                     <mat-icon 
@@ -195,12 +202,13 @@
                       keyboard_arrow_down
                     </mat-icon>
                   </span>
-                </th>
+                </th> -->
+                <th>Exam Name</th>
                 <th>Subjects</th>
                 <th>Max Marks</th>
                 <th>Pass Marks</th>  
                 <th>Duration</th>
-                <th>ExamDateAndTime</th>               
+                <th>Exam Date & Time</th>
                 <th *ngIf="isAdmin">School Name</th>
                 <th *ngIf="isAdmin">Academic Year</th>               
                 <th>Status</th>               
@@ -208,10 +216,10 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let Syllabus of SyllabusList,let i = index">
+              <tr *ngFor="let Syllabus of SyllabusList; let i = index">
                 <td data-label="ID" class="visually-hidden">{{ Syllabus.RowID }}</td>
                 <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-                <td data-label="ExamType">{{ Syllabus.ExamType }}</td>
+                <td data-label="ExamType"><strong>{{ Syllabus.ExamType }}</strong></td>
                 <td data-label="Subjects">{{ Syllabus.IndividualSubjectName }}</td>
                
                 <td data-label="MaxMark">{{ Syllabus.MaxMarks }}</td>
@@ -251,20 +259,20 @@
           </div>
           <div *ngIf="SyllabusCount > pageSize" class="pagination-controls">
             <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
-            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
+            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">&larr;</button>
             <button *ngFor="let page of getVisiblePageNumbers()"
                     class="page-btn"
                     [ngClass]="{'active': page === currentPage}"
                     (click)="goToPage(page)">
               {{ page }}
             </button>
-            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">&rarr;</button>
             <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
           </div>
         </div>
       </div>
     </div>
-
+  </div> 
 </div>
 <div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isModalOpen}" [style.display]="isModalOpen ? 'block' : 'none'">
   <div class="modal-dialog" role="document">
@@ -295,7 +303,7 @@
       </div>
       <div class="modal-body">
         <div class="row mb-2">
-          <div class="col-4">ExamName</div>
+          <div class="col-4">Exam Name</div>
           <div class="col-8">{{ viewSyllabus?.ExamType }}</div>
         </div>
 
@@ -315,22 +323,22 @@
         </div>
 
          <div class="row mb-2">
-          <div class="col-4">PassMarks</div>
+          <div class="col-4">Pass Marks</div>
           <div class="col-8">{{ viewSyllabus?.PassMarks }}</div>
         </div>
 
          <div class="row mb-2">
-          <div class="col-4">ExamDateAndTime</div>
+          <div class="col-4">Exam Date & Time</div>
           <div class="col-8">{{ viewSyllabus?.ExamDateAndTime }}</div>
         </div>
 
         <div class="row mb-2">
-          <div class="col-4">ExamDuration</div>
+          <div class="col-4">Exam Duration</div>
           <div class="col-8">{{ viewSyllabus?.Duration }}</div>
         </div>
 
         <div class="row mb-2">
-          <div class="col-4">NoofQuestion</div>
+          <div class="col-4">No of Questions</div>
           <div class="col-8">{{ viewSyllabus?.NoOfQuestion }}</div>
         </div>
 

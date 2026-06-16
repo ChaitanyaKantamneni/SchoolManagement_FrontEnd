@@ -188,17 +188,59 @@
                   </div>
                 </div>
               </div>
+              <!-- <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <label class="inputLabel" for="email">
+                  Subject <span class="required">*</span>
+                </label>
+
+                <div class="custom-multiselect" #dropdownContainer>
+                  
+                  <div class="select-box" (click)="toggleDropdown($event)">
+                    {{ selectedCategories.length 
+                        ? selectedCategories.length + ' selected' 
+                        : 'Select Subject' }}
+
+                    <span class="arrow">
+                      {{ dropdownOpen ? '▲' : '▼' }}
+                    </span>
+                  </div>
+
+                  <div class="options" *ngIf="dropdownOpen">
+                    <label *ngFor="let cat of categories">
+                      
+                      <input type="checkbox"
+                            [checked]="selectedCategories.includes(cat.UniqueID)"
+                            (change)="toggleSelection(cat.UniqueID)">
+
+                      {{ cat.Name }}
+                    </label>
+                  </div>
+                </div>
+
+                <div *ngIf="ModuleForm.get('Class')?.touched && ModuleForm.get('Class')?.invalid"
+                    class="text-danger">
+
+                  <div *ngIf="ModuleForm.get('Class')?.errors?.['required']">
+                    <small>Please Select Subject.</small>
+                  </div>
+                </div>
+              </div> -->
+            
               <div class="InputFieldsContainer" *ngIf="!isAdmin">
                 <label class="inputLabel" for="email">
                   Subject <span class="required">*</span>
                 </label>
 
                 <div class="custom-multiselect" #dropdownContainer>
-                  
+
                   <div class="select-box" (click)="toggleDropdown($event)">
-                    {{ selectedCategories.length 
-                        ? selectedCategories.length + ' selected' 
-                        : 'Select Subject' }}
+                    {{
+                      isAllSelected()
+                        ? 'All Subjects Selected'
+                        : selectedCategories.length
+                          ? selectedCategories.length + ' selected'
+                          : 'Select Subject'
+                    }}
 
                     <span class="arrow">
                       {{ dropdownOpen ? '▲' : '▼' }}
@@ -206,28 +248,43 @@
                   </div>
 
                   <div class="options" *ngIf="dropdownOpen">
+
+                    <!-- Select All -->
+                    <label>
+                      <input
+                        type="checkbox"
+                        [checked]="isAllSelected()"
+                        (change)="toggleSelectAll($event)">
+                      <strong>Select All</strong>
+                    </label>
+
+                    <!-- Subjects -->
                     <label *ngFor="let cat of categories">
-                      
-                      <input type="checkbox"
-                            [checked]="selectedCategories.includes(cat.UniqueID)"
-                            (change)="toggleSelection(cat.UniqueID)">
+
+                      <input
+                        type="checkbox"
+                        [checked]="selectedCategories.includes(cat.UniqueID)"
+                        (change)="toggleSelection(cat.UniqueID)">
 
                       {{ cat.Name }}
                     </label>
+
                   </div>
                 </div>
 
-                <div *ngIf="ModuleForm.get('Class')?.touched && ModuleForm.get('Class')?.invalid"
-                    class="text-danger">
+                <div
+                  *ngIf="ModuleForm.get('Class')?.touched && ModuleForm.get('Class')?.invalid"
+                  class="text-danger">
 
                   <div *ngIf="ModuleForm.get('Class')?.errors?.['required']">
                     <small>Please Select Subject.</small>
                   </div>
+
                 </div>
               </div>
             </div>
             <div class="InputRow" *ngIf="isAdmin">
-              <div class="InputFieldsContainer" *ngIf="isAdmin">
+              <!-- <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <label class="inputLabel" for="email">
                   Subject <span class="required">*</span>
                 </label>
@@ -262,6 +319,62 @@
                   <div *ngIf="ModuleForm.get('Class')?.errors?.['required']">
                     <small>Please Select Subject.</small>
                   </div>
+                </div>
+              </div> -->
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
+                <label class="inputLabel" for="email">
+                  Subject <span class="required">*</span>
+                </label>
+
+                <div class="custom-multiselect" #dropdownContainer>
+
+                  <div class="select-box" (click)="toggleDropdown($event)">
+                    {{
+                      isAllSelected()
+                        ? 'All Subjects Selected'
+                        : selectedCategories.length
+                          ? selectedCategories.length + ' selected'
+                          : 'Select Subject'
+                    }}
+
+                    <span class="arrow">
+                      {{ dropdownOpen ? '▲' : '▼' }}
+                    </span>
+                  </div>
+
+                  <div class="options" *ngIf="dropdownOpen">
+
+                    <!-- Select All -->
+                    <label>
+                      <input
+                        type="checkbox"
+                        [checked]="isAllSelected()"
+                        (change)="toggleSelectAll($event)">
+                      <strong>Select All</strong>
+                    </label>
+
+                    <!-- Subjects -->
+                    <label *ngFor="let cat of categories">
+
+                      <input
+                        type="checkbox"
+                        [checked]="selectedCategories.includes(cat.UniqueID)"
+                        (change)="toggleSelection(cat.UniqueID)">
+
+                      {{ cat.Name }}
+                    </label>
+
+                  </div>
+                </div>
+
+                <div
+                  *ngIf="ModuleForm.get('Class')?.touched && ModuleForm.get('Class')?.invalid"
+                  class="text-danger">
+
+                  <div *ngIf="ModuleForm.get('Class')?.errors?.['required']">
+                    <small>Please Select Subject.</small>
+                  </div>
+
                 </div>
               </div>
               <div class="InputFieldsContainer" *ngIf="isAdmin">

@@ -38,15 +38,40 @@ export class AttendanceSheetComponent extends BasePermissionComponent{
   this.todayDate = `${year}-${month}-${day}`;
     this.checkViewPermission();
     this.SchoolSelectionChange = false;
+    this.AdminSelectedActiveAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
+
+    const schoolFromSession = sessionStorage.getItem('SchoolID') || localStorage.getItem('SchoolID') || '';
+    if (!this.AdminselectedSchoolID) {
+      this.AdminselectedSchoolID = this.resolvedSchoolId || schoolFromSession;
+    }
+
+    if (this.isAdmin) {
+      this.SyllabusForm.get('School')?.setValidators([Validators.required, Validators.min(1)]);
+      this.SyllabusForm.get('AcademicYear')?.enable({ emitEvent: false });
+    } else {
+      this.SyllabusForm.get('School')?.clearValidators();
+      this.SyllabusForm.get('AcademicYear')?.disable({ emitEvent: false });
+    }
+
+    this.SyllabusForm.get('School').patchValue(this.isAdmin ? 0 : this.AdminselectedSchoolID);
+    this.SyllabusForm.get('AcademicYear').patchValue(this.AdminSelectedActiveAcademicYearID);
+    this.AdminselectedAcademivYearID = this.AdminSelectedActiveAcademicYearID;
 
     if (this.isTeacher) {
-      this.AdminselectedSchoolID = this.resolvedSchoolId || this.ss('SchoolID') || this.ss('schoolId');
       this.resolveStaffIdentity();
       this.FetchAcademicYearsList();
     } else {
       this.FetchSchoolsList();
       this.FetchAcademicYearsList();
     }
+
+    if (this.isTeacher && this.AdminselectedAcademivYearID) {
+      this.syncTeacherClassDivisionFromAllocation();
+    } else {
+      this.FetchClassList();
+    }
+    
+    this.FetchSessionsList();
   };
 
   allowOnlyNumbers(event: KeyboardEvent) {
@@ -117,6 +142,7 @@ export class AttendanceSheetComponent extends BasePermissionComponent{
   studentsList:any[]=[]
   AdminselectedSchoolID: string = '';
   AdminselectedAcademivYearID: string = '';
+  AdminSelectedActiveAcademicYearID: string = sessionStorage.getItem('ActiveAcademicYearID') || '';
   AdminselectedClassID:string ='';
   AdminselectedDiviosnID:string = '';
   AdminSelectedSessionID:string='';
@@ -235,8 +261,13 @@ export class AttendanceSheetComponent extends BasePermissionComponent{
   }
   
   FetchAcademicYearsList() {
+    const schoolId =
+    this.SchoolSelectionChange
+      ? this.selectedSchoolID?.trim()
+      : this.AdminselectedSchoolID || '';
+
     const requestData = {
-      SchoolID:this.AdminselectedSchoolID||'',
+      SchoolID:schoolId,
       Flag: '2'
     };
 
@@ -362,9 +393,14 @@ export class AttendanceSheetComponent extends BasePermissionComponent{
   }
   
 FetchClassList() {
+   const AcademicYearIdSelected =
+    this.isAdmin
+      ? this.AdminselectedAcademivYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
+
   const requestData = {
     SchoolID: this.AdminselectedSchoolID || '',
-    AcademicYear: this.AdminselectedAcademivYearID || '',
+    AcademicYear: AcademicYearIdSelected,
     Flag: '9'
   };
   this.apiurl.post<any>('Tbl_ClassDivision_CRUD_Operations', requestData)
@@ -394,9 +430,14 @@ FetchClassList() {
     );
 }
  FetchSessionsList() {
+   const AcademicYearIdSelected =
+    this.isAdmin
+      ? this.AdminselectedAcademivYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
+
       const requestData = { 
          SchoolID: this.AdminselectedSchoolID || '',
-         AcademicYear: this.AdminselectedAcademivYearID || '',
+         AcademicYear: AcademicYearIdSelected,
          Flag: '2'
        };
   
@@ -425,9 +466,14 @@ FetchClassList() {
     };
 
 FetchDivisionsList() {
+   const AcademicYearIdSelected =
+    this.isAdmin
+      ? this.AdminselectedAcademivYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
+
   const requestData = {
     SchoolID: this.AdminselectedSchoolID || '',
-    AcademicYear: this.AdminselectedAcademivYearID || '',
+    AcademicYear: AcademicYearIdSelected,
     Class :this.AdminselectedClassID || '',
     Flag: '3'
   };
@@ -468,9 +514,14 @@ FetchDivisionsList() {
 }
 
 FetchExamsbyclassanddivisionList() {
+  const AcademicYearIdSelected =
+    this.isAdmin
+      ? this.AdminselectedAcademivYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
+
   const requestData = {
     SchoolID: this.AdminselectedSchoolID || '',
-    AcademicYear: this.AdminselectedAcademivYearID || '',
+    AcademicYear: AcademicYearIdSelected,
     // Class :this.AdminselectedClassID || '',
     // Divisions :this.AdminselectedDiviosnID || '',
     ExamType :this.AdminselecteExamID || '',
@@ -550,10 +601,15 @@ FetchExamsbyclassanddivisionList() {
     );
 }
 checkAttendanceStatusForExams() {
+   const AcademicYearIdSelected =
+    this.isAdmin
+      ? this.AdminselectedAcademivYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
+
   const body = {
     Flag: '2',
     SchoolID: this.AdminselectedSchoolID,
-    AcademicYear: this.AdminselectedAcademivYearID
+    AcademicYear: AcademicYearIdSelected
   };
 
   this.apiurl.post('Tbl_ExamMarks_CRUD_Operations', body)
@@ -574,9 +630,14 @@ checkAttendanceStatusForExams() {
     });
 }
   FetchClassStudentsList() {
+     const AcademicYearIdSelected =
+    this.isAdmin
+      ? this.AdminselectedAcademivYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
+      
     const requestData = { 
             SchoolID:this.AdminselectedSchoolID || '',
-            AcademicYear:this.AdminselectedAcademivYearID || '',
+            AcademicYear:AcademicYearIdSelected,
             Class:this.AdminselectedClassID || '',
             Divisions:this.AdminselectedDiviosnID,
             ExamType:this.selectedExamIDForAttendance.toString(),    
@@ -622,9 +683,14 @@ checkAttendanceStatusForExams() {
   };
 
   FetchClassStudentsListAfterAttendance(){
+     const AcademicYearIdSelected =
+    this.isAdmin
+      ? this.AdminselectedAcademivYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
+      
     const requestData = { 
       SchoolID:this.AdminselectedSchoolID || '',
-            AcademicYear:this.AdminselectedAcademivYearID || '',            
+            AcademicYear:AcademicYearIdSelected,            
             // Class:this.AdminselectedClassID || '',
             // Division:this.AdminselectedDiviosnID,
             ExamID:this.selectedExamIDForAttendance.toString(),
@@ -670,6 +736,11 @@ checkAttendanceStatusForExams() {
   }
 
   FetchAcademicYearCount(isSearch: boolean) {
+     const AcademicYearIdSelected =
+    this.isAdmin
+      ? this.AdminselectedAcademivYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
+
     let SchoolIdSelected = '';
 
     if (this.SchoolSelectionChange) {
@@ -679,7 +750,7 @@ checkAttendanceStatusForExams() {
   return this.apiurl.post<any>('Tbl_StudentDetails_CRUD_Operations', {
       Flag: isSearch ? '8' : '6',
       SchoolID: this.AdminselectedSchoolID || '',
-      AcademicYear: this.AdminselectedAcademivYearID || '',
+      AcademicYear: AcademicYearIdSelected,
       Class: this.AdminselectedClassID || '',
       Division: this.AdminselectedDiviosnID || '',
       AdmissionNo: isSearch ? this.searchQuery.trim() : null
@@ -693,6 +764,10 @@ private resetPaginationAndFetch() {
   FetchInitialData() {
     const isSearch = !!this.searchQuery?.trim();
     let flag = isSearch ? '7' : '3';
+     const AcademicYearIdSelected =
+    this.isAdmin
+      ? this.AdminselectedAcademivYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
 
     this.loader.show();
 
@@ -705,7 +780,7 @@ private resetPaginationAndFetch() {
           SortColumn: this.sortColumn,
           SortDirection: this.sortDirection,
           SchoolID: this.AdminselectedSchoolID || '',
-          AcademicYear: this.AdminselectedAcademivYearID || '',
+          AcademicYear: AcademicYearIdSelected,
           Class: this.AdminselectedClassID || '',
           Division: this.AdminselectedDiviosnID || ''
         };
@@ -756,9 +831,6 @@ private resetPaginationAndFetch() {
   this.SyllabusList = (response.data || []).map((item: any) => {
       
       let displayExamType = item.examTypeName;
-    
-    
-    
 
        const isActiveString = item.isActive === "1" ? "Active" : "InActive";
        return {
@@ -787,7 +859,6 @@ private resetPaginationAndFetch() {
               };
   });
   this.applySelectedSessionTimes();
-  console.log('this.SyllabusList',this.SyllabusList)
 }
 
 formatDateYYYYMMDD(dateStr: string | null) {
@@ -1279,7 +1350,7 @@ onSessionChange(event: any) {
 
   if (level === 'school') {
     // Reset everything below school
-    this.AdminselectedAcademivYearID = '';
+    this.AdminselectedAcademivYearID = this.isAdmin ? '' : this.AdminSelectedActiveAcademicYearID;
     this.AdminselectedClassID = '';
     this.AdminselectedDiviosnID = '';
     this.AdminselecteExamID = '';

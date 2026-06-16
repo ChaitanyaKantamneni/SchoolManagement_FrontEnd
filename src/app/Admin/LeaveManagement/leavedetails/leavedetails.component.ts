@@ -42,6 +42,9 @@ export class LeavedetailsComponent extends BasePermissionComponent implements On
   ngOnInit(): void {
     this.checkViewPermission();
     this.FetchSchoolsList();
+    if (!this.isAdmin) {
+      this.policyForm.get('academicYearId')?.disable({ emitEvent: false });
+    }
   }
 
   // ── state (Aligned with Buses) ────────────────────────────────────────────────
@@ -86,7 +89,7 @@ export class LeavedetailsComponent extends BasePermissionComponent implements On
 
   policyForm = new FormGroup({
     schoolId: new FormControl('', Validators.required),
-    academicYearId: new FormControl('', Validators.required),
+    academicYearId: new FormControl(sessionStorage.getItem('ActiveAcademicYearID') || '', Validators.required),
     leaveType: new FormControl('', [Validators.required, Validators.minLength(2)]),
     count: new FormControl(0, [Validators.required, Validators.min(1)]),
     isActive: new FormControl(true)
@@ -108,7 +111,7 @@ export class LeavedetailsComponent extends BasePermissionComponent implements On
     this.ViewSyllabusClicked = false;
     this.policyForm.reset({
       schoolId: this.isAdmin ? '' : this.currentSchoolId,
-      academicYearId: '',
+      academicYearId: sessionStorage.getItem('ActiveAcademicYearID') || '',
       leaveType: '',
       count: 0,
       isActive: true
@@ -116,10 +119,11 @@ export class LeavedetailsComponent extends BasePermissionComponent implements On
     
     if (!this.isAdmin && this.currentSchoolId) {
        this.FetchAcademicYearsList(this.currentSchoolId);
-    }
+     }
 
     this.IsAddNewClicked = !this.IsAddNewClicked;
   }
+
 
   editreview(PolicyID: string): void {
     this.FetchPolicyDetByID(PolicyID, 'edit');
@@ -183,6 +187,10 @@ export class LeavedetailsComponent extends BasePermissionComponent implements On
       Flag: flag
     };
 
+    if (!this.isAdmin) {
+      payload.AcademicYear = sessionStorage.getItem('ActiveAcademicYearID') || '';
+    }
+
     this.loader.show();
     this.apiurl.post<any>('Tbl_leavePolicy_CRUD_Operations', payload).subscribe({
       next: (res: any) => {
@@ -235,6 +243,10 @@ export class LeavedetailsComponent extends BasePermissionComponent implements On
           LeaveType: isSearch ? this.searchQuery.trim() : null,
           ...extra
         };
+
+        if (!this.isAdmin) {
+          payload.AcademicYear = sessionStorage.getItem('ActiveAcademicYearID') || '';
+        }
         
         this.apiurl.post<any>('Tbl_leavePolicy_CRUD_Operations', payload).subscribe({
           next: (response: any) => {
@@ -292,12 +304,18 @@ export class LeavedetailsComponent extends BasePermissionComponent implements On
       SchoolIdSelected = this.selectedSchoolID;
     }
     
-    return this.apiurl.post<any>('Tbl_leavePolicy_CRUD_Operations', {
+    const payload: any = {
       Flag: isSearch ? '8' : '6',
       SchoolID: SchoolIdSelected || (this.isAdmin ? '' : this.currentSchoolId),
       AcademicYear: '',
       LeaveType: isSearch ? this.searchQuery.trim() : null
-    });
+    };
+
+    if (!this.isAdmin) {
+      payload.AcademicYear = sessionStorage.getItem('ActiveAcademicYearID') || '';
+    }
+
+    return this.apiurl.post<any>('Tbl_leavePolicy_CRUD_Operations', payload);
   }
   
   onSearchChange() {
@@ -352,7 +370,7 @@ export class LeavedetailsComponent extends BasePermissionComponent implements On
   onAdminSchoolChange(event: Event): void {
     const schoolId = (event.target as HTMLSelectElement).value;
     this.academicYearList = [];
-    this.policyForm.get('academicYearId')?.patchValue('');
+    this.policyForm.get('academicYearId')?.patchValue(sessionStorage.getItem('ActiveAcademicYearID') || '');
     if (schoolId && schoolId !== '0') {
       this.FetchAcademicYearsList(schoolId);
     }
@@ -425,17 +443,31 @@ export class LeavedetailsComponent extends BasePermissionComponent implements On
     }
   }
   
-  totalPages() {
-    return Math.ceil(this.PolicyCount / this.pageSize);
-  }
-  
-  getVisiblePageNumbers() {
-    const totalPages = this.totalPages();
-    const pages = [];
-    let start = Math.max(this.currentPage - Math.floor(this.visiblePageCount / 2), 1);
-    let end = Math.min(start + this.visiblePageCount - 1, totalPages);
-    if (end - start < this.visiblePageCount - 1) start = Math.max(end - this.visiblePageCount + 1, 1);
-    for (let i = start; i <= end; i++) pages.push(i);
-    return pages;
-  }
+    pageStartIndex(): number {
+      return this.PolicyCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
+    }
+
+    pageEndIndex(): number {
+      return Math.min(this.currentPage * this.pageSize, this.PolicyCount);
+    }
+
+    onRowsCountChange() {
+      this.currentPage = 1;
+      this.pageCursors = [];
+      this.loadPolicies();
+    }
+
+    totalPages() {
+      return Math.ceil(this.PolicyCount / this.pageSize);
+    }
+
+    getVisiblePageNumbers() {
+      const totalPages = this.totalPages();
+      const pages = [];
+      let start = Math.max(this.currentPage - Math.floor(this.visiblePageCount / 2), 1);
+      let end = Math.min(start + this.visiblePageCount - 1, totalPages);
+      if (end - start < this.visiblePageCount - 1) start = Math.max(end - this.visiblePageCount + 1, 1);
+      for (let i = start; i <= end; i++) pages.push(i);
+      return pages;
+    }
 }

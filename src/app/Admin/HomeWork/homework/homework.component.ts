@@ -64,7 +64,7 @@ export class HomeworkComponent extends BasePermissionComponent {
   SchoolSelectionChange: boolean = false;
   academicYearList: any[] = [];
   AdminselectedSchoolID: string = '';
-  AdminselectedAcademivYearID: string = '';
+  AdminselectedAcademivYearID: string = sessionStorage.getItem('ActiveAcademicYearID') || '';
   
   // Homework specific properties
   classList: any[] = [];
@@ -186,6 +186,7 @@ export class HomeworkComponent extends BasePermissionComponent {
   // ── Lifecycle Methods ───────────────────────────────────────────────────────
   ngOnInit(): void {
     console.log('[HOMEWORK] ngOnInit - Initializing role-based UI');
+    this.AdminselectedAcademivYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
     
     this.checkViewPermission();
     this.SchoolSelectionChange = false;
@@ -491,6 +492,26 @@ export class HomeworkComponent extends BasePermissionComponent {
                 IsActive: isActiveString
               };
             });
+            const activeYearId = sessionStorage.getItem('ActiveAcademicYearID') || '';
+            const matchedYear = this.academicYearList.find(y => y.ID === activeYearId);
+            if (matchedYear) {
+              this.AdminselectedAcademivYearID = matchedYear.ID;
+            } else if (this.academicYearList.length > 0 && !this.AdminselectedAcademivYearID) {
+              this.AdminselectedAcademivYearID = this.academicYearList[0].ID;
+            }
+
+            // Fetch subsequent lists that depend on academic year
+            if (this.currentRoleUI === 'teacher') {
+              this.syncTeacherClassDivisionFromAllocation(() => {
+                this.fetchTeacherStudents();
+              });
+            } else if (this.currentRoleUI === 'school_admin') {
+              this.FetchClassList();
+            } else if (this.currentRoleUI === 'parent') {
+              this.fetchParentChildren();
+            } else {
+              this.FetchClassList();
+            }
           } else {
             this.academicYearList = [];
           }

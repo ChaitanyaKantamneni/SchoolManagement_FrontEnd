@@ -1,82 +1,116 @@
+.MainContentDiv {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 18px;
+  min-height: auto;
+  background: transparent;
+  min-width: 0;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+.ComponentTop,
+.ComponentRecords,
+.AddForm {
+  width: 100%;
+}
+
 .FormInputRowsContainer {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
   flex-direction: column;
 }
 
 .InputRow {
-  width: 100% !important;
-  flex-direction: row !important;
-}
-
-.searchreview.input-container .floating-input {
-  padding-left: 32px !important;
-}
-
-.salary-settings-table {
-  margin-top: 12px;
-}
-
-.cell-toggle {
   display: flex;
   justify-content: center;
+  align-items: flex-start;
+  gap: 10px;
+  flex-direction: row !important;
+  width: 100% !important;
 }
 
-.salary-settings-table .cell-toggle {
+.sortable-column {
+  cursor: pointer;
+  user-select: none;
+}
+
+.sortable-column .column-text {
+  display: inline-flex;
   align-items: center;
 }
 
-.salary-settings-table .toggle-container .switch {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 22px;
+.sortable-column .arrows {
+  display: inline-flex;
+  flex-direction: column;
+  margin-left: 4px;
+  vertical-align: middle;
 }
 
-.salary-settings-table .toggle-container .switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
+.sortable-column .arrows mat-icon {
+  width: 13px;
+  height: 11px;
+  font-size: 16px;
+  line-height: 10px;
 }
 
-.salary-settings-table .toggle-container .switch .slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(180deg, #dbe5ef 0%, #cbd5e1 100%);
-  transition: 0.4s;
-  border-radius: 999px;
-  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.08);
+.noteActiveCard {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: #f0f7ff;
+  border: 1px solid rgb(37 99 235 / 27%);
+  border-radius: 8px;
+  justify-content: space-between;
 }
 
-.salary-settings-table .toggle-container .switch .slider:before {
-  position: absolute;
-  content: "";
-  height: 16px;
-  width: 16px;
-  border-radius: 50%;
-  left: 2px;
-  bottom: 3px;
-  background-color: #fff;
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
-  transition: 0.4s;
+.noteActiveCard .noteSection span {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #2462e9;
+  margin-bottom: 3px;
 }
 
-.salary-settings-table .toggle-container .switch input:checked + .slider {
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+.noteActiveCard .noteSection p {
+  font-size: 11px;
+  color: #62728a;
+  line-height: 1.5;
+  margin: 0 !important;
 }
 
-.salary-settings-table .toggle-container .switch input:checked + .slider:before {
-  transform: translateX(40px);
+.noteActiveCard .InputFieldsContainer {
+  width: 25% !important;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: end !important;
 }
 
-.salary-settings-table .toggle-container .switch .toggle-text {
-  position: absolute;
-  top: 0;
-  transform: translateX(-50%);
-  color: #fff;
-  font-weight: 700;
-  line-height: 22px;
-  pointer-events: none;
+.footer-actions {
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .MainContentDiv {
+    gap: 14px;
+  }
+
+  .InputRow,
+  .noteActiveCard {
+    flex-direction: column !important;
+  }
+
+  .noteActiveCard {
+    align-items: flex-start;
+  }
+
+  .noteActiveCard .InputFieldsContainer {
+    width: 100% !important;
+    justify-content: flex-start !important;
+  }
 }

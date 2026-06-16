@@ -269,7 +269,22 @@
             </div>
             <p>No data found.</p>
           </div>
+          
           <div class="admission-footer-meta">
+            <label>
+              Rows:
+              <select aria-label="Rows per page" [(ngModel)]="pageSize"
+            (ngModelChange)="onRowsCountChange()">
+                <option [ngValue]="5">5</option>
+                <option [ngValue]="10">10</option>
+                <option [ngValue]="25">25</option>
+                <option [ngValue]="50">50</option>
+              </select>
+            </label>
+            <p>{{ pageStartIndex() }}&ndash;{{ pageEndIndex() }} of {{ SubjectsCount }} records</p>
+          </div>
+
+          <!-- <div class="admission-footer-meta">
             <label>
               Rows:
               <select aria-label="Rows per page">
@@ -277,7 +292,7 @@
               </select>
             </label>
             <p>{{ pageStartIndex() }}&ndash;{{ pageEndIndex() }} of {{ SubjectsCount }} records</p>
-          </div>
+          </div> -->
           <div *ngIf="SubjectsCount > pageSize" class="pagination-controls">
             <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
             <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">
@@ -289,8 +304,8 @@
                     (click)="goToPage(page)">
               {{ page }}
             </button>
-            <span *ngIf="totalPages() > visiblePageCount + 1" class="admission-page-ellipsis">...</span>
-            <button *ngIf="totalPages() > visiblePageCount" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="page-btn">{{ totalPages() }}</button>
+            <!-- <span *ngIf="totalPages() > visiblePageCount + 1" class="admission-page-ellipsis">...</span> -->
+            <!-- <button *ngIf="totalPages() > visiblePageCount" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="page-btn">{{ totalPages() }}</button> -->
             <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">
               <mat-icon>chevron_right</mat-icon>
             </button>
@@ -933,7 +948,7 @@
                 <div class="input-with-error">
                   <select class="inputField" type="date" formControlName="PermanentState" placeholder="Select Start Date">
                     <option value="0" disabled>-- Select State --</option>
-                    <option value="1">Andhara Pradesh</option>
+                    <option value="1">Andhra Pradesh</option>
                     <option value="2">Telangana</option>
                     <option value="3">Tamil Nadu</option>
                     <option value="4">Karnataka</option>
@@ -1041,7 +1056,7 @@
                 <div class="input-with-error">
                   <select class="inputField" type="date" formControlName="TemporaryState" placeholder="Select Start Date">
                     <option value="0" disabled>-- Select State --</option>
-                    <option value="1">Andhara Pradesh</option>
+                    <option value="1">Andhra Pradesh</option>
                     <option value="2">Telangana</option>
                     <option value="3">Tamil Nadu</option>
                     <option value="4">Karnataka</option>

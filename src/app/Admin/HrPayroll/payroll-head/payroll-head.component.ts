@@ -3,6 +3,9 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { DashboardTopNavComponent } from '../../../SignInAndSignUp/dashboard-top-nav/dashboard-top-nav.component';
+import { Router } from '@angular/router';
+import { MenuServiceService } from '../../../Services/menu-service.service';
+import { BasePermissionComponent } from '../../../shared/base-crud.component';
 import { ApiServiceService } from '../../../Services/api-service.service';
 import { LoaderService } from '../../../Services/loader.service';
 
@@ -13,8 +16,17 @@ import { LoaderService } from '../../../Services/loader.service';
   templateUrl: './payroll-head.component.html',
   styleUrl: './payroll-head.component.css'
 })
-export class PayrollHeadComponent implements OnInit {
-  constructor(private apiurl: ApiServiceService, public loader: LoaderService) {}
+export class PayrollHeadComponent extends BasePermissionComponent implements OnInit {
+  pageName = 'Payroll Head';
+
+  constructor(
+    private apiurl: ApiServiceService,
+    public loader: LoaderService,
+    router: Router,
+    menuService: MenuServiceService
+  ) {
+    super(menuService, router);
+  }
 
   IsAddNewClicked = false;
   isModalOpen = false;
@@ -64,12 +76,15 @@ export class PayrollHeadComponent implements OnInit {
     return this.payrollHeads;
   }
 
-  get isAdmin(): boolean {
+  protected override get isAdmin(): boolean {
     const role = sessionStorage.getItem('RollID') || localStorage.getItem('RollID');
     return role === '1';
   }
 
   ngOnInit(): void {
+    this.checkViewPermission();
+    this.selectedAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
+    this.form.academicYearID = this.selectedAcademicYearID;
     if (this.isAdmin) {
       this.FetchSchoolsList();
     } else {
@@ -142,25 +157,29 @@ export class PayrollHeadComponent implements OnInit {
     const target = event.target as HTMLSelectElement;
     const selectedFormSchoolID = target.value === '0' ? '' : target.value;
     this.form.schoolID = selectedFormSchoolID;
-    this.form.academicYearID = '0';
+    this.form.academicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
     this.FetchAcademicYearsList(this.form.schoolID);
   }
 
   AddNewClicked(): void {
-    this.IsAddNewClicked = !this.IsAddNewClicked;
-    this.formSubmitAttempted = false;
-    if (this.IsAddNewClicked) {
-      this.editHeadId = null;
-      this.form = {
-        schoolID:'0' ,
-        academicYearID: '0',
-        payHeadName: '',
-        description: '',
-        headType: 'Addition',
-        isEnabled: true
-      };
-    }
+  this.IsAddNewClicked = !this.IsAddNewClicked;
+  this.formSubmitAttempted = false;
+
+  if (this.IsAddNewClicked) {
+    this.editHeadId = null;
+
+    this.form = {
+      schoolID: this.isAdmin ? '0' : (sessionStorage.getItem('SchoolID') || '0'),
+      academicYearID: this.isAdmin
+        ? '0'
+        : (sessionStorage.getItem('ActiveAcademicYearID') || '0'),
+      payHeadName: '',
+      description: '',
+      headType: 'Addition',
+      isEnabled: true
+    };
   }
+}
 
   toggleEnable(): void {
     this.form.isEnabled = !this.form.isEnabled;
@@ -198,9 +217,14 @@ export class PayrollHeadComponent implements OnInit {
       Flag: this.editHeadId ? '5' : '1'
     };
 
+    if (!this.isAdmin) {
+      requestPayload.AcademicYear = this.toNumber(sessionStorage.getItem('ActiveAcademicYearID') || '');
+    }
+
     this.apiurl.post<any>('Tbl_PayrollHead_CRUD_Operations', requestPayload).subscribe({
       next: (response: any) => {
         this.isSubmitting = false;
+        this.loader.show(); // wait, original loader had show/hide
         this.loader.hide();
         const wasEdit = this.editHeadId !== null;
         const message = this.extractApiMessage(response).toLowerCase();
@@ -218,7 +242,7 @@ export class PayrollHeadComponent implements OnInit {
         }
         this.form = {
           schoolID: this.selectedSchoolID,
-          academicYearID: this.selectedAcademicYearID,
+          academicYearID: sessionStorage.getItem('ActiveAcademicYearID') || '',
           payHeadName: '',
           description: '',
           headType: 'Addition',
@@ -303,6 +327,15 @@ export class PayrollHeadComponent implements OnInit {
       Limit: this.pageSize,
       Offset: (this.currentPage - 1) * this.pageSize
     };
+
+    if (!this.isAdmin) {
+      payloadCount.AcademicYear = this.toNumber(sessionStorage.getItem('ActiveAcademicYearID') || '');
+      payload.AcademicYear = this.toNumber(sessionStorage.getItem('ActiveAcademicYearID') || '');
+    } else {
+      const activeYear = this.toNumber(this.selectedAcademicYearID) || this.toNumber(sessionStorage.getItem('ActiveAcademicYearID') || '');
+      payloadCount.AcademicYear = activeYear;
+      payload.AcademicYear = activeYear;
+    }
 
     this.loader.show();
     this.apiurl.post<any>('Tbl_PayrollHead_CRUD_Operations', payloadCount).subscribe({
@@ -399,6 +432,19 @@ export class PayrollHeadComponent implements OnInit {
     }
     for (let i = start; i <= end; i++) pages.push(i);
     return pages;
+  }
+
+  pageStartIndex(): number {
+    return this.headCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
+  }
+
+  pageEndIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.headCount);
+  }
+
+  onRowsCountChange() {
+    this.currentPage = 1;
+    this.fetchPayrollHeads();
   }
 
   private extractApiMessage(response: any): string {

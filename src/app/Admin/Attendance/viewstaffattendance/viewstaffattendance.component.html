@@ -1,249 +1,264 @@
-<div>
+<div class="DashboardTopNav">
   <app-dashboard-top-nav></app-dashboard-top-nav>
 </div>
 
 <div class="MainContentDiv">
-  <div class="w-100">
-    <div class="ComponentTop">
-      <div class="ComponentTopHeader">
-        <h5>View Staff Attendance</h5>
-        <p>Total {{ SyllabusCount }} Staff</p>
+  <div class="w-100 admission-dashboard">
+    <!-- Breadcrumbs -->
+    <div class="admission-breadcrumb">
+      <span>Attendance</span>
+      <mat-icon>chevron_right</mat-icon>
+      <strong>View Staff Attendance</strong>
+    </div>
+
+    <div class="AddFormTop">
+      <div class="admission-record-header p-0">
+        <div>
+          <h5>View Staff Attendance</h5>
+          <p>Track and analyze daily staff attendance logs and active roles</p>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="w-100">
-    <div class="AddForm">
-      <div class="AddFormTop">
-        <!-- <p>View Staff Attendance</p> -->
-      </div>
-      <div class="AddFormConatiner">
-        <form [formGroup]="SyllabusForm">
-          <ng-container *ngIf="isAdmin; else schoolwiseLayout">
-          <div class="FormInputRowsContainer">
-            <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel">School <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <select class="inputField" formControlName="School" (change)="onAdminSchoolChange($event)">
-                    <option value="0">-- Select School --</option>
-                    <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
-                  </select>
-                  <div *ngIf="SyllabusForm.get('School')?.hasError('min') && (SyllabusForm.get('School')?.touched || SyllabusForm.get('School')?.dirty)" class="text-danger">
-                    <small>Please select School.</small>
+    <!-- Filters Section -->
+    <div class="w-100">
+      <div class="AddForm">
+        <div class="form-top">
+          <p class="cc-title">Search Filters</p>
+        </div>
+        <div class="AddFormConatiner">
+          <form [formGroup]="SyllabusForm">
+            <ng-container *ngIf="isAdmin; else schoolwiseLayout">
+              <div class="FormInputRowsContainer">
+                <div class="InputRow">
+                  <div class="InputFieldsContainer">
+                    <label class="inputLabel">School <span class="required">*</span></label>
+                    <div class="input-with-error">
+                      <select class="inputField" formControlName="School" (change)="onAdminSchoolChange($event)">
+                        <option value="0">-- Select School --</option>
+                        <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+                      </select>
+                      <div *ngIf="SyllabusForm.get('School')?.hasError('min') && (SyllabusForm.get('School')?.touched || SyllabusForm.get('School')?.dirty)" class="text-danger">
+                        <small>Please select School.</small>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel">Academic Year <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <select class="inputField" formControlName="AcademicYear" (change)="onAdminAcademicYearchange($event)">
-                    <option value="0">-- Select Academic Year --</option>
-                    <option *ngFor="let year of academicYearList" [value]="year.ID">{{ year.Name }}</option>
-                  </select>
-                  <div *ngIf="SyllabusForm.get('AcademicYear')?.hasError('min') && (SyllabusForm.get('AcademicYear')?.touched || SyllabusForm.get('AcademicYear')?.dirty)" class="text-danger">
-                    <small>Please select Academic Year.</small>
+                  <div class="InputFieldsContainer">
+                    <label class="inputLabel">Academic Year <span class="required">*</span></label>
+                    <div class="input-with-error">
+                      <select class="inputField" formControlName="AcademicYear" (change)="onAdminAcademicYearchange($event)">
+                        <option value="0">-- Select Academic Year --</option>
+                        <option *ngFor="let year of academicYearList" [value]="year.ID">{{ year.Name }}</option>
+                      </select>
+                      <div *ngIf="SyllabusForm.get('AcademicYear')?.hasError('min') && (SyllabusForm.get('AcademicYear')?.touched || SyllabusForm.get('AcademicYear')?.dirty)" class="text-danger">
+                        <small>Please select Academic Year.</small>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel">Session <span class="text-muted">(Optional)</span></label>
-                <select class="inputField" formControlName="Session" (change)="onSessionChange($event)">
-                  <option value="0">-- All Sessions --</option>
-                  <option *ngFor="let session of sessionList" [value]="session.ID">{{ session.Name }}</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel">From Date <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <input class="inputField" type="date" formControlName="FromDateTime" (change)="onDateRangeChange()">
-                  <div *ngIf="SyllabusForm.get('FromDateTime')?.invalid && (SyllabusForm.get('FromDateTime')?.touched || SyllabusForm.get('FromDateTime')?.dirty)" class="text-danger">
-                    <small>Please select From Date.</small>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel">To Date <span class="required">*</span></label>
-                <div class="input-with-error">
-                  <input class="inputField" type="date" formControlName="ToDateTime" (change)="onDateRangeChange()">
-                  <div *ngIf="SyllabusForm.get('ToDateTime')?.invalid && (SyllabusForm.get('ToDateTime')?.touched || SyllabusForm.get('ToDateTime')?.dirty)" class="text-danger">
-                    <small>Please select To Date.</small>
-                  </div>
-                </div>
-              </div>
-              <div class="InputFieldsContainer" aria-hidden="true"></div>
-            </div>
-            <div class="ActionButtons">
-              <button type="button" (click)="SyllabusForm.markAllAsTouched(); loadAttendance()">Search</button>
-            </div>
-          </div>
-          </ng-container>
-          <ng-template #schoolwiseLayout>
-            <div class="FormInputRowsContainer">
-              <div class="InputRow">
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Academic Year <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <select class="inputField" formControlName="AcademicYear" (change)="onAdminAcademicYearchange($event)">
-                      <option value="0">-- Select Academic Year --</option>
-                      <option *ngFor="let year of academicYearList" [value]="year.ID">{{ year.Name }}</option>
+                  <div class="InputFieldsContainer">
+                    <label class="inputLabel">Session <span class="text-muted">(Optional)</span></label>
+                    <select class="inputField" formControlName="Session" (change)="onSessionChange($event)">
+                      <option value="0">-- All Sessions --</option>
+                      <option *ngFor="let session of sessionList" [value]="session.ID">{{ session.Name }}</option>
                     </select>
-                    <div *ngIf="SyllabusForm.get('AcademicYear')?.hasError('min') && (SyllabusForm.get('AcademicYear')?.touched || SyllabusForm.get('AcademicYear')?.dirty)" class="text-danger">
-                      <small>Please select Academic Year.</small>
-                    </div>
                   </div>
                 </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">Session <span class="text-muted">(Optional)</span></label>
-                  <select class="inputField" formControlName="Session" (change)="onSessionChange($event)">
-                    <option value="0">-- All Sessions --</option>
-                    <option *ngFor="let session of sessionList" [value]="session.ID">{{ session.Name }}</option>
-                  </select>
+
+                <div class="InputRow">
+                  <div class="InputFieldsContainer">
+                    <label class="inputLabel">From Date <span class="required">*</span></label>
+                    <div class="input-with-error">
+                      <input class="inputField" type="date" formControlName="FromDateTime" (change)="onDateRangeChange()">
+                      <div *ngIf="SyllabusForm.get('FromDateTime')?.invalid && (SyllabusForm.get('FromDateTime')?.touched || SyllabusForm.get('FromDateTime')?.dirty)" class="text-danger">
+                        <small>Please select From Date.</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="InputFieldsContainer">
+                    <label class="inputLabel">To Date <span class="required">*</span></label>
+                    <div class="input-with-error">
+                      <input class="inputField" type="date" formControlName="ToDateTime" (change)="onDateRangeChange()">
+                      <div *ngIf="SyllabusForm.get('ToDateTime')?.invalid && (SyllabusForm.get('ToDateTime')?.touched || SyllabusForm.get('ToDateTime')?.dirty)" class="text-danger">
+                        <small>Please select To Date.</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="InputFieldsContainer" aria-hidden="true"></div>
                 </div>
               </div>
-
-              <div class="InputRow">
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">From Date <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <input class="inputField" type="date" formControlName="FromDateTime" (change)="onDateRangeChange()">
-                    <div *ngIf="SyllabusForm.get('FromDateTime')?.invalid && (SyllabusForm.get('FromDateTime')?.touched || SyllabusForm.get('FromDateTime')?.dirty)" class="text-danger">
-                      <small>Please select From Date.</small>
+            </ng-container>
+            
+            <ng-template #schoolwiseLayout>
+              <div class="FormInputRowsContainer">
+                <div class="InputRow">
+                  <div class="InputFieldsContainer">
+                    <label class="inputLabel">Academic Year <span class="required">*</span></label>
+                    <div class="input-with-error">
+                      <select class="inputField" formControlName="AcademicYear" (change)="onAdminAcademicYearchange($event)">
+                        <option value="0">-- Select Academic Year --</option>
+                        <option *ngFor="let year of academicYearList" [value]="year.ID">{{ year.Name }}</option>
+                      </select>
+                      <div *ngIf="SyllabusForm.get('AcademicYear')?.hasError('min') && (SyllabusForm.get('AcademicYear')?.touched || SyllabusForm.get('AcademicYear')?.dirty)" class="text-danger">
+                        <small>Please select Academic Year.</small>
+                      </div>
                     </div>
                   </div>
+                  <div class="InputFieldsContainer">
+                    <label class="inputLabel">Session <span class="text-muted">(Optional)</span></label>
+                    <select class="inputField" formControlName="Session" (change)="onSessionChange($event)">
+                      <option value="0">-- All Sessions --</option>
+                      <option *ngFor="let session of sessionList" [value]="session.ID">{{ session.Name }}</option>
+                    </select>
+                  </div>
                 </div>
-                <div class="InputFieldsContainer">
-                  <label class="inputLabel">To Date <span class="required">*</span></label>
-                  <div class="input-with-error">
-                    <input class="inputField" type="date" formControlName="ToDateTime" (change)="onDateRangeChange()">
-                    <div *ngIf="SyllabusForm.get('ToDateTime')?.invalid && (SyllabusForm.get('ToDateTime')?.touched || SyllabusForm.get('ToDateTime')?.dirty)" class="text-danger">
-                      <small>Please select To Date.</small>
+
+                <div class="InputRow">
+                  <div class="InputFieldsContainer">
+                    <label class="inputLabel">From Date <span class="required">*</span></label>
+                    <div class="input-with-error">
+                      <input class="inputField" type="date" formControlName="FromDateTime" (change)="onDateRangeChange()">
+                      <div *ngIf="SyllabusForm.get('FromDateTime')?.invalid && (SyllabusForm.get('FromDateTime')?.touched || SyllabusForm.get('FromDateTime')?.dirty)" class="text-danger">
+                        <small>Please select From Date.</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="InputFieldsContainer">
+                    <label class="inputLabel">To Date <span class="required">*</span></label>
+                    <div class="input-with-error">
+                      <input class="inputField" type="date" formControlName="ToDateTime" (change)="onDateRangeChange()">
+                      <div *ngIf="SyllabusForm.get('ToDateTime')?.invalid && (SyllabusForm.get('ToDateTime')?.touched || SyllabusForm.get('ToDateTime')?.dirty)" class="text-danger">
+                        <small>Please select To Date.</small>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
+            </ng-template>
+          </form>
+        </div>
+        <div class="form-bottom">
+          <div class="actionbuttons footer-actions">
+            <button type="button" class="btnsubmit submitbtn" (click)="SyllabusForm.markAllAsTouched(); loadAttendance()">Search</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-              <div class="ActionButtons">
-                <button type="button" (click)="SyllabusForm.markAllAsTouched(); loadAttendance()">Search</button>
+    <!-- Staff Attendance Records Table -->
+    <div class="ComponentRecords admission-record-card compact-table-section" *ngIf="isTableVisible">
+      <div>
+        <div class="ComponentRecordsTop admission-record-header">
+          <div>
+            <h5>Staff Attendance Logs</h5>
+            <p>Showing {{ staffSummaries.length }} staff member{{ staffSummaries.length === 1 ? '' : 's' }}</p>
+          </div>
+        </div>
+
+        <!-- Summary Cards Row -->
+        <div class="summary-cards-row p-4" *ngIf="isTableVisible" style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+          <div class="summary-card-item">
+            <div class="card summary-card shadow-sm border-0 h-100">
+              <div class="card-body">
+                <small class="text-muted">Total Staff</small>
+                <h4 class="summary-value mb-0">{{ summaryCards.totalStaff }}</h4>
               </div>
             </div>
-          </ng-template>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <div class="ComponentRecords">
-
-    <!-- Summary Cards -->
-    <div class="summary-cards-row mb-3" *ngIf="isTableVisible">
-      <div class="summary-card-item">
-        <div class="card summary-card shadow-sm border-0 h-100">
-          <div class="card-body">
-            <small class="text-muted">Total Staff</small>
-            <h4 class="summary-value mb-0">{{ summaryCards.totalStaff }}</h4>
+          </div>
+          <div class="summary-card-item">
+            <div class="card summary-card shadow-sm border-0 h-100">
+              <div class="card-body">
+                <small class="text-muted">Attendance Days</small>
+                <h4 class="summary-value mb-0">{{ summaryCards.totalDays }}
+                  <span style="font-size:0.8rem;font-weight:400;color:#666;">({{ summaryCards.totalSessionCount }} sessions)</span>
+                </h4>
+              </div>
+            </div>
+          </div>
+          <div class="summary-card-item">
+            <div class="card summary-card shadow-sm border-0 h-100">
+              <div class="card-body">
+                <small class="text-muted">Present <span class="last-date-label">({{ summaryCards.lastDateLabel }})</span></small>
+                <h4 class="summary-value mb-0 text-success">{{ summaryCards.lastDatePresent }}</h4>
+              </div>
+            </div>
+          </div>
+          <div class="summary-card-item">
+            <div class="card summary-card shadow-sm border-0 h-100">
+              <div class="card-body">
+                <small class="text-muted">Absent <span class="last-date-label">({{ summaryCards.lastDateLabel }})</span></small>
+                <h4 class="summary-value mb-0 text-danger">{{ summaryCards.lastDateAbsent }}</h4>
+              </div>
+            </div>
+          </div>
+          <div class="summary-card-item">
+            <div class="card summary-card shadow-sm border-0 h-100">
+              <div class="card-body">
+                <small class="text-muted">Late <span class="last-date-label">({{ summaryCards.lastDateLabel }})</span></small>
+                <h4 class="summary-value mb-0 text-warning">{{ summaryCards.lastDateLate }}</h4>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="summary-card-item">
-        <div class="card summary-card shadow-sm border-0 h-100">
-          <div class="card-body">
-            <small class="text-muted">Attendance Days</small>
-            <h4 class="summary-value mb-0">{{ summaryCards.totalDays }}
-              <span style="font-size:0.9rem;font-weight:400;color:#666;">({{ summaryCards.totalSessionCount }} sessions)</span>
-            </h4>
-          </div>
-        </div>
-      </div>
-      <div class="summary-card-item">
-        <div class="card summary-card shadow-sm border-0 h-100">
-          <div class="card-body">
-            <small class="text-muted">Present <span class="last-date-label">({{ summaryCards.lastDateLabel }})</span></small>
-            <h4 class="summary-value mb-0 text-success">{{ summaryCards.lastDatePresent }}</h4>
-          </div>
-        </div>
-      </div>
-      <div class="summary-card-item">
-        <div class="card summary-card shadow-sm border-0 h-100">
-          <div class="card-body">
-            <small class="text-muted">Absent <span class="last-date-label">({{ summaryCards.lastDateLabel }})</span></small>
-            <h4 class="summary-value mb-0 text-danger">{{ summaryCards.lastDateAbsent }}</h4>
-          </div>
-        </div>
-      </div>
-      <div class="summary-card-item">
-        <div class="card summary-card shadow-sm border-0 h-100">
-          <div class="card-body">
-            <small class="text-muted">Late <span class="last-date-label">({{ summaryCards.lastDateLabel }})</span></small>
-            <h4 class="summary-value mb-0 text-warning">{{ summaryCards.lastDateLate }}</h4>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- Table -->
-    <div class="reviewstable">
-      <table *ngIf="isTableVisible && staffSummaries.length > 0" class="table table-bordered">
-        <thead>
-          <tr>
-            <th>SI.No</th>
-            <th>Role</th>
-            <th>Staff Name</th>
-            <th>Present</th>
-            <th>Absent</th>
-            <!-- <th>Not Marked</th> -->
-            <th>Late</th>
-            <th>Att %</th>
-            <th>Last Day Sessions</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let staff of pagedStaffSummaries; let i = index">
-            <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-            <td>{{ staff.role }}</td>
-            <td>{{ staff.staffName }}</td>
-            <td class="text-success fw-bold">{{ staff.presentCount }}</td>
-            <td class="text-danger fw-bold">{{ staff.absentCount }}</td>
-            <!-- <td class="text-secondary">{{ staff.notMarkedCount }}</td> -->
-            <td class="text-warning">{{ staff.lateCount }}</td>
-            <td>{{ staff.attendancePercentage }}%</td>
-            <td>
-              <span *ngFor="let s of staff.lastDaySessions" class="badge me-1"
-                [ngClass]="s.status === 'Present' ? 'bg-success' : s.status === 'Absent' ? 'bg-danger' : 'bg-secondary'">
-                {{ s.session }}: {{ s.status }}
-              </span>
-            </td>
-            <td>
-              <button type="button" class="btn btn-sm btn-primary" (click)="openStaffDetails(staff)">
-                Details
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+        <div class="reviewstable admission-table-wrap">
+          <table *ngIf="staffSummaries.length > 0" class="table table-bordered admission-table">
+            <thead>
+              <tr>
+                <th>SI.No</th>
+                <th>Role</th>
+                <th>Staff Name</th>
+                <th>Present</th>
+                <th>Absent</th>
+                <th>Late</th>
+                <th>Att %</th>
+                <th>Last Day Sessions</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let staff of pagedStaffSummaries; let i = index">
+                <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td>{{ staff.role }}</td>
+                <td>{{ staff.staffName }}</td>
+                <td class="text-success fw-bold">{{ staff.presentCount }}</td>
+                <td class="text-danger fw-bold">{{ staff.absentCount }}</td>
+                <td class="text-warning">{{ staff.lateCount }}</td>
+                <td>{{ staff.attendancePercentage }}%</td>
+                <td>
+                  <span *ngFor="let s of staff.lastDaySessions" class="badge me-1"
+                    [ngClass]="s.status === 'Present' ? 'bg-success' : s.status === 'Absent' ? 'bg-danger' : 'bg-secondary'">
+                    {{ s.session }}: {{ s.status }}
+                  </span>
+                </td>
+                <td>
+                  <button type="button" class="btnsubmit submitbtn btn-sm" style="padding: 4px 8px; border-radius: 6px;" (click)="openStaffDetails(staff)">
+                    Details
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
-      <div *ngIf="isTableVisible && staffSummaries.length === 0" class="NoDataFound">
-        <div class="NoDataFoundImg">
-          <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
+          <div *ngIf="staffSummaries.length === 0" class="NoDataFound">
+            <div class="NoDataFoundImg">
+              <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
+            </div>
+            <p>No data found.</p>
+          </div>
+
+          <div *ngIf="SyllabusCount > pageSize" class="pagination-controls p-3" style="display: flex; justify-content: flex-end; gap: 4px; border-top: 1px solid #e2e8f0; background: #f8fafc;">
+            <button *ngIf="totalPages() > 3" (click)="firstPage()" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
+            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
+            <button *ngFor="let page of getVisiblePageNumbers()"
+                    class="page-btn"
+                    [ngClass]="{'active': page === currentPage}"
+                    (click)="goToPage(page)">
+              {{ page }}
+            </button>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+            <button *ngIf="totalPages() > 3" (click)="lastPage()" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
+          </div>
         </div>
-        <p>No data found.</p>
-      </div>
-
-      <div *ngIf="SyllabusCount > pageSize" class="pagination-controls">
-        <button *ngIf="totalPages() > 3" (click)="firstPage()" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
-        <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
-        <button *ngFor="let page of getVisiblePageNumbers()"
-                class="page-btn"
-                [ngClass]="{'active': page === currentPage}"
-                (click)="goToPage(page)">
-          {{ page }}
-        </button>
-        <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
-        <button *ngIf="totalPages() > 3" (click)="lastPage()" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
       </div>
     </div>
   </div>
@@ -297,7 +312,8 @@
                     </div>
                   </td>
                   <td>{{ s.lateMinutes > 0 ? s.lateMinutes + ' min' : '-' }}</td>
-<td>{{ (!s.leaveType || s.leaveType === '0') ? '-' : s.leaveType }}</td>                  <td>
+                  <td>{{ (!s.leaveType || s.leaveType === '0') ? '-' : s.leaveType }}</td>
+                  <td>
                     <input *ngIf="s.showRemark"
                       type="text" class="inputField remark-input"
                       [(ngModel)]="s.Remark"
@@ -319,8 +335,8 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="closeStaffDetails()">Close</button>
-        <button type="button" class="btn btn-primary" [disabled]="isUpdating" (click)="updateStaffAttendance()">
+        <button type="button" class="cancelbtn" (click)="closeStaffDetails()">Close</button>
+        <button type="button" class="btnsubmit submitbtn" [disabled]="isUpdating" (click)="updateStaffAttendance()">
           {{ isUpdating ? 'Saving...' : 'Update Attendance' }}
         </button>
       </div>
@@ -339,7 +355,7 @@
       </div>
       <div class="modal-body"><p>{{ statusMessage }}</p></div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" (click)="isStatusModalOpen = false">OK</button>
+        <button type="button" class="btnsubmit submitbtn" (click)="isStatusModalOpen = false">OK</button>
       </div>
     </div>
   </div>

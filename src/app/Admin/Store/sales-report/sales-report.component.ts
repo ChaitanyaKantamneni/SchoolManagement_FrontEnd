@@ -55,6 +55,7 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
 
   ngOnInit(): void {
     this.checkViewPermission();
+    this.selectedAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
 
     // Fix 3: pre-set school and load academic years for non-admin
     // immediately — don't wait for FetchSchoolsList HTTP call
@@ -88,7 +89,7 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
 
   // ── selected filter values ──────────────────────────────────────────────────
   selectedSchoolID: string = '';
-  selectedAcademicYearID: string = '';
+  selectedAcademicYearID: string = sessionStorage.getItem('ActiveAcademicYearID') || '';
   selectedClassID: string = '';
   selectedDivisionID: string = '';
   selectedAdmissionNo: string = '';
@@ -147,7 +148,7 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
     this.classLists = [];
     this.divisionsList = [];
     this.studentsList = [];
-    this.selectedAcademicYearID = '';
+    this.selectedAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
     this.selectedClassID = '';
     this.selectedDivisionID = '';
     this.selectedAdmissionNo = '';
@@ -160,6 +161,15 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
         this.academicYearList = Array.isArray(res?.data)
           ? res.data.map((i: any) => ({ ID: String(i.id), Name: String(i.name) }))
           : [];
+        const activeYearId = sessionStorage.getItem('ActiveAcademicYearID') || '';
+        const matchedYear = this.academicYearList.find(y => y.ID === activeYearId);
+        if (matchedYear) {
+          this.selectedAcademicYearID = matchedYear.ID;
+          this.FetchClassList();
+        } else if (this.academicYearList.length > 0 && !this.selectedAcademicYearID) {
+          this.selectedAcademicYearID = this.academicYearList[0].ID;
+          this.FetchClassList();
+        }
       },
       error: () => { this.academicYearList = []; }
     });
@@ -262,7 +272,7 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
       this.classLists = [];
       this.divisionsList = [];
       this.studentsList = [];
-      this.selectedAcademicYearID = '';
+      this.selectedAcademicYearID = this.isAdmin ? '' : (sessionStorage.getItem('ActiveAcademicYearID') || '');
       this.selectedClassID = '';
       this.selectedDivisionID = '';
       this.selectedAdmissionNo = '';
@@ -426,7 +436,7 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
 
   // ── clear filters ───────────────────────────────────────────────────────────
   onClearFilters(): void {
-    this.selectedAcademicYearID = '';
+    this.selectedAcademicYearID = this.isAdmin ? '' : (sessionStorage.getItem('ActiveAcademicYearID') || '');
     this.selectedClassID = '';
     this.selectedDivisionID = '';
     this.selectedAdmissionNo = '';

@@ -72,6 +72,7 @@ interface SaleRow {
 })
 export class SalesComponent extends BasePermissionComponent implements OnInit {
   pageName = 'Sales';
+  Math = Math;
 
   constructor(
     private http: HttpClient,
@@ -87,6 +88,9 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     this.checkViewPermission();
     this.FetchSchoolsList();
     this.today = new Date().toISOString().split('T')[0];
+    if (!this.isAdmin) {
+      this.salesForm.get('academicYearId')?.disable({ emitEvent: false });
+    }
   }
 
   // ── state ──────────────────────────────────────────────────────────────────
@@ -140,7 +144,7 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
 
   editingId: string | null = null;
   selectedAdminSchoolID: string = '';
-  selectedAdminAcademicYearID: string = '';
+  selectedAdminAcademicYearID: string = sessionStorage.getItem('ActiveAcademicYearID') || '';
   AdminselectedClassID: string = '';
   AdminselectedDivisionID: string = '';
 
@@ -157,7 +161,7 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
 
   salesForm = new FormGroup({
     schoolId: new FormControl('', Validators.required),
-    academicYearId: new FormControl('', Validators.required),
+    academicYearId: new FormControl(sessionStorage.getItem('ActiveAcademicYearID') || '', Validators.required),
     classId: new FormControl('', Validators.required),
     divisionId: new FormControl('', Validators.required),
     admissionNo: new FormControl('', Validators.required),
@@ -251,7 +255,7 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
 
     this.salesForm.reset({
       schoolId: this.isAdmin ? '' : this.currentSchoolId,
-      academicYearId: '', classId: '', divisionId: '',
+      academicYearId: sessionStorage.getItem('ActiveAcademicYearID') || '', classId: '', divisionId: '',
       admissionNo: '', saleDate: this.today,
       paymentMode: 'Cash', notes: ''
     });
@@ -262,6 +266,9 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     if (!this.isAdmin && this.currentSchoolId) {
       this.selectedAdminSchoolID = this.currentSchoolId;
       this.FetchAcademicYearsList(this.currentSchoolId);
+    }
+    if (!this.isAdmin) {
+      this.salesForm.get('academicYearId')?.disable({ emitEvent: false });
     }
 
     this.IsAddNewClicked = true;
@@ -335,6 +342,9 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
             paymentMode: mapped.paymentMode,
             notes: mapped.notes
           });
+          if (!this.isAdmin) {
+            this.salesForm.get('academicYearId')?.disable({ emitEvent: false });
+          }
 
           this.IsActiveStatus = mapped.isActive;
           this.IsAddNewClicked = true;
@@ -419,7 +429,7 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     const payload = {
       ID: this.editingId || '0',
       SchoolID: String(this.salesForm.get('schoolId')?.value || this.currentSchoolId),
-      AcademicYear: String(this.salesForm.get('academicYearId')?.value),
+      AcademicYear: this.isAdmin ? String(this.salesForm.get('academicYearId')?.value) : (sessionStorage.getItem('ActiveAcademicYearID') || String(this.salesForm.get('academicYearId')?.value)),
       ClassID: String(this.salesForm.get('classId')?.value),
       DivisionID: String(this.salesForm.get('divisionId')?.value),
       AdmissionNo: String(this.salesForm.get('admissionNo')?.value),
@@ -494,7 +504,7 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
           LastCreatedDate: cursor?.lastCreatedDate ?? null,
           LastID: cursor?.lastID ?? null,
           SchoolID: schoolIdForQuery,
-          AcademicYear: '',
+          AcademicYear: this.isAdmin ? (sessionStorage.getItem('ActiveAcademicYearID') || '') : (sessionStorage.getItem('ActiveAcademicYearID') || ''),
           AdmissionNo: isSearch ? this.searchQuery.trim() : null,
           ...extra
         };
@@ -572,7 +582,7 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     return this.apiurl.post<any>('Tbl_Sales_CRUD_Operations', {
       Flag: isSearch ? '8' : '6',
       SchoolID: schoolIdForQuery,
-      AcademicYear: '',
+      AcademicYear: this.isAdmin ? (sessionStorage.getItem('ActiveAcademicYearID') || '') : (sessionStorage.getItem('ActiveAcademicYearID') || ''),
       AdmissionNo: isSearch ? this.searchQuery.trim() : null
     });
   }
@@ -729,7 +739,7 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     this.categoriesList = [];
     this.itemsList = [];
     this.studentsList = [];
-    this.salesForm.get('academicYearId')?.patchValue('');
+    this.salesForm.get('academicYearId')?.patchValue(sessionStorage.getItem('ActiveAcademicYearID') || '');
     this.salesForm.get('classId')?.patchValue('');
     this.salesForm.get('divisionId')?.patchValue('');
     this.salesForm.get('admissionNo')?.patchValue('');
@@ -870,6 +880,20 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
   }
 
   totalPages(): number { return Math.ceil(this.SalesCount / this.pageSize); }
+
+  pageStartIndex(): number {
+    return this.SalesCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
+  }
+
+  pageEndIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.SalesCount);
+  }
+
+  onRowsCountChange() {
+    this.currentPage = 1;
+    this.pageCursors = [];
+    this.FetchInitialData();
+  }
 
   getVisiblePageNumbers(): number[] {
     const totalPages = this.totalPages();

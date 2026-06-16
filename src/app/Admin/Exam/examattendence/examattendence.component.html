@@ -2,16 +2,23 @@
   <app-dashboard-top-nav></app-dashboard-top-nav>
 </div>
 <div class="MainContentDiv">
-  <div *ngIf="!IsAddNewClicked" class="w-100">
-    <div class="ComponentTop">
-      <div class="ComponentTopHeader">
-        <h5>Exam Attendece</h5>
-        <p>Total {{ SyllabusCount }} Exam Attendece</p>
+  <!-- <div *ngIf="!IsAddNewClicked" class="w-100 admission-dashboard">
+    <div class="admission-breadcrumb">
+      <span>Exam</span>
+      <mat-icon>chevron_right</mat-icon>
+      <strong>Exam Attendance</strong>
+    </div>
+    <div class="AddFormTop">
+      <div class="admission-record-header p-0">
+        <div>
+          <h5>Exam Attendance</h5>
+          <p>Filter scheduled exams and mark student attendance</p>
+        </div>
       </div>
     </div>
     
   </div>
-  <div *ngIf="IsAddNewClicked" class="w-100">
+  <div *ngIf="IsAddNewClicked" class="w-100 admission-dashboard">
     <div class="AddForm">
       <div class="AddFormTop">
         <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
@@ -21,12 +28,24 @@
        
       </div>
     </div>
-  </div>
-  <div  *ngIf="!IsAddNewClicked" class="w-100">
+  </div> -->
+  <div  *ngIf="!IsAddNewClicked" class="w-100 admission-dashboard">
+    <div class="admission-breadcrumb">
+      <span>Exam</span>
+      <mat-icon>chevron_right</mat-icon>
+      <strong>Exam Attendance</strong>
+    </div>
+    <div class="AddFormTop">
+      <div class="admission-record-header p-0">
+        <div>
+          <h5>Exam Attendance</h5>
+          <p>Filter scheduled exams and mark student attendance</p>
+        </div>
+      </div>
+    </div>
     <div class="AddForm">
-      <div class="AddFormTop">
-        <!-- <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>  -->
-         <p>Exam Attendence</p>
+      <div class="form-top">
+        <p class="cc-title">Attendance Filters</p>
       </div>
       <div class="AddFormConatiner">
         <form [formGroup]="SyllabusForm">
@@ -187,16 +206,21 @@
               </div>
             </div>
           </ng-template>
-          <div class="ActionButtons">
-            <button type="button" (click)="onSubmit()">Next</button>
-          </div>
         </form>
       </div>
+      <div class="form-bottom">
+        <div class="ActionButtons footer-actions">
+          <button type="button" class="submitbtn" (click)="onSubmit()">Next</button>
+        </div>
+      </div>
     </div>
-  </div>
-  <div *ngIf="!IsAddNewClicked" class="ComponentRecords compact-table-section">
+    <div *ngIf="!IsAddNewClicked" class="ComponentRecords admission-record-card compact-table-section mt-2">
       <div>
-        <div class="ComponentRecordsTop">
+        <div class="ComponentRecordsTop admission-record-header">
+          <div>
+            <h5>Scheduled Exam Records</h5>
+            <p>Showing {{ SyllabusList.length }} of {{ SyllabusCount }} records</p>
+          </div>
           <div class="filterOptions">
             <!-- <div class="searchreview input-container" >
               <input type="text" id="searchQuery" class="form-control floating-input"
@@ -245,7 +269,7 @@
                 <th>Max Marks</th>
                 <th>Pass Marks</th>  
                 <th>Duration</th>
-                <th>ExamDateAndTime</th>               
+                <th>Exam Date & Time</th>
                 <th *ngIf="isAdmin">School Name</th>
                 <th *ngIf="isAdmin">Academic Year</th>               
                 <th>Status</th>               
@@ -253,13 +277,13 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let Syllabus of SyllabusList,let i = index">
+              <tr *ngFor="let Syllabus of SyllabusList; let i = index">
                 <td data-label="ID" class="visually-hidden">{{ Syllabus.RowID }}</td>
                 <td data-label="ID" class="visually-hidden">{{ Syllabus.ID }}</td>
                 <td data-label="SubjectID" class="visually-hidden">{{ Syllabus.SubjectID }}</td>
                 <td data-label="ExamTypeID" class="visually-hidden">{{ Syllabus.ExamTypeID }}</td>
                 <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-                <td data-label="ExamType">{{ Syllabus.ExamType }}</td>
+                <td data-label="ExamType"><strong>{{ Syllabus.ExamType }}</strong></td>
                 <td data-label="Subjects">{{ Syllabus.IndividualSubjectName }}</td>
                
                 <td data-label="MaxMark">{{ Syllabus.MaxMarks }}</td>
@@ -278,36 +302,36 @@
                     {{ (Syllabus.IsActive === true || Syllabus.IsActive === 'true' || Syllabus.IsActive === 'Active' || Syllabus.IsActive === 1) ? 'Active' : 'Inactive' }}
                   </span>
                 </td>
-               <td data-label="Actions">
-  <div class="d-flex justify-content-center align-items-center">
+                <td data-label="Actions">
+                  <div class="d-flex justify-content-center align-items-center">
 
-    <!-- Attendance Button -->
-    <button 
-      *ngIf="Syllabus.AttendanceMarked == '0' && Syllabus.ExamAttendancAndMarksMarked == '0'"
-      type="button" 
-      class="btn" 
-      (click)="openAttendance(Syllabus)">
-      Attendance
-    </button>    
+                    <!-- Attendance Button -->
+                    <button 
+                      *ngIf="Syllabus.AttendanceMarked == '0' && Syllabus.ExamAttendancAndMarksMarked == '0'"
+                      type="button" 
+                      class="btn" 
+                      (click)="openAttendance(Syllabus)">
+                      Attendance
+                    </button>    
 
-    <!-- View Attendance Button -->
-    <button 
-      *ngIf="Syllabus.AttendanceMarked == '1' && Syllabus.ExamAttendancAndMarksMarked == '0'"
-      type="button" 
-      class="btn" 
-      (click)="openViewAttendance(Syllabus)">
-      View Attendance
-    </button>  
+                    <!-- View Attendance Button -->
+                    <button 
+                      *ngIf="Syllabus.AttendanceMarked == '1' && Syllabus.ExamAttendancAndMarksMarked == '0'"
+                      type="button" 
+                      class="btn" 
+                      (click)="openViewAttendance(Syllabus)">
+                      View Attendance
+                    </button>  
 
-    <!-- Published Text -->
-    <span 
-      *ngIf="Syllabus.AttendanceMarked == '1' && Syllabus.ExamAttendancAndMarksMarked == '1'"
-      class="text-success fw-bold">
-      Published
-    </span>
+                    <!-- Published Text -->
+                    <span 
+                      *ngIf="Syllabus.AttendanceMarked == '1' && Syllabus.ExamAttendancAndMarksMarked == '1'"
+                      class="text-success fw-bold">
+                      Published
+                    </span>
 
-  </div>
-</td>
+                  </div>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -319,22 +343,28 @@
           </div>
           <div *ngIf="SyllabusCount > pageSize" class="pagination-controls">
             <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
-            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
+            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">&larr;</button>
             <button *ngFor="let page of getVisiblePageNumbers()"
                     class="page-btn"
                     [ngClass]="{'active': page === currentPage}"
                     (click)="goToPage(page)">
               {{ page }}
             </button>
-            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">&rarr;</button>
             <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
           </div>
         </div>
       </div>
     </div>
-     <div *ngIf="IsAddNewClicked" class="ComponentRecords compact-table-section">
+    
+  </div>
+  <div *ngIf="IsAddNewClicked" class="ComponentRecords admission-record-card compact-table-section mt-2">
       <div>
-        <div class="ComponentRecordsTop">
+        <div class="ComponentRecordsTop admission-record-header">
+          <div>
+            <h5>{{ attendanceMode === 'view' ? 'View Attendance' : 'Mark Attendance' }}</h5>
+            <p>Review each student's exam attendance status</p>
+          </div>
           <div class="filterOptions">
           </div>
         </div>
@@ -412,30 +442,29 @@
           </div>
           <div *ngIf="SyllabusCount > pageSize" class="pagination-controls">
             <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
-            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
+            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">&larr;</button>
             <button *ngFor="let page of getVisiblePageNumbers()"
                     class="page-btn"
                     [ngClass]="{'active': page === currentPage}"
                     (click)="goToPage(page)">
               {{ page }}
             </button>
-            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">&rarr;</button>
             <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
           </div>
         </div>
       </div>
-       <div class="ActionButtons">
-<button *ngIf="attendanceMode === 'add'" type="button" [disabled]="isSubmittingAttendance"(click)="submitAttendance()">
-  Submit Attendance
-</button>  
-<button   *ngIf="attendanceMode === 'view'"
-type="button" (click)="UpdateAttendance()">
-  Update Attendance
-</button>      
-</div>
+      <div class="ActionButtons footer-actions exam-footer-actions">
+        <button type="button" class="cancelbtn" (click)="CancelSyllabus()">Cancel</button>
+        <button class="submitbtn" *ngIf="attendanceMode === 'add'" type="button" [disabled]="isSubmittingAttendance"(click)="submitAttendance()">
+          Submit Attendance
+        </button>  
+        <button   *ngIf="attendanceMode === 'view'"
+        type="button" class="submitbtn" (click)="UpdateAttendance()">
+          Update Attendance
+        </button>      
+      </div>
     </div>
-    
-
 </div>
 <div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isModalOpen}" [style.display]="isModalOpen ? 'block' : 'none'">
   <div class="modal-dialog" role="document">
@@ -466,7 +495,7 @@ type="button" (click)="UpdateAttendance()">
       </div>
       <div class="modal-body">
         <div class="row mb-2">
-          <div class="col-4">ExamName</div>
+          <div class="col-4">Exam Name</div>
           <div class="col-8">{{ viewSyllabus?.ExamType }}</div>
         </div>
 
@@ -486,22 +515,22 @@ type="button" (click)="UpdateAttendance()">
         </div>
 
          <div class="row mb-2">
-          <div class="col-4">PassMarks</div>
+          <div class="col-4">Pass Marks</div>
           <div class="col-8">{{ viewSyllabus?.PassMarks }}</div>
         </div>
 
          <div class="row mb-2">
-          <div class="col-4">ExamDateAndTime</div>
+          <div class="col-4">Exam Date & Time</div>
           <div class="col-8">{{ viewSyllabus?.ExamDateAndTime }}</div>
         </div>
 
         <div class="row mb-2">
-          <div class="col-4">ExamDuration</div>
+          <div class="col-4">Exam Duration</div>
           <div class="col-8">{{ viewSyllabus?.Duration }}</div>
         </div>
 
         <div class="row mb-2">
-          <div class="col-4">NoofQuestion</div>
+          <div class="col-4">No of Questions</div>
           <div class="col-8">{{ viewSyllabus?.NoOfQuestion }}</div>
         </div>
 
