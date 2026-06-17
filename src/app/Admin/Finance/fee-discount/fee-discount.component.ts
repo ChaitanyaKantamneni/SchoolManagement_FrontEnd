@@ -37,6 +37,7 @@ constructor(
     this.checkViewPermission();
     this.SchoolSelectionChange=false;
     this.SyllabusList=[];
+    this.AdminSelectedActiveAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
     this.FetchSchoolsList();
     this.FetchInitialData();
   };
@@ -71,7 +72,11 @@ constructor(
   editclicked:boolean=false;
   schoolList: any[] = [];
   selectedSchoolID: string = '';
+  selectedAcademicYearID: string = '';
+  selectedClassID: string = '';
   SchoolSelectionChange:boolean=false;
+  SchoolAcademicYearChange:boolean=false;
+  SchoolClassChange:boolean=false;
   academicYearList:any[] = [];
   DivisionsList:any[] = [];
   ClassTeachersList:any[] = [];
@@ -81,6 +86,8 @@ constructor(
   AdminselectedAcademivYearID:string = '';
   AdminselectedClassID:string = '';
   AdminselectedClassDivisionID:string = '';
+  AdminSelectedActiveAcademicYearID:string = sessionStorage.getItem('ActiveAcademicYearID') || '';
+
 
   ClassDivisionForm: any = new FormGroup({
     ID: new FormControl(),
@@ -88,8 +95,7 @@ constructor(
     Division: new FormControl(0, [Validators.required, Validators.min(1)]),
     ClassTeacher: new FormControl(0, [Validators.required, Validators.min(1)]), // Student
     DiscountCategory: new FormControl(0, [Validators.required, Validators.min(1)]),
-    
-    School: new FormControl(0, [Validators.required, Validators.min(1)]),
+    School: new FormControl(),
     AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
   });
 
@@ -135,7 +141,12 @@ constructor(
   };
 
   FetchAcademicYearsList() {
-    const requestData = { SchoolID:this.AdminselectedSchoolID||'',Flag: '3' };
+    const schoolId =
+    this.SchoolSelectionChange
+      ? this.selectedSchoolID?.trim()
+      : this.AdminselectedSchoolID || '';
+      
+    const requestData = { SchoolID:schoolId,Flag: '3' };
 
     this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)
       .subscribe(
@@ -166,18 +177,37 @@ constructor(
 
   FetchAcademicYearCount(isSearch: boolean) {
     let SchoolIdSelected = '';
+    let AcademicYearIdSelected='';
+    let ClassSelected='';
 
     if (this.SchoolSelectionChange) {
       SchoolIdSelected = this.selectedSchoolID.trim();
     }
 
-    return this.apiurl.post<any>('Tbl_FeeDiscount_CRUD_Operations', {
+    if(this.SchoolAcademicYearChange){
+      AcademicYearIdSelected=this.selectedAcademicYearID.trim();
+    }
+
+    if(this.SchoolClassChange){
+      ClassSelected=this.selectedClassID.trim();
+    }
+
+    const payload: any = {
       Flag: isSearch ? '8' : '6',
-      SchoolID:SchoolIdSelected,
+      SchoolID: SchoolIdSelected,
       Class: isSearch ? this.searchQuery.trim() : null,
       Student: isSearch ? this.searchQuery.trim() : null,
       DiscountCategory: isSearch ? this.searchQuery.trim() : null
-    });
+    };
+
+    if (!this.isAdmin) {
+      payload.AcademicYear = this.AdminSelectedActiveAcademicYearID;
+    }
+    else if(this.isAdmin && this.SchoolAcademicYearChange){
+      payload.AcademicYear = AcademicYearIdSelected;
+    }
+
+    return this.apiurl.post<any>('Tbl_FeeDiscount_CRUD_Operations', payload);
   }
 
   FetchInitialData(extra: any = {}) {
@@ -185,9 +215,19 @@ constructor(
     const flag = isSearch ? '7' : '2';
 
     let SchoolIdSelected = '';
+    let AcademicYearIdSelected='';
+    let ClassSelected='';
 
     if (this.SchoolSelectionChange) {
       SchoolIdSelected = this.selectedSchoolID.trim();
+    }
+
+    if(this.SchoolAcademicYearChange){
+      AcademicYearIdSelected=this.selectedAcademicYearID.trim();
+    }
+
+    if(this.SchoolClassChange){
+      ClassSelected=this.selectedClassID.trim();
     }
 
     const cursor =
@@ -211,6 +251,13 @@ constructor(
           SchoolID:SchoolIdSelected,
           ...extra
         };
+
+        if (!this.isAdmin) {
+          payload.AcademicYear = this.AdminSelectedActiveAcademicYearID;
+        }
+        else if(this.isAdmin && this.SchoolAcademicYearChange){
+          payload.AcademicYear = AcademicYearIdSelected;
+        }
 
         if (isSearch) {
           const searchValue = this.searchQuery.trim();
@@ -267,19 +314,26 @@ constructor(
   };
 
   AddNewClicked(){
+    this.ClassDivisionForm.reset();
     if (this.isAdmin) {
       this.ClassDivisionForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+      this.ClassDivisionForm.get('School').patchValue('0');
+      this.ClassDivisionForm.get('AcademicYear').patchValue('0');
     } else {
       this.ClassDivisionForm.get('School')?.clearValidators();
+      this.ClassDivisionForm.get('AcademicYear')?.disable({ emitEvent: false });
     }
+
     if(this.AdminselectedSchoolID==''){
       this.FetchAcademicYearsList();
-    }
-    this.FetchClassList();
-    this.ClassDivisionForm.reset();
+      if(!this.isAdmin){
+        this.ClassDivisionForm.get('AcademicYear').patchValue(this.AdminSelectedActiveAcademicYearID);
+        this.FetchClassList();
+        this.FetchDiscountCategoryList();
+      } 
+    }   
+    
     this.ClassDivisionForm.get('Class').patchValue('0');
-    this.ClassDivisionForm.get('School').patchValue('0');
-    this.ClassDivisionForm.get('AcademicYear').patchValue('0');
     this.ClassDivisionForm.get('ClassTeacher').patchValue('0');
     this.ClassDivisionForm.get('DiscountCategory').patchValue('0');
     this.ClassDivisionForm.get('Division').patchValue('0');
@@ -289,9 +343,18 @@ constructor(
   };
 
   FetchClassList() {
+    const AcademicYearIdSelected =
+      this.isAdmin
+        ? (
+            this.SchoolAcademicYearChange
+              ? this.selectedAcademicYearID?.trim()
+              : this.AdminselectedAcademivYearID?.trim()
+          )
+        : this.AdminSelectedActiveAcademicYearID || '';
+
     const requestData = { 
       SchoolID:this.AdminselectedSchoolID,
-      AcademicYear:this.AdminselectedAcademivYearID,
+      AcademicYear:AcademicYearIdSelected,
       Flag: '9' };
 
     this.apiurl.post<any>('Tbl_ClassDivision_CRUD_Operations', requestData)
@@ -316,9 +379,18 @@ constructor(
   };
 
   FetchDivisionsList() {
+    const AcademicYearIdSelected =
+      this.isAdmin
+        ? (
+            this.SchoolAcademicYearChange
+              ? this.selectedAcademicYearID?.trim()
+              : this.AdminselectedAcademivYearID?.trim()
+          )
+        : this.AdminSelectedActiveAcademicYearID || '';
+
     const requestData = { 
       SchoolID:this.AdminselectedSchoolID,
-      AcademicYear:this.AdminselectedAcademivYearID,
+      AcademicYear:AcademicYearIdSelected,
       Class:this.AdminselectedClassID,
       Flag: '3' };
 
@@ -344,9 +416,18 @@ constructor(
   };
 
   FetchClassStudentsList() {
+    const AcademicYearIdSelected =
+      this.isAdmin
+        ? (
+            this.SchoolAcademicYearChange
+              ? this.selectedAcademicYearID?.trim()
+              : this.AdminselectedAcademivYearID?.trim()
+          )
+        : this.AdminSelectedActiveAcademicYearID || '';
+
     const requestData = { 
       SchoolID:this.AdminselectedSchoolID || '',
-            AcademicYear:this.AdminselectedAcademivYearID || '',
+            AcademicYear:AcademicYearIdSelected || '',
             Class:this.AdminselectedClassID || '',
             Division:this.AdminselectedClassDivisionID,
             Flag: '3' };
@@ -376,9 +457,18 @@ constructor(
   };
 
   FetchDiscountCategoryList() {
+    const AcademicYearIdSelected =
+      this.isAdmin
+        ? (
+            this.SchoolAcademicYearChange
+              ? this.selectedAcademicYearID?.trim()
+              : this.AdminselectedAcademivYearID?.trim()
+          )
+        : this.AdminSelectedActiveAcademicYearID || '';
+
     const requestData = { 
       SchoolID:this.AdminselectedSchoolID || '',
-            AcademicYear:this.AdminselectedAcademivYearID || '',
+            AcademicYear:AcademicYearIdSelected || '',
             Flag: '3' };
 
     this.apiurl.post<any>('Tbl_FeeDiscountCategory_CRUD_Operations', requestData)
@@ -720,6 +810,19 @@ constructor(
       this.selectedSchoolID = schoolID;
     }    
     this.SchoolSelectionChange = true;
+    this.FetchAcademicYearsList();
+    this.FetchInitialData();
+  };
+
+  onAcademicYearChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const schoolID = target.value;
+    if(schoolID=="0"){
+      this.selectedAcademicYearID="";
+    }else{
+      this.selectedAcademicYearID = schoolID;
+    }    
+    this.SchoolAcademicYearChange = true;
     this.FetchInitialData();
   };
 
@@ -899,6 +1002,27 @@ constructor(
 
     const idLikeFallback = String(item?.student ?? item?.admissionNo ?? item?.studentID ?? item?.studentId ?? '').trim();
     return /[a-zA-Z]/.test(idLikeFallback) ? idLikeFallback : '';
+  }
+
+  pageStartIndex(): number {
+    return this.ClassDivisionCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
+  }
+
+  pageEndIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.ClassDivisionCount);
+  }
+
+  CancelSyllabus(){
+    this.IsAddNewClicked=false;
+    this.AdminselectedSchoolID = '';
+    this.AdminselectedAcademivYearID = '';
+    this.ClassDivisionForm.reset();
+    this.FetchInitialData();
+  }
+
+  onRowsCountChange() {
+    this.currentPage = 1;
+    this.FetchInitialData();
   }
 
 }

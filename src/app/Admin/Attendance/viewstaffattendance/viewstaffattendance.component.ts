@@ -67,6 +67,7 @@ export class ViewstaffattendanceComponent extends BasePermissionComponent {
 
   ngOnInit(): void {
     this.checkViewPermission();
+    this.AdminSelectedActiveAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
     
     // Set From Date and To Date to current date for all login types
     const today = new Date().toISOString().split('T')[0];
@@ -75,18 +76,29 @@ export class ViewstaffattendanceComponent extends BasePermissionComponent {
       ToDateTime: today
     });
     
+    const schoolFromSession = sessionStorage.getItem('SchoolID') || localStorage.getItem('SchoolID') || '';
+    if (!this.AdminselectedSchoolID) {
+      this.AdminselectedSchoolID = schoolFromSession;
+    }
+
+    if (this.isAdmin) {
+      this.SyllabusForm.get('AcademicYear')?.enable({ emitEvent: false });
+    } else {
+      this.SyllabusForm.get('AcademicYear')?.disable({ emitEvent: false });
+    }
+
+    this.SyllabusForm.get('School').patchValue(this.isAdmin ? 0 : this.AdminselectedSchoolID);
+    this.SyllabusForm.get('AcademicYear').patchValue(this.AdminSelectedActiveAcademicYearID);
+    this.AdminselectedAcademivYearID = this.AdminSelectedActiveAcademicYearID;
+    this.FetchSessionsList();
     if (!this.isAdmin) {
-      this.AdminselectedSchoolID =
-        sessionStorage.getItem('SchoolID')?.toString() ||
-        sessionStorage.getItem('schoolId')?.toString() ||
-        '';
-      this.SyllabusForm.patchValue({ School: this.AdminselectedSchoolID || '0' });
       // fetch roles first, then academic years — no FetchAcademicYearsList duplicate
       this.FetchRoleList();
       this.FetchStaffRoleLookup();
       this.FetchAcademicYearsList();
     } else {
       this.FetchSchoolsList();
+      this.FetchAcademicYearsList();
     }
   }
 
@@ -99,6 +111,7 @@ export class ViewstaffattendanceComponent extends BasePermissionComponent {
 
   AdminselectedSchoolID = '';
   AdminselectedAcademivYearID = '';
+  AdminSelectedActiveAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
   AdminSelectedSessionID = '';
 
   currentPage = 1;
@@ -261,14 +274,19 @@ export class ViewstaffattendanceComponent extends BasePermissionComponent {
   }
 
   FetchSessionsList() {
+    const AcademicYearIdSelected =
+    this.isAdmin
+      ? this.AdminselectedAcademivYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
+
     this.apiurl.post<any>('Tbl_Session_CRUD_Operations', {
       SchoolID: this.getCurrentSchoolId(),
-      AcademicYear: this.AdminselectedAcademivYearID,
+      AcademicYear: AcademicYearIdSelected,
       Flag: '2'
     }).subscribe(
       (response: any) => {
         this.sessionList = Array.isArray(response?.data)
-          ? response.data.map((item: any) => ({ ID: item.id, Name: item.session }))
+          ? response.data.map((item: any) => ({ ID: item.id, Name: `${item.session}-${item.startTime.substring(0, 5)}-${item.endTime.substring(0, 5)}` }))
           : [];
       },
       () => { this.sessionList = []; }

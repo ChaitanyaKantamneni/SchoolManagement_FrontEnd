@@ -2,75 +2,72 @@
   <app-dashboard-top-nav></app-dashboard-top-nav>
 </div>
 <div class="MainContentDiv">
-  <div *ngIf="!IsAddNewClicked" class="w-100">
-    <div class="ComponentTop">
+  <div *ngIf="!IsAddNewClicked" class="w-100 admission-dashboard">
+    <div class="ComponentTop admission-hero">
       <div class="ComponentTopHeader">
+        <div class="admission-breadcrumb">
+          <span>Hostel Management</span>
+          <mat-icon>chevron_right</mat-icon>
+          <strong>Hostel Master</strong>
+        </div>
         <h5>Hostel Master Management</h5>
         <p>Total {{ HostelCount }} Hostels Added</p>
       </div>
-      <div class="ComponentTopBottom">
-        <button *ngIf="canAdd()" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Hostel</button>
+      <div class="ComponentTopBottom admission-header-actions">
+        <button *ngIf="canAdd()" type="button" class="admission-btn admission-btn--primary admission-top-action" (click)="AddNewClicked()">
+          <mat-icon>add_circle</mat-icon>Add Hostel
+        </button>
       </div>
     </div>
 
     <!-- Dynamic Stats Grid -->
-    <div class="admission-stats-grid"
-      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 10px;">
-      <div class="admission-stat-card"
-        style="background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 12px;">
-        <div class="admission-stat-icon"
-          style="background: #e0f2fe; color: #0284c7; padding: 10px; border-radius: 50%; display: flex;">
-          <mat-icon>apartment</mat-icon></div>
+    <div class="admission-stats-grid">
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--blue"><mat-icon>apartment</mat-icon></div>
         <div>
-          <strong style="font-size: 18px; display: block;">{{ HostelCount }}</strong>
-          <span style="color: #64748b; font-size: 12px;">Total Hostels</span>
+          <strong>{{ HostelCount }}</strong>
+          <span>Total Hostels</span>
         </div>
       </div>
-      <div class="admission-stat-card"
-        style="background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 12px;">
-        <div class="admission-stat-icon"
-          style="background: #dcfce7; color: #16a34a; padding: 10px; border-radius: 50%; display: flex;">
-          <mat-icon>check_circle</mat-icon></div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--green"><mat-icon>check_circle</mat-icon></div>
         <div>
-          <strong style="font-size: 18px; display: block;">{{ ActiveHostelsCount }}</strong>
-          <span style="color: #64748b; font-size: 12px;">Active Hostels</span>
+          <strong>{{ ActiveHostelsCount }}</strong>
+          <span>Active Hostels</span>
         </div>
       </div>
-      <div class="admission-stat-card"
-        style="background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 12px;">
-        <div class="admission-stat-icon"
-          style="background: #fef3c7; color: #d97706; padding: 10px; border-radius: 50%; display: flex;">
-          <mat-icon>king_bed</mat-icon></div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--amber"><mat-icon>king_bed</mat-icon></div>
         <div>
-          <strong style="font-size: 18px; display: block;">{{ TotalBedCapacity }}</strong>
-          <span style="color: #64748b; font-size: 12px;">Total Bed Capacity</span>
+          <strong>{{ TotalBedCapacity }}</strong>
+          <span>Total Bed Capacity</span>
         </div>
       </div>
     </div>
 
-    <div class="ComponentRecords">
+    <div class="admission-filter-row">
+      <div class="admission-searchbox">
+        <mat-icon>search</mat-icon>
+        <input type="text" id="searchQuery" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search by Hostel Name..." />
+      </div>
+      <button type="button" class="admission-chip admission-chip--active">All <span>{{ HostelCount }}</span></button>
+      <select class="admission-select" *ngIf="isAdmin" (change)="onSchoolChange($event)">
+        <option value="">-- Select School --</option>
+        <option value="0">All Schools</option>
+        <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+      </select>
+    </div>
+
+    <div class="ComponentRecords admission-record-card">
       <div>
-        <div class="ComponentRecordsTop">
-          <div class="filterOptions">
-            <div class="searchreview input-container">
-              <input type="text" id="searchQuery" class="form-control floating-input" [(ngModel)]="searchQuery"
-                (ngModelChange)="onSearchChange()" placeholder="Search by Hostel Name..." />
-              <mat-icon
-                style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
-            </div>
-            <div class="searchreview" *ngIf="isAdmin">
-              <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
-                <option value="">-- Select School --</option>
-                <option value="0">All Schools</option>
-                <option *ngFor="let school of schoolList" [value]="school.ID">
-                  {{ school.Name }}
-                </option>
-              </select>
-            </div>
+        <div class="ComponentRecordsTop admission-record-header">
+          <div>
+            <h5>Hostel Records</h5>
+            <p>Showing {{ HostelList.length }} of {{ HostelCount }} records</p>
           </div>
         </div>
-        <div class="reviewstable">
-          <table id="hostelTable" *ngIf="HostelList.length != 0" class="table table-bordered">
+        <div class="reviewstable admission-table-wrap">
+          <table id="hostelTable" *ngIf="HostelList.length != 0" class="table table-bordered admission-table">
             <thead>
               <tr>
                 <th class="visually-hidden">Hostel ID</th>
@@ -78,10 +75,8 @@
                 <th (click)="sort('HostelName')" class="sortable-column">
                   <span class="column-text">Hostel Name</span>
                   <span class="arrows">
-                    <mat-icon
-                      [style.color]="sortColumn === 'HostelName' && sortDirection === 'asc' ? 'red' : 'inherit'">keyboard_arrow_up</mat-icon>
-                    <mat-icon
-                      [style.color]="sortColumn === 'HostelName' && sortDirection === 'desc' ? 'red' : 'inherit'">keyboard_arrow_down</mat-icon>
+                    <mat-icon [style.color]="sortColumn === 'HostelName' && sortDirection === 'asc' ? 'red' : 'inherit'">keyboard_arrow_up</mat-icon>
+                    <mat-icon [style.color]="sortColumn === 'HostelName' && sortDirection === 'desc' ? 'red' : 'inherit'">keyboard_arrow_down</mat-icon>
                   </span>
                 </th>
                 <th>Hostel Type</th>
@@ -105,18 +100,16 @@
                 <td data-label="SchoolName" *ngIf="isAdmin">{{ hostel.SchoolName }}</td>
                 <td data-label="Status">
                   <span class="status-pill"
-                    [style.background]="(hostel.IsActive === true || hostel.IsActive === 'true' || hostel.IsActive === 'Active' || hostel.IsActive === 1) ? 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)' : 'linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%)'"
-                    [style.color]="(hostel.IsActive === true || hostel.IsActive === 'true' || hostel.IsActive === 'Active' || hostel.IsActive === 1) ? '#166534' : '#9f1239'"
-                    [style.borderColor]="(hostel.IsActive === true || hostel.IsActive === 'true' || hostel.IsActive === 'Active' || hostel.IsActive === 1) ? '#86efac' : '#fda4af'"
+                    [style.background]="(hostel.IsActive === true || hostel.IsActive === 'true' || hostel.IsActive === 'Active' || hostel.IsActive === 1) ? '#d9f9e5' : '#fff0bd'"
+                    [style.color]="(hostel.IsActive === true || hostel.IsActive === 'true' || hostel.IsActive === 'Active' || hostel.IsActive === 1) ? '#00823a' : '#c25b00'"
+                    [style.borderColor]="(hostel.IsActive === true || hostel.IsActive === 'true' || hostel.IsActive === 'Active' || hostel.IsActive === 1) ? '#86efac' : '#f5d77a'"
                     [ngClass]="(hostel.IsActive === true || hostel.IsActive === 'true' || hostel.IsActive === 'Active' || hostel.IsActive === 1) ? 'status-active' : 'status-inactive'">
-                    {{ (hostel.IsActive === true || hostel.IsActive === 'true' || hostel.IsActive === 'Active' ||
-                    hostel.IsActive === 1) ? 'Active' : 'Inactive' }}
+                    {{ (hostel.IsActive === true || hostel.IsActive === 'true' || hostel.IsActive === 'Active' || hostel.IsActive === 1) ? 'Active' : 'Inactive' }}
                   </span>
                 </td>
                 <td data-label="Actions">
                   <div class="d-flex justify-content-center align-items-center h-100">
-                    <button *ngIf="canEdit()" class="btn checkbtn edit" data-tooltip="Edit"
-                      (click)="editreview(hostel.ID)">
+                    <button *ngIf="canEdit()" class="btn checkbtn edit" data-tooltip="Edit" (click)="editreview(hostel.ID)">
                       <mat-icon class="mat-edit-icon">edit</mat-icon>
                     </button>
                     <button *ngIf="canView()" class="btn checkbtn" data-tooltip="View" (click)="viewReview(hostel.ID)">
@@ -133,17 +126,29 @@
             </div>
             <p>No data found.</p>
           </div>
+          
+          <div class="admission-footer-meta">
+            <label>
+              Rows:
+              <select aria-label="Rows per page" [(ngModel)]="pageSize"
+            (ngModelChange)="onRowsCountChange()">
+                <option [ngValue]="5">5</option>
+                <option [ngValue]="10">10</option>
+                <option [ngValue]="25">25</option>
+                <option [ngValue]="50">50</option>
+              </select>
+            </label>
+            <p>{{ pageStartIndex() }}&ndash;{{ pageEndIndex() }} of {{ HostelCount }} records</p>
+          </div>
+
           <div *ngIf="HostelCount > pageSize" class="pagination-controls">
-            <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1"
-              class="arrow-btn FirstandLastButton">First</button>
+            <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
             <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
-            <button *ngFor="let page of getVisiblePageNumbers()" class="page-btn"
-              [ngClass]="{'active': page === currentPage}" (click)="goToPage(page)">
+            <button *ngFor="let page of getVisiblePageNumbers()" class="page-btn" [ngClass]="{'active': page === currentPage}" (click)="goToPage(page)">
               {{ page }}
             </button>
             <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
-            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()"
-              class="arrow-btn FirstandLastButton">Last</button>
+            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
           </div>
         </div>
       </div>
@@ -151,10 +156,25 @@
   </div>
 
   <div *ngIf="IsAddNewClicked" class="w-100">
+    <div class="admission-breadcrumb">
+      <span>Hostel Management</span>
+      <mat-icon>chevron_right</mat-icon>
+      <span>Hostel Master</span>
+      <mat-icon>chevron_right</mat-icon>
+      <strong>{{ ViewHostelClicked ? 'Edit Hostel' : 'Add Hostel' }}</strong>
+    </div>
+    <div class="AddFormTop">
+      <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+      <div class="admission-record-header p-0">
+        <div>
+          <h5>{{ ViewHostelClicked ? 'Edit Hostel' : 'Add Hostel' }}</h5>
+          <p>Configure hostel details</p>
+        </div>
+      </div>
+    </div>
     <div class="AddForm">
-      <div class="AddFormTop">
-        <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
-        <p>{{ ViewHostelClicked ? 'Update Hostel' : 'Add Hostel' }}</p>
+      <div class="form-top">
+        <p class="cc-title">Hostel Details</p>
       </div>
       <div class="AddFormConatiner">
         <form [formGroup]="HostelForm">
@@ -168,9 +188,7 @@
                     <option value="0">-- Select School --</option>
                     <option *ngFor="let school of schoolList" value="{{school.ID}}">{{school.Name}}</option>
                   </select>
-                  <div
-                    *ngIf="HostelForm.get('School')?.hasError('min') && (HostelForm.get('School')?.touched || HostelForm.get('School')?.dirty)"
-                    class="text-danger">
+                  <div *ngIf="HostelForm.get('School')?.hasError('min') && (HostelForm.get('School')?.touched || HostelForm.get('School')?.dirty)" class="text-danger">
                     <small>Please Select School.</small>
                   </div>
                 </div>
@@ -182,9 +200,7 @@
                     <option value="0">-- Select Academic Year --</option>
                     <option *ngFor="let year of academicYearList" value="{{year.ID}}">{{year.Name}}</option>
                   </select>
-                  <div
-                    *ngIf="HostelForm.get('AcademicYear')?.hasError('min') && (HostelForm.get('AcademicYear')?.touched || HostelForm.get('AcademicYear')?.dirty)"
-                    class="text-danger">
+                  <div *ngIf="HostelForm.get('AcademicYear')?.hasError('min') && (HostelForm.get('AcademicYear')?.touched || HostelForm.get('AcademicYear')?.dirty)" class="text-danger">
                     <small>Please Select Academic Year.</small>
                   </div>
                 </div>
@@ -193,8 +209,7 @@
                 <label class="inputLabel" for="HostelName">Hostel Name <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" formControlName="HostelName" placeholder="Enter Hostel Name" />
-                  <div *ngIf="HostelForm.get('HostelName')?.touched && HostelForm.get('HostelName')?.invalid"
-                    class="text-danger">
+                  <div *ngIf="HostelForm.get('HostelName')?.touched && HostelForm.get('HostelName')?.invalid" class="text-danger">
                     <small *ngIf="HostelForm.get('HostelName')?.errors?.['required']">Please Enter Hostel Name.</small>
                   </div>
                 </div>
@@ -208,8 +223,7 @@
                     <option value="Girls">Girls</option>
                     <option value="Mixed">Mixed</option>
                   </select>
-                  <div *ngIf="HostelForm.get('HostelType')?.touched && HostelForm.get('HostelType')?.invalid"
-                    class="text-danger">
+                  <div *ngIf="HostelForm.get('HostelType')?.touched && HostelForm.get('HostelType')?.invalid" class="text-danger">
                     <small *ngIf="HostelForm.get('HostelType')?.errors?.['required']">Please Select Hostel Type.</small>
                   </div>
                 </div>
@@ -227,8 +241,7 @@
                     <option value="Girls">Girls</option>
                     <option value="Mixed">Mixed</option>
                   </select>
-                  <div *ngIf="HostelForm.get('HostelType')?.touched && HostelForm.get('HostelType')?.invalid"
-                    class="text-danger">
+                  <div *ngIf="HostelForm.get('HostelType')?.touched && HostelForm.get('HostelType')?.invalid" class="text-danger">
                     <small *ngIf="HostelForm.get('HostelType')?.errors?.['required']">Please Select Hostel Type.</small>
                   </div>
                 </div>
@@ -236,10 +249,8 @@
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="TotalRooms">Total Rooms</label>
                 <div class="input-with-error">
-                  <input class="inputField" type="number" formControlName="TotalRooms" placeholder="Enter Total Rooms"
-                    min="0" />
-                  <div *ngIf="HostelForm.get('TotalRooms')?.touched && HostelForm.get('TotalRooms')?.invalid"
-                    class="text-danger">
+                  <input class="inputField" type="number" formControlName="TotalRooms" placeholder="Enter Total Rooms" min="0" />
+                  <div *ngIf="HostelForm.get('TotalRooms')?.touched && HostelForm.get('TotalRooms')?.invalid" class="text-danger">
                     <small *ngIf="HostelForm.get('TotalRooms')?.errors?.['min']">Cannot be negative.</small>
                   </div>
                 </div>
@@ -247,10 +258,8 @@
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="BedCapacity">Bed Capacity</label>
                 <div class="input-with-error">
-                  <input class="inputField" type="number" formControlName="BedCapacity" placeholder="Enter Bed Capacity"
-                    min="0" />
-                  <div *ngIf="HostelForm.get('BedCapacity')?.touched && HostelForm.get('BedCapacity')?.invalid"
-                    class="text-danger">
+                  <input class="inputField" type="number" formControlName="BedCapacity" placeholder="Enter Bed Capacity" min="0" />
+                  <div *ngIf="HostelForm.get('BedCapacity')?.touched && HostelForm.get('BedCapacity')?.invalid" class="text-danger">
                     <small *ngIf="HostelForm.get('BedCapacity')?.errors?.['min']">Cannot be negative.</small>
                   </div>
                 </div>
@@ -258,8 +267,7 @@
               <div class="InputFieldsContainer" *ngIf="!isAdmin">
                 <label class="inputLabel" for="Address">Address</label>
                 <div class="input-with-error">
-                  <textarea class="inputField" formControlName="Address" placeholder="Enter Address"
-                    rows="1"></textarea>
+                  <textarea class="inputField" formControlName="Address" placeholder="Enter Address" rows="1"></textarea>
                 </div>
               </div>
             </div>
@@ -269,49 +277,58 @@
               <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <label class="inputLabel" for="Address">Address</label>
                 <div class="input-with-error">
-                  <textarea class="inputField" formControlName="Address" placeholder="Enter Address"
-                    rows="1"></textarea>
+                  <textarea class="inputField" formControlName="Address" placeholder="Enter Address" rows="1"></textarea>
                 </div>
               </div>
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="Remarks">Remarks</label>
                 <div class="input-with-error">
-                  <textarea class="inputField" formControlName="Remarks" placeholder="Enter Remarks"
-                    rows="1"></textarea>
+                  <textarea class="inputField" formControlName="Remarks" placeholder="Enter Remarks" rows="1"></textarea>
                 </div>
               </div>
               <div class="InputFieldsContainer">
-                <div class="toggle-container" (click)="$event.stopPropagation()">
-                  <label class="switch">
-                    <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()"
-                      (click)="toggleChange()">
-                    <span class="slider">
-                      <span class="toggle-text" [ngStyle]="{ left: IsActiveStatus ? '42%' : '60%', fontSize: '9px' }">
-                        {{ IsActiveStatus ? 'Active' : 'Inactive' }}
-                      </span>
-                    </span>
-                  </label>
-                </div>
-              </div>
-              <div class="InputFieldsContainer" *ngIf="!isAdmin">
-                <span style="visibility: hidden; height: 3px;">spacer field alignment block</span>
+                <span style="visibility: hidden;">Spacer</span>
               </div>
             </div>
-          </div>
 
-          <div class="ActionButtons">
-            <button type="button" *ngIf="ViewHostelClicked && canEdit()" (click)="UpdateHostel()">Update</button>
-            <button type="button" *ngIf="!ViewHostelClicked && canAdd()" (click)="SubmitHostel()">Submit</button>
+            <div class="InputRow">
+              <div class="noteActiveCard">
+                <div class="noteSection">
+                  <span>Status</span>
+                  <p>Determine whether this hostel is currently active.</p>
+                </div>
+                <div class="InputFieldsContainer">
+                  <div class="toggle-container" (click)="$event.stopPropagation()">
+                    <label class="switch">
+                      <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
+                      <span class="slider">
+                        <span class="toggle-text" [ngStyle]="{ left: IsActiveStatus ? '42%' : '60%', fontSize: '9px' }">
+                          {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
         </form>
+      </div>
+      <div class="form-bottom">
+        <span class="footer-hint">Fields marked <span class="required">*</span> are required</span>
+        <div class="ActionButtons footer-actions">
+          <button type="button" class="cancelbtn" (click)="AddNewClicked()">Cancel</button>
+          <button type="button" class="submitbtn" *ngIf="ViewHostelClicked && canEdit()" (click)="UpdateHostel()">Update</button>
+          <button type="button" class="submitbtn" *ngIf="!ViewHostelClicked && canAdd()" (click)="SubmitHostel()">Submit</button>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <!-- Status Modal -->
-<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isModalOpen}"
-  [style.display]="isModalOpen ? 'block' : 'none'">
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isModalOpen}" [style.display]="isModalOpen ? 'block' : 'none'">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -331,8 +348,7 @@
 </div>
 
 <!-- View Details Modal -->
-<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}"
-  [style.display]="isViewModalOpen ? 'block' : 'none'">
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">

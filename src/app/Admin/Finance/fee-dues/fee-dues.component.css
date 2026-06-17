@@ -1,8 +1,16 @@
+.FormInputRowsContainer{
+    flex-direction: column;
+}
+
+.form-bottom{
+  justify-content: end !important;
+}
+
 .fee-dues-filter-card {
   background: #ffffff;
   border-radius: 4px;
   padding: 16px 20px;
-  margin-bottom: 16px;
+  /* margin-bottom: 16px; */
 }
 
 .fee-dues-filters-row {
@@ -10,6 +18,7 @@
   flex-wrap: wrap;
   gap: 16px;
   align-items: flex-end;
+  width: 100%;
 }
 
 .fee-dues-filters-row .InputFieldsContainer {

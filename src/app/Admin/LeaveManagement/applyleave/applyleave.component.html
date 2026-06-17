@@ -1,460 +1,470 @@
 <app-dashboard-top-nav></app-dashboard-top-nav>
 
 <div class="MainContentDiv">
-  <!-- Header (Spans all columns) -->
-  <div class="ComponentTop">
-    <div class="ComponentTopHeader">
-      <h5>Leave Management Dashboard</h5>
-      <p>Manage leave applications and track balances efficiently.</p>
+  <div class="w-100 admission-dashboard">
+    <div class="admission-breadcrumb">
+      <span>Leave Management</span>
+      <mat-icon>chevron_right</mat-icon>
+      <strong>Leave Management Dashboard</strong>
     </div>
-  </div>
-
-  <!-- Context Selectors (Filters) (Spans all columns) -->
-  <div class="ComponentRecords">
-    <div class="filterOptions">
-      <!-- School Selector (SuperAdmin only) -->
-      <div class="searchreview" *ngIf="isAdmin">
-        <label class="inputLabel">SCHOOL <span class="required">*</span></label>
-        <select class="form-control" (change)="onSchoolChange($event)" [(ngModel)]="selectedSchoolId">
-          <option value="">-- Choose School --</option>
-          <option *ngFor="let s of schoolList" [value]="s.ID">{{ s.Name }}</option>
-        </select>
-      </div>
-
-      <!-- Academic Year (Everyone) -->
-      <div class="searchreview">
-        <label class="inputLabel">ACADEMIC YEAR <span class="required">*</span></label>
-        <select class="form-control" (change)="onYearChange($event)" [(ngModel)]="selectedAcademicYearId">
-          <option value="">-- Choose Year --</option>
-          <option *ngFor="let y of academicYears" [value]="y.ID">{{ y.Name }}</option>
-        </select>
-        <div *ngIf="isParent && !selectedAcademicYearId" class="text-danger">
-          <small>Please select academic year.</small>
+    <div class="AddFormTop">
+      <div class="admission-record-header p-0">
+        <div>
+          <h5>Leave Management Dashboard</h5>
+          <p>Manage leave applications and track balances efficiently</p>
         </div>
       </div>
+    </div>
 
-      <!-- Application Type (Management only - Teachers only manage themselves) -->
-      <div class="searchreview" *ngIf="isAdmin || isSchoolAdmin">
-        <label class="inputLabel">APPLICATION TYPE <span class="required">*</span></label>
-        <select class="form-control" [(ngModel)]="selectedUserType" (change)="onUserTypeChange()">
-          <option value="">-- Select Application Type --</option>
-          <option value="Staff">Staff Leave</option>
-          <option value="Student">Student Leave</option>
-          <!-- <option value="Admin">Admin Leave</option> -->
-        </select>
-      </div>
-
-      <!-- Class & Division (Only for Management/Teacher in Student context) -->
-      <!-- Teachers might still manage student leaves if they are Class Teachers, 
-           but based on user request "only my details", we restrict this for now. -->
-      <ng-container *ngIf="(isAdmin || isSchoolAdmin) && selectedUserType === 'Student'">
-        <div class="searchreview">
-          <label class="inputLabel">CLASS <span class="required">*</span></label>
-          <select class="form-control" (change)="onClassChange($event)" [(ngModel)]="selectedClassId">
-            <option value="">-- Choose Class --</option>
-            <option *ngFor="let c of classLists" [value]="c.ID">{{ c.Name }}</option>
+    <!-- Context Selectors (Filters) (Spans all columns) -->
+    <div class="ComponentRecords mb-2">
+      <div class="filterOptions">
+        <!-- School Selector (SuperAdmin only) -->
+        <div class="searchreview" *ngIf="isAdmin">
+          <label class="inputLabel">SCHOOL <span class="required">*</span></label>
+          <select class="form-control" (change)="onSchoolChange($event)" [(ngModel)]="selectedSchoolId">
+            <option value="">-- Choose School --</option>
+            <option *ngFor="let s of schoolList" [value]="s.ID">{{ s.Name }}</option>
           </select>
         </div>
 
+        <!-- Academic Year (Everyone) -->
         <div class="searchreview">
-          <label class="inputLabel">DIVISION <span class="required">*</span></label>
-          <select class="form-control" (change)="onDivisionChange($event)" [(ngModel)]="selectedDivisionId">
-            <option value="">-- Choose Division --</option>
-            <option *ngFor="let d of divisionsList" [value]="d.ID">{{ d.Name }}</option>
+          <label class="inputLabel">ACADEMIC YEAR <span class="required">*</span></label>
+          <select class="form-control" (change)="onYearChange($event)" [(ngModel)]="selectedAcademicYearId" [disabled]="!isAdmin">
+            <option value="">-- Choose Year --</option>
+            <option *ngFor="let y of academicYears" [value]="y.ID">{{ y.Name }}</option>
+          </select>
+          <div *ngIf="isParent && !selectedAcademicYearId" class="text-danger">
+            <small>Please select academic year.</small>
+          </div>
+        </div>
+
+        <!-- Application Type (Management only - Teachers only manage themselves) -->
+        <div class="searchreview" *ngIf="isAdmin || isSchoolAdmin">
+          <label class="inputLabel">APPLICATION TYPE <span class="required">*</span></label>
+          <select class="form-control" [(ngModel)]="selectedUserType" (change)="onUserTypeChange()">
+            <option value="">-- Select Application Type --</option>
+            <option value="Staff">Staff Leave</option>
+            <option value="Student">Student Leave</option>
+            <!-- <option value="Admin">Admin Leave</option> -->
           </select>
         </div>
-      </ng-container>
 
-      <!-- Staff/Student Selector (Management) -->
-      <div class="searchreview" *ngIf="isAdmin || isSchoolAdmin">
-        <label class="inputLabel">SELECT {{ selectedUserType | uppercase }} <span class="required">*</span></label>
-        <select class="form-control" (change)="onStaffChange($event)" [(ngModel)]="selectedStaffId">
-          <ng-container *ngIf="selectedUserType === 'Staff'">
-            <option value="">-- Choose Staff --</option>
-            <option *ngFor="let s of staffList" [value]="s.ID">{{ s.Name }} - {{ getStaffRoleName(s) }}</option>
-          </ng-container>
-          <ng-container *ngIf="selectedUserType === 'Student'">
-            <option value="">-- Choose Student --</option>
-            <option *ngFor="let s of studentList" [value]="s.ID">{{ s.Name }}</option>
-          </ng-container>
-        </select>
-      </div>
-
-      <!-- Child Selector (Parent Only) -->
-      <div class="searchreview" *ngIf="isParent && parentChildren.length === 0 && selectedAcademicYearId">
-        <small style="color: #94a3b8;">No children found for selected year.</small>
-      </div>
-    </div>
-
-    <!-- Child Tab Slider (Parent Only) -->
-    <div class="child-tab-slider" *ngIf="isParent && parentChildren.length > 0">
-      <button
-        *ngFor="let child of parentChildren; let i = index"
-        class="child-tab-btn"
-        [class.active]="selectedChildIndex === i"
-        (click)="selectChild(i)">
-        <mat-icon>person</mat-icon>
-        {{ child.Name }}
-      </button>
-    </div>
-  </div>
-
-  <!-- Stats Grid (Spans all columns, internal 4-col) -->
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-icon" style="background: #e0e7ff;"><mat-icon style="color: #6366f1;">summarize</mat-icon></div>
-      <div class="stat-info">
-        <span class="stat-label">Total Applied</span>
-        <span class="stat-value">{{ (selectedSchoolId && selectedAcademicYearId && (isAdmin ? selectedStaffId : true)) ? leaveHistory.length : 0 }}</span>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon" style="background: #d1fae5;"><mat-icon style="color: #10b981;">check_circle</mat-icon></div>
-      <div class="stat-info">
-        <span class="stat-label">Approved</span>
-        <span class="stat-value">{{ (selectedSchoolId && selectedAcademicYearId && (isAdmin ? selectedStaffId : true)) ? approvedCount : 0 }}</span>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon" style="background: #fef3c7;"><mat-icon style="color: #f59e0b;">pending_actions</mat-icon></div>
-      <div class="stat-info">
-        <span class="stat-label">Pending</span>
-        <span class="stat-value">{{ (selectedSchoolId && selectedAcademicYearId && (isAdmin ? selectedStaffId : true)) ? pendingCount : 0 }}</span>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon" style="background: #fee2e2;"><mat-icon style="color: #ef4444;">cancel</mat-icon></div>
-      <div class="stat-info">
-        <span class="stat-label">Rejected</span>
-        <span class="stat-value">{{ (selectedSchoolId && selectedAcademicYearId && (isAdmin ? selectedStaffId : true)) ? rejectedCount : 0 }}</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Main Left Panel (Spans Col 1-5 of the master 8-col grid) -->
-  <div class="left-panel">
-    <div class="tab-container">
-      <div class="tab-header">
-        <button class="tab-btn" [class.active]="activeTab === 'apply'" (click)="setTab('apply')">
-          <mat-icon>edit_calendar</mat-icon> Apply Leave
-        </button>
-        <button class="tab-btn" [class.active]="activeTab === 'list'" (click)="setTab('list')">
-          <mat-icon>history</mat-icon> History
-        </button>
-      </div>
-
-      <div class="tab-content">
-        <!-- Form Section -->
-        <div *ngIf="activeTab === 'apply'">
-          <form [formGroup]="leaveForm">
-            <div class="FormInputRowsContainer">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel">FROM DATE <span class="required">*</span></label>
-                <input type="date" class="inputField" formControlName="fromDate" [min]="today">
-                <div *ngIf="leaveForm.get('fromDate')?.invalid && (leaveForm.get('fromDate')?.touched || leaveForm.get('fromDate')?.dirty)" class="text-danger">
-                  <small>Please select from date.</small>
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
-                <label class="inputLabel">TO DATE <span class="required">*</span></label>
-                <input type="date" class="inputField" formControlName="toDate" [min]="leaveForm.get('fromDate')?.value">
-                <div *ngIf="leaveForm.get('toDate')?.invalid && (leaveForm.get('toDate')?.touched || leaveForm.get('toDate')?.dirty)" class="text-danger">
-                  <small>Please select to date.</small>
-                </div>
-              </div>
-
-              <div class="InputFieldsContainer" *ngIf="!isParent && !isActuallyStudent">
-                <label class="inputLabel">LEAVE CATEGORY <span class="required">*</span></label>
-                <select class="inputField" formControlName="leaveType">
-                  <option value="">-- Choose Category --</option>
-                  <option *ngFor="let t of leaveTypes" [value]="t">{{ t }}</option>
-                </select>
-                <div *ngIf="leaveForm.get('leaveType')?.invalid && (leaveForm.get('leaveType')?.touched || leaveForm.get('leaveType')?.dirty)" class="text-danger">
-                  <small>Please select leave category.</small>
-                </div>
-              </div>
-
-              <div class="InputFieldsContainer">
-                <label class="inputLabel">DURATION</label>
-                <div class="summary-box">
-                  <span class="summary-label">Days Total</span>
-                  <span class="summary-days">{{ requestedDays }}</span>
-                </div>
-              </div>
-
-              <div class="InputFieldsContainer full-width">
-                <label class="inputLabel">REASON FOR LEAVE <span class="required">*</span></label>
-                <textarea class="inputField" formControlName="reason" rows="3" placeholder="Please provide details..."></textarea>
-                <div *ngIf="leaveForm.get('reason')?.invalid && (leaveForm.get('reason')?.touched || leaveForm.get('reason')?.dirty)" class="text-danger">
-                  <small *ngIf="leaveForm.get('reason')?.errors?.['required']">Reason for leave is required.</small>
-                  <small *ngIf="leaveForm.get('reason')?.errors?.['minlength']">Reason must be at least 5 characters.</small>
-                </div>
-              </div>
-
-              <div class="InputFieldsContainer full-width">
-                <label class="inputLabel">UPLOAD DOCUMENT</label>
-
-                <!-- Upload progress bar -->
-                <div *ngIf="isUploading" style="margin-bottom: 8px;">
-                  <div style="background:#e2e8f0;border-radius:4px;height:6px;">
-                    <div style="background:#6366f1;height:6px;border-radius:4px;transition:width .3s;" [style.width]="uploadProgress+'%'"></div>
-                  </div>
-                  <small style="color:#6366f1;">Uploading file, please wait...</small>
-                </div>
-
-                <!-- Existing / already-uploaded file -->
-                <div *ngIf="uploadedFileUrl && !selectedFile"
-                     style="display:flex; flex-direction: column; gap:8px; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:8px;">
-                  
-                  <div style="display:flex; align-items:center; gap:8px;">
-                    <mat-icon style="color:#6366f1;">{{ getFileIcon() }}</mat-icon>
-                    <span style="flex:1; font-size:13px; color:#334155; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                      {{ getFileName(uploadedFileUrl) }}
-                    </span>
-                    <a [href]="getFileViewUrl()" target="_blank" title="View">
-                      <mat-icon style="font-size:18px; color:#6366f1; cursor:pointer;">visibility</mat-icon>
-                    </a>
-                    <mat-icon style="font-size:18px; color:#6366f1; cursor:pointer;" title="Download" (click)="downloadAttachment()">download</mat-icon>
-                    <mat-icon style="font-size:18px; color:#ef4444; cursor:pointer;" title="Remove" (click)="removeFile()">delete</mat-icon>
-                  </div>
-
-                  <!-- File Preview Display (Already Uploaded) -->
-                  <div class="mt-2 text-center" style="background: white; border-radius: 4px; padding: 8px; border: 1px dashed #e2e8f0;">
-                    <!-- Image Preview -->
-                    <div *ngIf="isImageFile()">
-                      <img [src]="getFileViewUrl()" alt="Attachment Preview" style="max-width: 100%; max-height: 150px; object-fit: contain; border-radius: 4px;">
-                    </div>
-                    
-                    <!-- PDF Icon -->
-                    <div *ngIf="isPdfFile()">
-                      <mat-icon style="font-size: 48px; height: 48px; width: 48px; color: #ef4444;">picture_as_pdf</mat-icon>
-                      <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">PDF Document</p>
-                    </div>
-
-                    <!-- Other Document Icon -->
-                    <div *ngIf="!isImageFile() && !isPdfFile()">
-                      <mat-icon style="font-size: 48px; height: 48px; width: 48px; color: #64748b;">description</mat-icon>
-                      <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">Document</p>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Local file selected (not yet uploaded – will upload on Submit) -->
-                <div *ngIf="selectedFile"
-                     style="display:flex; flex-direction: column; gap:8px; padding:12px; background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; margin-bottom:8px;">
-                  
-                  <div style="display:flex; align-items:center; gap:8px;">
-                    <mat-icon style="color:#0ea5e9;">
-                      {{ isPdfFile(selectedFile.name) ? 'picture_as_pdf' : isImageFile() ? 'image' : 'insert_drive_file' }}
-                    </mat-icon>
-                    <span style="flex:1; font-size:13px; color:#334155; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                      {{ selectedFileName }}
-                    </span>
-                    <small style="color:#64748b; white-space:nowrap; font-size:11px;">Will upload on Submit</small>
-                    <mat-icon style="font-size:18px; color:#ef4444; cursor:pointer;" title="Cancel" (click)="removeFile()">close</mat-icon>
-                  </div>
-
-                  <!-- File Preview Display -->
-                  <div *ngIf="isPreviewVisible" class="mt-2 text-center" style="background: white; border-radius: 4px; padding: 8px; border: 1px dashed #bae6fd;">
-                    <!-- Image Preview -->
-                    <div *ngIf="filePreviewType === 'image' && filePreviewUrl">
-                      <img [src]="filePreviewUrl" alt="Preview" style="max-width: 100%; max-height: 150px; object-fit: contain; border-radius: 4px;">
-                    </div>
-                    
-                    <!-- PDF Preview Icon -->
-                    <div *ngIf="filePreviewType === 'document' && isPdfFile(selectedFile.name)">
-                      <mat-icon style="font-size: 48px; height: 48px; width: 48px; color: #ef4444;">picture_as_pdf</mat-icon>
-                      <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">PDF Document</p>
-                    </div>
-
-                    <!-- Other Document Icon -->
-                    <div *ngIf="filePreviewType === 'document' && !isPdfFile(selectedFile.name)">
-                      <mat-icon style="font-size: 48px; height: 48px; width: 48px; color: #64748b;">description</mat-icon>
-                      <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">Word/Text Document</p>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- File chooser (only when nothing selected/uploaded) -->
-                <div *ngIf="!selectedFile && !uploadedFileUrl" class="file-upload-container">
-                  <input type="file" class="file-input" id="documentUpload"
-                         accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                         (change)="onFileSelect($event)">
-                  <label for="documentUpload" class="file-upload-label">
-                    <mat-icon>cloud_upload</mat-icon>
-                    <span>Choose file or drag and drop</span>
-                  </label>
-                </div>
-
-                <!-- Replace file link (when file already selected or uploaded) -->
-                <div *ngIf="selectedFile || uploadedFileUrl" style="margin-top:6px;">
-                  <input type="file" class="file-input" id="documentUploadReplace"
-                         accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                         (change)="onFileSelect($event)" style="display:none;">
-                  <label for="documentUploadReplace"
-                         style="cursor:pointer;font-size:12px;color:#6366f1;text-decoration:underline;">
-                    Replace file
-                  </label>
-                </div>
-
-                <small class="text-muted">Supported formats: PDF, DOC, DOCX, JPG, JPEG, PNG (Max: 5MB)</small>
-              </div>
-
-
-              <!-- Form Level Validation Errors -->
-              <div class="InputFieldsContainer full-width" *ngIf="leaveForm.errors && (leaveForm.touched || leaveForm.dirty)">
-                <div class="text-danger">
-                  <small *ngIf="leaveForm.errors?.['invalidDateRange']">
-                    <strong>Invalid Date Range:</strong> To date cannot be earlier than from date.
-                  </small>
-                </div>
-              </div>
-
-              <!-- Document Required Warning -->
-              <div class="InputFieldsContainer full-width" *ngIf="requestedDays >= 3 && !selectedFile">
-                <div class="document-warning">
-                  <mat-icon class="warning-icon">upload_file</mat-icon>
-                  <div class="warning-content">
-                    <strong>Document Required:</strong> Leave requests of 3 days or more must include a supporting document. Please upload a document to proceed.
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px;">
-              <button type="button" class="btn" style="background: #f1f5f9; color: #475569; padding: 10px 24px; border-radius: 8px; border: none; font-weight: 600;" (click)="resetForm()">Reset</button>
-              <button type="button" class="btn btn-primary" (click)="submitLeave()">
-                {{ isSubmitting ? 'Processing...' : 'Submit' }}
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <!-- History Table -->
-        <div *ngIf="activeTab === 'list'">
-          <!-- Status Filter -->
-          <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px;">
-            <label style="font-weight: 600; color: #374151;">Status Filter:</label>
-            <select class="form-control" style="width: 200px;" [(ngModel)]="selectedStatusFilter" (change)="onStatusFilterChange()">
-              <option value="All">All Status</option>
-              <option value="Pending">Pending</option>
-              <option value="Approved">Approved</option>
-              <option value="Rejected">Rejected</option>
-              <option value="Cancelled">Cancelled</option>
+        <!-- Class & Division (Only for Management/Teacher in Student context) -->
+        <!-- Teachers might still manage student leaves if they are Class Teachers, 
+            but based on user request "only my details", we restrict this for now. -->
+        <ng-container *ngIf="(isAdmin || isSchoolAdmin) && selectedUserType === 'Student'">
+          <div class="searchreview">
+            <label class="inputLabel">CLASS <span class="required">*</span></label>
+            <select class="form-control" (change)="onClassChange($event)" [(ngModel)]="selectedClassId">
+              <option value="">-- Choose Class --</option>
+              <option *ngFor="let c of classLists" [value]="c.ID">{{ c.Name }}</option>
             </select>
-            <span style="color: #6b7280; font-size: 14px;">Total: {{ historyTotalCount }} records</span>
           </div>
-          
-          <div class="reviewstable">
-            <table class="table" style="width: 100%;" *ngIf="leaveHistory.length > 0">
-              <thead>
-                <tr>
-                  <th>SI.</th>
-                  <th *ngIf="isParent || isActuallyStudent">Student</th>
-                  <th *ngIf="isParent || isActuallyStudent">Class/Div</th>
-                  <th *ngIf="!(isParent || isActuallyStudent)">Type</th>
-                  <th>Duration</th>
-                  <th>Days</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let l of leaveHistory; let i = index">
-                  <td>{{ (historyCurrentPage - 1) * historyPageSize + i + 1 }}</td>
-                  <td *ngIf="isParent || isActuallyStudent">
-                      <div style="font-weight: 700; color: #536ff7; font-size: 13px;">{{ l.applicantName }}</div>
-                      <div style="font-size: 11px; color: #64748b;">{{ l.admissionNo }}</div>
-                  </td>
-                  <td *ngIf="isParent || isActuallyStudent">
-                      <div style="font-size: 13px; font-weight: 500;">{{ l.className }}</div>
-                      <div style="font-size: 11px; color: #94a3b8;">{{ l.divisionName }}</div>
-                  </td>
-                  <td *ngIf="!(isParent || isActuallyStudent)" style="font-weight: 600;">{{ l.leaveType }}</td>
-                  <td style="font-size: 13px; color: #475569;">{{ l.fromDate }} - {{ l.toDate }}</td>
-                  <td style="font-weight: 700;">{{ l.days }}</td>
-                  <td>
-                    <span class="status-pill"
-                      [style.background]="l.status === 'Approved' ? '#ecfdf5' : (l.status === 'Rejected' ? '#fef2f2' : (l.status === 'Cancelled' ? '#f3f4f6' : '#fffbeb'))"
-                      [style.color]="l.status === 'Approved' ? '#059669' : (l.status === 'Rejected' ? '#dc2626' : (l.status === 'Cancelled' ? '#6b7280' : '#d97706'))">
-                      {{ l.status }}
-                    </span>
-                  </td>
-                  <td>
-                    <button class="btn" style="color: #6366f1; background: #eef2ff; border: none; padding: 6px; border-radius: 6px;" (click)="viewLeave(l)" title="View Details">
-                      <mat-icon style="font-size: 18px;">visibility</mat-icon>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
 
-            <div *ngIf="leaveHistory.length === 0" style="text-align: center; padding: 40px;">
-              <mat-icon style="font-size: 48px; color: #cbd5e1; width: 48px; height: 48px;">inbox</mat-icon>
-              <p style="color: #94a3b8; font-size: 14px; margin-top: 10px;">No records found.</p>
-            </div>
-            
-            <!-- Pagination Controls -->
-            <div *ngIf="historyTotalPages > 1" style="margin-top: 20px; display: flex; justify-content: center; align-items: center; gap: 8px;">
-              <button *ngIf="historyTotalPages > 3" (click)="historyFirstPage()" [disabled]="historyCurrentPage === 1" 
-                      class="btn" style="padding: 6px 12px; font-size: 12px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;">
-                First
-              </button>
-              <button (click)="historyPreviousPage()" [disabled]="historyCurrentPage === 1" 
-                      class="btn" style="padding: 6px 12px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;">
-                &lt;
-              </button>
-              <button *ngFor="let page of historyVisiblePages" 
-                      (click)="historyGoToPage(page)" 
-                      [disabled]="page === historyCurrentPage"
-                      class="btn" 
-                      [style.background]="page === historyCurrentPage ? '#6366f1' : '#f1f5f9'"
-                      [style.color]="page === historyCurrentPage ? 'white' : '#64748b'"
-                      [style.border]="'1px solid #e2e8f0'"
-                      style="padding: 6px 12px; min-width: 36px;">
-                {{ page }}
-              </button>
-              <button (click)="historyNextPage()" [disabled]="historyCurrentPage === historyTotalPages" 
-                      class="btn" style="padding: 6px 12px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;">
-                &gt;
-              </button>
-              <button *ngIf="historyTotalPages > 3" (click)="historyLastPage()" [disabled]="historyCurrentPage === historyTotalPages" 
-                      class="btn" style="padding: 6px 12px; font-size: 12px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;">
-                Last
-              </button>
-            </div>
+          <div class="searchreview">
+            <label class="inputLabel">DIVISION <span class="required">*</span></label>
+            <select class="form-control" (change)="onDivisionChange($event)" [(ngModel)]="selectedDivisionId">
+              <option value="">-- Choose Division --</option>
+              <option *ngFor="let d of divisionsList" [value]="d.ID">{{ d.Name }}</option>
+            </select>
           </div>
+        </ng-container>
+
+        <!-- Staff/Student Selector (Management) -->
+        <div class="searchreview" *ngIf="isAdmin || isSchoolAdmin">
+          <label class="inputLabel">SELECT {{ selectedUserType | uppercase }} <span class="required">*</span></label>
+          <select class="form-control" (change)="onStaffChange($event)" [(ngModel)]="selectedStaffId">
+            <ng-container *ngIf="selectedUserType === 'Staff'">
+              <option value="">-- Choose Staff --</option>
+              <option *ngFor="let s of staffList" [value]="s.ID">{{ s.Name }} - {{ getStaffRoleName(s) }}</option>
+            </ng-container>
+            <ng-container *ngIf="selectedUserType === 'Student'">
+              <option value="">-- Choose Student --</option>
+              <option *ngFor="let s of studentList" [value]="s.ID">{{ s.Name }}</option>
+            </ng-container>
+          </select>
+        </div>
+
+        <!-- Child Selector (Parent Only) -->
+        <div class="searchreview" *ngIf="isParent && parentChildren.length === 0 && selectedAcademicYearId">
+          <small style="color: #94a3b8;">No children found for selected year.</small>
+        </div>
+      </div>
+
+      <!-- Child Tab Slider (Parent Only) -->
+      <div class="child-tab-slider" *ngIf="isParent && parentChildren.length > 0">
+        <button
+          *ngFor="let child of parentChildren; let i = index"
+          class="child-tab-btn"
+          [class.active]="selectedChildIndex === i"
+          (click)="selectChild(i)">
+          <mat-icon>person</mat-icon>
+          {{ child.Name }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats Grid (Spans all columns, internal 4-col) -->
+    <div class="stats-grid mb-2">
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #e0e7ff;"><mat-icon style="color: #6366f1;">summarize</mat-icon></div>
+        <div class="stat-info">
+          <span class="stat-label">Total Applied</span>
+          <span class="stat-value">{{ (selectedSchoolId && selectedAcademicYearId && (isAdmin ? selectedStaffId : true)) ? leaveHistory.length : 0 }}</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #d1fae5;"><mat-icon style="color: #10b981;">check_circle</mat-icon></div>
+        <div class="stat-info">
+          <span class="stat-label">Approved</span>
+          <span class="stat-value">{{ (selectedSchoolId && selectedAcademicYearId && (isAdmin ? selectedStaffId : true)) ? approvedCount : 0 }}</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #fef3c7;"><mat-icon style="color: #f59e0b;">pending_actions</mat-icon></div>
+        <div class="stat-info">
+          <span class="stat-label">Pending</span>
+          <span class="stat-value">{{ (selectedSchoolId && selectedAcademicYearId && (isAdmin ? selectedStaffId : true)) ? pendingCount : 0 }}</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: #fee2e2;"><mat-icon style="color: #ef4444;">cancel</mat-icon></div>
+        <div class="stat-info">
+          <span class="stat-label">Rejected</span>
+          <span class="stat-value">{{ (selectedSchoolId && selectedAcademicYearId && (isAdmin ? selectedStaffId : true)) ? rejectedCount : 0 }}</span>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Right Panel (Balances) (Spans Col 6-8 of the master grid) -->
-  <div class="right-panel">
-    <div class="balance-panel" *ngIf="!isParent && !isActuallyStudent">
-      <div class="balance-header">
-        <h6 class="balance-title">
-          <mat-icon style="font-size: 18px; color: #6366f1;">account_balance_wallet</mat-icon>
-          Leave Balances
-        </h6>
-      </div>
+    <div class="d-flex">
+      <!-- Main Left Panel (Spans Col 1-5 of the master 8-col grid) -->
+      <div class="left-panel">
+        <div class="tab-container">
+          <div class="tab-header">
+            <button class="tab-btn" [class.active]="activeTab === 'apply'" (click)="setTab('apply')">
+              <mat-icon>edit_calendar</mat-icon> Apply Leave
+            </button>
+            <button class="tab-btn" [class.active]="activeTab === 'list'" (click)="setTab('list')">
+              <mat-icon>history</mat-icon> History
+            </button>
+          </div>
 
-      <div class="balance-content">
-        <div class="balance-list" *ngIf="leaveBalances.length > 0">
-          <div class="balance-item" *ngFor="let b of leaveBalances">
-            <div class="item-icon" [style.background]="b.lightColor">
-              <mat-icon [style.color]="b.colorCode" style="font-size: 18px;">{{ b.icon }}</mat-icon>
+          <div class="tab-content">
+            <!-- Form Section -->
+            <div *ngIf="activeTab === 'apply'">
+              <form [formGroup]="leaveForm">
+                <div class="FormInputRowsContainer">
+                  <div class="InputFieldsContainer">
+                    <label class="inputLabel">FROM DATE <span class="required">*</span></label>
+                    <input type="date" class="inputField" formControlName="fromDate" [min]="today">
+                    <div *ngIf="leaveForm.get('fromDate')?.invalid && (leaveForm.get('fromDate')?.touched || leaveForm.get('fromDate')?.dirty)" class="text-danger">
+                      <small>Please select from date.</small>
+                    </div>
+                  </div>
+                  <div class="InputFieldsContainer">
+                    <label class="inputLabel">TO DATE <span class="required">*</span></label>
+                    <input type="date" class="inputField" formControlName="toDate" [min]="leaveForm.get('fromDate')?.value">
+                    <div *ngIf="leaveForm.get('toDate')?.invalid && (leaveForm.get('toDate')?.touched || leaveForm.get('toDate')?.dirty)" class="text-danger">
+                      <small>Please select to date.</small>
+                    </div>
+                  </div>
+
+                  <div class="InputFieldsContainer" *ngIf="!isParent && !isActuallyStudent">
+                    <label class="inputLabel">LEAVE CATEGORY <span class="required">*</span></label>
+                    <select class="inputField" formControlName="leaveType">
+                      <option value="">-- Choose Category --</option>
+                      <option *ngFor="let t of leaveTypes" [value]="t">{{ t }}</option>
+                    </select>
+                    <div *ngIf="leaveForm.get('leaveType')?.invalid && (leaveForm.get('leaveType')?.touched || leaveForm.get('leaveType')?.dirty)" class="text-danger">
+                      <small>Please select leave category.</small>
+                    </div>
+                  </div>
+
+                  <div class="InputFieldsContainer">
+                    <label class="inputLabel">DURATION</label>
+                    <div class="summary-box">
+                      <span class="summary-label">Days Total</span>
+                      <span class="summary-days">{{ requestedDays }}</span>
+                    </div>
+                  </div>
+
+                  <div class="InputFieldsContainer full-width">
+                    <label class="inputLabel">REASON FOR LEAVE <span class="required">*</span></label>
+                    <textarea class="inputField" formControlName="reason" rows="3" placeholder="Please provide details..."></textarea>
+                    <div *ngIf="leaveForm.get('reason')?.invalid && (leaveForm.get('reason')?.touched || leaveForm.get('reason')?.dirty)" class="text-danger">
+                      <small *ngIf="leaveForm.get('reason')?.errors?.['required']">Reason for leave is required.</small>
+                      <small *ngIf="leaveForm.get('reason')?.errors?.['minlength']">Reason must be at least 5 characters.</small>
+                    </div>
+                  </div>
+
+                  <div class="InputFieldsContainer full-width">
+                    <label class="inputLabel">UPLOAD DOCUMENT</label>
+
+                    <!-- Upload progress bar -->
+                    <div *ngIf="isUploading" style="margin-bottom: 8px;">
+                      <div style="background:#e2e8f0;border-radius:4px;height:6px;">
+                        <div style="background:#6366f1;height:6px;border-radius:4px;transition:width .3s;" [style.width]="uploadProgress+'%'"></div>
+                      </div>
+                      <small style="color:#6366f1;">Uploading file, please wait...</small>
+                    </div>
+
+                    <!-- Existing / already-uploaded file -->
+                    <div *ngIf="uploadedFileUrl && !selectedFile"
+                        style="display:flex; flex-direction: column; gap:8px; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:8px;">
+                      
+                      <div style="display:flex; align-items:center; gap:8px;">
+                        <mat-icon style="color:#6366f1;">{{ getFileIcon() }}</mat-icon>
+                        <span style="flex:1; font-size:13px; color:#334155; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                          {{ getFileName(uploadedFileUrl) }}
+                        </span>
+                        <a [href]="getFileViewUrl()" target="_blank" title="View">
+                          <mat-icon style="font-size:18px; color:#6366f1; cursor:pointer;">visibility</mat-icon>
+                        </a>
+                        <mat-icon style="font-size:18px; color:#6366f1; cursor:pointer;" title="Download" (click)="downloadAttachment()">download</mat-icon>
+                        <mat-icon style="font-size:18px; color:#ef4444; cursor:pointer;" title="Remove" (click)="removeFile()">delete</mat-icon>
+                      </div>
+
+                      <!-- File Preview Display (Already Uploaded) -->
+                      <div class="mt-2 text-center" style="background: white; border-radius: 4px; padding: 8px; border: 1px dashed #e2e8f0;">
+                        <!-- Image Preview -->
+                        <div *ngIf="isImageFile()">
+                          <img [src]="getFileViewUrl()" alt="Attachment Preview" style="max-width: 100%; max-height: 150px; object-fit: contain; border-radius: 4px;">
+                        </div>
+                        
+                        <!-- PDF Icon -->
+                        <div *ngIf="isPdfFile()">
+                          <mat-icon style="font-size: 48px; height: 48px; width: 48px; color: #ef4444;">picture_as_pdf</mat-icon>
+                          <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">PDF Document</p>
+                        </div>
+
+                        <!-- Other Document Icon -->
+                        <div *ngIf="!isImageFile() && !isPdfFile()">
+                          <mat-icon style="font-size: 48px; height: 48px; width: 48px; color: #64748b;">description</mat-icon>
+                          <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">Document</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Local file selected (not yet uploaded – will upload on Submit) -->
+                    <div *ngIf="selectedFile"
+                        style="display:flex; flex-direction: column; gap:8px; padding:12px; background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; margin-bottom:8px;">
+                      
+                      <div style="display:flex; align-items:center; gap:8px;">
+                        <mat-icon style="color:#0ea5e9;">
+                          {{ isPdfFile(selectedFile.name) ? 'picture_as_pdf' : isImageFile() ? 'image' : 'insert_drive_file' }}
+                        </mat-icon>
+                        <span style="flex:1; font-size:13px; color:#334155; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                          {{ selectedFileName }}
+                        </span>
+                        <small style="color:#64748b; white-space:nowrap; font-size:11px;">Will upload on Submit</small>
+                        <mat-icon style="font-size:18px; color:#ef4444; cursor:pointer;" title="Cancel" (click)="removeFile()">close</mat-icon>
+                      </div>
+
+                      <!-- File Preview Display -->
+                      <div *ngIf="isPreviewVisible" class="mt-2 text-center" style="background: white; border-radius: 4px; padding: 8px; border: 1px dashed #bae6fd;">
+                        <!-- Image Preview -->
+                        <div *ngIf="filePreviewType === 'image' && filePreviewUrl">
+                          <img [src]="filePreviewUrl" alt="Preview" style="max-width: 100%; max-height: 150px; object-fit: contain; border-radius: 4px;">
+                        </div>
+                        
+                        <!-- PDF Preview Icon -->
+                        <div *ngIf="filePreviewType === 'document' && isPdfFile(selectedFile.name)">
+                          <mat-icon style="font-size: 48px; height: 48px; width: 48px; color: #ef4444;">picture_as_pdf</mat-icon>
+                          <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">PDF Document</p>
+                        </div>
+
+                        <!-- Other Document Icon -->
+                        <div *ngIf="filePreviewType === 'document' && !isPdfFile(selectedFile.name)">
+                          <mat-icon style="font-size: 48px; height: 48px; width: 48px; color: #64748b;">description</mat-icon>
+                          <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">Word/Text Document</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- File chooser (only when nothing selected/uploaded) -->
+                    <div *ngIf="!selectedFile && !uploadedFileUrl" class="file-upload-container">
+                      <input type="file" class="file-input" id="documentUpload"
+                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                            (change)="onFileSelect($event)">
+                      <label for="documentUpload" class="file-upload-label">
+                        <mat-icon>cloud_upload</mat-icon>
+                        <span>Choose file or drag and drop</span>
+                      </label>
+                    </div>
+
+                    <!-- Replace file link (when file already selected or uploaded) -->
+                    <div *ngIf="selectedFile || uploadedFileUrl" style="margin-top:6px;">
+                      <input type="file" class="file-input" id="documentUploadReplace"
+                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                            (change)="onFileSelect($event)" style="display:none;">
+                      <label for="documentUploadReplace"
+                            style="cursor:pointer;font-size:12px;color:#6366f1;text-decoration:underline;">
+                        Replace file
+                      </label>
+                    </div>
+
+                    <small class="text-muted">Supported formats: PDF, DOC, DOCX, JPG, JPEG, PNG (Max: 5MB)</small>
+                  </div>
+
+
+                  <!-- Form Level Validation Errors -->
+                  <div class="InputFieldsContainer full-width" *ngIf="leaveForm.errors && (leaveForm.touched || leaveForm.dirty)">
+                    <div class="text-danger">
+                      <small *ngIf="leaveForm.errors?.['invalidDateRange']">
+                        <strong>Invalid Date Range:</strong> To date cannot be earlier than from date.
+                      </small>
+                    </div>
+                  </div>
+
+                  <!-- Document Required Warning -->
+                  <div class="InputFieldsContainer full-width" *ngIf="requestedDays >= 3 && !selectedFile">
+                    <div class="document-warning">
+                      <mat-icon class="warning-icon">upload_file</mat-icon>
+                      <div class="warning-content">
+                        <strong>Document Required:</strong> Leave requests of 3 days or more must include a supporting document. Please upload a document to proceed.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px;">
+                  <button type="button" class="btn" style="background: #f1f5f9; color: #475569; padding: 10px 24px; border-radius: 8px; border: none; font-weight: 600;" (click)="resetForm()">Reset</button>
+                  <button type="button" class="btn btn-primary" (click)="submitLeave()">
+                    {{ isSubmitting ? 'Processing...' : 'Submit' }}
+                  </button>
+                </div>
+              </form>
             </div>
-            <div class="item-info">
-              <span class="item-label">{{ b.label }}</span>
-              <span class="item-days">{{ b.count }} / {{ b.max }}</span>
+
+            <!-- History Table -->
+            <div *ngIf="activeTab === 'list'">
+              <!-- Status Filter -->
+              <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px;">
+                <label style="font-weight: 600; color: #374151;">Status Filter:</label>
+                <select class="form-control" style="width: 200px;" [(ngModel)]="selectedStatusFilter" (change)="onStatusFilterChange()">
+                  <option value="All">All Status</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Approved">Approved</option>
+                  <option value="Rejected">Rejected</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+                <span style="color: #6b7280; font-size: 14px;">Total: {{ historyTotalCount }} records</span>
+              </div>
+              
+              <div class="reviewstable">
+                <table class="table" style="width: 100%;" *ngIf="leaveHistory.length > 0">
+                  <thead>
+                    <tr>
+                      <th>SI.</th>
+                      <th *ngIf="isParent || isActuallyStudent">Student</th>
+                      <th *ngIf="isParent || isActuallyStudent">Class/Div</th>
+                      <th *ngIf="!(isParent || isActuallyStudent)">Type</th>
+                      <th>Duration</th>
+                      <th>Days</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let l of leaveHistory; let i = index">
+                      <td>{{ (historyCurrentPage - 1) * historyPageSize + i + 1 }}</td>
+                      <td *ngIf="isParent || isActuallyStudent">
+                          <div style="font-weight: 700; color: #536ff7; font-size: 13px;">{{ l.applicantName }}</div>
+                          <div style="font-size: 11px; color: #64748b;">{{ l.admissionNo }}</div>
+                      </td>
+                      <td *ngIf="isParent || isActuallyStudent">
+                          <div style="font-size: 13px; font-weight: 500;">{{ l.className }}</div>
+                          <div style="font-size: 11px; color: #94a3b8;">{{ l.divisionName }}</div>
+                      </td>
+                      <td *ngIf="!(isParent || isActuallyStudent)" style="font-weight: 600;">{{ l.leaveType }}</td>
+                      <td style="font-size: 13px; color: #475569;">{{ l.fromDate }} - {{ l.toDate }}</td>
+                      <td style="font-weight: 700;">{{ l.days }}</td>
+                      <td>
+                        <span class="status-pill"
+                          [style.background]="l.status === 'Approved' ? '#ecfdf5' : (l.status === 'Rejected' ? '#fef2f2' : (l.status === 'Cancelled' ? '#f3f4f6' : '#fffbeb'))"
+                          [style.color]="l.status === 'Approved' ? '#059669' : (l.status === 'Rejected' ? '#dc2626' : (l.status === 'Cancelled' ? '#6b7280' : '#d97706'))">
+                          {{ l.status }}
+                        </span>
+                      </td>
+                      <td>
+                        <button class="btn" style="color: #6366f1; background: #eef2ff; border: none; padding: 6px; border-radius: 6px;" (click)="viewLeave(l)" title="View Details">
+                          <mat-icon style="font-size: 18px;">visibility</mat-icon>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div *ngIf="leaveHistory.length === 0" style="text-align: center; padding: 40px;">
+                  <mat-icon style="font-size: 48px; color: #cbd5e1; width: 48px; height: 48px;">inbox</mat-icon>
+                  <p style="color: #94a3b8; font-size: 14px; margin-top: 10px;">No records found.</p>
+                </div>
+                
+                <!-- Pagination Controls -->
+                <div *ngIf="historyTotalPages > 1" style="margin-top: 20px; display: flex; justify-content: center; align-items: center; gap: 8px;">
+                  <button *ngIf="historyTotalPages > 3" (click)="historyFirstPage()" [disabled]="historyCurrentPage === 1" 
+                          class="btn" style="padding: 6px 12px; font-size: 12px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;">
+                    First
+                  </button>
+                  <button (click)="historyPreviousPage()" [disabled]="historyCurrentPage === 1" 
+                          class="btn" style="padding: 6px 12px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;">
+                    &lt;
+                  </button>
+                  <button *ngFor="let page of historyVisiblePages" 
+                          (click)="historyGoToPage(page)" 
+                          [disabled]="page === historyCurrentPage"
+                          class="btn" 
+                          [style.background]="page === historyCurrentPage ? '#6366f1' : '#f1f5f9'"
+                          [style.color]="page === historyCurrentPage ? 'white' : '#64748b'"
+                          [style.border]="'1px solid #e2e8f0'"
+                          style="padding: 6px 12px; min-width: 36px;">
+                    {{ page }}
+                  </button>
+                  <button (click)="historyNextPage()" [disabled]="historyCurrentPage === historyTotalPages" 
+                          class="btn" style="padding: 6px 12px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;">
+                    &gt;
+                  </button>
+                  <button *ngIf="historyTotalPages > 3" (click)="historyLastPage()" [disabled]="historyCurrentPage === historyTotalPages" 
+                          class="btn" style="padding: 6px 12px; font-size: 12px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;">
+                    Last
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <div *ngIf="leaveBalances.length === 0" style="text-align: center; padding: 20px;">
-          <mat-icon style="font-size: 40px; color: #e2e8f0;">info_outline</mat-icon>
-          <p style="font-size: 12px; color: #94a3b8; margin-top: 10px;">Select staff to view balance.</p>
+      <!-- Right Panel (Balances) (Spans Col 6-8 of the master grid) -->
+      <div class="right-panel">
+        <div class="balance-panel" *ngIf="!isParent && !isActuallyStudent">
+          <div class="balance-header">
+            <h6 class="balance-title">
+              <mat-icon style="font-size: 18px; color: #6366f1;">account_balance_wallet</mat-icon>
+              Leave Balances
+            </h6>
+          </div>
+
+          <div class="balance-content">
+            <div class="balance-list" *ngIf="leaveBalances.length > 0">
+              <div class="balance-item" *ngFor="let b of leaveBalances">
+                <div class="item-icon" [style.background]="b.lightColor">
+                  <mat-icon [style.color]="b.colorCode" style="font-size: 18px;">{{ b.icon }}</mat-icon>
+                </div>
+                <div class="item-info">
+                  <span class="item-label">{{ b.label }}</span>
+                  <span class="item-days">{{ b.count }} / {{ b.max }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="leaveBalances.length === 0" style="text-align: center; padding: 20px;">
+              <mat-icon style="font-size: 40px; color: #e2e8f0;">info_outline</mat-icon>
+              <p style="font-size: 12px; color: #94a3b8; margin-top: 10px;">Select staff to view balance.</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

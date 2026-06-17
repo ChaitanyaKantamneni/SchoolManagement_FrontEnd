@@ -3,6 +3,9 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { DashboardTopNavComponent } from '../../../SignInAndSignUp/dashboard-top-nav/dashboard-top-nav.component';
+import { Router } from '@angular/router';
+import { MenuServiceService } from '../../../Services/menu-service.service';
+import { BasePermissionComponent } from '../../../shared/base-crud.component';
 import { ApiServiceService } from '../../../Services/api-service.service';
 import { LoaderService } from '../../../Services/loader.service';
 
@@ -20,14 +23,27 @@ type SalaryHeadLine = {
   templateUrl: './salary-settings.component.html',
   styleUrl: './salary-settings.component.css'
 })
-export class SalarySettingsComponent implements OnInit {
-  constructor(private apiurl: ApiServiceService, public loader: LoaderService) {}
+export class SalarySettingsComponent extends BasePermissionComponent implements OnInit {
+  pageName = 'Salary Settings';
+
+  constructor(
+    private apiurl: ApiServiceService,
+    public loader: LoaderService,
+    router: Router,
+    menuService: MenuServiceService
+  ) {
+    super(menuService, router);
+  }
 
   IsAddNewClicked = false;
   isModalOpen = false;
   isViewModalOpen = false;
   formSubmitAttempted = false;
   isSubmitting = false;
+  currentPage = 1;
+  pageSize = 5;
+  visiblePageCount = 3;
+  settingsCount = 0;
   private searchTimer: any;
   private readonly SEARCH_DEBOUNCE = 300;
   private pendingEditPayHeadJson = '';
@@ -43,6 +59,8 @@ export class SalarySettingsComponent implements OnInit {
   selectedSchoolID = '';
   selectedAcademicYearID = '';
   selectedStaffID = '';
+  AdminselectedAcademivYearID:string = '';
+  AdminSelectedActiveAcademicYearID:string = sessionStorage.getItem('ActiveAcademicYearID') || '';
 
   salarySettings: Array<{
     id: number | null;
@@ -64,31 +82,59 @@ export class SalarySettingsComponent implements OnInit {
     return this.salarySettings;
   }
 
-  AddNewClicked(): void {
-    this.IsAddNewClicked = !this.IsAddNewClicked;
-    this.formSubmitAttempted = false;
-    if (this.IsAddNewClicked) {
-      this.editModeId = null;
-      this.pendingEditPayHeadJson = '';
-      this.selectedAcademicYearID = '';
-      this.staffList = [];
-      this.selectedStaffID = '';
+  // AddNewClicked(): void {
+  //   this.IsAddNewClicked = !this.IsAddNewClicked;
+  //   this.formSubmitAttempted = false;
+  //   if (this.IsAddNewClicked) {
+  //     this.editModeId = null;
+  //     this.pendingEditPayHeadJson = '';
+  //     this.selectedAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
+  //     this.staffList = [];
+  //     this.selectedStaffID = '';
+  //     this.salaryHeads = [];
+  //     if (this.selectedAcademicYearID) {
+  //       this.FetchStaffList();
+  //       this.FetchPayrollHeadsForSelection();
+  //     } else {
+  //       this.salaryHeads = [];
+  //     }
+  //   }
+  // }
+
+AddNewClicked(): void {
+  this.IsAddNewClicked = !this.IsAddNewClicked;
+  this.formSubmitAttempted = false;
+  this.staffList = [];
+    this.selectedStaffID = '';
+    this.salaryHeads = [];
+
+  if (this.IsAddNewClicked) {
+    this.editModeId = null;
+    this.pendingEditPayHeadJson = '';
+
+    this.selectedAcademicYearID = this.isAdmin
+      ? '0'
+      : (sessionStorage.getItem('ActiveAcademicYearID') || '');
+
+    
+
+    if (this.selectedAcademicYearID!== '0') {
+      this.FetchStaffList();
+      this.FetchPayrollHeadsForSelection();
+    } else {
       this.salaryHeads = [];
-      if (this.selectedAcademicYearID) {
-        this.FetchStaffList();
-        this.FetchPayrollHeadsForSelection();
-      } else {
-        this.salaryHeads = [];
-      }
     }
   }
+}
 
-  get isAdmin(): boolean {
+  protected override get isAdmin(): boolean {
     const role = sessionStorage.getItem('RollID') || localStorage.getItem('RollID');
     return role === '1';
   }
 
   ngOnInit(): void {
+    this.checkViewPermission();
+    this.selectedAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
     if (this.isAdmin) {
       this.FetchSchoolsList();
     } else {
@@ -99,7 +145,7 @@ export class SalarySettingsComponent implements OnInit {
         '';
       this.selectedListSchoolID = this.selectedSchoolID;
       this.FetchAcademicYearsList();
-      this.FetchStaffList();
+      this.FetchStaffList();  
     }
     this.fetchSalarySettings();
   }
@@ -142,10 +188,15 @@ export class SalarySettingsComponent implements OnInit {
   }
 
   FetchStaffList() {
+    const AcademicYearIdSelected =
+    this.isAdmin
+      ? this.AdminselectedAcademivYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
+
     const payload: any = {
       Flag: '9',
       SchoolID: this.selectedSchoolID || '',
-      AcademicYear: this.selectedAcademicYearID || ''
+      AcademicYear: AcademicYearIdSelected
     };
     this.loader.show();
     this.apiurl.post<any>('Tbl_Staff_CRUD_Operations', payload).subscribe({
@@ -170,10 +221,16 @@ export class SalarySettingsComponent implements OnInit {
   }
 
   FetchPayrollHeadsForSelection() {
+    this.salaryHeads = [];
+    const AcademicYearIdSelected =
+    this.isAdmin
+      ? this.AdminselectedAcademivYearID?.trim()
+      : this.AdminSelectedActiveAcademicYearID || '';
+
     const payload: any = {
       Flag: '3',
       SchoolID: this.toNumber(this.selectedSchoolID),
-      AcademicYear: this.toNumber(this.selectedAcademicYearID),
+      AcademicYear: this.toNumber(AcademicYearIdSelected),
       Limit: 500,
       Offset: 0
     };
@@ -214,7 +271,7 @@ export class SalarySettingsComponent implements OnInit {
   onAdminSchoolChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     this.selectedSchoolID = target.value === '0' ? '' : target.value;
-    this.selectedAcademicYearID = '';
+    this.selectedAcademicYearID = '0';
     this.selectedStaffID = '';
     this.salaryHeads = [];
     this.FetchAcademicYearsList();
@@ -298,6 +355,13 @@ export class SalarySettingsComponent implements OnInit {
       ModifiedIP: null,
       Flag: this.editModeId ? '5' : '1'
     };
+
+    if (!this.isAdmin) {
+      const activeYear = this.toNumber(sessionStorage.getItem('ActiveAcademicYearID') || '');
+      payload.AcademicYear = activeYear;
+      payload.academicYear = activeYear;
+      payload.AcademicYearID = activeYear;
+    }
 
     this.isSubmitting = true;
     this.loader.show();
@@ -397,24 +461,52 @@ export class SalarySettingsComponent implements OnInit {
   private fetchSalarySettings() {
     const isSearch = !!this.searchQuery?.trim();
     const schoolFilter = this.isAdmin ? this.selectedListSchoolID : this.selectedSchoolID;
+    const payloadCount: any = {
+      Flag: isSearch ? '8' : '6',
+      SchoolID: this.toNumber(schoolFilter),
+      SearchName: isSearch ? this.searchQuery.trim() : null
+    };
     const payload: any = {
       Flag: isSearch ? '7' : '2',
       SchoolID: this.toNumber(schoolFilter),
-      AcademicYear: null,
       SearchName: isSearch ? this.searchQuery.trim() : null,
-      Limit: 100,
-      Offset: 0
+      Limit: this.pageSize,
+      Offset: (this.currentPage - 1) * this.pageSize
     };
+
+    if (!this.isAdmin) {
+      payloadCount.AcademicYear = this.toNumber(sessionStorage.getItem('ActiveAcademicYearID') || '');
+      payload.AcademicYear = this.toNumber(sessionStorage.getItem('ActiveAcademicYearID') || '');
+    } else {
+      const activeYear = this.toNumber(this.selectedAcademicYearID) || this.toNumber(sessionStorage.getItem('ActiveAcademicYearID') || '');
+      payloadCount.AcademicYear = activeYear;
+      payload.AcademicYear = activeYear;
+    }
+
     this.loader.show();
-    this.apiurl.post<any>('Tbl_SalarySettings_CRUD_Operations', payload).subscribe({
-      next: (response: any) => {
-        const data = (response?.Data || response?.data || []) as any[];
-        this.salarySettings = Array.isArray(data)
-          ? data.map((row: any) => this.mapSalarySetting(row))
-          : [];
-        this.loader.hide();
+    this.apiurl.post<any>('Tbl_SalarySettings_CRUD_Operations', payloadCount).subscribe({
+      next: (countResp: any) => {
+        const countData = (countResp?.Data || countResp?.data || []) as any[];
+        this.settingsCount = Array.isArray(countData) && countData.length
+          ? Number(this.pick(countData[0], ['totalCount', 'totalcount']) || 0)
+          : 0;
+
+        this.apiurl.post<any>('Tbl_SalarySettings_CRUD_Operations', payload).subscribe({
+          next: (response: any) => {
+            const data = (response?.Data || response?.data || []) as any[];
+            this.salarySettings = Array.isArray(data)
+              ? data.map((row: any) => this.mapSalarySetting(row))
+              : [];
+            this.loader.hide();
+          },
+          error: () => {
+            this.salarySettings = [];
+            this.loader.hide();
+          }
+        });
       },
       error: () => {
+        this.settingsCount = 0;
         this.salarySettings = [];
         this.loader.hide();
       }
@@ -495,6 +587,57 @@ export class SalarySettingsComponent implements OnInit {
   private toNumber(value: any): number | null {
     const n = Number(value);
     return Number.isFinite(n) && n > 0 ? n : null;
+  }
+
+  pageStartIndex(): number {
+    return this.settingsCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
+  }
+
+  pageEndIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.settingsCount);
+  }
+
+  onRowsCountChange() {
+    this.currentPage = 1;
+    this.fetchSalarySettings();
+  }
+
+  totalPages(): number {
+    return Math.ceil(this.settingsCount / this.pageSize);
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 1) {
+      this.goToPage(this.currentPage - 1);
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages()) {
+      this.goToPage(this.currentPage + 1);
+    }
+  }
+
+  goToPage(pageNumber: number): void {
+    const total = this.totalPages();
+    if (total <= 0) {
+      this.currentPage = 1;
+      return;
+    }
+    this.currentPage = Math.max(1, Math.min(pageNumber, total));
+    this.fetchSalarySettings();
+  }
+
+  getVisiblePageNumbers(): number[] {
+    const totalPages = this.totalPages();
+    const pages: number[] = [];
+    let start = Math.max(this.currentPage - Math.floor(this.visiblePageCount / 2), 1);
+    let end = Math.min(start + this.visiblePageCount - 1, totalPages);
+    if (end - start < this.visiblePageCount - 1) {
+      start = Math.max(end - this.visiblePageCount + 1, 1);
+    }
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
   }
 
   private extractApiMessage(response: any): string {

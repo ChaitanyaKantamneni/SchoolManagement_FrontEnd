@@ -2,53 +2,61 @@
   <app-dashboard-top-nav></app-dashboard-top-nav>
 </div>
 <div class="MainContentDiv">
-  <div *ngIf="!IsAddNewClicked" class="w-100">
-    <div class="ComponentTop">
+  <div *ngIf="!IsAddNewClicked" class="w-100 admission-dashboard">
+    <div class="ComponentTop admission-hero">
       <div class="ComponentTopHeader">
+        <div class="admission-breadcrumb">
+          <span>Store</span>
+          <mat-icon>chevron_right</mat-icon>
+          <strong>Units</strong>
+        </div>
         <h5>Units Management</h5>
         <p>Total {{ UnitsCount }} Units Added</p>
       </div>
-      <div class="ComponentTopBottom">
-        <button *ngIf="canAdd()" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Unit</button>
+      <div class="ComponentTopBottom admission-header-actions">
+        <button *ngIf="canAdd()" type="button" class="admission-btn admission-btn--primary admission-top-action" (click)="AddNewClicked()">
+          <mat-icon>add_circle</mat-icon>Add Unit
+        </button>
       </div>
     </div>
-    <div class="ComponentRecords">
+
+    <!-- Filters -->
+    <div class="admission-filter-row">
+      <div class="admission-searchbox">
+        <mat-icon>search</mat-icon>
+        <input type="text" id="searchQuery" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search by Name" />
+      </div>
+      <button type="button" class="admission-chip admission-chip--active">All <span>{{ UnitsCount }}</span></button>
+      <select class="admission-select" *ngIf="isAdmin" (change)="onSchoolChange($event)">
+        <option value="0">All Schools</option>
+        <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+      </select>
+    </div>
+
+    <!-- Records Table -->
+    <div class="ComponentRecords admission-record-card">
       <div>
-        <div class="ComponentRecordsTop">
-          <div class="filterOptions">
-            <div class="searchreview input-container">
-              <input type="text" id="searchQuery" class="form-control floating-input"
-                [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search... " />
-              <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
-            </div>
-            <div class="searchreview" *ngIf="isAdmin && UnitsList.length != 0">
-              <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
-                <option value="">-- Select School --</option>
-                <option value="0">All Schools</option>
-                <option *ngFor="let school of schoolList" [value]="school.ID">
-                  {{ school.Name }}
-                </option>
-              </select>
-            </div>
+        <div class="ComponentRecordsTop admission-record-header">
+          <div>
+            <h5>Units Records</h5>
+            <p>Showing {{ UnitsList.length }} of {{ UnitsCount }} records</p>
+          </div>
+          <div class="DownloadButtons" *ngIf="UnitsList.length != 0">
+            <button class="btnHover" (click)="exportUnits('pdf')"><mat-icon>picture_as_pdf</mat-icon></button>
+            <button class="btnHover" (click)="exportUnits('excel')"><mat-icon>description</mat-icon></button>
+            <button class="btnHover" (click)="exportUnits('print')"><mat-icon>print</mat-icon></button>
           </div>
         </div>
-        <div class="reviewstable">
-          <table id="classTable" *ngIf="UnitsList.length != 0" class="table table-bordered">
+        <div class="reviewstable admission-table-wrap">
+          <table id="unitsTable" *ngIf="UnitsList.length != 0" class="table table-bordered admission-table">
             <thead>
               <tr>
-                <th class="visually-hidden">Unit ID</th>
                 <th>SI.No</th>
                 <th (click)="sort('UnitName')" class="sortable-column">
                   <span class="column-text">Unit Name</span>
                   <span class="arrows">
-                    <mat-icon
-                      [style.color]="sortColumn === 'UnitName' && sortDirection === 'asc' ? 'red' : 'inherit'">
-                      keyboard_arrow_up
-                    </mat-icon>
-                    <mat-icon
-                      [style.color]="sortColumn === 'UnitName' && sortDirection === 'desc' ? 'red' : 'inherit'">
-                      keyboard_arrow_down
-                    </mat-icon>
+                    <mat-icon [style.color]="sortColumn === 'UnitName' && sortDirection === 'asc' ? 'red' : 'inherit'">keyboard_arrow_up</mat-icon>
+                    <mat-icon [style.color]="sortColumn === 'UnitName' && sortDirection === 'desc' ? 'red' : 'inherit'">keyboard_arrow_down</mat-icon>
                   </span>
                 </th>
                 <th>Abbreviation</th>
@@ -63,23 +71,22 @@
             </thead>
             <tbody>
               <tr *ngFor="let unit of UnitsList; let i = index">
-                <td data-label="ID" class="visually-hidden">{{ unit.ID }}</td>
                 <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-                <td data-label="UnitName">{{ unit.UnitName }}</td>
+                <td data-label="Unit Name">{{ unit.UnitName }}</td>
                 <td data-label="Abbreviation">{{ unit.Abbreviation }}</td>
-                <td data-label="MinimumValue">{{ unit.MinimumValue }}</td>
-                <td data-label="MaximumValue">{{ unit.MaximumValue }}</td>
-                <td data-label="MinimumDifference">{{ unit.MinimumDifference }}</td>
-                <td data-label="SchoolName" *ngIf="isAdmin">{{ unit.SchoolName }}</td>
-                <td data-label="AcademicYearName" *ngIf="isAdmin">{{ unit.AcademicYearName }}</td>
+                <td data-label="Min Value">{{ unit.MinimumValue }}</td>
+                <td data-label="Max Value">{{ unit.MaximumValue }}</td>
+                <td data-label="Min Difference">{{ unit.MinimumDifference }}</td>
+                <td data-label="School Name" *ngIf="isAdmin">{{ unit.SchoolName }}</td>
+                <td data-label="Academic Year" *ngIf="isAdmin">{{ unit.AcademicYearName }}</td>
                 <td data-label="Status">
                   <span
                     class="status-pill"
-                    [style.background]="(unit.IsActive === true || unit.IsActive === 'true' || unit.IsActive === 'Active' || unit.IsActive === 1) ? 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)' : 'linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%)'"
-                    [style.color]="(unit.IsActive === true || unit.IsActive === 'true' || unit.IsActive === 'Active' || unit.IsActive === 1) ? '#166534' : '#9f1239'"
-                    [style.borderColor]="(unit.IsActive === true || unit.IsActive === 'true' || unit.IsActive === 'Active' || unit.IsActive === 1) ? '#86efac' : '#fda4af'"
-                    [ngClass]="(unit.IsActive === true || unit.IsActive === 'true' || unit.IsActive === 'Active' || unit.IsActive === 1) ? 'status-active' : 'status-inactive'">
-                    {{ (unit.IsActive === true || unit.IsActive === 'true' || unit.IsActive === 'Active' || unit.IsActive === 1) ? 'Active' : 'Inactive' }}
+                    [style.background]="(unit.IsActive === 'Active' || unit.IsActive === true || unit.IsActive === 'true' || unit.IsActive === 1) ? '#d9f9e5' : '#fff0bd'"
+                    [style.color]="(unit.IsActive === 'Active' || unit.IsActive === true || unit.IsActive === 'true' || unit.IsActive === 1) ? '#00823a' : '#c25b00'"
+                    [style.borderColor]="(unit.IsActive === 'Active' || unit.IsActive === true || unit.IsActive === 'true' || unit.IsActive === 1) ? '#86efac' : '#f5d77a'"
+                    [ngClass]="(unit.IsActive === 'Active' || unit.IsActive === true || unit.IsActive === 'true' || unit.IsActive === 1) ? 'status-active' : 'status-inactive'">
+                    {{ (unit.IsActive === 'Active' || unit.IsActive === true || unit.IsActive === 'true' || unit.IsActive === 1) ? 'Active' : 'Inactive' }}
                   </span>
                 </td>
                 <td data-label="Actions">
@@ -101,6 +108,19 @@
             </div>
             <p>No data found.</p>
           </div>
+          <div class="admission-footer-meta">
+            <label>
+              Rows:
+              <select aria-label="Rows per page" [(ngModel)]="pageSize"
+            (ngModelChange)="onRowsCountChange()">
+                <option [ngValue]="5">5</option>
+                <option [ngValue]="10">10</option>
+                <option [ngValue]="25">25</option>
+                <option [ngValue]="50">50</option>
+              </select>
+            </label>
+            <p>{{ pageStartIndex() }}&ndash;{{ pageEndIndex() }} of {{ UnitsCount }} records</p>
+          </div>
           <div *ngIf="UnitsCount > pageSize" class="pagination-controls">
             <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
             <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
@@ -118,222 +138,205 @@
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════════
-       ADD / EDIT VIEW
-  ════════════════════════════════════════════ -->
+  <!-- Form View -->
   <div *ngIf="IsAddNewClicked" class="w-100">
-
-    <!-- Top bar -->
-    <div class="sale-topbar">
-      <div class="sale-topbar-left">
-        <button class="back-btn" (click)="AddNewClicked()" title="Back">
-          <mat-icon>arrow_circle_left</mat-icon>
-        </button>
-        <div class="sale-title-block">
-          <div class="sale-icon-wrap">
-            <mat-icon>straighten</mat-icon>
-          </div>
-          <div>
-            <h5 class="sale-title">Units Management</h5>
-            <span class="sale-subtitle">
-              <span class="dot-active"></span>
-              {{ ViewUnitClicked ? 'UPDATE UNIT' : 'REGISTER UNIT' }}
-            </span>
-          </div>
+    <div class="admission-breadcrumb">
+      <span>Store</span>
+      <mat-icon>chevron_right</mat-icon>
+      <span>Units</span>
+      <mat-icon>chevron_right</mat-icon>
+      <strong>{{ editclicked ? 'Edit Unit' : 'Add Unit' }}</strong>
+    </div>
+    <div class="AddFormTop">
+      <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+      <div class="admission-record-header p-0">
+        <div>
+          <h5>{{ editclicked ? 'Edit Unit' : 'Add Unit' }}</h5>
+          <p>Configure a unit of measurement for your store inventory</p>
         </div>
-      </div>
-      <div class="sale-topbar-right">
-        <button class="save-btn" (click)="ViewUnitClicked ? UpdateUnit() : SubmitUnit()">
-          <mat-icon>save</mat-icon> SAVE
-        </button>
       </div>
     </div>
+    <div class="AddForm">
+      <div class="form-top">
+        <p class="cc-title">Unit Details</p>
+      </div>
+      <div class="AddFormConatiner">
+        <form [formGroup]="UnitsForm">
+          <div class="FormInputRowsContainer">
+            <div class="InputRow" *ngIf="isAdmin">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">School <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="School" (change)="onAdminSchoolChange($event)">
+                    <option value="0">-- Select School --</option>
+                    <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+                  </select>
+                  <div *ngIf="UnitsForm.get('School')?.touched && UnitsForm.get('School')?.invalid" class="text-danger">
+                    <small>School is required.</small>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-    <form [formGroup]="UnitsForm" class="sale-form-wrap">
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Academic Year <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <select class="inputField" formControlName="AcademicYear">
+                    <option value="0">-- Select Academic Year --</option>
+                    <option *ngFor="let ay of academicYearList" [value]="ay.ID">{{ ay.Name }}</option>
+                  </select>
+                  <div *ngIf="UnitsForm.get('AcademicYear')?.touched && UnitsForm.get('AcademicYear')?.invalid" class="text-danger">
+                    <small>Academic Year is required.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Unit Name <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input type="text" class="inputField" formControlName="UnitName" placeholder="Enter Unit Name" />
+                  <div *ngIf="UnitsForm.get('UnitName')?.touched && UnitsForm.get('UnitName')?.invalid" class="text-danger">
+                    <small>Unit Name is required.</small>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-      <!-- UNIT DETAILS section -->
-      <div class="sale-section">
-        <div class="sale-section-header">
-          <mat-icon>info</mat-icon>
-          <span>UNIT DETAILS</span>
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Abbreviation <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input type="text" class="inputField" formControlName="Abbreviation" placeholder="Enter Abbreviation" />
+                  <div *ngIf="UnitsForm.get('Abbreviation')?.touched && UnitsForm.get('Abbreviation')?.invalid" class="text-danger">
+                    <small>Abbreviation is required.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Minimum Value <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input type="text" class="inputField" formControlName="MinimumValue" placeholder="Enter Min Value" maxlength="3" (keydown)="allowOnlyNumbers($event)" />
+                  <div *ngIf="UnitsForm.get('MinimumValue')?.touched && UnitsForm.get('MinimumValue')?.invalid" class="text-danger">
+                    <small>Min Value is required.</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Maximum Value <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input type="text" class="inputField" formControlName="MaximumValue" placeholder="Enter Max Value" maxlength="3" (keydown)="allowOnlyNumbers($event)" />
+                  <div *ngIf="UnitsForm.get('MaximumValue')?.touched && UnitsForm.get('MaximumValue')?.invalid" class="text-danger">
+                    <small>Max Value is required.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Minimum Difference <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input type="text" class="inputField" formControlName="MinimumDifference" placeholder="Enter Min Difference" maxlength="3" (keydown)="allowOnlyNumbers($event)" />
+                  <div *ngIf="UnitsForm.get('MinimumDifference')?.touched && UnitsForm.get('MinimumDifference')?.invalid" class="text-danger">
+                    <small>Min Difference is required.</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="InputRow">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Description</label>
+                <div class="input-with-error">
+                  <input type="text" class="inputField" formControlName="Description" placeholder="Enter Description" />
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <span style="visibility: hidden;">Spacer</span>
+              </div>
+            </div>
+
+            <div class="InputRow">
+              <div class="noteActiveCard">
+                <div class="noteSection">
+                  <span>Status</span>
+                  <p>Determine whether this unit is currently active.</p>
+                </div>
+                <div class="InputFieldsContainer">
+                  <div class="toggle-container" (click)="$event.stopPropagation()">
+                    <label class="switch">
+                      <input type="checkbox" [checked]="IsActiveStatus" (click)="toggleChange()">
+                      <span class="slider">
+                        <span class="toggle-text" [ngStyle]="{ left: IsActiveStatus ? '42%' : '60%', fontSize: '9px' }">
+                          {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="form-bottom">
+        <span class="footer-hint">Fields marked <span class="required">*</span> are required</span>
+        <div class="ActionButtons footer-actions">
+          <button type="button" class="cancelbtn" (click)="AddNewClicked()">Cancel</button>
+          <button type="button" class="submitbtn" *ngIf="editclicked && canEdit()" (click)="UpdateUnit()">Update</button>
+          <button type="button" class="submitbtn" *ngIf="!editclicked && canAdd()" (click)="SubmitUnit()">Submit</button>
         </div>
-
-        <div class="sale-details-grid">
-
-          <!-- Admin: School -->
-          <div class="sale-field" *ngIf="isAdmin">
-            <label class="sale-label">SELECT SCHOOL <span class="required">*</span></label>
-            <select class="sale-select" formControlName="School" (change)="onAdminSchoolChange($event)">
-              <option value="0">-- Select School --</option>
-              <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
-            </select>
-            <div *ngIf="UnitsForm.get('School')?.hasError('min') && (UnitsForm.get('School')?.touched || UnitsForm.get('School')?.dirty)" class="sale-error">
-              <small>Please Select School.</small>
-            </div>
-          </div>
-
-          <!-- Academic Year -->
-          <div class="sale-field">
-            <label class="sale-label">ACADEMIC YEAR <span class="required">*</span></label>
-            <select class="sale-select" formControlName="AcademicYear">
-              <option value="0">-- Select Academic Year --</option>
-              <option *ngFor="let ay of academicYearList" [value]="ay.ID">{{ ay.Name }}</option>
-            </select>
-            <div *ngIf="UnitsForm.get('AcademicYear')?.hasError('min') && (UnitsForm.get('AcademicYear')?.touched || UnitsForm.get('AcademicYear')?.dirty)" class="sale-error">
-              <small>Please Select Academic Year.</small>
-            </div>
-          </div>
-
-          <!-- Unit Name -->
-          <div class="sale-field">
-            <label class="sale-label">UNIT NAME <span class="required">*</span></label>
-            <input class="sale-input" formControlName="UnitName" placeholder="Enter Unit Name" />
-            <div *ngIf="UnitsForm.get('UnitName')?.touched && UnitsForm.get('UnitName')?.invalid" class="sale-error">
-              <small *ngIf="UnitsForm.get('UnitName')?.errors?.['required']">Please Enter Unit Name.</small>
-            </div>
-          </div>
-
-          <!-- Abbreviation -->
-          <div class="sale-field">
-            <label class="sale-label">ABBREVIATION <span class="required">*</span></label>
-            <input class="sale-input" formControlName="Abbreviation" placeholder="Enter Abbreviation" />
-            <div *ngIf="UnitsForm.get('Abbreviation')?.touched && UnitsForm.get('Abbreviation')?.invalid" class="sale-error">
-              <small *ngIf="UnitsForm.get('Abbreviation')?.errors?.['required']">Please Enter Abbreviation.</small>
-            </div>
-          </div>
-
-          <!-- Minimum Value -->
-          <div class="sale-field">
-            <label class="sale-label">MINIMUM VALUE <span class="required">*</span></label>
-            <input class="sale-input" formControlName="MinimumValue" placeholder="Enter Minimum Value" maxlength="3" (keydown)="allowOnlyNumbers($event)" />
-            <div *ngIf="UnitsForm.get('MinimumValue')?.touched && UnitsForm.get('MinimumValue')?.invalid" class="sale-error">
-              <small *ngIf="UnitsForm.get('MinimumValue')?.errors?.['required']">Please Enter Minimum Value.</small>
-              <small *ngIf="UnitsForm.get('MinimumValue')?.errors?.['pattern']">Only Numbers.</small>
-            </div>
-          </div>
-
-          <!-- Maximum Value -->
-          <div class="sale-field">
-            <label class="sale-label">MAXIMUM VALUE <span class="required">*</span></label>
-            <input class="sale-input" formControlName="MaximumValue" placeholder="Enter Maximum Value" maxlength="3" (keydown)="allowOnlyNumbers($event)" />
-            <div *ngIf="UnitsForm.get('MaximumValue')?.touched && UnitsForm.get('MaximumValue')?.invalid" class="sale-error">
-              <small *ngIf="UnitsForm.get('MaximumValue')?.errors?.['required']">Please Enter Maximum Value.</small>
-              <small *ngIf="UnitsForm.get('MaximumValue')?.errors?.['pattern']">Only Numbers.</small>
-            </div>
-          </div>
-
-          <!-- Minimum Difference -->
-          <div class="sale-field">
-            <label class="sale-label">MINIMUM DIFFERENCE <span class="required">*</span></label>
-            <input class="sale-input" formControlName="MinimumDifference" placeholder="Enter Minimum Difference" maxlength="3" (keydown)="allowOnlyNumbers($event)" />
-            <div *ngIf="UnitsForm.get('MinimumDifference')?.touched && UnitsForm.get('MinimumDifference')?.invalid" class="sale-error">
-              <small *ngIf="UnitsForm.get('MinimumDifference')?.errors?.['required']">Please Enter Minimum Difference.</small>
-              <small *ngIf="UnitsForm.get('MinimumDifference')?.errors?.['pattern']">Only Numbers.</small>
-            </div>
-          </div>
-
-          <!-- Description -->
-          <div class="sale-field">
-            <label class="sale-label">DESCRIPTION</label>
-            <input class="sale-input" formControlName="Description" placeholder="Enter Description" />
-          </div>
-
-          <!-- Status Toggle -->
-          <div class="sale-field">
-            <label class="sale-label">STATUS</label>
-            <div class="toggle-container" (click)="$event.stopPropagation()">
-              <label class="switch">
-                <input type="checkbox" [checked]="IsActiveStatus" [disabled]="!canDelete()" (click)="toggleChange()">
-                <span class="slider">
-                  <span class="toggle-text"
-                    [ngStyle]="{ left: IsActiveStatus ? '42%' : '60%', fontSize: '9px' }">
-                    {{ IsActiveStatus ? 'Active' : 'Inactive' }}
-                  </span>
-                </span>
-              </label>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-    </form>
-  </div>
-
-</div>
-
-<!-- Status Modal -->
-<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isModalOpen}" [style.display]="isModalOpen ? 'block' : 'none'">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Application Status</h5>
-        <button type="button" class="close" aria-label="Close" (click)="closeModal('status')">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <p>{{ AminityInsStatus }}</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" (click)="handleOk()">OK</button>
       </div>
     </div>
   </div>
-</div>
 
-<!-- View Modal -->
-<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Unit Details</h5>
-        <button type="button" class="close" (click)="closeModal('view')">
-          <span>&times;</span>
+  <!-- Status Modal -->
+  <div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal('status')" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+    <div class="admission-record-card" (click)="$event.stopPropagation()" style="max-width: 400px; padding: 24px; text-align: center; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      <div style="margin-bottom: 16px;">
+        <mat-icon [style.color]="AminityInsStatus.toLowerCase().includes('submitted') || AminityInsStatus.toLowerCase().includes('updated') ? '#10b981' : '#ef4444'" style="font-size: 48px; width: 48px; height: 48px;">
+          {{ AminityInsStatus.toLowerCase().includes('submitted') || AminityInsStatus.toLowerCase().includes('updated') ? 'check_circle' : 'error' }}
+        </mat-icon>
+      </div>
+      <h5 style="margin-bottom: 12px; font-weight: 600; color: #1f2937;">Status Notification</h5>
+      <p style="color: #4b5563; font-size: 14px; margin-bottom: 24px;">{{ AminityInsStatus }}</p>
+      <button class="admission-btn admission-btn--primary" style="margin: 0 auto; display: block;" (click)="handleOk()">OK</button>
+    </div>
+  </div>
+
+  <!-- View Modal -->
+  <div class="modal-backdrop" *ngIf="isViewModalOpen" (click)="closeModal('view')" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+    <div class="admission-record-card" (click)="$event.stopPropagation()" style="max-width: 500px; width: 90%; padding: 24px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      <div class="admission-record-header" style="padding: 0; border-bottom: 1px solid #e5e7eb; padding-bottom: 12px; margin-bottom: 16px;">
+        <div>
+          <h5 style="margin: 0; color: #1f2937;">Unit Details</h5>
+          <p style="margin: 0; font-size: 12px; color: #6b7280;">Detailed information of the selected measurement unit</p>
+        </div>
+        <button (click)="closeModal('view')" style="background: none; border: none; cursor: pointer; color: #9ca3af;">
+          <mat-icon>close</mat-icon>
         </button>
       </div>
-      <div class="modal-body">
-        <div class="row mb-2">
-          <div class="col-4">Unit Name</div>
-          <div class="col-8">{{ viewUnit?.UnitName }}</div>
+      <div style="display: flex; flex-direction: column; gap: 12px; font-size: 14px; color: #4b5563;" *ngIf="viewUnit">
+        <div><strong>Unit Name:</strong> {{ viewUnit.UnitName }}</div>
+        <div><strong>Abbreviation:</strong> {{ viewUnit.Abbreviation }}</div>
+        <div><strong>Minimum Value:</strong> {{ viewUnit.MinimumValue }}</div>
+        <div><strong>Maximum Value:</strong> {{ viewUnit.MaximumValue }}</div>
+        <div><strong>Minimum Difference:</strong> {{ viewUnit.MinimumDifference }}</div>
+        <div><strong>Description:</strong> {{ viewUnit.Description }}</div>
+        <div *ngIf="viewUnit.SchoolName"><strong>School Name:</strong> {{ viewUnit.SchoolName }}</div>
+        <div *ngIf="viewUnit.AcademicYearName"><strong>Academic Year:</strong> {{ viewUnit.AcademicYearName }}</div>
+        <div><strong>Status:</strong>
+          <span
+            class="status-pill"
+            [style.background]="viewUnit.IsActive ? '#d9f9e5' : '#fff0bd'"
+            [style.color]="viewUnit.IsActive ? '#00823a' : '#c25b00'"
+            [style.borderColor]="viewUnit.IsActive ? '#86efac' : '#f5d77a'">
+            {{ viewUnit.IsActive ? 'Active' : 'Inactive' }}
+          </span>
         </div>
-        <div class="row mb-2">
-          <div class="col-4">Abbreviation</div>
-          <div class="col-8">{{ viewUnit?.Abbreviation }}</div>
-        </div>
-        <div class="row mb-2">
-          <div class="col-4">Minimum Value</div>
-          <div class="col-8">{{ viewUnit?.MinimumValue }}</div>
-        </div>
-        <div class="row mb-2">
-          <div class="col-4">Maximum Value</div>
-          <div class="col-8">{{ viewUnit?.MaximumValue }}</div>
-        </div>
-        <div class="row mb-2">
-          <div class="col-4">Minimum Difference</div>
-          <div class="col-8">{{ viewUnit?.MinimumDifference }}</div>
-        </div>
-        <div class="row mb-2">
-          <div class="col-4">Description</div>
-          <div class="col-8">{{ viewUnit?.Description }}</div>
-        </div>
-        <div class="row mb-2" *ngIf="viewUnit?.SchoolName">
-          <div class="col-4">School Name</div>
-          <div class="col-8 viewfontsize">{{ viewUnit?.SchoolName }}</div>
-        </div>
-        <div class="row mb-2" *ngIf="viewUnit?.AcademicYearName">
-          <div class="col-4">Academic Year</div>
-          <div class="col-8 viewfontsize">{{ viewUnit?.AcademicYearName }}</div>
-        </div>
-        <div class="row mb-2">
-          <div class="col-4">Status</div>
-          <div class="col-8">
-            <span class="badge"
-                  [ngClass]="viewUnit?.IsActive ? 'badge-success' : 'badge-danger'">
-              {{ viewUnit?.IsActive ? 'Active' : 'Inactive' }}
-            </span>
-          </div>
-        </div>
+      </div>
+      <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
+        <button class="admission-btn admission-btn--secondary" (click)="closeModal('view')">Close</button>
       </div>
     </div>
   </div>

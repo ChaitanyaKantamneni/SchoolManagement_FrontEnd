@@ -33,6 +33,7 @@ interface SupplierRow {
 })
 export class SuppliersComponent extends BasePermissionComponent implements OnInit {
   pageName = 'Suppliers';
+  Math = Math;
 
   constructor(
     private http: HttpClient,
@@ -47,6 +48,9 @@ export class SuppliersComponent extends BasePermissionComponent implements OnIni
   ngOnInit(): void {
     this.checkViewPermission();
     this.FetchSchoolsList();  // loadSuppliers() is called inside this callback
+    if (!this.isAdmin) {
+      this.supplierForm.get('academicYearId')?.disable({ emitEvent: false });
+    }
   }
 
   // ── state ─────────────────────────────────────────────────────────────────────
@@ -98,7 +102,7 @@ export class SuppliersComponent extends BasePermissionComponent implements OnIni
 
   supplierForm = new FormGroup({
     schoolId: new FormControl('', Validators.required),
-    academicYearId: new FormControl('', Validators.required),
+    academicYearId: new FormControl(sessionStorage.getItem('ActiveAcademicYearID') || '', Validators.required),
     supplierName: new FormControl('', [Validators.required, Validators.minLength(2)]),
     emailAddress: new FormControl('', [Validators.email]),
     phoneNumber: new FormControl('', [Validators.pattern(/^[0-9]{10,15}$/)]),
@@ -118,7 +122,7 @@ export class SuppliersComponent extends BasePermissionComponent implements OnIni
     this.ViewSupplierClicked = false;
     this.supplierForm.reset({
       schoolId: this.isAdmin ? '' : this.currentSchoolId,
-      academicYearId: '',
+      academicYearId: sessionStorage.getItem('ActiveAcademicYearID') || '',
       supplierName: '',
       emailAddress: '',
       phoneNumber: '',
@@ -127,6 +131,9 @@ export class SuppliersComponent extends BasePermissionComponent implements OnIni
 
     if (!this.isAdmin && this.currentSchoolId) {
       this.FetchAcademicYearsList(this.currentSchoolId);
+    }
+    if (!this.isAdmin) {
+      this.supplierForm.get('academicYearId')?.disable({ emitEvent: false });
     }
 
     this.IsAddNewClicked = !this.IsAddNewClicked;
@@ -162,6 +169,9 @@ export class SuppliersComponent extends BasePermissionComponent implements OnIni
         phoneNumber: supplier.phoneNumber,
         address: supplier.address
       });
+      if (!this.isAdmin) {
+        this.supplierForm.get('academicYearId')?.disable({ emitEvent: false });
+      }
       this.IsActiveStatus = supplier.isActive;
       this.IsAddNewClicked = true;
       this.ViewSupplierClicked = true;
@@ -182,7 +192,7 @@ export class SuppliersComponent extends BasePermissionComponent implements OnIni
     const payload = {
       ID: this.editingId || '0',
       SchoolID: String(this.supplierForm.get('schoolId')?.value),
-      AcademicYear: String(this.supplierForm.get('academicYearId')?.value),
+      AcademicYear: this.isAdmin ? String(this.supplierForm.get('academicYearId')?.value) : (sessionStorage.getItem('ActiveAcademicYearID') || String(this.supplierForm.get('academicYearId')?.value)),
       SupplierName: String(this.supplierForm.get('supplierName')?.value).trim(),
       EmailAddress: String(this.supplierForm.get('emailAddress')?.value || '').trim(),
       PhoneNumber: String(this.supplierForm.get('phoneNumber')?.value || '').trim(),
@@ -248,7 +258,7 @@ export class SuppliersComponent extends BasePermissionComponent implements OnIni
           LastCreatedDate: cursor?.lastCreatedDate ?? null,
           LastID: cursor?.lastID ?? null,
           SchoolID: schoolIdForQuery,
-          AcademicYear: '',
+          AcademicYear: this.isAdmin ? (sessionStorage.getItem('ActiveAcademicYearID') || '') : (sessionStorage.getItem('ActiveAcademicYearID') || ''),
           SupplierName: isSearch ? this.searchQuery.trim() : null,
           ...extra
         };
@@ -313,7 +323,7 @@ export class SuppliersComponent extends BasePermissionComponent implements OnIni
     return this.apiurl.post<any>('Tbl_Suppliers_CRUD_Operations', {
       Flag: isSearch ? '8' : '6',
       SchoolID: schoolIdForQuery,
-      AcademicYear: '',
+      AcademicYear: this.isAdmin ? (sessionStorage.getItem('ActiveAcademicYearID') || '') : (sessionStorage.getItem('ActiveAcademicYearID') || ''),
       SupplierName: isSearch ? this.searchQuery.trim() : null
     });
   }
@@ -348,7 +358,7 @@ export class SuppliersComponent extends BasePermissionComponent implements OnIni
   onAdminSchoolChange(event: Event): void {
     const schoolId = (event.target as HTMLSelectElement).value;
     this.academicYearList = [];
-    this.supplierForm.get('academicYearId')?.patchValue('');
+    this.supplierForm.get('academicYearId')?.patchValue(sessionStorage.getItem('ActiveAcademicYearID') || '');
     this.selectedAdminSchoolID = schoolId === '0' ? '' : schoolId;
     if (this.selectedAdminSchoolID) {
       this.FetchAcademicYearsList(this.selectedAdminSchoolID);
@@ -400,6 +410,7 @@ export class SuppliersComponent extends BasePermissionComponent implements OnIni
     const payload: any = {
       Flag: isSearch ? '7' : '2',
       SchoolID: this.selectedSchoolID || null,
+      AcademicYear: this.isAdmin ? null : (sessionStorage.getItem('ActiveAcademicYearID') || null),
       SupplierName: isSearch ? this.searchQuery.trim() : null
     };
 
@@ -456,6 +467,20 @@ export class SuppliersComponent extends BasePermissionComponent implements OnIni
   }
 
   totalPages(): number { return Math.ceil(this.SuppliersCount / this.pageSize); }
+
+  pageStartIndex(): number {
+    return this.SuppliersCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
+  }
+
+  pageEndIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.SuppliersCount);
+  }
+
+  onRowsCountChange() {
+    this.currentPage = 1;
+    this.pageCursors = [];
+    this.FetchInitialData();
+  }
 
   getVisiblePageNumbers(): number[] {
     const totalPages = this.totalPages();

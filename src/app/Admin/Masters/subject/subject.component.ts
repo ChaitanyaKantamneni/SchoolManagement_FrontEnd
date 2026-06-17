@@ -96,24 +96,71 @@ export class SubjectComponent extends BasePermissionComponent {
     AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
   });
 
-  categories:any[] = [];
+  // categories:any[] = [];
+
+  // selectedCategories: string[] = [];
+  // dropdownOpen: boolean = false;
+
+  // toggleSelection(value: string) {
+  //   const index = this.selectedCategories.indexOf(value);
+  //   if (index > -1) {
+  //     this.selectedCategories.splice(index, 1);
+  //   } else {
+  //     this.selectedCategories.push(value);
+  //   }
+  //   this.ModuleForm.get('Class')?.setValue(this.selectedCategories);
+  // }
+
+  // closeDropdown(){
+  //   this.dropdownOpen = false;
+  // };
+
+  categories: any[] = [];
 
   selectedCategories: string[] = [];
   dropdownOpen: boolean = false;
 
-  toggleSelection(value: string) {
+  toggleSelection(value: string): void {
     const index = this.selectedCategories.indexOf(value);
+
     if (index > -1) {
       this.selectedCategories.splice(index, 1);
     } else {
       this.selectedCategories.push(value);
     }
-    this.ModuleForm.get('Class')?.setValue(this.selectedCategories);
+
+    this.ModuleForm.get('Class')?.setValue([...this.selectedCategories]);
+    this.ModuleForm.get('Class')?.markAsTouched();
   }
 
-  closeDropdown(){
+  toggleSelectAll(event: any): void {
+    if (event.target.checked) {
+      this.selectedCategories = this.categories.map(
+        (item: any) => item.ID
+      );
+    } else {
+      this.selectedCategories = [];
+    }
+
+    this.ModuleForm.get('Class')?.setValue([...this.selectedCategories]);
+    this.ModuleForm.get('Class')?.markAsTouched();
+  }
+
+  isAllSelected(): boolean {
+    return (
+      this.categories.length > 0 &&
+      this.selectedCategories.length === this.categories.length
+    );
+  }
+
+  closeDropdown(): void {
     this.dropdownOpen = false;
-  };
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    this.closeDropdown();
+  }
 
   FetchSchoolsList() {
     const requestData = { Flag: '2' };

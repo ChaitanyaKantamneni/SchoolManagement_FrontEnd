@@ -91,27 +91,17 @@ export class SubjectStaffComponent extends BasePermissionComponent {
   AdminselectedAcademivYearID:string = '';
   AdminSelectedActiveAcademicYearID:string = sessionStorage.getItem('ActiveAcademicYearID') || '';
 
-  // toggleSelection(value: string) {
-  //   const index = this.selectedCategories.indexOf(value);
+
+  // toggleSelection(uniqueID: string) {
+  //   const index = this.selectedCategories.indexOf(uniqueID);
   //   if (index > -1) {
-  //     this.selectedCategories.splice(index, 1); // remove if already selected
+  //     this.selectedCategories.splice(index, 1); // uncheck
   //   } else {
-  //     this.selectedCategories.push(value); // add if not selected
+  //     this.selectedCategories.push(uniqueID);  // check
   //   }
 
   //   this.ModuleForm.get('Class')?.setValue(this.selectedCategories);
   // }
-
-  toggleSelection(uniqueID: string) {
-    const index = this.selectedCategories.indexOf(uniqueID);
-    if (index > -1) {
-      this.selectedCategories.splice(index, 1); // uncheck
-    } else {
-      this.selectedCategories.push(uniqueID);  // check
-    }
-
-    this.ModuleForm.get('Class')?.setValue(this.selectedCategories);
-  }
 
 
   ModuleForm: any = new FormGroup({
@@ -1064,21 +1054,76 @@ getClassName(uniqueID: string | string[]): string {
     this.FetchInitialData();
   }
 
-  OpenDropdown(){
+  // OpenDropdown(){
+  //   this.dropdownOpen = true;
+  // };
+
+  // @ViewChild('dropdownContainer')
+  // dropdownContainer!: ElementRef;
+
+  // toggleDropdown(event: Event) {
+  //   event.stopPropagation();
+  //   this.dropdownOpen = !this.dropdownOpen;
+  // }
+
+  // @HostListener('document:click', ['$event'])
+  // clickOutside(event: Event) {
+
+  //   if (
+  //     this.dropdownContainer &&
+  //     !this.dropdownContainer.nativeElement.contains(event.target)
+  //   ) {
+  //     this.dropdownOpen = false;
+  //   }
+  // }
+
+  toggleSelection(uniqueID: string): void {
+    const index = this.selectedCategories.indexOf(uniqueID);
+
+    if (index > -1) {
+      this.selectedCategories.splice(index, 1);
+    } else {
+      this.selectedCategories.push(uniqueID);
+    }
+
+    this.ModuleForm.get('Class')?.setValue([...this.selectedCategories]);
+    this.ModuleForm.get('Class')?.markAsTouched();
+  }
+
+  toggleSelectAll(event: any): void {
+    if (event.target.checked) {
+      this.selectedCategories = this.categories.map(
+        (x: any) => x.UniqueID
+      );
+    } else {
+      this.selectedCategories = [];
+    }
+
+    this.ModuleForm.get('Class')?.setValue([...this.selectedCategories]);
+    this.ModuleForm.get('Class')?.markAsTouched();
+  }
+
+  isAllSelected(): boolean {
+    return (
+      this.categories.length > 0 &&
+      this.selectedCategories.length === this.categories.length
+    );
+  }
+
+  OpenDropdown(): void {
     this.dropdownOpen = true;
-  };
+  }
 
-  @ViewChild('dropdownContainer')
-  dropdownContainer!: ElementRef;
-
-  toggleDropdown(event: Event) {
+  toggleDropdown(event: Event): void {
     event.stopPropagation();
     this.dropdownOpen = !this.dropdownOpen;
   }
 
-  @HostListener('document:click', ['$event'])
-  clickOutside(event: Event) {
+  @ViewChild('dropdownContainer')
+  dropdownContainer!: ElementRef;
 
+  @HostListener('document:click', ['$event'])
+  clickOutside(event: Event): void {
     if (
       this.dropdownContainer &&
       !this.dropdownContainer.nativeElement.contains(event.target)

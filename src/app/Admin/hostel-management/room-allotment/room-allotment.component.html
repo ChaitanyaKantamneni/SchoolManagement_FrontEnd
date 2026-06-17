@@ -3,84 +3,76 @@
 </div>
 <div class="MainContentDiv">
   <!-- LIST VIEW -->
-  <div *ngIf="!IsAddNewClicked" class="w-100">
-    <div class="ComponentTop">
+  <div *ngIf="!IsAddNewClicked" class="w-100 admission-dashboard">
+    <div class="ComponentTop admission-hero">
       <div class="ComponentTopHeader">
+        <div class="admission-breadcrumb">
+          <span>Hostel Management</span>
+          <mat-icon>chevron_right</mat-icon>
+          <strong>Room Allotment</strong>
+        </div>
         <h5>Room Allotment Management</h5>
         <p>Total {{ AllotmentCount }} Records Found</p>
       </div>
-      <div class="ComponentTopBottom">
-        <button *ngIf="canAdd()" (click)="AddNewClicked()">
+      <div class="ComponentTopBottom admission-header-actions">
+        <button *ngIf="canAdd()" type="button" class="admission-btn admission-btn--primary admission-top-action" (click)="AddNewClicked()">
           <mat-icon>add_circle</mat-icon>New Allotment
         </button>
       </div>
     </div>
 
     <!-- Stats Grid -->
-    <div class="admission-stats-grid"
-      style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 10px;">
-      <div class="admission-stat-card"
-        style="background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 12px;">
-        <div class="admission-stat-icon"
-          style="background: #e0f2fe; color: #0284c7; padding: 10px; border-radius: 50%; display: flex;">
-          <mat-icon>people</mat-icon>
-        </div>
+    <div class="admission-stats-grid">
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--blue"><mat-icon>people</mat-icon></div>
         <div>
-          <strong style="font-size: 18px; display: block;">{{ TotalAllotments }}</strong>
-          <span style="color: #64748b; font-size: 12px;">Total Allotments</span>
+          <strong>{{ TotalAllotments }}</strong>
+          <span>Total Allotments</span>
         </div>
       </div>
-      <div class="admission-stat-card"
-        style="background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 12px;">
-        <div class="admission-stat-icon"
-          style="background: #dcfce7; color: #16a34a; padding: 10px; border-radius: 50%; display: flex;">
-          <mat-icon>check_circle</mat-icon>
-        </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--green"><mat-icon>check_circle</mat-icon></div>
         <div>
-          <strong style="font-size: 18px; display: block;">{{ ActiveAllotments }}</strong>
-          <span style="color: #64748b; font-size: 12px;">Active Allotments</span>
+          <strong>{{ ActiveAllotments }}</strong>
+          <span>Active Allotments</span>
         </div>
       </div>
-      <div class="admission-stat-card"
-        style="background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 12px;">
-        <div class="admission-stat-icon"
-          style="background: #ffe4e6; color: #9f1239; padding: 10px; border-radius: 50%; display: flex;">
-          <mat-icon>block</mat-icon>
-        </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--amber"><mat-icon>block</mat-icon></div>
         <div>
-          <strong style="font-size: 18px; display: block;">{{ TotalAllotments - ActiveAllotments }}</strong>
-          <span style="color: #64748b; font-size: 12px;">Inactive Allotments</span>
+          <strong>{{ TotalAllotments - ActiveAllotments }}</strong>
+          <span>Inactive Allotments</span>
         </div>
       </div>
     </div>
 
-    <div class="ComponentRecords">
+    <div class="admission-filter-row">
+      <div class="admission-searchbox">
+        <mat-icon>search</mat-icon>
+        <input type="text" id="searchQuery" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search Student..." />
+      </div>
+      <button type="button" class="admission-chip admission-chip--active">All <span>{{ AllotmentCount }}</span></button>
+      <select class="admission-select" *ngIf="isAdmin" (change)="onFilterSchoolChange($event)">
+        <option value="0">-- All Schools --</option>
+        <option *ngFor="let s of schoolList" [value]="s.ID">{{ s.Name }}</option>
+      </select>
+      <select class="admission-select" (change)="onFilterYearChange($event)" [disabled]="!isAdmin" [value]="filterAcademicYear">
+        <option value="0">-- All Years --</option>
+        <option *ngFor="let y of academicYearList" [value]="y.ID">{{ y.Name }}</option>
+      </select>
+    </div>
+
+    <div class="ComponentRecords admission-record-card">
       <div>
-        <div class="ComponentRecordsTop">
-          <div class="filterOptions">
-            <div class="searchreview input-container">
-              <input type="text" id="searchQuery" class="form-control floating-input" [(ngModel)]="searchQuery"
-                (ngModelChange)="onSearchChange()" placeholder="Search Student..." />
-              <mat-icon
-                style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
-            </div>
-            <div class="searchreview" *ngIf="isAdmin">
-              <select (change)="onFilterSchoolChange($event)" class="form-control" style="font-size: 11px;">
-                <option value="0">-- All Schools --</option>
-                <option *ngFor="let s of schoolList" [value]="s.ID">{{ s.Name }}</option>
-              </select>
-            </div>
-            <div class="searchreview">
-              <select (change)="onFilterYearChange($event)" class="form-control" style="font-size: 11px;">
-                <option value="0">-- All Years --</option>
-                <option *ngFor="let y of academicYearList" [value]="y.ID">{{ y.Name }}</option>
-              </select>
-            </div>
+        <div class="ComponentRecordsTop admission-record-header">
+          <div>
+            <h5>Allotment Records</h5>
+            <p>Showing {{ AllotmentList.length }} of {{ AllotmentCount }} records</p>
           </div>
         </div>
 
-        <div class="reviewstable">
-          <table *ngIf="AllotmentList.length > 0" class="table table-bordered">
+        <div class="reviewstable admission-table-wrap">
+          <table *ngIf="AllotmentList.length > 0" class="table table-bordered admission-table">
             <thead>
               <tr>
                 <th>S.No</th>
@@ -120,9 +112,10 @@
                 <td data-label="School" *ngIf="isAdmin">{{ item.SchoolName }}</td>
                 <td data-label="Status">
                   <span class="status-pill"
-                    [style.background]="(item.IsActive === 'Active' || item.IsActive === true) ? 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)' : 'linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%)'"
-                    [style.color]="(item.IsActive === 'Active' || item.IsActive === true) ? '#166534' : '#9f1239'"
-                    [style.borderColor]="(item.IsActive === 'Active' || item.IsActive === true) ? '#86efac' : '#fda4af'">
+                    [style.background]="(item.IsActive === 'Active' || item.IsActive === true) ? '#d9f9e5' : '#fff0bd'"
+                    [style.color]="(item.IsActive === 'Active' || item.IsActive === true) ? '#00823a' : '#c25b00'"
+                    [style.borderColor]="(item.IsActive === 'Active' || item.IsActive === true) ? '#86efac' : '#f5d77a'"
+                    [ngClass]="(item.IsActive === 'Active' || item.IsActive === true) ? 'status-active' : 'status-inactive'">
                     {{ (item.IsActive === 'Active' || item.IsActive === true) ? 'Active' : 'Inactive' }}
                   </span>
                 </td>
@@ -146,18 +139,29 @@
             </div>
             <p>No data found.</p>
           </div>
+          
+          <div class="admission-footer-meta">
+            <label>
+              Rows:
+              <select aria-label="Rows per page" [(ngModel)]="pageSize"
+            (ngModelChange)="onRowsCountChange()">
+                <option [ngValue]="5">5</option>
+                <option [ngValue]="10">10</option>
+                <option [ngValue]="25">25</option>
+                <option [ngValue]="50">50</option>
+              </select>
+            </label>
+            <p>{{ pageStartIndex() }}&ndash;{{ pageEndIndex() }} of {{ AllotmentCount }} records</p>
+          </div>
 
           <div *ngIf="AllotmentCount > pageSize" class="pagination-controls">
-            <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1"
-              class="arrow-btn FirstandLastButton">First</button>
+            <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
             <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
-            <button *ngFor="let page of getVisiblePageNumbers()" class="page-btn"
-              [ngClass]="{'active': page === currentPage}" (click)="goToPage(page)">
+            <button *ngFor="let page of getVisiblePageNumbers()" class="page-btn" [ngClass]="{'active': page === currentPage}" (click)="goToPage(page)">
               {{ page }}
             </button>
             <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
-            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()"
-              class="arrow-btn FirstandLastButton">Last</button>
+            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
           </div>
         </div>
       </div>
@@ -166,10 +170,25 @@
 
   <!-- ADD/EDIT FORM VIEW -->
   <div *ngIf="IsAddNewClicked" class="w-100">
+    <div class="admission-breadcrumb">
+      <span>Hostel Management</span>
+      <mat-icon>chevron_right</mat-icon>
+      <span>Room Allotment</span>
+      <mat-icon>chevron_right</mat-icon>
+      <strong>{{ ViewRoomClicked ? 'Edit Allotment' : 'New Allotment' }}</strong>
+    </div>
+    <div class="AddFormTop">
+      <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+      <div class="admission-record-header p-0">
+        <div>
+          <h5>{{ ViewRoomClicked ? 'Edit Allotment' : 'New Allotment' }}</h5>
+          <p>Configure room allotment for student</p>
+        </div>
+      </div>
+    </div>
     <div class="AddForm">
-      <div class="AddFormTop">
-        <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
-        <p>{{ ViewRoomClicked ? 'Update Allotment' : 'Add New Allotment' }}</p>
+      <div class="form-top">
+        <p class="cc-title">Allotment Details</p>
       </div>
       <div class="AddFormConatiner">
         <form [formGroup]="AllotmentForm">
@@ -183,8 +202,7 @@
                     <option value="0">-- Select School --</option>
                     <option *ngFor="let s of schoolList" [value]="s.ID">{{ s.Name }}</option>
                   </select>
-                  <div *ngIf="AllotmentForm.get('School')?.touched && AllotmentForm.get('School')?.invalid"
-                    class="text-danger">
+                  <div *ngIf="AllotmentForm.get('School')?.touched && AllotmentForm.get('School')?.invalid" class="text-danger">
                     <small>Required.</small>
                   </div>
                 </div>
@@ -196,9 +214,7 @@
                     <option value="0">-- Select Academic Year --</option>
                     <option *ngFor="let y of academicYearList" [value]="y.ID">{{ y.Name }}</option>
                   </select>
-                  <div
-                    *ngIf="AllotmentForm.get('AcademicYear')?.touched && AllotmentForm.get('AcademicYear')?.value === '0'"
-                    class="text-danger">
+                  <div *ngIf="AllotmentForm.get('AcademicYear')?.touched && AllotmentForm.get('AcademicYear')?.value === '0'" class="text-danger">
                     <small>Required.</small>
                   </div>
                 </div>
@@ -210,8 +226,7 @@
                     <option value="0">-- Select Student --</option>
                     <option *ngFor="let st of studentList" [value]="st.ID">{{ st.Name }}</option>
                   </select>
-                  <div *ngIf="AllotmentForm.get('StudentID')?.touched && AllotmentForm.get('StudentID')?.value === '0'"
-                    class="text-danger">
+                  <div *ngIf="AllotmentForm.get('StudentID')?.touched && AllotmentForm.get('StudentID')?.value === '0'" class="text-danger">
                     <small>Required.</small>
                   </div>
                 </div>
@@ -227,8 +242,7 @@
                     <option value="0">-- Select Hostel --</option>
                     <option *ngFor="let h of hostelList" [value]="h.ID">{{ h.HostelName }}</option>
                   </select>
-                  <div *ngIf="AllotmentForm.get('HostelID')?.touched && AllotmentForm.get('HostelID')?.value === '0'"
-                    class="text-danger">
+                  <div *ngIf="AllotmentForm.get('HostelID')?.touched && AllotmentForm.get('HostelID')?.value === '0'" class="text-danger">
                     <small>Required.</small>
                   </div>
                 </div>
@@ -242,8 +256,7 @@
                       Room {{ r.RoomNumber }} (Avail: {{ r.AvailableBeds }})
                     </option>
                   </select>
-                  <div *ngIf="AllotmentForm.get('RoomID')?.touched && AllotmentForm.get('RoomID')?.value === '0'"
-                    class="text-danger">
+                  <div *ngIf="AllotmentForm.get('RoomID')?.touched && AllotmentForm.get('RoomID')?.value === '0'" class="text-danger">
                     <small>Required.</small>
                   </div>
                 </div>
@@ -252,9 +265,7 @@
                 <label class="inputLabel">Allotment Date <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input type="date" class="inputField" formControlName="AllotmentDate" />
-                  <div
-                    *ngIf="AllotmentForm.get('AllotmentDate')?.touched && AllotmentForm.get('AllotmentDate')?.invalid"
-                    class="text-danger">
+                  <div *ngIf="AllotmentForm.get('AllotmentDate')?.touched && AllotmentForm.get('AllotmentDate')?.invalid" class="text-danger">
                     <small>Required.</small>
                   </div>
                 </div>
@@ -263,43 +274,53 @@
 
             <!-- Row 3 -->
             <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel">Status Flag</label>
-                <div class="toggle-container" style="height:40px; display:flex; align-items:center;">
-                  <label class="switch">
-                    <input type="checkbox" formControlName="IsActive">
-                    <span class="slider">
-                      <span class="toggle-text"
-                        [ngStyle]="{ left: AllotmentForm.get('IsActive')?.value ? '42%' : '60%', fontSize: '9px' }">
-                        {{ AllotmentForm.get('IsActive')?.value ? 'Active' : 'Inactive' }}
-                      </span>
-                    </span>
-                  </label>
-                </div>
-              </div>
               <div class="InputFieldsContainer" style="flex: 2;">
                 <label class="inputLabel">Remarks</label>
                 <div class="input-with-error">
-                  <textarea class="inputField" formControlName="Remarks" placeholder="Enter Remarks"
-                    rows="1"></textarea>
+                  <textarea class="inputField" formControlName="Remarks" placeholder="Enter Remarks" rows="1"></textarea>
+                </div>
+              </div>
+              <div class="InputFieldsContainer">
+                <span style="visibility: hidden;">Spacer</span>
+              </div>
+            </div>
+
+            <div class="InputRow">
+              <div class="noteActiveCard">
+                <div class="noteSection">
+                  <span>Status</span>
+                  <p>Determine whether this room allotment is currently active.</p>
+                </div>
+                <div class="InputFieldsContainer">
+                  <div class="toggle-container" (click)="$event.stopPropagation()">
+                    <label class="switch">
+                      <input type="checkbox" formControlName="IsActive">
+                      <span class="slider">
+                        <span class="toggle-text" [ngStyle]="{ left: AllotmentForm.get('IsActive')?.value ? '42%' : '60%', fontSize: '9px' }">
+                          {{ AllotmentForm.get('IsActive')?.value ? 'Active' : 'Inactive' }}
+                        </span>
+                      </span>
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-
-          <div class="ActionButtons">
-            <button type="button" *ngIf="ViewRoomClicked" (click)="SubmitAllotment()">Update</button>
-            <button type="button" *ngIf="!ViewRoomClicked" (click)="SubmitAllotment()">Submit</button>
-          </div>
         </form>
+      </div>
+      <div class="form-bottom">
+        <span class="footer-hint">Fields marked <span class="required">*</span> are required</span>
+        <div class="ActionButtons footer-actions">
+          <button type="button" class="cancelbtn" (click)="AddNewClicked()">Cancel</button>
+          <button type="button" class="submitbtn" (click)="SubmitAllotment()">{{ ViewRoomClicked ? 'Update' : 'Submit' }}</button>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <!-- Status Modal -->
-<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isStatusModalOpen}"
-  [style.display]="isStatusModalOpen ? 'block' : 'none'">
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isStatusModalOpen}" [style.display]="isStatusModalOpen ? 'block' : 'none'">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -319,8 +340,7 @@
 </div>
 
 <!-- View Details Modal -->
-<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}"
-  [style.display]="isViewModalOpen ? 'block' : 'none'">
+<div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -371,8 +391,7 @@
         <div class="row mb-2">
           <div class="col-4">Status</div>
           <div class="col-8">
-            <span class="badge"
-              [ngClass]="(viewRecord?.IsActive === 'Active' || viewRecord?.IsActive === true) ? 'badge-success' : 'badge-danger'">
+            <span class="badge" [ngClass]="(viewRecord?.IsActive === 'Active' || viewRecord?.IsActive === true) ? 'badge-success' : 'badge-danger'">
               {{ (viewRecord?.IsActive === 'Active' || viewRecord?.IsActive === true) ? 'Active' : 'Inactive' }}
             </span>
           </div>

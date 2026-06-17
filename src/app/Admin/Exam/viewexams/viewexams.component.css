@@ -54,3 +54,119 @@
   margin: 12px 0 0 !important;
 }
 
+.MainContentDiv {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+  min-height: auto;
+  background: transparent;
+}
+
+.w-100,
+.ComponentRecords,
+.AddForm {
+  width: 100%;
+}
+
+.FormInputRowsContainer {
+  align-items: stretch;
+  gap: 12px;
+}
+
+.InputRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 16px;
+  width: 100% !important;
+  flex-direction: row !important;
+  flex-wrap: wrap;
+}
+
+.InputFieldsContainer {
+  flex: 1 1 calc(50% - 8px);
+  min-width: 260px;
+}
+
+.InputRow:last-child .InputFieldsContainer {
+  flex: 1 1 calc(50% - 8px);
+  max-width: calc(50% - 8px);
+}
+
+.form-bottom {
+  justify-content: end !important;
+}
+
+.footer-actions {
+  margin: 0;
+}
+
+.admission-record-card {
+  width: 100%;
+}
+
+.admission-record-header h5 {
+  margin: 0;
+}
+
+.reviewstable table th {
+  white-space: nowrap;
+}
+
+.reviewstable table td {
+  vertical-align: middle;
+  font-size: 12px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 22px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.status-scheduled {
+  background: #fff0bd;
+  border-color: #f5d77a;
+  color: #c25b00;
+}
+
+.status-attendance {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  color: #1d4ed8;
+}
+
+.status-published {
+  background: #d9f9e5;
+  border-color: #86efac;
+  color: #00823a;
+}
+
+.status-default {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+@media (max-width: 768px) {
+  .InputRow {
+    flex-direction: column !important;
+    align-items: stretch;
+  }
+
+  .InputFieldsContainer,
+  .InputRow:last-child .InputFieldsContainer {
+    min-width: 100%;
+    max-width: none;
+    flex: 1 1 100%;
+  }
+}
+

@@ -37,6 +37,7 @@ export class SessionsComponent extends BasePermissionComponent {
       this.checkViewPermission();
       this.SchoolSelectionChange=false;
       this.SyllabusList=[];
+      this.AdminSelectedActiveAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
       this.FetchSchoolsList();
       this.FetchInitialData();
     };
@@ -75,6 +76,9 @@ export class SessionsComponent extends BasePermissionComponent {
     academicYearList:any[] = [];
     AdminselectedSchoolID:string = '';
     AdminselectedAcademivYearID:string = '';
+    selectedAcademicYearID: string = '';
+    SchoolAcademicYearChange: boolean = false;
+    AdminSelectedActiveAcademicYearID: string = sessionStorage.getItem('ActiveAcademicYearID') || '';
   
     ClassForm: any = new FormGroup({
       ID: new FormControl(),
@@ -159,16 +163,29 @@ export class SessionsComponent extends BasePermissionComponent {
   
     FetchAcademicYearCount(isSearch: boolean) {
       let SchoolIdSelected = '';
+      let AcademicYearIdSelected = '';
   
       if (this.SchoolSelectionChange) {
         SchoolIdSelected = this.selectedSchoolID.trim();
       }
+
+      if (this.SchoolAcademicYearChange) {
+        AcademicYearIdSelected = this.selectedAcademicYearID.trim();
+      }
   
-      return this.apiurl.post<any>('Tbl_Session_CRUD_Operations', {
+      const payload: any = {
         Flag: isSearch ? '8' : '6',
         SchoolID:SchoolIdSelected,
         Session: isSearch ? this.searchQuery.trim() : null
-      });
+      };
+
+      if (!this.isAdmin) {
+        payload.AcademicYear = this.AdminSelectedActiveAcademicYearID;
+      } else if (this.isAdmin && this.SchoolAcademicYearChange) {
+        payload.AcademicYear = AcademicYearIdSelected;
+      }
+
+      return this.apiurl.post<any>('Tbl_Session_CRUD_Operations', payload);
     }
   
     FetchInitialData(extra: any = {}) {
@@ -176,9 +193,14 @@ export class SessionsComponent extends BasePermissionComponent {
       const flag = isSearch ? '7' : '2';
   
       let SchoolIdSelected = '';
+      let AcademicYearIdSelected = '';
   
       if (this.SchoolSelectionChange) {
         SchoolIdSelected = this.selectedSchoolID.trim();
+      }
+
+      if (this.SchoolAcademicYearChange) {
+        AcademicYearIdSelected = this.selectedAcademicYearID.trim();
       }
   
       const cursor =
@@ -202,6 +224,12 @@ export class SessionsComponent extends BasePermissionComponent {
             SchoolID:SchoolIdSelected,
             ...extra
           };
+
+          if (!this.isAdmin) {
+            payload.AcademicYear = this.AdminSelectedActiveAcademicYearID;
+          } else if (this.isAdmin && this.SchoolAcademicYearChange) {
+            payload.AcademicYear = AcademicYearIdSelected;
+          }
   
           if (isSearch) payload.Session = this.searchQuery.trim();
   
@@ -247,17 +275,23 @@ export class SessionsComponent extends BasePermissionComponent {
     };
   
     AddNewClicked(){
+      this.ClassForm.reset();
       if (this.isAdmin) {
         this.ClassForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
+        this.ClassForm.get('School').patchValue('0');
+        this.ClassForm.get('AcademicYear').patchValue('0');
       } else {
         this.ClassForm.get('School')?.clearValidators();
+        this.ClassForm.get('AcademicYear')?.disable({ emitEvent: false });
       }
       if(this.AdminselectedSchoolID==''){
+        const schoolFromSession = sessionStorage.getItem('SchoolID') || localStorage.getItem('SchoolID') || '';
+        this.AdminselectedSchoolID = schoolFromSession;
         this.FetchAcademicYearsList();
+        if(!this.isAdmin){
+          this.ClassForm.get('AcademicYear').patchValue(this.AdminSelectedActiveAcademicYearID);
+        }  
       }
-      this.ClassForm.reset();
-      this.ClassForm.get('School').patchValue('0');
-      this.ClassForm.get('AcademicYear').patchValue('0');
       this.IsAddNewClicked=!this.IsAddNewClicked;
       this.IsActiveStatus=true;
       this.ViewClassClicked=false;
@@ -300,7 +334,7 @@ export class SessionsComponent extends BasePermissionComponent {
       // }
       // else{
         const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
-        const data = {
+        const data: any = {
           Session: this.ClassForm.get('Session')?.value,
           StartTime: this.formatTime(this.ClassForm.get('StartTime')?.value),
           EndTime: this.formatTime(this.ClassForm.get('EndTime')?.value),
@@ -309,6 +343,10 @@ export class SessionsComponent extends BasePermissionComponent {
           IsActive:IsActiveStatusNumeric,
           Flag: '1'
         };
+
+        if (!this.isAdmin) {
+          data.AcademicYear = this.AdminSelectedActiveAcademicYearID;
+        }
   
         this.apiurl.post("Tbl_Session_CRUD_Operations", data).subscribe({
           next: (response: any) => {
@@ -317,6 +355,7 @@ export class SessionsComponent extends BasePermissionComponent {
               this.isModalOpen = true;
               this.AminityInsStatus = "Working Day Details Submitted!";
               this.ClassForm.reset();
+              this.ClassForm.get('AcademicYear').patchValue(sessionStorage.getItem('ActiveAcademicYearID') || '');
               this.ClassForm.markAsPristine();
             }
           },
@@ -399,7 +438,7 @@ export class SessionsComponent extends BasePermissionComponent {
       }
       else{
         const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";
-        const data = {
+        const data: any = {
           ID:this.ClassForm.get('ID')?.value || '',
           Session: this.ClassForm.get('Session')?.value,
           StartTime: this.formatTime(this.ClassForm.get('StartTime')?.value),
@@ -409,6 +448,10 @@ export class SessionsComponent extends BasePermissionComponent {
           IsActive:IsActiveStatusNumeric,
           Flag: '5'
         };
+
+        if (!this.isAdmin) {
+          data.AcademicYear = this.AdminSelectedActiveAcademicYearID;
+        }
   
         this.apiurl.post("Tbl_Session_CRUD_Operations", data).subscribe({
           next: (response: any) => {
@@ -417,6 +460,7 @@ export class SessionsComponent extends BasePermissionComponent {
               this.isModalOpen = true;
               this.AminityInsStatus = "Working Day Details Updated!";
               this.ClassForm.reset();
+              this.ClassForm.get('AcademicYear').patchValue(sessionStorage.getItem('ActiveAcademicYearID') || '');
               this.ClassForm.markAsPristine();
             }
           },
@@ -490,6 +534,20 @@ export class SessionsComponent extends BasePermissionComponent {
       for (let i=start; i<=end; i++) pages.push(i);
       return pages;
     };
+
+    pageStartIndex(): number {
+      return this.ClassCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
+    }
+
+    pageEndIndex(): number {
+      return Math.min(this.currentPage * this.pageSize, this.ClassCount);
+    }
+
+    onRowsCountChange() {
+      this.currentPage = 1;
+      this.pageCursors = [];
+      this.FetchInitialData();
+    }
   
     onSearchChange() {
       clearTimeout(this.searchTimer);
@@ -667,7 +725,7 @@ export class SessionsComponent extends BasePermissionComponent {
 
     onAdminSchoolChange(event: Event) {
       this.academicYearList=[];
-      this.ClassForm.get('AcademicYear').patchValue('0');
+      this.ClassForm.get('AcademicYear').patchValue(sessionStorage.getItem('ActiveAcademicYearID') || '');
       const target = event.target as HTMLSelectElement;
       const schoolID = target.value;
       if(schoolID=="0"){
@@ -677,4 +735,12 @@ export class SessionsComponent extends BasePermissionComponent {
       }   
       this.FetchAcademicYearsList();
     };
+
+    CancelSyllabus(){
+      this.IsAddNewClicked=false;
+      this.AdminselectedSchoolID = '';
+      this.AdminselectedAcademivYearID = '';
+      this.ClassForm.reset();
+      this.FetchInitialData();
+    }
 }

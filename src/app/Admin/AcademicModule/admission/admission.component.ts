@@ -3565,4 +3565,9 @@ onDragOver(event: DragEvent) {
   event.preventDefault();
 }
 
+  onRowsCountChange() {
+    this.currentPage = 1;
+    this.FetchInitialData();
+  }
+
 }

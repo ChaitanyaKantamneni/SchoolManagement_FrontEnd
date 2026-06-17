@@ -20,7 +20,7 @@ import { RoomAllotmentService } from '../room-allotment/room-allotment.service';
   styleUrls: ['./out-pass.component.css']
 })
 export class OutPassComponent extends BasePermissionComponent implements OnInit {
-  pageName = 'Outpass';
+  pageName = 'Out Pass';
 
   // -- UI state --
   IsAddNewClicked = false;
@@ -59,7 +59,7 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
 
   // -- Filters --
   filterSchoolID = '';
-  filterAcademicYear = '';
+  filterAcademicYear = sessionStorage.getItem('ActiveAcademicYearID') || '';
 
   // -- Session --
   ActiveUserId = sessionStorage.getItem('email')?.toString() || '';
@@ -68,7 +68,7 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
   OutPassForm = new FormGroup({
     ID: new FormControl('0'),
     School: new FormControl('0', [Validators.required, Validators.pattern(/^(?!0$).*$/)]),
-    AcademicYear: new FormControl('0', [Validators.required, Validators.pattern(/^(?!0$).*$/)]),
+    AcademicYear: new FormControl(sessionStorage.getItem('ActiveAcademicYearID') || '0', [Validators.required, Validators.pattern(/^(?!0$).*$/)]),
     StudentID: new FormControl('0', [Validators.required, Validators.pattern(/^(?!0$).*$/)]),
     HostelID: new FormControl('0'),
     RoomID: new FormControl('0'),
@@ -99,7 +99,10 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
     const schoolId = sessionStorage.getItem('SchoolID') || '';
     if (schoolId) {
       this.FetchAcademicYearsList(schoolId);
-      this.FetchStudentDetailsForMap(schoolId, true);
+      this.FetchStudentDetailsForMap(schoolId);
+    }
+    if (!this.isAdmin) {
+      this.OutPassForm.get('AcademicYear')?.disable({ emitEvent: false });
     }
   }
 
@@ -214,7 +217,7 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
     const payload: any = {
       Flag: this.searchQuery.trim() ? '7' : '2',
       SchoolID: this.filterSchoolID || null,
-      AcademicYear: this.filterAcademicYear || null,
+      AcademicYear: this.isAdmin ? (this.filterAcademicYear || null) : (sessionStorage.getItem('ActiveAcademicYearID') || null),
       Destination: this.searchQuery.trim() || null, 
       Limit: this.pageSize,
       Offset: (this.currentPage - 1) * this.pageSize
@@ -283,11 +286,14 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
 
   onModalSchoolChange() {
     const schoolID = this.OutPassForm.get('School')?.value;
-    this.OutPassForm.patchValue({ AcademicYear: '0', StudentID: '0' });
+    const activeYear = sessionStorage.getItem('ActiveAcademicYearID') || '0';
+    this.OutPassForm.patchValue({ AcademicYear: activeYear, StudentID: '0' });
     this.studentList = [];
     if (schoolID && schoolID !== '0') {
       this.FetchAcademicYearsList(schoolID);
-      this.FetchStudentDetailsForMap(schoolID, true);
+      if (activeYear && activeYear !== '0') {
+        this.FetchStudentList(schoolID, activeYear);
+      }
     }
   }
 
@@ -303,7 +309,7 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
   AddNewClicked() {
     this.OutPassForm.reset();
     const schoolId = sessionStorage.getItem('SchoolID') || '0';
-    const yearId = sessionStorage.getItem('AcademicYear') || '0';
+    const yearId = sessionStorage.getItem('ActiveAcademicYearID') || sessionStorage.getItem('AcademicYear') || '0';
 
     this.OutPassForm.patchValue({
       ID: '0',
@@ -314,12 +320,9 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
       OutDateTime: ''
     });
 
-    if (this.isAdmin) {
-      this.OutPassForm.get('School')?.setValidators([Validators.required, Validators.pattern(/^(?!0$).*$/)]);
-    } else {
-      this.OutPassForm.get('School')?.clearValidators();
+    if (!this.isAdmin) {
+      this.OutPassForm.get('AcademicYear')?.disable({ emitEvent: false });
     }
-    this.OutPassForm.get('School')?.updateValueAndValidity();
 
     if (schoolId !== '0') {
       this.FetchAcademicYearsList(schoolId);
@@ -355,7 +358,7 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
       Flag: isUpdate ? '5' : '1',
       ID: isUpdate ? fv.ID : '0',
       SchoolID: fv.School,
-      AcademicYear: fv.AcademicYear,
+      AcademicYear: this.isAdmin ? fv.AcademicYear : (sessionStorage.getItem('ActiveAcademicYearID') || fv.AcademicYear),
       StudentID: fv.StudentID,
       HostelID: fv.HostelID,
       RoomID: fv.RoomID,
@@ -480,7 +483,7 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
   }
 
   totalPages(): number {
-    return Math.max(1, Math.ceil(this.totalCount / this.pageSize));
+    return Math.ceil(this.totalCount / this.pageSize) || 1;
   }
 
   goToPage(page: number) {
@@ -492,15 +495,24 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
   }
 
   previousPage() {
-    if (this.currentPage > 1) {
-      this.goToPage(this.currentPage - 1);
-    }
+    if (this.currentPage > 1) this.goToPage(this.currentPage - 1);
   }
 
   nextPage() {
-    if (this.currentPage < this.totalPages()) {
-      this.goToPage(this.currentPage + 1);
-    }
+    if (this.currentPage < this.totalPages()) this.goToPage(this.currentPage + 1);
+  }
+
+  pageStartIndex(): number {
+    return this.totalCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
+  }
+
+  pageEndIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.totalCount);
+  }
+
+  onRowsCountChange() {
+    this.currentPage = 1;
+    this.FetchOutPassList();
   }
 
   getVisiblePageNumbers(): number[] {

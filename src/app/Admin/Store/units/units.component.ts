@@ -19,6 +19,7 @@ import { HttpClient } from '@angular/common/http';
 })
 export class UnitsComponent extends BasePermissionComponent {
   pageName = 'Units';
+  Math = Math;
 
   constructor(
     private http: HttpClient,
@@ -35,6 +36,9 @@ export class UnitsComponent extends BasePermissionComponent {
     this.SchoolSelectionChange = false;
     this.FetchSchoolsList();
     this.FetchInitialData();
+    if (!this.isAdmin) {
+      this.UnitsForm.get('AcademicYear')?.disable({ emitEvent: false });
+    }
   }
 
   allowOnlyNumbers(event: KeyboardEvent) {
@@ -84,7 +88,7 @@ export class UnitsComponent extends BasePermissionComponent {
   SchoolSelectionChange: boolean = false;
   academicYearList: any[] = [];
   AdminselectedSchoolID: string = '';
-  AdminselectedAcademicYearID: string = '';
+  AdminselectedAcademicYearID: string = sessionStorage.getItem('ActiveAcademicYearID') || '';
 
   // FIX 1: School initialised to 0 (same as Items) so Validators.min(1) works correctly.
   UnitsForm: any = new FormGroup({
@@ -97,7 +101,7 @@ export class UnitsComponent extends BasePermissionComponent {
     MinimumDifference: new FormControl('', [Validators.required, Validators.pattern('^[0-9]{1,3}$')]),
     Description: new FormControl(''),
     School: new FormControl(0),
-    AcademicYear: new FormControl(0, [Validators.required, Validators.min(1)])
+    AcademicYear: new FormControl(sessionStorage.getItem('ActiveAcademicYearID') ? Number(sessionStorage.getItem('ActiveAcademicYearID')) : 0, [Validators.required, Validators.min(1)])
   });
 
   FetchSchoolsList() {
@@ -149,12 +153,14 @@ export class UnitsComponent extends BasePermissionComponent {
       SchoolIdSelected = this.selectedSchoolID.trim();
     }
 
-    return this.apiurl.post<any>('Tbl_Units_CRUD_Operations', {
+    const payload: any = {
       Flag: isSearch ? '8' : '6',
       SchoolID: SchoolIdSelected,
-      AcademicYear: this.AdminselectedAcademicYearID || null,
+      AcademicYear: this.isAdmin ? (this.AdminselectedAcademicYearID || null) : (sessionStorage.getItem('ActiveAcademicYearID') || null),
       UnitName: isSearch ? this.searchQuery.trim() : null
-    });
+    };
+
+    return this.apiurl.post<any>('Tbl_Units_CRUD_Operations', payload);
   }
 
   FetchInitialData(extra: any = {}) {
@@ -185,7 +191,7 @@ export class UnitsComponent extends BasePermissionComponent {
           LastCreatedDate: cursor?.lastCreatedDate ?? null,
           LastID: cursor?.lastID ?? null,
           SchoolID: SchoolIdSelected,
-          AcademicYear: this.AdminselectedAcademicYearID || null,
+          AcademicYear: this.isAdmin ? (this.AdminselectedAcademicYearID || null) : (sessionStorage.getItem('ActiveAcademicYearID') || null),
           ...extra
         };
 
@@ -253,7 +259,10 @@ export class UnitsComponent extends BasePermissionComponent {
     }
     this.UnitsForm.reset();
     this.UnitsForm.get('School').patchValue('0');
-    this.UnitsForm.get('AcademicYear').patchValue('0');
+    this.UnitsForm.get('AcademicYear').patchValue(sessionStorage.getItem('ActiveAcademicYearID') ? Number(sessionStorage.getItem('ActiveAcademicYearID')) : 0);
+    if (!this.isAdmin) {
+      this.UnitsForm.get('AcademicYear')?.disable({ emitEvent: false });
+    }
     this.IsAddNewClicked = !this.IsAddNewClicked;
     this.IsActiveStatus = true;
     this.ViewUnitClicked = false;
@@ -283,7 +292,7 @@ export class UnitsComponent extends BasePermissionComponent {
       Description: this.UnitsForm.get('Description')?.value,
       // FIX 3: Use the form's School field as SchoolID (same mapping as Items).
       SchoolID: this.UnitsForm.get('School')?.value,
-      AcademicYear: this.UnitsForm.get('AcademicYear')?.value,
+      AcademicYear: this.isAdmin ? this.UnitsForm.get('AcademicYear')?.value : (sessionStorage.getItem('ActiveAcademicYearID') || this.UnitsForm.get('AcademicYear')?.value),
       IsActive: IsActiveStatusNumeric,
       Flag: '1'
     };
@@ -295,6 +304,7 @@ export class UnitsComponent extends BasePermissionComponent {
           this.isModalOpen = true;
           this.AminityInsStatus = 'Unit Details Submitted!';
           this.UnitsForm.reset();
+          this.UnitsForm.get('AcademicYear').patchValue(sessionStorage.getItem('ActiveAcademicYearID') ? Number(sessionStorage.getItem('ActiveAcademicYearID')) : 0);
           this.UnitsForm.markAsPristine();
           this.currentPage = 1;
           this.pageCursors = [];
@@ -371,6 +381,9 @@ export class UnitsComponent extends BasePermissionComponent {
             MinimumDifference: item.minimumDifference,
             Description: item.description
           });
+          if (!this.isAdmin) {
+            this.UnitsForm.get('AcademicYear')?.disable({ emitEvent: false });
+          }
           this.IsActiveStatus = isActive;
           this.IsAddNewClicked = true;
         }
@@ -400,7 +413,7 @@ export class UnitsComponent extends BasePermissionComponent {
       ID: this.UnitsForm.get('ID')?.value || '',
       // FIX 6: Use the form's School field as SchoolID (same mapping as Items and SubmitUnit).
       SchoolID: this.UnitsForm.get('School')?.value,
-      AcademicYear: this.UnitsForm.get('AcademicYear')?.value || '',
+      AcademicYear: this.isAdmin ? (this.UnitsForm.get('AcademicYear')?.value || '') : (sessionStorage.getItem('ActiveAcademicYearID') || this.UnitsForm.get('AcademicYear')?.value || ''),
       UnitName: this.UnitsForm.get('UnitName')?.value || '',
       Abbreviation: this.UnitsForm.get('Abbreviation')?.value || '',
       MinimumValue: this.UnitsForm.get('MinimumValue')?.value || '',
@@ -418,6 +431,7 @@ export class UnitsComponent extends BasePermissionComponent {
           this.isModalOpen = true;
           this.AminityInsStatus = 'Unit Details Updated!';
           this.UnitsForm.reset();
+          this.UnitsForm.get('AcademicYear').patchValue(sessionStorage.getItem('ActiveAcademicYearID') ? Number(sessionStorage.getItem('ActiveAcademicYearID')) : 0);
           this.UnitsForm.markAsPristine();
           this.FetchInitialData();
         }
@@ -470,6 +484,20 @@ export class UnitsComponent extends BasePermissionComponent {
 
   totalPages() {
     return Math.ceil(this.UnitsCount / this.pageSize);
+  }
+
+  pageStartIndex(): number {
+    return this.UnitsCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
+  }
+
+  pageEndIndex(): number {
+    return Math.min(this.currentPage * this.pageSize, this.UnitsCount);
+  }
+
+  onRowsCountChange() {
+    this.currentPage = 1;
+    this.pageCursors = [];
+    this.FetchInitialData();
   }
 
   getVisiblePageNumbers() {
@@ -556,8 +584,8 @@ export class UnitsComponent extends BasePermissionComponent {
     this.academicYearList = [];
     // FIX 7: Reset AdminselectedAcademicYearID when school changes so stale
     // year IDs don't leak into FetchUnitsCount / FetchInitialData.
-    this.AdminselectedAcademicYearID = '';
-    this.UnitsForm.get('AcademicYear').patchValue('0');
+    this.AdminselectedAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
+    this.UnitsForm.get('AcademicYear').patchValue(sessionStorage.getItem('ActiveAcademicYearID') ? Number(sessionStorage.getItem('ActiveAcademicYearID')) : 0);
     const target = event.target as HTMLSelectElement;
     const schoolID = target.value;
     this.AdminselectedSchoolID = schoolID === '0' ? '' : schoolID;

@@ -47,10 +47,11 @@
 }
 
 .MainContentDiv {
-  width: 100%;
+  /* width: 100%; */
   padding: 24px;
-  display: grid;
-  grid-template-columns: repeat(8, 1fr); /* 8-column master grid for perfect alignment */
+  /* display: grid;
+  grid-template-columns: repeat(8, 1fr); */
+  display: flex;
   gap: 24px;
   box-sizing: border-box;
 }

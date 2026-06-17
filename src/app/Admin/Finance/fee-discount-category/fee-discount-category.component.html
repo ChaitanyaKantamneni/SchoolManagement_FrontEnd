@@ -2,49 +2,81 @@
   <app-dashboard-top-nav></app-dashboard-top-nav>
 </div>
 <div class="MainContentDiv">
-  <div *ngIf="!IsAddNewClicked" class="w-100">
-    <div class="ComponentTop">
+  <div *ngIf="!IsAddNewClicked" class="w-100 admission-dashboard">
+    <div class="ComponentTop admission-hero">
       <div class="ComponentTopHeader">
+        <div class="admission-breadcrumb">
+          <span>Finance</span>
+          <mat-icon>chevron_right</mat-icon>
+          <strong>Fee Discount Category</strong>
+        </div>
         <h5>Fee Discount Category</h5>
         <p>Total {{ ClassCount }} Fee Discount Categories Added</p>
       </div>
-      <div class="ComponentTopBottom">
-        <button *ngIf="canAdd()" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Fee Discount Category</button>
+      <div class="ComponentTopBottom admission-header-actions">
+        <button *ngIf="canAdd()" type="button" class="admission-btn admission-btn--primary admission-top-action" (click)="AddNewClicked()"><mat-icon>add_circle</mat-icon>Add Fee Discount Category</button>
       </div>
     </div>
-    <div class="ComponentRecords">
-      <div>
-        <div class="ComponentRecordsTop">
-          <div class="filterOptions">
-            <div class="searchreview input-container" >
-              <input type="text" id="searchQuery" class="form-control floating-input"
-                [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search... "  />
-              <mat-icon style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
-              <!-- <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;"></i> -->
-            </div>
-            <div class="searchreview" *ngIf="isAdmin">
-              <select (change)="onSchoolChange($event)" class="form-control" style="font-size: 11px;">
-                <option value="">-- Select School --</option>
-                <option value="0">All Schools</option>
-                <option *ngFor="let school of schoolList" [value]="school.ID">
-                  {{ school.Name }}
-                </option>
-              </select>
-            </div>
-          </div>
-          <!-- <div class="DownloadButtons" *ngIf="ClassList.length != 0">
-            <button class="btnHover" (click)="exportSyllabus('pdf')"><mat-icon>picture_as_pdf</mat-icon></button>
-            <button class="btnHover" (click)="exportSyllabus('excel')"><mat-icon>description</mat-icon></button>
-            <button class="btnHover" (click)="exportSyllabus('print')"><mat-icon>print</mat-icon></button>
-          </div> -->
+    <div class="admission-stats-grid">
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--blue"><mat-icon>person_outline</mat-icon></div>
+        <div>
+          <strong>{{ ClassCount }}</strong>
+          <span>Total Fee Discount Categories</span>
+          <!-- <small class="admission-stat-positive">+{{ SubjectsList.length }} this month</small> -->
         </div>
-        <div class="reviewstable">
-          <table id="classTable" *ngIf="ClassList.length != 0" class="table table-bordered">
+      </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--green"><mat-icon>check</mat-icon></div>
+        <div>
+          <strong>{{ SubjectsActiveCount }}</strong>
+          <span>Active Fee Discount Categories</span>
+          <!-- <small class="admission-stat-positive">{{ SubjectsActiveCount }} active rate</small> -->
+        </div>
+      </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--amber"><mat-icon>schedule</mat-icon></div>
+        <div>
+          <strong>{{ SubjectsInActiveCount }}</strong>
+          <span>Pending Review</span>
+          <!-- <small class="admission-stat-warning">Needs action</small> -->
+        </div>
+      </div>
+    </div>
+    <div class="admission-filter-row">
+      <div class="admission-searchbox">
+        <mat-icon>search</mat-icon>
+        <input type="text" id="searchQuery" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search by discount category" />
+      </div>
+      <button type="button" class="admission-chip admission-chip--active">All <span>{{ ClassCount }}</span></button>
+      <!-- <button type="button" class="admission-chip">Active</button>
+      <button type="button" class="admission-chip">Pending</button> -->
+      <select class="admission-select" *ngIf="isAdmin" (change)="onSchoolChange($event)">
+        <!-- <option value="">All Classes</option> -->
+        <option value="0">All Schools</option>
+        <option *ngFor="let school of schoolList" [value]="school.ID">{{ school.Name }}</option>
+      </select>
+      <select class="admission-select" *ngIf="isAdmin" (change)="onAcademicYearChange($event)">
+        <!-- <option value="">All Classes</option> -->
+        <option value="0">All Academic Year</option>
+        <option *ngFor="let school of academicYearList" [value]="school.ID">{{ school.Name }}</option>
+      </select>
+    </div>
+    <div class="ComponentRecords admission-record-card">
+      <div>
+        <div class="ComponentRecordsTop admission-record-header">
+          <div>
+            <h5>Fee Discount Category Records</h5>
+            <p>Showing {{ pageEndIndex() }} of {{ ClassCount }} records</p>
+          </div>
+        </div>
+        <div class="reviewstable admission-table-wrap">
+          <table id="classTable" *ngIf="ClassList.length != 0" class="table table-bordered admission-table">
             <thead>
               <tr>
                 <th class="visually-hidden">Academic Year ID</th>
                 <th>SI.No</th>
-                <th (click)="sort('Name')" class="sortable-column">
+                <!-- <th (click)="sort('Name')" class="sortable-column">
                   <span class="column-text">Discount Category Name</span>
                   <span class="arrows">
                     <mat-icon 
@@ -56,7 +88,8 @@
                       keyboard_arrow_down
                     </mat-icon>
                   </span>
-                </th>
+                </th> -->
+                <th>Discount Category Name</th>
                 <th>Discount Type</th>
                 <th>Min Amount For Discount</th>
                 <th>Discount Value Per Installment</th>
@@ -78,7 +111,16 @@
                 <td data-label="FeeCategory">{{ Class.FeeCategoryName }}</td>
                 <td data-label="School" *ngIf="isAdmin">{{ Class.SchoolName }}</td>
                 <td data-label="AcademicYear">{{ Class.AcademicYearName }}</td>
-                <td data-label="Status">{{ Class.IsActive }}</td>
+                <td data-label="Status">
+                  <span
+                    class="status-pill"
+                    [style.background]="(Class.IsActive === true || Class.IsActive === 'true' || Class.IsActive === 'Active' || Class.IsActive === 1) ? '#d9f9e5' : '#fff0bd'"
+                    [style.color]="(Class.IsActive === true || Class.IsActive === 'true' || Class.IsActive === 'Active' || Class.IsActive === 1) ? '#00823a' : '#c25b00'"
+                    [style.borderColor]="(Class.IsActive === true || Class.IsActive === 'true' || Class.IsActive === 'Active' || Class.IsActive === 1) ? '#86efac' : '#f5d77a'"
+                    [ngClass]="(Class.IsActive === true || Class.IsActive === 'true' || Class.IsActive === 'Active' || Class.IsActive === 1) ? 'status-active' : 'status-inactive'">
+                    {{ (Class.IsActive === true || Class.IsActive === 'true' || Class.IsActive === 'Active' || Class.IsActive === 1) ? 'Active' : 'Pending' }}
+                  </span>
+                </td>
                 <td data-label="Actions">
                   <div class="d-flex justify-content-center align-items-center h-100">
                     <!-- (click)="editreview(aminitie.propertyTypeID)" -->
@@ -99,6 +141,19 @@
             </div>
             <p>No data found.</p>
           </div>
+          <div class="admission-footer-meta">
+            <label>
+              Rows:
+              <select aria-label="Rows per page" [(ngModel)]="pageSize"
+            (ngModelChange)="onRowsCountChange()">
+                <option [ngValue]="5">5</option>
+                <option [ngValue]="10">10</option>
+                <option [ngValue]="25">25</option>
+                <option [ngValue]="50">50</option>
+              </select>
+            </label>
+            <p>{{ pageStartIndex() }}&ndash;{{ pageEndIndex() }} of {{ ClassCount }} records</p>
+          </div>
           <div *ngIf="ClassCount > pageSize" class="pagination-controls">
             <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
             <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
@@ -116,13 +171,28 @@
     </div>
   </div>
   <div *ngIf="IsAddNewClicked" class="w-100">
+    <div class="admission-breadcrumb">
+          <span>Finance</span>
+          <mat-icon>chevron_right</mat-icon>
+          <span>Fee Discount Category</span>
+          <mat-icon>chevron_right</mat-icon>
+          <strong>Add Fee Discount Category</strong>
+        </div>
+    <div class="AddFormTop">
+          <button (click)="CancelSyllabus()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+          <div class="admission-record-header p-0">
+            <div>
+              <h5>Add Fee Discount Category</h5>
+              <p>Configure a new Fee Discount Category for Academic year</p>
+            </div>
+          </div>
+        </div>
     <div class="AddForm">
-      <div class="AddFormTop">
-        <button (click)="AddNewClicked()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
-        <p>Add Fee Discount Category</p>
+      <div class="form-top">
+        <p class="cc-title">Fee Discount Category Details</p>
       </div>
       <div class="AddFormConatiner">
-        <form [formGroup]="ClassForm" (ngSubmit)="ViewClassClicked ? UpdateClass() : SubmitClass()">
+        <form [formGroup]="ClassForm">
           <div class="FormInputRowsContainer">
             <div class="InputRow">
               <div class="InputFieldsContainer" *ngIf="isAdmin">
@@ -160,11 +230,25 @@
                   </div>
                 </div>
               </div>    
-               
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                    <label class="inputLabel" for="email">Discount Type <span class="required">*</span></label>
+                    <div class="input-with-error">
+                        <select class="inputField" type="date" formControlName="DiscountType" placeholder="Select DiscountType" >
+                            <option value="" disabled>Select</option>
+                            <option value="Amount">Amount</option>
+                            <option value="Percentage">Percentage</option>
+                            <option value="Excemption">Excemption</option>
+                        </select>
+                        <!-- <input class="inputField" type="date" formControlName="AvailableFrom" placeholder="Select Start Date" /> -->
+                        <div *ngIf="ClassForm.get('DiscountType')?.hasError('required') && (ClassForm.get('DiscountType')?.touched || ClassForm.get('DiscountType')?.dirty)" class="text-danger">
+                            <small>Please Select Discount Type.</small>
+                        </div>
+                    </div>
+              </div>
             </div>
               
             <div class="InputRow">
-                <div class="InputFieldsContainer" >
+                <div class="InputFieldsContainer" *ngIf="isAdmin">
                     <label class="inputLabel" for="email">Discount Type <span class="required">*</span></label>
                     <div class="input-with-error">
                         <select class="inputField" type="date" formControlName="DiscountType" placeholder="Select DiscountType" >
@@ -206,20 +290,31 @@
                     </div>
                 </div> -->
                 <div class="InputFieldsContainer">
-                <label class="inputLabel" for="email">Fee Category <span class="required">*</span></label>
+                  <label class="inputLabel" for="email">Fee Category <span class="required">*</span></label>
+                  <div class="input-with-error">
+                    <select class="inputField" type="date" formControlName="FeeCategory" placeholder="Select Start Date" >
+                      <option value="0">-- Select Fee Category --</option>
+                      <option *ngFor="let school of feecategorylist" value="{{school.ID}}">{{school.Name}}</option>
+                    </select>
+                    <div *ngIf="ClassForm.get('FeeCategory')?.hasError('min') && (ClassForm.get('FeeCategory')?.touched || ClassForm.get('FeeCategory')?.dirty)" class="text-danger">
+                        <small>Please Select Fee Category.</small>
+                    </div>
+                  </div>
+                </div>
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                <label class="inputLabel" for="email">Start Date <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="FeeCategory" placeholder="Select Start Date" >
-                    <option value="0">-- Select Fee Category --</option>
-                    <option *ngFor="let school of feecategorylist" value="{{school.ID}}">{{school.Name}}</option>
-                  </select>
-                  <div *ngIf="ClassForm.get('FeeCategory')?.hasError('min') && (ClassForm.get('FeeCategory')?.touched || ClassForm.get('FeeCategory')?.dirty)" class="text-danger">
-                      <small>Please Select Fee Category.</small>
+                  <input class="inputField" type="date" formControlName="StartDate" placeholder="Select Start Date" />
+                  <div *ngIf="(ClassForm.get('StartDate' ) ?. touched && ClassForm.get('StartDate' ) ?. invalid)" class="text-danger">
+                    <div *ngIf="(ClassForm.get('StartDate' ) ?. errors ?. ['required' ]) ">
+                      <small>Please Select Start Date</small>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
             <div class="InputRow">
-                <div class="InputFieldsContainer">
+              <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <label class="inputLabel" for="email">Start Date <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" type="date" formControlName="StartDate" placeholder="Select Start Date" />
@@ -241,20 +336,22 @@
                   </div>
                 </div>
               </div>
-                <div class="InputFieldsContainer">
-                    <label class="inputLabel" for="email">Description</label>
-                    <div class="input-with-error">
-                        <textarea class="inputField" formControlName="Description" placeholder="Enter Description" rows="1"></textarea>
-                        <!-- <input class="inputField" id="email" formControlName="Name" placeholder="Enter Name" /> -->
-                        <div *ngIf="(ClassForm.get('Description' ) ?. touched && ClassForm.get('Description' ) ?. invalid)" class="text-danger">
-                            <div *ngIf="(ClassForm.get('Description' ) ?. errors ?. ['required' ]) ">
-                            <small>Please Enter Description.</small>
-                            </div>
-                        </div>
-                    </div>
+              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                    <span style="visibility: hidden;">hello adding new academic year</span>
+                </div>
+                <div class="InputFieldsContainer" *ngIf="isAdmin">
+                    <span style="visibility: hidden;">hello adding new academic year</span>
+                </div>
+                <div class="InputFieldsContainer" *ngIf="!isAdmin">
+                    <span style="visibility: hidden;">hello adding new academic year</span>
                 </div>
             </div>
             <div class="InputRow">
+              <div class="noteActiveCard">
+                <div class="noteSection">
+                  <span>Note</span>
+                  <p>Active fee discount categories are predefined discount types that can be assigned to students and applied during fee collection to reduce the payable fee amount.</p>
+                </div>
                 <div class="InputFieldsContainer w-100">
                     <div class="toggle-container" (click)="$event.stopPropagation()">
                     <label class="switch">
@@ -273,16 +370,18 @@
                     </label>
                     </div>
                 </div>
-                <div class="InputFieldsContainer" *ngIf="!isAdmin">
-                    <span style="visibility: hidden;">hello adding new academic year</span>
-                </div>
+              </div>
             </div>
           </div>
-          <div class="ActionButtons">
-            <button type="submit" *ngIf="ViewClassClicked && canEdit()">Update</button>
-            <button type="submit" *ngIf="!ViewClassClicked && canAdd()">Submit</button>
-          </div>
         </form>
+      </div>
+      <div class="form-bottom">
+        <span class="footer-hint">Fields marked <span class="required">*</span> are required</span>
+        <div class="ActionButtons footer-actions">
+            <button type="button" class="cancelbtn" (click)="CancelSyllabus()">Cancel</button>
+            <button type="button" class="submitbtn" *ngIf="ViewClassClicked && canEdit()" (click)="UpdateClass()">Update</button>
+            <button type="button" class="submitbtn" *ngIf="!ViewClassClicked && canAdd()" (click)="SubmitClass()">Submit</button>
+          </div>
       </div>
     </div>
   </div>

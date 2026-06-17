@@ -5,59 +5,89 @@
 <div class="MainContentDiv">
 
   <!-- ═══════════════════ LIST VIEW ═══════════════════ -->
-  <div *ngIf="!isFormOpen" class="w-100">
+  <div *ngIf="!isFormOpen" class="w-100 admission-dashboard">
 
-    <div class="ComponentTop">
+    <div class="ComponentTop admission-hero">
       <div class="ComponentTopHeader">
-        <h5>Notices</h5>
+        <div class="admission-breadcrumb">
+          <span>Notices</span>
+          <mat-icon>chevron_right</mat-icon>
+          <strong>Notice Board</strong>
+        </div>
+        <h5>Notice Management</h5>
         <p>Total {{ noticesCount }} Notices Added</p>
       </div>
-      <div class="ComponentTopBottom">
-        <button *ngIf="canAdd()" (click)="openAddForm()">
+      <div class="ComponentTopBottom admission-header-actions">
+        <button *ngIf="canAdd()" type="button" class="admission-btn admission-btn--primary admission-top-action" (click)="openAddForm()">
           <mat-icon>add_circle</mat-icon>Add Notice
         </button>
       </div>
     </div>
 
-    <div class="ComponentRecords">
-      <div class="ComponentRecordsTop">
-        <div class="filterOptions">
-          <div class="searchreview input-container">
-            <input type="text" class="form-control floating-input"
-              [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search..." />
-            <mat-icon style="position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none;">search</mat-icon>
-          </div>
-          <div class="searchreview" *ngIf="isAdmin">
-            <select class="form-control" style="font-size:11px;" (change)="onSchoolFilterChange($event)">
-              <option value="0">-- Select School --</option>
-              <option value="all">All Schools</option>
-              <option *ngFor="let s of schoolList" [value]="s.ID">{{ s.Name }}</option>
-            </select>
-          </div>
-          <div class="searchreview">
-            <select class="form-control" style="font-size:11px;" (change)="onAcademicYearFilterChange($event)">
-              <option value="0">-- All Academic Years --</option>
-              <option *ngFor="let a of academicYearList" [value]="a.ID">{{ a.Name }}</option>
-            </select>
-          </div>
-          <div class="searchreview">
-            <select class="form-control" style="font-size:11px;" (change)="onNoticeTypeFilterChange($event)">
-              <option value="0">-- All Types --</option>
-              <option *ngFor="let t of NOTICE_TYPES" [value]="t">{{ t }}</option>
-            </select>
-          </div>
-          <div class="searchreview">
-            <select class="form-control" style="font-size:11px;" (change)="onAudienceFilterChange($event)">
-              <option value="0">-- All Audience --</option>
-              <option *ngFor="let a of AUDIENCE_TYPES" [value]="a">{{ a }}</option>
-            </select>
-          </div>
+    <div class="admission-stats-grid">
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--blue"><mat-icon>campaign</mat-icon></div>
+        <div>
+          <strong>{{ noticesCount }}</strong>
+          <span>Total Notices</span>
+        </div>
+      </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--green"><mat-icon>schedule</mat-icon></div>
+        <div>
+          <strong>{{ pageSize }}</strong>
+          <span>Rows Per Page</span>
+        </div>
+      </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--amber"><mat-icon>calendar_month</mat-icon></div>
+        <div>
+          <strong>{{ currentPage }}</strong>
+          <span>Current Page</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="admission-filter-row">
+      <div class="admission-searchbox">
+        <mat-icon>search</mat-icon>
+        <input type="text" id="searchQuery" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search notices..." />
+      </div>
+      <button type="button" class="admission-chip admission-chip--active">All <span>{{ noticesCount }}</span></button>
+      
+      <select class="admission-select" *ngIf="isAdmin" (change)="onSchoolFilterChange($event)">
+        <option value="0">-- Select School --</option>
+        <option value="all">All Schools</option>
+        <option *ngFor="let s of schoolList" [value]="s.ID">{{ s.Name }}</option>
+      </select>
+      
+      <select class="admission-select" (change)="onAcademicYearFilterChange($event)" [disabled]="!isAdmin" [value]="filterAcademicYear">
+        <option value="0">-- All Academic Years --</option>
+        <option *ngFor="let a of academicYearList" [value]="a.ID">{{ a.Name }}</option>
+      </select>
+
+      <select class="admission-select" (change)="onNoticeTypeFilterChange($event)">
+        <option value="0">-- All Notice Types --</option>
+        <option *ngFor="let t of NOTICE_TYPES" [value]="t">{{ t }}</option>
+      </select>
+
+      <select class="admission-select" (change)="onAudienceFilterChange($event)">
+        <option value="0">-- All Audiences --</option>
+        <option *ngFor="let a of AUDIENCE_TYPES" [value]="a">{{ a }}</option>
+      </select>
+    </div>
+
+    <div class="ComponentRecords admission-record-card">
+      <div class="ComponentRecordsTop admission-record-header">
+        <div>
+          <h5>Notice Records</h5>
+          <p>Showing {{ noticesList.length }} of {{ noticesCount }} records</p>
         </div>
       </div>
 
       <!-- ══════════ TABLE VIEW ══════════ -->
-      <div class="reviewstable">
-        <table *ngIf="noticesList.length > 0" class="table table-bordered">
+      <div class="reviewstable admission-table-wrap">
+        <table *ngIf="noticesList.length > 0" class="table table-bordered admission-table">
           <thead>
             <tr>
               <th>SI.No</th>
@@ -83,7 +113,7 @@
           <tbody>
             <tr *ngFor="let n of noticesList; let i = index">
               <td data-label="SI.No">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-              <td data-label="Title">{{ n.Title }}</td>
+              <td data-label="Title"><strong>{{ n.Title }}</strong></td>
               <td data-label="Type">
                 <span class="notice-type-badge" [ngClass]="'type-' + n.NoticeType?.toLowerCase()">{{ n.NoticeType }}</span>
               </td>
@@ -94,9 +124,9 @@
               <td data-label="AcademicYear">{{ n.AcademicYearName }}</td>
               <td data-label="Status">
                 <span class="status-pill"
-                  [style.background]="n.IsActive ? 'linear-gradient(135deg,#dcfce7 0%,#bbf7d0 100%)' : 'linear-gradient(135deg,#ffe4e6 0%,#fecdd3 100%)'"
-                  [style.color]="n.IsActive ? '#166534' : '#9f1239'"
-                  [style.borderColor]="n.IsActive ? '#86efac' : '#fda4af'"
+                  [style.background]="n.IsActive ? '#d9f9e5' : '#fff0bd'"
+                  [style.color]="n.IsActive ? '#00823a' : '#c25b00'"
+                  [style.borderColor]="n.IsActive ? '#86efac' : '#f5d77a'"
                   [ngClass]="n.IsActive ? 'status-active' : 'status-inactive'">
                   {{ n.IsActive ? 'Active' : 'Inactive' }}
                 </span>
@@ -109,9 +139,6 @@
                   <button *ngIf="canView()" class="btn checkbtn" data-tooltip="View" (click)="fetchByID(n.NoticeId, 'view')">
                     <mat-icon class="mat-edit-icon">visibility</mat-icon>
                   </button>
-                  <!-- <button *ngIf="canFee Category()" class="btn checkbtn delete" data-tooltip="Delete" (click)="deleteNotice(n.NoticeId)">
-                    <mat-icon class="mat-edit-icon">delete</mat-icon>
-                  </button> -->
                 </div>
               </td>
             </tr>
@@ -123,6 +150,20 @@
             <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="" />
           </div>
           <p>No data found.</p>
+        </div>
+
+        <div class="admission-footer-meta">
+          <label>
+            Rows:
+            <select aria-label="Rows per page" [(ngModel)]="pageSize"
+          (ngModelChange)="onRowsCountChange()">
+              <option [ngValue]="5">5</option>
+              <option [ngValue]="10">10</option>
+              <option [ngValue]="25">25</option>
+              <option [ngValue]="50">50</option>
+            </select>
+          </label>
+          <p>{{ pageStartIndex() }}&ndash;{{ pageEndIndex() }} of {{ noticesCount }} records</p>
         </div>
 
         <div *ngIf="noticesCount > pageSize" class="pagination-controls">
@@ -140,10 +181,25 @@
 
   <!-- ═══════════════════ ADD / EDIT FORM ═══════════════════ -->
   <div *ngIf="isFormOpen" class="w-100">
+    <div class="admission-breadcrumb">
+      <span>Notices</span>
+      <mat-icon>chevron_right</mat-icon>
+      <span>Notice Board</span>
+      <mat-icon>chevron_right</mat-icon>
+      <strong>{{ isEditMode ? 'Edit Notice' : 'Add Notice' }}</strong>
+    </div>
+    <div class="AddFormTop">
+      <button (click)="closeForm()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
+      <div class="admission-record-header p-0">
+        <div>
+          <h5>{{ isEditMode ? 'Edit Notice' : 'Add Notice' }}</h5>
+          <p>Configure notice settings, target audience, and dates</p>
+        </div>
+      </div>
+    </div>
     <div class="AddForm">
-      <div class="AddFormTop">
-        <button (click)="closeForm()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
-        <p>{{ isEditMode ? 'Edit Notice' : 'Add Notice' }}</p>
+      <div class="form-top">
+        <p class="cc-title">Notice Details</p>
       </div>
       <div class="AddFormConatiner">
         <form [formGroup]="noticesForm">
@@ -237,21 +293,27 @@
                   </div>
                 </div>
                 <div class="InputFieldsContainer">
-                  <div class="toggle-container" (click)="$event.stopPropagation()">
-                    <label class="switch">
-                      <input type="checkbox" [checked]="IsActiveStatus" (click)="toggleActive()">
-                      <span class="slider">
-                        <span
-                          class="toggle-text"
-                          [ngStyle]="{
-                            left: IsActiveStatus ? '42%' : '60%',
-                            fontSize: IsActiveStatus ? '9px' : '9px'
-                          }"
-                        >
-                          {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                  <span style="visibility: hidden;">Spacer</span>
+                </div>
+              </div>
+
+              <div class="InputRow">
+                <div class="noteActiveCard">
+                  <div class="noteSection">
+                    <span>Status</span>
+                    <p>Determine whether this notice should be active and visible to selected audience.</p>
+                  </div>
+                  <div class="InputFieldsContainer">
+                    <div class="toggle-container" (click)="$event.stopPropagation()">
+                      <label class="switch">
+                        <input type="checkbox" [checked]="IsActiveStatus" (click)="toggleActive()">
+                        <span class="slider">
+                          <span class="toggle-text" [ngStyle]="{left: IsActiveStatus ? '42%' : '60%', fontSize: '9px'}">
+                            {{ IsActiveStatus ? 'Active' : 'Inactive' }}
+                          </span>
                         </span>
-                      </span>
-                    </label>
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -357,12 +419,15 @@
             </ng-template>
 
           </div>
-
-          <div class="ActionButtons">
-            <button type="button" *ngIf="isEditMode && canEdit()" (click)="updateNotice()">Update</button>
-            <button type="button" *ngIf="!isEditMode && canAdd()" (click)="submitNotice()">Submit</button>
-          </div>
         </form>
+      </div>
+      <div class="form-bottom">
+        <span class="footer-hint">Fields marked <span class="required">*</span> are required</span>
+        <div class="ActionButtons footer-actions">
+          <button type="button" class="cancelbtn" (click)="closeForm()">Cancel</button>
+          <button type="button" class="submitbtn" *ngIf="isEditMode && canEdit()" (click)="updateNotice()">Update</button>
+          <button type="button" class="submitbtn" *ngIf="!isEditMode && canAdd()" (click)="submitNotice()">Submit</button>
+        </div>
       </div>
     </div>
   </div>
