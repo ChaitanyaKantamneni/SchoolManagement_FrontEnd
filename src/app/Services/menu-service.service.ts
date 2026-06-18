@@ -182,6 +182,24 @@ export class MenuServiceService {
               ]
             });
           }
+          const hasMessaging = modules.some(m => m.moduleName.trim().toLowerCase() === 'messaging');
+          if (!hasMessaging) {
+            modules.push({
+              id: 'messaging_mgr',
+              moduleName: 'Messaging',
+              pages: [
+                {
+                  id: 'messaging_dashboard',
+                  pageName: 'Messaging',
+                  moduleID: 'messaging_mgr',
+                  canView: '1',
+                  canAdd: '1',
+                  canEdit: '1',
+                  canDelete: '1'
+                }
+              ]
+            });
+          }
         }
 
         this.setMenu(modules);
