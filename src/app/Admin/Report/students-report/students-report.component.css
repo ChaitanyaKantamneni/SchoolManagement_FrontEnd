@@ -220,10 +220,10 @@ th.col-email {
   position: relative;
 }
 
-.student-report-detail-shell .AddFormConatiner {
+.student-report-detail-shell .student-report-body {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
 .student-hero-card,

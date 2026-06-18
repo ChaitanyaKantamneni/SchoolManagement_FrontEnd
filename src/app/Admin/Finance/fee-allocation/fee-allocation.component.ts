@@ -1032,9 +1032,9 @@ export class FeeAllocationComponent extends BasePermissionComponent{
   SyllabusListbySchool: any[] = [];
   FetchSyllabusList() {
     const AcademicYearIdSelected =
-    this.SchoolAcademicYearChange
-      ? this.selectedAcademicYearID?.trim()
-      : this.AdminSelectedActiveAcademicYearID || '';
+      this.isAdmin
+        ? this.AdminselectedAcademivYearID?.trim()
+        : this.AdminSelectedActiveAcademicYearID || '';
 
     const requestData = {
       SchoolID: this.AdminselectedSchoolID,

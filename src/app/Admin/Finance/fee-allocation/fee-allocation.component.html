@@ -162,14 +162,14 @@
       <mat-icon>chevron_right</mat-icon>
       <span>Fee Allocation</span>
       <mat-icon>chevron_right</mat-icon>
-      <strong>Allot Fee Category</strong>
+      <strong>Allot Fee Allocation</strong>
     </div>
     <div class="AddFormTop">
       <button (click)="CancelSyllabus()" title="Back"><mat-icon>arrow_circle_left</mat-icon></button>
       <div class="admission-record-header p-0">
         <div>
-          <h5>Allot Fee Category</h5>
-          <p>Allot a Fee Category for Academic year</p>
+          <h5>Allot Fee Allocation</h5>
+          <p>Allot a Fee Allocation for Academic year</p>
         </div>
       </div>
     </div>
@@ -209,7 +209,7 @@
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="email">Syllabus<span class="required">*</span></label>
                 <div class="input-with-error">
-                  <select class="inputField" type="date" formControlName="Syllabus" placeholder="Select Start Date" (focus)="closeDropdown()" (change)="onAdminSyllabusChange($event)" >
+                  <select class="inputField" formControlName="Syllabus" (focus)="closeDropdown()" (change)="onAdminSyllabusChange($event)" >
                     <option value="0">-- Select Syllabus --</option>
                     <option *ngFor="let school of SyllabusListbySchool" value="{{school.ID}}">{{school.Name}}</option>
                   </select>

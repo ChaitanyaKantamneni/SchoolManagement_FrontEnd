@@ -20,10 +20,10 @@ import { RoomAllotmentService } from '../room-allotment/room-allotment.service';
   styleUrls: ['./out-pass.component.css']
 })
 export class OutPassComponent extends BasePermissionComponent implements OnInit {
-  pageName = 'Out Pass';
+  pageName = 'Outpass';
 
   // -- UI state --
-  IsAddNewClicked = false;
+  isAddNewClicked = false;
   isStatusModalOpen = false;
   statusMessage = '';
   isViewModalOpen = false;
@@ -55,7 +55,7 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
   schoolList: any[] = [];
   academicYearList: any[] = [];
   studentList: any[] = [];
-  studentMap: Record<string, string> = {};
+  studentMap: Record<string, any> = {};
 
   // -- Filters --
   filterSchoolID = '';
@@ -106,8 +106,7 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
     }
   }
 
-  FetchStudentDetailsForMap(schoolId: string, fetchStudentList = false) {
-    if (!schoolId) return;
+  FetchStudentDetailsForMap(schoolId: string) {
     this.apiurl.post<any>('Tbl_StudentDetails_CRUD_Operations', { SchoolID: schoolId, Flag: '2', Limit: 9999, Offset: 0 }).subscribe({
       next: (res: any) => {
         if (res?.data && Array.isArray(res.data)) {
@@ -116,17 +115,10 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
             const firstName = i.firstName || i.FirstName || '';
             const lastName = i.lastName || i.LastName || '';
             const fullName = `${firstName} ${lastName}`.trim();
-            if (adminNo) {
-              this.studentMap[adminNo] = fullName;
-            }
+            if (adminNo) this.studentMap[adminNo] = fullName;
           });
-          
-          this.mapOutPassListNames();
-          
-          if (fetchStudentList && schoolId) {
-            const yearID = this.OutPassForm.get('AcademicYear')?.value || this.filterAcademicYear;
-            this.FetchStudentList(schoolId, yearID);
-          }
+          // Re-fetch allotments if they were already fetched to update names
+          if (schoolId) this.FetchStudentList(schoolId, this.filterAcademicYear);
         }
       }
     });
@@ -146,7 +138,7 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
     this.FetchOutPassList();
     if (this.filterSchoolID) {
       this.FetchAcademicYearsList(this.filterSchoolID);
-      this.FetchStudentDetailsForMap(this.filterSchoolID, true);
+      this.FetchStudentList(this.filterSchoolID, this.filterAcademicYear);
     }
   }
 
@@ -207,6 +199,8 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
               RoomID: roomID
             };
           });
+          this.studentMap = {};
+          this.studentList.forEach(s => this.studentMap[s.ID] = s);
         }
       }
     });
@@ -225,29 +219,13 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
 
     this.outPassService.crudOperations(payload).subscribe({
       next: (res: any) => {
-        const rawData = res?.data || [];
-        this.outPassList = rawData;
+        this.outPassList = res?.data || [];
         this.totalCount = this.outPassList.length > 0 && this.outPassList[0].totalcount 
           ? Number(this.outPassList[0].totalcount) 
           : this.outPassList.length;
         
-        // Dynamically extract all unique school IDs present in outpass list and fetch student details for name mapping
-        const uniqueSchoolIDs = new Set<string>();
-        this.outPassList.forEach(item => {
-          const schoolID = item.schoolID || item.SchoolID;
-          if (schoolID && schoolID !== '0') {
-            uniqueSchoolIDs.add(String(schoolID));
-          }
-        });
-
-        if (uniqueSchoolIDs.size > 0) {
-          uniqueSchoolIDs.forEach(schoolID => {
-            this.FetchStudentDetailsForMap(schoolID, false);
-          });
-        } else {
-          this.mapOutPassListNames();
-        }
-
+        // Calculate Stats (This would ideally come from a specific API flag, but we can summarize from results if page size is large, 
+        // or just show counts from the current view for now. In a real scenario, we'd have Flag 3 for Active/Pending)
         this.UpdateStats();
         this.loader.hide();
       },
@@ -259,19 +237,11 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
     });
   }
 
-  mapOutPassListNames() {
-    if (this.outPassList && this.outPassList.length > 0) {
-      this.outPassList.forEach(item => {
-        const studentID = item.studentID || item.StudentID || '';
-        const joinedName = item.studentName || item.StudentName || '';
-        item.studentName = joinedName || this.studentMap[studentID] || '';
-      });
-    }
-  }
-
   UpdateStats() {
-    this.currentlyOutCount = this.outPassList.filter(o => (o.outPassStatus || o.status) === 'Approved').length;
-    this.pendingCount = this.outPassList.filter(o => (o.outPassStatus || o.status) === 'Pending').length;
+    // Note: For accurate global stats, we should call Flag 3 or a separate summary endpoint.
+    // Here we'll just mock or use current list for demonstration.
+    this.currentlyOutCount = this.outPassList.filter(o => o.status === 'Approved').length;
+    this.pendingCount = this.outPassList.filter(o => o.status === 'Pending').length;
     
     const today = new Date().toISOString().split('T')[0];
     this.expectedTodayCount = this.outPassList.filter(o => {
@@ -326,10 +296,12 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
 
     if (schoolId !== '0') {
       this.FetchAcademicYearsList(schoolId);
-      this.FetchStudentDetailsForMap(schoolId, true);
+      if (yearId !== '0') {
+        this.FetchStudentList(schoolId, yearId);
+      }
     }
 
-    this.IsAddNewClicked = true;
+    this.isAddNewClicked = true;
   }
 
   onStudentChange(event: Event) {
@@ -383,7 +355,7 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
       next: (res: any) => {
         this.loader.hide();
         if (res?.success || res?.statusCode === 200) {
-          this.IsAddNewClicked = false;
+          this.isAddNewClicked = false;
           this.statusMessage = res?.message || 'Application submitted successfully!';
           this.isStatusModalOpen = true;
           this.FetchOutPassList();
@@ -441,33 +413,13 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
     }, this.SEARCH_DEBOUNCE);
   }
 
-  getStatusBackground(status: string | null | undefined): string {
+  getStatusClass(status: string): string {
     switch (status?.toLowerCase()) {
-      case 'pending': return 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)';
-      case 'approved': return 'linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)';
-      case 'returned': return 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)';
-      case 'rejected': return 'linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%)';
-      default: return 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)';
-    }
-  }
-
-  getStatusColor(status: string | null | undefined): string {
-    switch (status?.toLowerCase()) {
-      case 'pending': return '#b45309';
-      case 'approved': return '#0369a1';
-      case 'returned': return '#166534';
-      case 'rejected': return '#9f1239';
-      default: return '#475569';
-    }
-  }
-
-  getStatusBorderColor(status: string | null | undefined): string {
-    switch (status?.toLowerCase()) {
-      case 'pending': return '#fde047';
-      case 'approved': return '#7dd3fc';
-      case 'returned': return '#86efac';
-      case 'rejected': return '#fda4af';
-      default: return '#cbd5e1';
+      case 'pending': return 'badge-warning';
+      case 'approved': return 'badge-primary';
+      case 'returned': return 'badge-success';
+      case 'rejected': return 'badge-danger';
+      default: return 'badge-secondary';
     }
   }
 
@@ -525,21 +477,6 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
     return pages;
   }
 
-  closeForm() { 
-    this.IsAddNewClicked = false; 
-  }
-
-  closeStatusModal() { 
-    this.isStatusModalOpen = false; 
-  }
-
-  closeViewModal() {
-    this.isViewModalOpen = false;
-    this.viewRecord = null;
-  }
-
-  handleOk() {
-    this.isStatusModalOpen = false;
-    this.FetchOutPassList();
-  }
+  closeModal() { this.isAddNewClicked = false; }
+  closeStatusModal() { this.isStatusModalOpen = false; }
 }

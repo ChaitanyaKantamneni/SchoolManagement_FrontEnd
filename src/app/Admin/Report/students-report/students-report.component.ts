@@ -96,6 +96,7 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
   }
 
   // List
+  Math = Math;
   studentsList: any[] = [];
   totalCount = 0;
   searchQuery = '';
@@ -300,6 +301,8 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     }, 300);
   }
 
+  allStudentsList: any[] = [];
+
   private resetPagination() {
     this.currentPage = 1;
   }
@@ -318,38 +321,17 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
       const payload: any = {
         Flag: '7',
         AdmissionNo: childrenAdmissionNos.join(','),
-        Limit: 1000,
-        SortColumn: this.sortColumn,
-        SortDirection: this.sortDirection
+        Limit: 10000,
+        Offset: 0
       };
 
       this.apiurl.post<any>('Tbl_StudentDetails_CRUD_Operations', payload).subscribe({
         next: (res: any) => {
           const data = res?.data || [];
-          this.studentsList = data.map((item: any) => ({
-            ID: item.id,
-            AdmissionNo: item.admissionNo,
-            Name: `${item.firstName ?? ''} ${item.middleName ?? ''} ${item.lastName ?? ''}`.replace(/\s+/g, ' ').trim(),
-            SchoolName: item.schoolName,
-            AcademicYearName: item.academicYearName,
-            ClassName: item.className,
-            Division: item.division,
-            MobileNo: item.mobileNo,
-            Email: item.emailID,
-            Gender: this.genderMap[item.gender] || '',
-            DOB: item.dob,
-            BloodGroup: this.bloodGroups[item.bloodGroup] || '',
-            Religion: this.religionMap[item.religion] || '',
-            Caste: item.caste,
-            AadharNo: item.aadharNo,
-            JoinDate: item.joinDate,
-            RollNo: item.rollNo,
-            createdDate: item.createdDate
-          }));
-          this.totalCount = this.studentsList.length;
+          this.processStudentData(data);
           this.loader.hide();
         },
-        error: () => { this.studentsList = []; this.totalCount = 0; this.loader.hide(); }
+        error: () => { this.handleFetchError(); }
       });
       return;
     }
@@ -357,61 +339,65 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     // For non-admin users, always use their resolved school ID
     const schoolIdToUse = this.isAdmin ? this.selectedSchoolID : this.resolvedSchoolId;
 
-    const countPayload: any = { Flag: '6' };
-    if (schoolIdToUse) countPayload.SchoolID = schoolIdToUse;
-    if (this.selectedAcademicYear) countPayload.AcademicYear = this.selectedAcademicYear;
-    if (this.selectedClass) countPayload.Class = this.selectedClass;
-    if (this.selectedDivision) countPayload.Division = this.selectedDivision;
-    if (this.searchQuery?.trim()) countPayload.AdmissionNo = this.searchQuery.trim();
+    const payload: any = {
+      Flag: this.searchQuery?.trim() ? '7' : '2',
+      Limit: 10000,
+      Offset: 0,
+      ...extra
+    };
+    if (schoolIdToUse) payload.SchoolID = schoolIdToUse;
+    if (this.selectedAcademicYear) payload.AcademicYear = this.selectedAcademicYear;
+    if (this.selectedClass) payload.Class = this.selectedClass;
+    if (this.selectedDivision) payload.Division = this.selectedDivision;
+    if (this.searchQuery?.trim()) payload.AdmissionNo = this.searchQuery.trim();
 
-    this.apiurl.post<any>('Tbl_StudentDetails_CRUD_Operations', countPayload).subscribe({
-      next: (countRes: any) => {
-        this.totalCount = countRes?.data?.[0]?.totalcount ?? 0;
-
-        const payload: any = {
-          Flag: this.searchQuery?.trim() ? '7' : '2',
-          Limit: this.pageSize,
-          SortColumn: this.sortColumn,
-          SortDirection: this.sortDirection,
-          Offset: (this.currentPage - 1) * this.pageSize,
-          ...extra
-        };
-        if (schoolIdToUse) payload.SchoolID = schoolIdToUse;
-        if (this.selectedAcademicYear) payload.AcademicYear = this.selectedAcademicYear;
-        if (this.selectedClass) payload.Class = this.selectedClass;
-        if (this.selectedDivision) payload.Division = this.selectedDivision;
-        if (this.searchQuery?.trim()) payload.AdmissionNo = this.searchQuery.trim();
-
-        this.apiurl.post<any>('Tbl_StudentDetails_CRUD_Operations', payload).subscribe({
-          next: (res: any) => {
-            const data = res?.data || [];
-            this.studentsList = data.map((item: any) => ({
-              ID: item.id,
-              AdmissionNo: item.admissionNo,
-              Name: `${item.firstName ?? ''} ${item.middleName ?? ''} ${item.lastName ?? ''}`.replace(/\s+/g, ' ').trim(),
-              SchoolName: item.schoolName,
-              AcademicYearName: item.academicYearName,
-              ClassName: item.className,
-              Division: item.division,
-              MobileNo: item.mobileNo,
-              Email: item.emailID,
-              Gender: this.genderMap[item.gender] || '',
-              DOB: item.dob,
-              BloodGroup: this.bloodGroups[item.bloodGroup] || '',
-              Religion: this.religionMap[item.religion] || '',
-              Caste: item.caste,
-              AadharNo: item.aadharNo,
-              JoinDate: item.joinDate,
-              RollNo: item.rollNo,
-              createdDate: item.createdDate
-            }));
-            this.loader.hide();
-          },
-          error: () => { this.studentsList = []; this.loader.hide(); }
-        });
+    this.apiurl.post<any>('Tbl_StudentDetails_CRUD_Operations', payload).subscribe({
+      next: (res: any) => {
+        const data = res?.data || [];
+        this.processStudentData(data);
+        this.loader.hide();
       },
-      error: () => { this.totalCount = 0; this.loader.hide(); }
+      error: () => { this.handleFetchError(); }
     });
+  }
+
+  private processStudentData(data: any[]) {
+    this.allStudentsList = data.map((item: any) => ({
+      ID: item.id,
+      AdmissionNo: item.admissionNo,
+      Name: `${item.firstName ?? ''} ${item.middleName ?? ''} ${item.lastName ?? ''}`.replace(/\s+/g, ' ').trim(),
+      SchoolName: item.schoolName,
+      AcademicYearName: item.academicYearName,
+      ClassName: item.className,
+      Division: item.division,
+      MobileNo: item.mobileNo,
+      Email: item.emailID,
+      Gender: this.genderMap[item.gender] || '',
+      DOB: item.dob,
+      BloodGroup: this.bloodGroups[item.bloodGroup] || '',
+      Religion: this.religionMap[item.religion] || '',
+      Caste: item.caste,
+      AadharNo: item.aadharNo,
+      JoinDate: item.joinDate,
+      RollNo: item.rollNo,
+      createdDate: item.createdDate
+    }));
+    
+    this.sortData(); // Apply initial sorting
+  }
+
+  private handleFetchError() {
+    this.allStudentsList = [];
+    this.studentsList = [];
+    this.totalCount = 0;
+    this.loader.hide();
+  }
+
+  private updatePaginatedStudents() {
+    this.totalCount = this.allStudentsList.length;
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.studentsList = this.allStudentsList.slice(startIndex, endIndex);
   }
 
   // Pagination
@@ -430,15 +416,20 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
   goToPage(page: number) {
     const total = this.totalPages();
     if (page < 1) page = 1;
-    if (page > total) page = total;
+    if (page > total && total > 0) page = total;
     this.currentPage = page;
-    this.fetchStudents();
+    this.updatePaginatedStudents();
   }
 
   previousPage() { if (this.currentPage > 1) this.goToPage(this.currentPage - 1); }
   nextPage() { if (this.currentPage < this.totalPages()) this.goToPage(this.currentPage + 1); }
   firstPage() { this.goToPage(1); }
   lastPage() { this.goToPage(this.totalPages()); }
+
+  onPageSizeChange() {
+    this.currentPage = 1;
+    this.updatePaginatedStudents();
+  }
 
   sort(column: string) {
     if (this.sortColumn === column) {
@@ -447,8 +438,21 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
       this.sortColumn = column;
       this.sortDirection = 'asc';
     }
+    this.sortData();
+  }
+
+  private sortData() {
+    if (this.sortColumn) {
+      this.allStudentsList.sort((a, b) => {
+        let valA = a[this.sortColumn] ? a[this.sortColumn].toString().toLowerCase() : '';
+        let valB = b[this.sortColumn] ? b[this.sortColumn].toString().toLowerCase() : '';
+        if (valA < valB) return this.sortDirection === 'asc' ? -1 : 1;
+        if (valA > valB) return this.sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
     this.resetPagination();
-    this.fetchStudents();
+    this.updatePaginatedStudents();
   }
 
   // Detail view
