@@ -350,6 +350,7 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
       'room allotment': 'hotel',
       'outpass': 'exit_to_app',
       'out pass': 'exit_to_app',
+      'messaging': 'textsms',
       units: 'straighten',
       categories: 'category',
       items: 'inventory_2',
@@ -377,6 +378,7 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
       homework: 'assignment',
       'holiday calendar': 'event',
       'hostel management': 'apartment',
+      'messaging': 'textsms',
       store: 'storefront'
     };
 
