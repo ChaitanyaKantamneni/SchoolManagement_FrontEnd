@@ -125,6 +125,7 @@ export class MenuServiceService {
       try {
         this.menu = JSON.parse(storedMenu);
         this.loadedRoleId = storedRoleId;
+        this.ensureHostelPermissions(this.menu, this.loadedRoleId);
         this.menuLoadedSource.next(true);
       } catch (err) {
         console.error('Error parsing stored menu', err);
@@ -201,6 +202,8 @@ export class MenuServiceService {
             });
           }
         }
+        // Ensure Hostel Management is fully available for Admin (1) and School Admins (2, 8)
+        this.ensureHostelPermissions(modules, roleId);
 
         this.setMenu(modules);
         return modules;
@@ -276,6 +279,83 @@ export class MenuServiceService {
   private toPermissionFlag(value: unknown): '1' | '0' {
     const normalized = `${value ?? ''}`.trim().toLowerCase();
     return ['true', '1', 'yes'].includes(normalized) ? '1' : '0';
+  }
+
+  private ensureHostelPermissions(modules: Module[], roleId: string | null) {
+    if (!roleId) return;
+    if (roleId === '1' || roleId === '2' || roleId === '8') {
+      // First, clean up any pre-existing duplicate hostel management modules from the list
+      let firstIndex = -1;
+      for (let i = 0; i < modules.length; i++) {
+        const name = (modules[i].moduleName || '').trim().toLowerCase().replace(/\s+/g, '');
+        if (name === 'hostelmanagement') {
+          if (firstIndex === -1) {
+            firstIndex = i;
+          } else {
+            modules.splice(i, 1);
+            i--; // Adjust index since we removed an item
+          }
+        }
+      }
+
+      let hostelModule = firstIndex !== -1 ? modules[firstIndex] : null;
+
+      if (!hostelModule) {
+        hostelModule = {
+          id: 'hostel_mgr',
+          moduleName: 'Hostel Management',
+          pages: []
+        };
+        modules.push(hostelModule);
+      } else {
+        hostelModule.moduleName = 'Hostel Management';
+      }
+
+      const requiredPages = [
+        { id: 'hostel_master', pageName: 'Hostel Master' },
+        { id: 'room_master', pageName: 'Room Master' },
+        { id: 'room_allotment', pageName: 'Room Allotment' },
+        { id: 'outpass', pageName: 'Outpass' }
+      ];
+
+      requiredPages.forEach(req => {
+        let firstPageIdx = -1;
+        for (let i = 0; i < hostelModule!.pages.length; i++) {
+          const pName = (hostelModule!.pages[i].pageName || '').trim().toLowerCase().replace(/\s+/g, '');
+          const reqName = req.pageName.toLowerCase().replace(/\s+/g, '');
+          if (pName === reqName) {
+            if (firstPageIdx === -1) {
+              firstPageIdx = i;
+            } else {
+              hostelModule!.pages.splice(i, 1);
+              i--; // Adjust index
+            }
+          }
+        }
+
+        let page = firstPageIdx !== -1 ? hostelModule!.pages[firstPageIdx] : null;
+
+        if (!page) {
+          page = {
+            id: req.id,
+            pageName: req.pageName,
+            moduleID: hostelModule!.id,
+            canView: '1',
+            canAdd: '1',
+            canEdit: '1',
+            canDelete: '1'
+          };
+          hostelModule!.pages.push(page);
+        } else {
+          // Keep the existing page and make sure its name matches the standard 'Outpass' or other required standard names
+          page.pageName = req.pageName;
+          page.canView = '1';
+          page.canAdd = '1';
+          page.canEdit = '1';
+          page.canDelete = '1';
+        }
+      });
+    }
   }
 }
 

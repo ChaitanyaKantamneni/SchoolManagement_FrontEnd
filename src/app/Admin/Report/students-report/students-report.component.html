@@ -3,92 +3,51 @@
 </div>
 
 <div class="MainContentDiv">
-  <div class="w-100 admission-dashboard">
-    <div class="admission-breadcrumb">
+
+  <!-- ===== LIST VIEW ===== -->
+  <div *ngIf="!isDetailView" class="w-100 admission-dashboard">
+    <div class="admission-breadcrumb" style="margin-bottom: 15px;">
       <span>Reports</span>
       <mat-icon>chevron_right</mat-icon>
       <strong>Students Report</strong>
     </div>
-    <div class="AddFormTop" *ngIf="!isDetailView">
-      <div class="admission-record-header p-0">
-        <div>
-          <h5>Students Report</h5>
-          <p>Total {{ totalCount }} Students Added</p>
-        </div>
-      </div>
+
+    <!-- Top Hero Section -->
+    <div style="margin-bottom: 20px;">
+      <h4 style="margin: 0; font-weight: 700; color: #1f2937; font-size: 1.25rem;">Students Report</h4>
+      <p style="margin: 4px 0 0; color: #6b7280; font-size: 0.875rem;">Total {{ totalCount }} Students Added</p>
     </div>
-    
-    <!-- ===== LIST VIEW ===== -->
-    <div *ngIf="!isDetailView" class="w-100">
-      <!-- Filters -->
-      <div class="ComponentTopBottom" style="margin-top:10px;">
-        <div class="filterOptions" style="gap:12px; flex-wrap:wrap; align-items:flex-end;">
 
-          <!-- School (admin only) -->
-          <div *ngIf="isAdmin" class="InputFieldsContainer" style="min-width:180px; flex:1;">
-            <label class="inputLabel">School</label>
-            <select class="inputField selectFormControl" [(ngModel)]="selectedSchoolID" (change)="onSchoolChange()">
-              <option value="">-- All Schools --</option>
-              <option *ngFor="let s of schoolList" [value]="s.ID">{{ s.Name }}</option>
-            </select>
-          </div>
-
-          <!-- Academic Year -->
-          <div class="InputFieldsContainer" style="min-width:180px; flex:1;">
-            <label class="inputLabel">Academic Year</label>
-            <select class="inputField selectFormControl" [(ngModel)]="selectedAcademicYear" (change)="onAcademicYearChange()">
-              <option value="">-- All Years --</option>
-              <option *ngFor="let y of academicYearList" [value]="y.ID">{{ y.Name }}</option>
-            </select>
-          </div>
-
-          <!-- Class -->
-          <div class="InputFieldsContainer" style="min-width:160px; flex:1;">
-            <label class="inputLabel">Class</label>
-            <select class="inputField selectFormControl" [(ngModel)]="selectedClass" (change)="onClassChange()">
-              <option value="">-- All Classes --</option>
-              <option *ngFor="let c of ClassList" [value]="c.ID">{{ c.Name }}</option>
-            </select>
-          </div>
-
-          <!-- Division -->
-          <div class="InputFieldsContainer" style="min-width:140px; flex:1;">
-            <label class="inputLabel">Division</label>
-            <select class="inputField selectFormControl" [(ngModel)]="selectedDivision" (change)="onDivisionChange()">
-              <option value="">-- All --</option>
-              <option *ngFor="let d of DivisionList" [value]="d.ID">{{ d.Name }}</option>
-            </select>
-          </div>
-
-        </div>
+    <!-- Filters -->
+    <div class="admission-filter-row">
+      <div class="admission-searchbox">
+        <mat-icon>search</mat-icon>
+        <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search Admission No" />
       </div>
-    </div>
+        
+        <select class="admission-select" *ngIf="isAdmin" [(ngModel)]="selectedSchoolID" (change)="onSchoolChange()">
+          <option value="">All Schools</option>
+          <option *ngFor="let s of schoolList" [value]="s.ID">{{ s.Name }}</option>
+        </select>
+        
+        <select class="admission-select" [(ngModel)]="selectedAcademicYear" (change)="onAcademicYearChange()">
+          <option value="">All Academic Years</option>
+          <option *ngFor="let y of academicYearList" [value]="y.ID">{{ y.Name }}</option>
+        </select>
+        
+        <select class="admission-select" [(ngModel)]="selectedClass" (change)="onClassChange()">
+          <option value="">All Classes</option>
+          <option *ngFor="let c of ClassList" [value]="c.ID">{{ c.Name }}</option>
+        </select>
+
+        <select class="admission-select" [(ngModel)]="selectedDivision" (change)="onDivisionChange()">
+          <option value="">All Divisions</option>
+          <option *ngFor="let d of DivisionList" [value]="d.ID">{{ d.Name }}</option>
+        </select>
+      </div>
 
     <!-- Table -->
-    <div class="ComponentRecords">
-      <div class="ComponentRecordsTop">
-        <!-- Export buttons -->
-        <div class="DownloadButtons">
-          <button class="btnHover" title="Copy" (click)="copyToClipboard()">
-            <mat-icon>content_copy</mat-icon>
-          </button>
-          <button class="btnHover" title="CSV" (click)="exportCSV()">
-            <mat-icon>description</mat-icon>
-          </button>
-          <button class="btnHover" title="Excel" (click)="exportExcel()">
-            <mat-icon>table_chart</mat-icon>
-          </button>
-          <button class="btnHover" title="Print" (click)="printPage()">
-            <mat-icon>print</mat-icon>
-          </button>
-        </div>
-        <!-- Search -->
-        <div class="searchreview input-container">
-          <input type="text" class="form-control floating-input"
-            [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search..." />
-          <mat-icon style="position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none;">search</mat-icon>
-        </div>
-      </div>
+    <div class="ComponentRecords admission-record-card" style="margin-top: 16px;">
 
       <div class="reviewstable admission-table-wrap">
         <!-- <table *ngIf="studentsList.length > 0" class="table table-bordered">
@@ -205,36 +164,50 @@
         </div>
 
         <!-- Pagination -->
-        <div *ngIf="totalCount > pageSize" class="pagination-controls">
-          <button *ngIf="totalPages() > 3" (click)="firstPage()" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
-          <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
-          <button *ngFor="let page of getVisiblePageNumbers()"
-                  class="page-btn"
-                  [ngClass]="{'active': page === currentPage}"
-                  (click)="goToPage(page)">
-            {{ page }}
-          </button>
-          <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
-          <button *ngIf="totalPages() > 3" (click)="lastPage()" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
+        <div class="admission-table-footer" *ngIf="studentsList.length > 0">
+          <div class="admission-footer-meta">
+            <label class="admission-per-page">
+              Rows:
+              <select class="admission-select" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+                <option [ngValue]="5">5</option>
+                <option [ngValue]="10">10</option>
+                <option [ngValue]="25">25</option>
+                <option [ngValue]="50">50</option>
+              </select>
+            </label>
+            <p>{{ (currentPage - 1) * pageSize + 1 }}&ndash;{{ Math.min(currentPage * pageSize, totalCount) }} of {{ totalCount }} records</p>
+          </div>
+          <div *ngIf="totalCount > pageSize" class="pagination-controls">
+            <button *ngIf="totalPages() > 3" (click)="firstPage()" [disabled]="currentPage === 1" class="arrow-btn FirstandLastButton">First</button>
+            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">&larr;</button>
+            <button *ngFor="let page of getVisiblePageNumbers()"
+                    class="page-btn"
+                    [ngClass]="{'active': page === currentPage}"
+                    (click)="goToPage(page)">
+              {{ page }}
+            </button>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">&rarr;</button>
+            <button *ngIf="totalPages() > 3" (click)="lastPage()" [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- ===== DETAIL VIEW ===== -->
-  <div *ngIf="isDetailView && selectedStudent" class="w-100">
-    <div class="AddForm student-report-detail-shell">
-      <div class="AddFormTop">
-        <button (click)="backToList()" title="Back">
-          <mat-icon>arrow_circle_left</mat-icon>
-        </button>
-        <p>{{ selectedStudent.Name }}</p>
-        <button class="btnHover" style="margin-left:auto;" title="Print" (click)="printPage()">
-          <mat-icon>print</mat-icon>
-        </button>
-      </div>
+  <div *ngIf="isDetailView && selectedStudent" class="w-100 admission-dashboard">
+    <div style="display: flex; align-items: center; margin-bottom: 24px;">
+      <button (click)="backToList()" style="background: none; border: none; color: #2563eb; cursor: pointer; display: flex; align-items: center; padding: 0; margin-right: 12px;" title="Back">
+        <mat-icon style="font-size: 28px; width: 28px; height: 28px;">arrow_circle_left</mat-icon>
+      </button>
+      <span style="font-size: 1.25rem; font-weight: 700; color: #1f2937;">{{ selectedStudent.Name }}</span>
+      <button style="margin-left: auto; background: none; border: none; color: #2563eb; cursor: pointer; display: flex; align-items: center;" title="Print" (click)="printPage()">
+        <mat-icon style="font-size: 24px; width: 24px; height: 24px;">print</mat-icon>
+      </button>
+    </div>
 
-      <div class="AddFormConatiner student-report-body">
+    <div class="student-report-detail-shell">
+      <div class="student-report-body">
         <section class="student-hero-card">
           <div class="student-hero-header">
             <span>Personal Details</span>

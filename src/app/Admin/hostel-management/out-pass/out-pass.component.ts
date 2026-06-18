@@ -20,7 +20,7 @@ import { RoomAllotmentService } from '../room-allotment/room-allotment.service';
   styleUrls: ['./out-pass.component.css']
 })
 export class OutPassComponent extends BasePermissionComponent implements OnInit {
-  pageName = 'Out Pass';
+  pageName = 'Outpass';
 
   // -- UI state --
   isAddNewClicked = false;

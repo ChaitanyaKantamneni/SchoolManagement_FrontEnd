@@ -24,10 +24,8 @@
         <!-- Child Selector Chips (shown when parent has multiple children) -->
         <div class="pd-child-chips" *ngIf="childrenList.length > 1">
           <span class="pd-child-chips__label">Child:</span>
-          <button *ngFor="let child of childrenList"
-            class="pd-chip"
-            [class.pd-chip--active]="selectedChildId === child.id"
-            (click)="selectChild(child.id)">
+          <button *ngFor="let child of childrenList" class="pd-chip"
+            [class.pd-chip--active]="selectedChildId === child.id" (click)="selectChild(child.id)">
             {{ child.name }}
           </button>
         </div>
@@ -66,9 +64,7 @@
     </div>
 
     <nav class="pd-tabs">
-      <button *ngFor="let tab of visibleTabs"
-        class="pd-tab"
-        [class.pd-tab--active]="currentView === tab.id"
+      <button *ngFor="let tab of visibleTabs" class="pd-tab" [class.pd-tab--active]="currentView === tab.id"
         (click)="switchView(tab.id)">
         <mat-icon>inbox</mat-icon>
         {{ tab.label }}
@@ -91,12 +87,12 @@
       </div>
 
       <!-- ══════════════════════════════════════════════ DASHBOARD VIEW -->
-      <div *ngIf="!loadingChildren && !noChildrenFound && currentView === 'dashboard'" class="pd-view pd-view--dashboard">
+      <div *ngIf="!loadingChildren && !noChildrenFound && currentView === 'dashboard'"
+        class="pd-view pd-view--dashboard">
 
         <!-- Summary Cards -->
         <div class="pd-cards">
-          <div *ngFor="let card of summaryCards"
-            class="pd-card pd-card--{{ card.color }}">
+          <div *ngFor="let card of summaryCards" class="pd-card pd-card--{{ card.color }}">
             <div class="pd-card__body">
               <p class="pd-card__label">{{ card.label }}</p>
               <h2 class="pd-card__value">{{ card.value }}</h2>
@@ -162,8 +158,7 @@
                 <span class="pd-progress-pct" [style.color]="attendanceColor">{{ attendanceSummary.percentage }}%</span>
               </div>
               <div class="pd-progress-bar">
-                <div class="pd-progress-fill"
-                  [style.width.%]="attendanceSummary.percentage"
+                <div class="pd-progress-fill" [style.width.%]="attendanceSummary.percentage"
                   [style.background]="attendanceColor">
                 </div>
               </div>
@@ -293,8 +288,7 @@
             <span class="pd-progress-pct" [style.color]="attendanceColor">{{ attendanceSummary.percentage }}%</span>
           </div>
           <div class="pd-progress-bar">
-            <div class="pd-progress-fill"
-              [style.width.%]="attendanceSummary.percentage"
+            <div class="pd-progress-fill" [style.width.%]="attendanceSummary.percentage"
               [style.background]="attendanceColor">
             </div>
           </div>
@@ -304,12 +298,18 @@
         <div class="pd-panel">
           <h3 class="pd-panel__title"><mat-icon>inbox</mat-icon> Daily Records</h3>
           <div *ngIf="loadingAttendance" class="pd-empty-state">
-            <mat-icon class="pd-spin">autorenew</mat-icon><p>Loading…</p>
+            <mat-icon class="pd-spin">autorenew</mat-icon>
+            <p>Loading…</p>
           </div>
           <ng-container *ngIf="!loadingAttendance">
             <table class="pd-table" *ngIf="attendanceRecords.length > 0; else noAtt">
               <thead>
-                <tr><th>SI.No</th><th>Date</th><th>Day</th><th>Status</th></tr>
+                <tr>
+                  <th>SI.No</th>
+                  <th>Date</th>
+                  <th>Day</th>
+                  <th>Status</th>
+                </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let rec of attendanceRecords; let i = index">
@@ -364,10 +364,7 @@
 
         <!-- Fee Sub-Tabs -->
         <div class="pd-tabs">
-          <button 
-            *ngFor="let tab of feeTabs" 
-            class="pd-tab"
-            [class.pd-tab--active]="currentFeeTab === tab.id"
+          <button *ngFor="let tab of feeTabs" class="pd-tab" [class.pd-tab--active]="currentFeeTab === tab.id"
             (click)="switchFeeTab(tab.id)">
             <mat-icon>inbox</mat-icon>
             {{ tab.label }}
@@ -378,13 +375,16 @@
         <div *ngIf="currentFeeTab === 'dues'" class="pd-panel">
           <h3 class="pd-panel__title"><mat-icon>inbox</mat-icon> Fee Dues</h3>
           <div *ngIf="loadingFees" class="pd-empty-state">
-            <mat-icon class="pd-spin">autorenew</mat-icon><p>Loading…</p>
+            <mat-icon class="pd-spin">autorenew</mat-icon>
+            <p>Loading…</p>
           </div>
           <ng-container *ngIf="!loadingFees">
             <table class="pd-table" *ngIf="feeDuesRecords.length > 0; else noFeeDues">
               <thead>
                 <tr>
-                  <th>Fee Category</th><th>Due Amount (₹)</th><th>Status</th>
+                  <th>Fee Category</th>
+                  <th>Due Amount (₹)</th>
+                  <th>Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -408,7 +408,11 @@
             <table class="pd-table" *ngIf="feeRecords.length > 0; else noPayments">
               <thead>
                 <tr>
-                  <th>Fee Category</th><th>Amount Paid (₹)</th><th>Status</th><th>Payment Date</th><th>Actions</th>
+                  <th>Fee Category</th>
+                  <th>Amount Paid (₹)</th>
+                  <th>Status</th>
+                  <th>Payment Date</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -419,19 +423,12 @@
                   <td>{{ fee.date }}</td>
                   <td>
                     <div class="d-flex justify-content-center align-items-center h-100">
-                      <button 
-                        *ngIf="fee.receiptNo" 
-                        class="btn checkbtn" 
-                        data-tooltip="View" 
+                      <button *ngIf="fee.receiptNo" class="btn checkbtn" data-tooltip="View"
                         (click)="viewReview(fee.ID)">
                         <mat-icon class="mat-edit-icon">visibility</mat-icon>
                       </button>
-                      <button 
-                        *ngIf="fee.receiptNo" 
-                        class="btn checkbtn" 
-                        data-tooltip="Print" 
-                        (click)="printFeeReceiptFromList(fee.ID)"
-                        style="margin-left: 5px;">
+                      <button *ngIf="fee.receiptNo" class="btn checkbtn" data-tooltip="Print"
+                        (click)="printFeeReceiptFromList(fee.ID)" style="margin-left: 5px;">
                         <mat-icon class="mat-edit-icon">print</mat-icon>
                       </button>
                       <span *ngIf="!fee.receiptNo" class="pd-text-muted">—</span>
@@ -459,7 +456,8 @@
         <div class="pd-panel">
           <h3 class="pd-panel__title"><mat-icon>inbox</mat-icon> Exam Results</h3>
           <div *ngIf="loadingExams" class="pd-empty-state">
-            <mat-icon class="pd-spin">autorenew</mat-icon><p>Loading…</p>
+            <mat-icon class="pd-spin">autorenew</mat-icon>
+            <p>Loading…</p>
           </div>
           <ng-container *ngIf="!loadingExams">
             <!-- Admin-style Exam Results Table -->
@@ -469,9 +467,9 @@
                   <tr>
                     <th>SI.No</th>
                     <th>Exam Name</th>
-                    <th>Admission No</th>                
+                    <th>Admission No</th>
                     <th>Student Name</th>
-                    <th>Class</th>  
+                    <th>Class</th>
                     <th>Division</th>
                     <th>Total Marks</th>
                     <th>Max Marks</th>
@@ -492,8 +490,7 @@
                     <td>{{ Syllabus.TotalMaxMarks ? Syllabus.TotalMaxMarks : 'Absent' }}</td>
                     <td>{{ Syllabus.TotalPercentage ? (Syllabus.TotalPercentage + '%') : 'Absent' }}</td>
                     <td>
-                      <span
-                        [ngClass]="{
+                      <span [ngClass]="{
                           'text-success fw-bolder': Syllabus.Result === 'PASS',
                           'text-danger fw-bold': Syllabus.Result === 'FAIL'
                         }">
@@ -504,9 +501,9 @@
                       <div class="d-flex justify-content-center align-items-center h-100">
                         <button class="btn checkbtn" data-tooltip="View" (click)="viewExamDetails(Syllabus)">
                           <mat-icon class="mat-edit-icon">visibility</mat-icon>
-                        </button> 
+                        </button>
                       </div>
-                    </td> 
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -524,7 +521,8 @@
         </div>
 
         <!-- Exam Detail View Modal (matching Admin examresults) - INSIDE exams view -->
-        <div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isExamViewModalOpen}" [style.display]="isExamViewModalOpen ? 'block' : 'none'">
+        <div class="modal" tabindex="-1" role="dialog" [ngClass]="{'show': isExamViewModalOpen}"
+          [style.display]="isExamViewModalOpen ? 'block' : 'none'">
           <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
               <div class="modal-header d-flex justify-content-between align-items-center">
@@ -551,19 +549,20 @@
                 </div>
                 <hr>
                 <p><strong></strong></p>
-                
+
                 <!-- STUDENT DETAILS -->
                 <div class="row mb-3">
                   <div class="col-md-6">
                     <p><strong>Name:</strong> {{ selectedExamForView?.StudentName }}</p>
-                    <p class="mb-1 text-nowrap"><strong>Admission No:</strong> {{ selectedExamForView?.AdmissionNo }}</p>
+                    <p class="mb-1 text-nowrap"><strong>Admission No:</strong> {{ selectedExamForView?.AdmissionNo }}
+                    </p>
                   </div>
                   <div class="col-md-6 text-md-end">
                     <p><strong>Class:</strong> {{ selectedExamForView?.Class }}</p>
                     <p><strong>Division:</strong> {{ selectedExamForView?.Division }}</p>
                   </div>
                 </div>
-                
+
                 <!-- SUBJECT TABLE -->
                 <table class="table table-bordered text-center">
                   <thead class="table-dark">
@@ -583,22 +582,20 @@
                         {{ subject.SubjectName }}
                       </td>
                       <td>{{ subject.MaxMarks }}</td>
-                      
+
                       <!-- MARKS / ABSENT -->
                       <td>
                         {{ subject.SubjectMarks ? subject.SubjectMarks : 'AB' }}
                       </td>
-                      
+
                       <!-- PERCENT -->
                       <td>
                         {{ subject.SubjectMarks ? (subject.SubjectPercentage + '%') : '-' }}
                       </td>
-                      
+
                       <!-- RESULT -->
                       <td>
-                        <span 
-                          style="font-size: 15px;"
-                          [ngClass]="{
+                        <span style="font-size: 15px;" [ngClass]="{
                             'text-success fw-bold': subject.SubjectResult === 'PASS',
                             'text-danger fw-bold': subject.SubjectResult === 'FAIL'
                           }">
@@ -608,7 +605,7 @@
                     </tr>
                   </tbody>
                 </table>
-                
+
                 <!-- TOTAL -->
                 <div class="row mt-4 border p-3 rounded bg-light">
                   <div class="col-md-4">
@@ -621,14 +618,12 @@
                     <p><strong>Percentage:</strong> {{ selectedExamForView?.TotalPercentage }}%</p>
                   </div>
                 </div>
-                
+
                 <!-- FINAL RESULT -->
                 <div class="text-center mt-3">
                   <h5>
                     Final Result:
-                    <span 
-                    style="font-size: 18px;"
-                      [ngClass]="{
+                    <span style="font-size: 18px;" [ngClass]="{
                         'text-success': getFinalResult() === 'PASS',
                         'text-danger': getFinalResult() === 'FAIL'
                       }">
@@ -642,112 +637,115 @@
         </div>
       </div><!-- /exams view -->
 
-    <!-- Fee Receipt Modal -->
-    <div class="modal viewmodel" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}" [style.display]="isViewModalOpen ? 'block' : 'none'">
-      <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Fee Receipt</h5>
-            <button type="button" class="close" (click)="closeModal('view')">
-              <span>&times;</span>
-            </button>
-          </div>
-          <div class="modal-body" id="receiptSection">
-
-            <div class="receipt-box">
-          
-              <!-- HEADER -->
-              <div class="header">
-                <!-- LOGO (Dynamic optional) -->
-                <div class="logo">
-                  <img [src]="viewSyllabus?.SchoolLogo || 'assets/logo.png'" alt="Logo">
-                </div>
-              
-                <!-- CENTER TEXT (Dynamic) -->
-                <div class="header-center">
-                  <h2>{{ viewSyllabus?.SchoolName }}</h2>
-                  <h3>RECEIPT</h3>
-                </div>
-              </div>
-          
-              <div class="receipt-top">
-                <div><b>Receipt No:</b> {{ viewSyllabus?.ReceiptNo }}</div>
-                <div><b>Date:</b> {{ viewSyllabus?.PaymentDate }}</div>
-              </div>
-          
-              <hr>
-          
-              <!-- STUDENT DETAILS -->
-              <h5 class="section-title">Student Details</h5>
-          
-              <div class="receipt-left-line"><b>Student Name :</b> {{ viewSyllabus?.StudentName }}</div>
-              <div class="receipt-left-line"><b>Class :</b> {{ viewSyllabus?.ClassName }}</div>
-              <div class="receipt-left-line"><b>Division :</b> {{ viewSyllabus?.DivisionName }}</div>
-          
-              <hr>
-          
-              <!-- PAYMENT SUMMARY -->
-              <h5 class="section-title">Payment Summary</h5>
-          
-              <table class="receipt-table">
-                <tr>
-                  <th>Particulars</th>
-                  <th>Amount</th>
-                </tr>
-                <tr>
-                  <td>Total Fee</td>
-                  <td>₹ {{ viewSyllabus?.TotalFee }}</td>
-                </tr>
-                <tr>
-                  <td>Total Discount</td>
-                  <td>₹ {{ viewSyllabus?.TotalDiscount }}</td>
-                </tr>
-                <tr>
-                  <td>Total Fee Paid</td>
-                  <td>₹ {{ viewSyllabus?.TotalFeePaid }}</td>
-                </tr>
-                <tr>
-                  <td>Fee Paid (This Receipt)</td>
-                  <td>₹ {{ viewSyllabus?.FeePaid }}</td>
-                </tr>
-                <tr>
-                  <td><b>Remaining Amount</b></td>
-                  <td><b>₹ {{ viewSyllabus?.RemainingAmount }}</b></td>
-                </tr>
-              </table>
-          
-              <hr>
-          
-              <!-- PAYMENT DETAILS -->
-              <h5 class="section-title">Payment Details</h5>
-          
-              <div class="receipt-left-line"><b>Payment Mode :</b> {{ getReceiptPaymentModeLabel() }}</div>
-              <div class="receipt-left-line" *ngIf="isReceiptUpiOrCardMode()"><b>Transaction ID :</b> {{ getReceiptPaymentReferenceValue() }}</div>
-              <div class="receipt-left-line" *ngIf="isReceiptChequeMode()"><b>Cheque No :</b> {{ getReceiptPaymentReferenceValue() }}</div>
-          
-              <hr>
-          
-              <!-- FOOTER -->
-              <div class="receipt-footer">
-                <div class="receipt-left-line"><b>Received By :</b> {{ viewSyllabus?.CreatedBy }}</div>
-                <div class="receipt-left-line"><b>School Name :</b> {{ viewSyllabus?.SchoolName }}</div>
-              </div>
-          
-              <hr>
-          
-              <p class="note">
-                <b>Note:</b> This is a system-generated receipt. No signature required.
-              </p>
-          
+      <!-- Fee Receipt Modal -->
+      <div class="modal viewmodel" tabindex="-1" role="dialog" [ngClass]="{'show': isViewModalOpen}"
+        [style.display]="isViewModalOpen ? 'block' : 'none'">
+        <div class="modal-dialog modal-lg" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Fee Receipt</h5>
+              <button type="button" class="close" (click)="closeModal('view')">
+                <span>&times;</span>
+              </button>
             </div>
-          
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-primary" (click)="printFeeReceipt()">Print</button>
+            <div class="modal-body" id="receiptSection">
+
+              <div class="receipt-box">
+
+                <!-- HEADER -->
+                <div class="header">
+                  <!-- LOGO (Dynamic optional) -->
+                  <div class="logo">
+                    <img [src]="viewSyllabus?.SchoolLogo || 'assets/logo.png'" alt="Logo">
+                  </div>
+
+                  <!-- CENTER TEXT (Dynamic) -->
+                  <div class="header-center">
+                    <h2>{{ viewSyllabus?.SchoolName }}</h2>
+                    <h3>RECEIPT</h3>
+                  </div>
+                </div>
+
+                <div class="receipt-top">
+                  <div><b>Receipt No:</b> {{ viewSyllabus?.ReceiptNo }}</div>
+                  <div><b>Date:</b> {{ viewSyllabus?.PaymentDate }}</div>
+                </div>
+
+                <hr>
+
+                <!-- STUDENT DETAILS -->
+                <h5 class="section-title">Student Details</h5>
+
+                <div class="receipt-left-line"><b>Student Name :</b> {{ viewSyllabus?.StudentName }}</div>
+                <div class="receipt-left-line"><b>Class :</b> {{ viewSyllabus?.ClassName }}</div>
+                <div class="receipt-left-line"><b>Division :</b> {{ viewSyllabus?.DivisionName }}</div>
+
+                <hr>
+
+                <!-- PAYMENT SUMMARY -->
+                <h5 class="section-title">Payment Summary</h5>
+
+                <table class="receipt-table">
+                  <tr>
+                    <th>Particulars</th>
+                    <th>Amount</th>
+                  </tr>
+                  <tr>
+                    <td>Total Fee</td>
+                    <td>₹ {{ viewSyllabus?.TotalFee }}</td>
+                  </tr>
+                  <tr>
+                    <td>Total Discount</td>
+                    <td>₹ {{ viewSyllabus?.TotalDiscount }}</td>
+                  </tr>
+                  <tr>
+                    <td>Total Fee Paid</td>
+                    <td>₹ {{ viewSyllabus?.TotalFeePaid }}</td>
+                  </tr>
+                  <tr>
+                    <td>Fee Paid (This Receipt)</td>
+                    <td>₹ {{ viewSyllabus?.FeePaid }}</td>
+                  </tr>
+                  <tr>
+                    <td><b>Remaining Amount</b></td>
+                    <td><b>₹ {{ viewSyllabus?.RemainingAmount }}</b></td>
+                  </tr>
+                </table>
+
+                <hr>
+
+                <!-- PAYMENT DETAILS -->
+                <h5 class="section-title">Payment Details</h5>
+
+                <div class="receipt-left-line"><b>Payment Mode :</b> {{ getReceiptPaymentModeLabel() }}</div>
+                <div class="receipt-left-line" *ngIf="isReceiptUpiOrCardMode()"><b>Transaction ID :</b> {{
+                  getReceiptPaymentReferenceValue() }}</div>
+                <div class="receipt-left-line" *ngIf="isReceiptChequeMode()"><b>Cheque No :</b> {{
+                  getReceiptPaymentReferenceValue() }}</div>
+
+                <hr>
+
+                <!-- FOOTER -->
+                <div class="receipt-footer">
+                  <div class="receipt-left-line"><b>Received By :</b> {{ viewSyllabus?.CreatedBy }}</div>
+                  <div class="receipt-left-line"><b>School Name :</b> {{ viewSyllabus?.SchoolName }}</div>
+                </div>
+
+                <hr>
+
+                <p class="note">
+                  <b>Note:</b> This is a system-generated receipt. No signature required.
+                </p>
+
+              </div>
+
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-primary" (click)="printFeeReceipt()">Print</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
       <!-- ══════════════════════════════════════════════ HOMEWORK VIEW -->
       <div *ngIf="!loadingChildren && !noChildrenFound && currentView === 'homework'" class="pd-view">
@@ -756,21 +754,20 @@
 
       <!-- ══════════════════════════════════════════════ LEAVE VIEW -->
       <div *ngIf="!loadingChildren && !noChildrenFound && currentView === 'leave'" class="pd-view pd-view--leave">
-        
+
         <!-- Leave Header -->
         <div class="pd-view-header">
           <div>
             <h2 class="pd-view-header__title">Leave Management</h2>
-            <p class="pd-view-header__sub">Apply and track leave applications for {{ selectedChild?.name || 'Student' }}</p>
+            <p class="pd-view-header__sub">Apply and track leave applications for {{ selectedChild?.name || 'Student' }}
+            </p>
           </div>
         </div>
 
-        
+
         <!-- Leave Tabs -->
         <div class="pd-tabs pd-tabs--sub">
-          <button *ngFor="let tab of leaveTabs"
-            class="pd-tab"
-            [class.pd-tab--active]="currentLeaveTab === tab.id"
+          <button *ngFor="let tab of leaveTabs" class="pd-tab" [class.pd-tab--active]="currentLeaveTab === tab.id"
             (click)="switchLeaveTab(tab.id)">
             <mat-icon>{{ tab.icon }}</mat-icon>
             {{ tab.label }}
@@ -788,7 +785,7 @@
                 <mat-icon>refresh</mat-icon> Refresh
               </button>
             </div>
-            
+
             <div *ngIf="loadingLeaveHistory" class="pd-empty-state">
               <mat-icon class="pd-spin">autorenew</mat-icon>
               <p>Loading leave history…</p>
@@ -806,31 +803,30 @@
                     {{ leave.status }}
                   </span>
                 </div>
-                
+
                 <div class="leave-dates">
                   <strong>{{ formatDate(leave.fromDate) }}</strong>
                   <span> to </span>
                   <strong>{{ formatDate(leave.toDate) }}</strong>
-                  <span class="days-count">({{ leave.totalDays }} days)</span>
+                  <!-- <span class="days-count">({{ leave.totalDays }} days)</span> -->
                 </div>
-                
+
                 <div class="leave-reason">
                   <p>{{ leave.reason }}</p>
                 </div>
-                
+
                 <div class="leave-meta">
                   <span>Applied: {{ formatDate(leave.appliedDate) }}</span>
                   <span *ngIf="leave.approvedDate">Approved: {{ formatDate(leave.approvedDate) }}</span>
                   <span *ngIf="leave.rejectedDate">Rejected: {{ formatDate(leave.rejectedDate) }}</span>
                 </div>
-                
+
                 <div class="leave-actions">
                   <button class="pd-btn pd-btn--small pd-btn--primary" (click)="viewLeaveDetails(leave)">
                     <mat-icon>inbox</mat-icon> View Details
                   </button>
-                  <button *ngIf="leave.status === 'Pending'" 
-                          class="pd-btn pd-btn--small pd-btn--danger" 
-                          (click)="openCancelModal(leave)">
+                  <button *ngIf="leave.status === 'Pending'" class="pd-btn pd-btn--small pd-btn--danger"
+                    (click)="openCancelModal(leave)">
                     <mat-icon>inbox</mat-icon> Cancel
                   </button>
                 </div>
@@ -845,23 +841,25 @@
             <h3 class="pd-panel__title">
               <mat-icon>add_circle</mat-icon> Apply for Leave
             </h3>
-            
+
             <form [formGroup]="leaveForm" class="leave-form">
-              
+
               <!-- Date Range -->
               <div class="form-row">
                 <div class="form-group">
                   <label for="fromDate">From Date *</label>
                   <input id="fromDate" type="date" formControlName="fromDate" class="pd-form-control">
-                  <div *ngIf="leaveForm.get('fromDate')?.touched && leaveForm.get('fromDate')?.invalid" class="error-message">
+                  <div *ngIf="leaveForm.get('fromDate')?.touched && leaveForm.get('fromDate')?.invalid"
+                    class="error-message">
                     From date is required
                   </div>
                 </div>
-                
+
                 <div class="form-group">
                   <label for="toDate">To Date *</label>
                   <input id="toDate" type="date" formControlName="toDate" class="pd-form-control">
-                  <div *ngIf="leaveForm.get('toDate')?.touched && leaveForm.get('toDate')?.invalid" class="error-message">
+                  <div *ngIf="leaveForm.get('toDate')?.touched && leaveForm.get('toDate')?.invalid"
+                    class="error-message">
                     To date is required
                   </div>
                 </div>
@@ -870,8 +868,8 @@
               <!-- Reason -->
               <div class="form-group">
                 <label for="reason">Reason for Leave * (minimum 10 characters)</label>
-                <textarea id="reason" formControlName="reason" rows="4" class="pd-form-control" 
-                          placeholder="Please provide detailed reason for the leave..."></textarea>
+                <textarea id="reason" formControlName="reason" rows="4" class="pd-form-control"
+                  placeholder="Please provide detailed reason for the leave..."></textarea>
                 <div *ngIf="leaveForm.get('reason')?.touched && leaveForm.get('reason')?.invalid" class="error-message">
                   Reason is required and must be at least 10 characters
                 </div>
@@ -889,10 +887,8 @@
                 <button type="button" class="btn btn-secondary" (click)="resetLeaveForm()">
                   <mat-icon>refresh</mat-icon> Reset
                 </button>
-                <button type="button" 
-                        class="btn btn-primary" 
-                        (click)="submitLeaveApplication()"
-                        [disabled]="!leaveForm.valid || isSubmittingLeave">
+                <button type="button" class="btn btn-primary" (click)="submitLeaveApplication()"
+                  [disabled]="!leaveForm.valid || isSubmittingLeave">
                   <mat-icon *ngIf="!isSubmittingLeave">send</mat-icon>
                   <mat-icon *ngIf="isSubmittingLeave" class="pd-spin">autorenew</mat-icon>
                   {{ isSubmittingLeave ? 'Submitting...' : 'Submit Application' }}
@@ -962,7 +958,8 @@
       </div><!-- /leave view -->
 
       <!-- ══════════════════════════════════════════════ CANCEL LEAVE MODAL -->
-      <div class="modal" [ngClass]="{'show': showCancelModal}" [style.display]="showCancelModal ? 'flex' : 'none'" tabindex="-1" role="dialog">
+      <div class="modal" [ngClass]="{'show': showCancelModal}" [style.display]="showCancelModal ? 'flex' : 'none'"
+        tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document" style="max-width:440px;width:100%;">
           <div class="modal-content">
             <div class="modal-header">
@@ -973,17 +970,14 @@
               <p style="margin-bottom:12px;color:#475569;font-size:13px;">Please provide a reason for cancellation.</p>
               <div class="InputFieldsContainer">
                 <label class="inputLabel">Reason for Cancellation <span style="color:red">*</span></label>
-                <textarea
-                  class="inputField"
-                  rows="3"
-                  [(ngModel)]="cancelReason"
-                  placeholder="Enter reason for cancellation..."
-                  style="resize:none;"></textarea>
+                <textarea class="inputField" rows="3" [(ngModel)]="cancelReason"
+                  placeholder="Enter reason for cancellation..." style="resize:none;"></textarea>
               </div>
             </div>
             <div class="modal-footer" style="justify-content:flex-end;gap:10px;">
               <button type="button" class="btn btncancel" (click)="closeCancelModal()">Close</button>
-              <button type="button" class="btn btn-primary" (click)="confirmCancelLeave()" [disabled]="!cancelReason.trim()">
+              <button type="button" class="btn btn-primary" (click)="confirmCancelLeave()"
+                [disabled]="!cancelReason.trim()">
                 Confirm Cancel
               </button>
             </div>
@@ -992,7 +986,8 @@
       </div>
 
       <!-- ══════════════════════════════════════════════ LEAVE CONFIRMATION MODAL -->
-      <div class="modal" [ngClass]="{'show': showLeaveConfirmModal}" [style.display]="showLeaveConfirmModal ? 'flex' : 'none'" tabindex="-1" role="dialog">
+      <div class="modal" [ngClass]="{'show': showLeaveConfirmModal}"
+        [style.display]="showLeaveConfirmModal ? 'flex' : 'none'" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document" style="max-width:460px;width:100%;">
           <div class="modal-content">
             <div class="modal-header">
@@ -1000,7 +995,8 @@
               <button type="button" class="close" (click)="cancelLeaveConfirm()"><span>&times;</span></button>
             </div>
             <div class="modal-body" *ngIf="pendingLeaveApplication">
-              <p style="margin-bottom:14px;color:#475569;font-size:13px;">Please review the details before submitting.</p>
+              <p style="margin-bottom:14px;color:#475569;font-size:13px;">Please review the details before submitting.
+              </p>
               <div class="row">
                 <div class="col-5 viewHeadingfontsize">Student Name</div>
                 <div class="col-7 viewfontsize">{{ pendingLeaveApplication.studentName }}</div>
@@ -1024,8 +1020,10 @@
             </div>
             <div class="modal-footer" style="justify-content:flex-end;gap:10px;">
               <button type="button" class="btn btncancel" (click)="cancelLeaveConfirm()">Cancel</button>
-              <button type="button" class="btn btn-primary" (click)="confirmLeaveSubmit()" [disabled]="isSubmittingLeave">
-                <mat-icon *ngIf="isSubmittingLeave" class="pd-spin" style="font-size:16px;vertical-align:middle;">autorenew</mat-icon>
+              <button type="button" class="btn btn-primary" (click)="confirmLeaveSubmit()"
+                [disabled]="isSubmittingLeave">
+                <mat-icon *ngIf="isSubmittingLeave" class="pd-spin"
+                  style="font-size:16px;vertical-align:middle;">autorenew</mat-icon>
                 {{ isSubmittingLeave ? 'Submitting...' : 'Confirm & Submit' }}
               </button>
             </div>
@@ -1042,7 +1040,8 @@
           </div>
         </div>
         <div *ngIf="loadingTimetable" class="pd-empty-state">
-          <mat-icon class="pd-spin">autorenew</mat-icon><p>Loading timetable…</p>
+          <mat-icon class="pd-spin">autorenew</mat-icon>
+          <p>Loading timetable…</p>
         </div>
         <div class="pd-panel pd-panel--overflow" *ngIf="!loadingTimetable">
           <ng-container *ngIf="timetableGrid.length > 0; else noTT">
