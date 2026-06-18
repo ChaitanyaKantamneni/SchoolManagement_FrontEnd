@@ -269,7 +269,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       'salary issued': 'receipt_long',
       'apply leave': 'event_note',
       'leave approval': 'fact_check',
-      'leave details': 'settings',
+      'leave details': 'event_note',
       'holiday calendar': 'event',
       'students report': 'bar_chart',
       'fee report': 'bar_chart'

@@ -110,9 +110,14 @@
 .stat-value { font-size: 22px; font-weight: 700; color: #0f172a; line-height: 1; margin-top: 4px; }
 
 /* Row 4: Main Layout Panels */
+.panels-wrapper {
+  display: flex;
+  gap: 24px;
+  width: 100%;
+}
+
 .left-panel {
-  grid-column: 1 / 6;
-  grid-row: 4;
+  flex: 1 1 65%;
   min-width: 0;
   background: white;
   border-radius: 16px;
@@ -122,8 +127,7 @@
 }
 
 .right-panel {
-  grid-column: 6 / 9;
-  grid-row: 4;
+  flex: 0 0 300px;
   min-width: 0;
   background: white;
   border-radius: 16px;
@@ -176,16 +180,57 @@
 .table tbody td { padding: 14px 16px; vertical-align: middle; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
 .status-pill { padding: 6px 14px; border-radius: 100px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
 
+/* History Filter Row */
+.history-filter-row {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.history-filter-select {
+  width: 200px;
+}
+
+.history-filter-count {
+  color: #6b7280;
+  font-size: 14px;
+}
+
 /* Balance Panel */
 .balance-panel { background: transparent; border: none; box-shadow: none; border-radius: 0; }
 .balance-title { font-size: 13px; font-weight: 700; color: #0f172a; text-transform: uppercase; display: flex; align-items: center; gap: 12px; margin: 0; }
-.balance-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 10px; background: #f8fafc; border: 1px solid #f1f5f9; margin-bottom: 8px; }
-.item-info { flex: 1; display: flex; justify-content: space-between; align-items: center; }
+.balance-item { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border-radius: 10px; background: #f8fafc; border: 1px solid #f1f5f9; margin-bottom: 8px; }
+.item-icon { min-width: 36px; min-height: 36px; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+.item-details { flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.item-top-row { display: flex; justify-content: space-between; align-items: center; }
 .item-label { font-size: 12px; font-weight: 600; color: #475569; }
-.item-days { font-size: 13px; font-weight: 700; color: #1e293b; }
+.item-remaining { font-size: 15px; font-weight: 800; line-height: 1; }
+.item-remaining small { font-size: 10px; font-weight: 600; opacity: 0.7; margin-left: 2px; text-transform: uppercase; }
+.item-progress-bar { width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
+.item-progress-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease, background 0.3s ease; min-width: 2px; }
+.item-bottom-row { display: flex; justify-content: flex-end; }
+.item-used { font-size: 10px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.3px; }
 
 /* Actions */
 .btn-primary { background: #536ff7; color: white; padding: 12px 32px; border-radius: 10px; font-weight: 600; border: none; box-shadow: 0 4px 12px rgba(83, 111, 247, 0.25); }
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.btn-reset {
+  background: #f1f5f9;
+  color: #475569;
+  padding: 10px 24px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+}
 
 /* File Upload Component */
 .file-upload-container {
@@ -307,16 +352,508 @@
   color: #78350f;
 }
 
-/* Responsive */
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE — TABLET (≤1200px)
+   ═══════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 1200px) {
-  .MainContentDiv { grid-template-columns: 1fr; }
-  .ComponentTop, .ComponentRecords, .stats-grid, .left-panel, .right-panel { grid-column: 1 / 2; }
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .MainContentDiv {
+    flex-direction: column;
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .ComponentTop, .ComponentRecords, .stats-grid, .left-panel, .right-panel {
+    grid-column: 1 / -1;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  /* Stack left/right panels vertically */
+  .panels-wrapper {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .left-panel, .right-panel {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .right-panel {
+    flex: 1 1 100%;
+    order: -1; /* Move balance panel above the form on tablet */
+  }
+
+  .filterOptions {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+  }
+
+  .tab-content, .balance-content {
+    padding: 20px;
+  }
+
+  .stat-card {
+    padding: 16px 20px;
+    min-height: 80px;
+  }
+
+  .stat-value {
+    font-size: 20px;
+  }
+
+  /* History table scroll on tablet */
+  .reviewstable {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .reviewstable table {
+    min-width: 600px;
+  }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE — SMALL TABLET / LARGE PHONE (≤768px)
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .MainContentDiv {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .stat-card {
+    padding: 14px 16px;
+    min-height: 70px;
+    gap: 12px;
+  }
+
+  .stat-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+  }
+
+  .stat-label { font-size: 10px; }
+  .stat-value { font-size: 18px; }
+
+  .ComponentRecords {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .filterOptions {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  /* Form goes single column */
+  .FormInputRowsContainer {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .tab-header {
+    gap: 8px;
+    padding: 0 16px;
+    height: 48px;
+  }
+
+  .tab-btn {
+    font-size: 13px;
+    padding: 0 4px;
+    gap: 4px;
+  }
+
+  .tab-btn mat-icon {
+    font-size: 18px;
+  }
+
+  .tab-content, .balance-content {
+    padding: 16px;
+  }
+
+  .left-panel, .right-panel {
+    border-radius: 12px;
+  }
+
+  /* Balance panel adjustments */
+  .balance-item {
+    padding: 12px 14px;
+  }
+
+  .item-remaining {
+    font-size: 14px;
+  }
+
+  /* History table */
+  .reviewstable table {
+    min-width: 550px;
+  }
+
+  .table thead th {
+    padding: 12px 10px;
+    font-size: 10px;
+  }
+
+  .table tbody td {
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  /* Form buttons */
+  .btn-primary {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  /* Status filter on history tab */
+  .form-control {
+    font-size: 13px;
+  }
+
+  /* Child tab slider */
+  .child-tab-slider {
+    padding: 10px 12px;
+  }
+
+  .child-tab-btn {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+
+  /* Modal adjustments */
+  .modal-dialog {
+    margin: 16px;
+    max-width: calc(100% - 32px) !important;
+  }
+
+  .modal-body {
+    padding: 20px !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE — MOBILE (≤640px)
+   ═══════════════════════════════════════════════════════════════════════════ */
 @media (max-width: 640px) {
-  .stats-grid { grid-template-columns: 1fr; }
-  .FormInputRowsContainer { grid-template-columns: 1fr; }
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .stat-card {
+    padding: 12px;
+    min-height: auto;
+    gap: 10px;
+    border-radius: 12px;
+  }
+
+  .stat-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+  }
+
+  .stat-icon mat-icon {
+    font-size: 18px !important;
+  }
+
+  .stat-label { font-size: 9px; letter-spacing: 0.3px; }
+  .stat-value { font-size: 16px; }
+
+  .filterOptions {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .ComponentRecords {
+    padding: 14px;
+  }
+
+  .tab-header {
+    height: 44px;
+    padding: 0 12px;
+    gap: 4px;
+  }
+
+  .tab-btn {
+    font-size: 12px;
+    gap: 4px;
+  }
+
+  .tab-content, .balance-content {
+    padding: 14px;
+  }
+
+  /* Input fields */
+  .inputField {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .inputLabel {
+    font-size: 10px;
+    margin-bottom: 6px;
+  }
+
+  .summary-box {
+    height: 42px;
+    padding: 8px 12px;
+  }
+
+  .summary-days { font-size: 18px; }
+
+  /* Balance panel compact */
+  .balance-item {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .item-icon {
+    min-width: 32px;
+    min-height: 32px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+  }
+
+  .item-icon mat-icon {
+    font-size: 16px !important;
+  }
+
+  .item-label { font-size: 11px; }
+  .item-remaining { font-size: 13px; }
+  .item-remaining small { font-size: 9px; }
+  .item-used { font-size: 9px; }
+  .item-progress-bar { height: 5px; }
+
+  /* File upload */
+  .file-upload-label {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .file-upload-label span {
+    font-size: 12px;
+  }
+
+  /* History filter goes vertical on mobile */
+  .history-filter-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .history-filter-select {
+    width: 100%;
+  }
+
+  .history-filter-count {
+    font-size: 12px;
+  }
+
+  /* Breadcrumb */
+  .admission-breadcrumb {
+    font-size: 12px;
+  }
+
+  /* Header */
+  .ComponentTopHeader h5 { font-size: 20px; }
+  .ComponentTopHeader p { font-size: 12px; }
+
+  /* Modal */
+  .modal-dialog {
+    margin: 10px;
+    max-width: calc(100% - 20px) !important;
+  }
+
+  .modal-content {
+    border-radius: 12px !important;
+  }
+
+  .modal-header {
+    padding: 14px 16px !important;
+  }
+
+  .modal-body {
+    padding: 16px !important;
+  }
+
+  /* Modal detail grid goes single column */
+  .modal-body > div[style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE — SMALL MOBILE (≤480px)
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .MainContentDiv {
+    padding: 8px;
+    gap: 10px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .stat-card {
+    padding: 10px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .stat-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .stat-icon mat-icon {
+    font-size: 16px !important;
+  }
+
+  .stat-value { font-size: 14px; }
+  .stat-label { font-size: 8px; }
+
+  .ComponentRecords {
+    padding: 10px;
+    border-radius: 10px;
+  }
+
+  /* Tab buttons stack if needed */
+  .tab-header {
+    height: auto;
+    padding: 8px 10px;
+    flex-wrap: wrap;
+    gap: 0;
+  }
+
+  .tab-btn {
+    font-size: 11px;
+    padding: 8px 6px;
+    flex: 1;
+    justify-content: center;
+    border-bottom-width: 2px;
+  }
+
+  .tab-content, .balance-content {
+    padding: 10px;
+  }
+
+  .inputField {
+    padding: 8px 10px;
+    font-size: 12px;
+    border-radius: 6px;
+  }
+
+  .inputLabel {
+    font-size: 9px;
+  }
+
+  /* Action buttons go full width */
+  .form-actions {
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 20px;
+  }
+
+  .btn-primary, .btn-reset {
+    width: 100%;
+    text-align: center;
+    padding: 10px 16px;
+  }
+
+  /* History table even more compact */
+  .reviewstable table {
+    min-width: 480px;
+  }
+
+  .table thead th {
+    padding: 8px 6px;
+    font-size: 9px;
+  }
+
+  .table tbody td {
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+
+  .status-pill {
+    padding: 4px 8px;
+    font-size: 9px;
+  }
+
+  /* Pagination */
+  .btn[style*="padding: 6px 12px"] {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+    min-width: 28px !important;
+  }
+
+  /* Child tab buttons */
+  .child-tab-slider {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+
+  .child-tab-btn {
+    padding: 6px 10px;
+    font-size: 11px;
+    gap: 4px;
+  }
+
+  .child-tab-btn mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
+
+  /* Balance items even more compact */
+  .balance-header {
+    height: 44px;
+    padding: 0 12px;
+  }
+
+  .balance-title {
+    font-size: 11px;
+    gap: 8px;
+  }
+
+  .item-details { gap: 4px; }
+  .item-label { font-size: 10px; }
+  .item-remaining { font-size: 12px; }
+  .item-remaining small { font-size: 8px; }
+  .item-progress-bar { height: 4px; }
+  .item-used { font-size: 8px; }
+
+  /* Header */
+  .ComponentTopHeader h5 { font-size: 18px; }
+  .ComponentTopHeader p { font-size: 11px; }
+
+  /* Document warning */
+  .document-warning {
+    padding: 10px;
+    gap: 8px;
+    font-size: 12px;
+  }
+
+  .document-warning .warning-content {
+    font-size: 12px;
+  }
 }
 
 /* Child Tab Slider (Parent View) */

@@ -265,7 +265,13 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
 
     if (!this.isAdmin && this.currentSchoolId) {
       this.selectedAdminSchoolID = this.currentSchoolId;
+      this.selectedAdminAcademicYearID = this.salesForm.get('academicYearId')?.value || this.selectedAdminAcademicYearID;
       this.FetchAcademicYearsList(this.currentSchoolId);
+      if (this.selectedAdminAcademicYearID) {
+        this.FetchClassList();
+        this.FetchCategoriesList();
+        this.FetchItemsList();
+      }
     }
     if (!this.isAdmin) {
       this.salesForm.get('academicYearId')?.disable({ emitEvent: false });

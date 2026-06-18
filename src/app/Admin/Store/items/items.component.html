@@ -20,6 +20,30 @@
       </div>
     </div>
 
+    <div class="admission-stats-grid">
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--blue"><mat-icon>assignment</mat-icon></div>
+        <div>
+          <strong>{{ ItemsCount }}</strong>
+          <span>Total Items</span>
+        </div>
+      </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--green"><mat-icon>schedule</mat-icon></div>
+        <div>
+          <strong>{{ pageSize }}</strong>
+          <span>Rows Per Page</span>
+        </div>
+      </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--amber"><mat-icon>calendar_month</mat-icon></div>
+        <div>
+          <strong>{{ currentPage }}</strong>
+          <span>Current Page</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Filters -->
     <div class="admission-filter-row">
       <div class="admission-searchbox">
@@ -64,7 +88,7 @@
                 <th>Purchasing Price</th>
                 <th>Selling Price</th>
                 <th>Opening Stock</th>
-                <th>Reorder Level</th>
+                <!-- <th>Reorder Level</th> -->
                 <th *ngIf="isAdmin">School Name</th>
                 <th *ngIf="isAdmin">Academic Year</th>
                 <th>Status</th>
@@ -80,7 +104,7 @@
                 <td data-label="Purchasing Price">{{ item.PurchasePrice }}</td>
                 <td data-label="Selling Price">{{ item.SellingPrice }}</td>
                 <td data-label="Opening Stock">{{ item.OpeningStock }}</td>
-                <td data-label="Reorder Level">{{ item.ReorderLevel }}</td>
+                <!-- <td data-label="Reorder Level">{{ item.ReorderLevel }}</td> -->
                 <td data-label="School Name" *ngIf="isAdmin">{{ item.SchoolName }}</td>
                 <td data-label="Academic Year" *ngIf="isAdmin">{{ item.AcademicYearName }}</td>
                 <td data-label="Status">
@@ -213,8 +237,11 @@
               <div class="InputFieldsContainer">
                 <label class="inputLabel">Unit <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <select class="inputField" formControlName="UnitID">
-                    <option value="0">-- Select Unit --</option>
+<select
+  class="inputField"
+  formControlName="UnitID"
+  (change)="onUnitChange($event)">            
+          <option value="0">-- Select Unit --</option>
                     <option *ngFor="let unit of unitsList" [value]="unit.ID">{{ unit.Name }}</option>
                   </select>
                   <div *ngIf="ItemsForm.get('UnitID')?.touched && ItemsForm.get('UnitID')?.invalid" class="text-danger">
@@ -255,36 +282,72 @@
             </div>
 
             <div class="InputRow">
-              <div class="InputFieldsContainer">
-                <label class="inputLabel">Opening Stock</label>
-                <div class="input-with-error">
-                  <input type="number" class="inputField" formControlName="OpeningStock" placeholder="0" />
-                </div>
-              </div>
-              <div class="InputFieldsContainer">
+            <div class="InputFieldsContainer">
+  <label class="inputLabel">Opening Stock</label>
+
+  <div class="input-with-error">
+  <input
+  type="number"
+  class="inputField"
+  formControlName="OpeningStock"
+  placeholder="0"
+  [attr.step]="selectedUnit?.Difference"
+  [attr.min]="selectedUnit?.MinimumValue"
+  [attr.max]="selectedUnit?.MaxValue">
+    <div
+      *ngIf="ItemsForm.get('OpeningStock')?.errors?.['invalidRange']"
+      class="text-danger">
+      <small>
+        Opening Stock must be between
+        {{ selectedUnit?.MinimumValue }}
+        and
+        {{ selectedUnit?.MaxValue }}
+      </small>
+    </div>
+
+    <!-- <div
+      *ngIf="ItemsForm.get('OpeningStock')?.errors?.['invalidStep']"
+      class="text-danger">
+      <small>
+        Opening Stock should increase by
+        {{ selectedUnit?.Difference }}
+      </small>
+    </div> -->
+
+  </div>
+</div>
+              <!-- <div class="InputFieldsContainer">
                 <label class="inputLabel">Reorder Level</label>
                 <div class="input-with-error">
                   <input type="number" class="inputField" formControlName="ReorderLevel" placeholder="0" />
                 </div>
-              </div>
-            </div>
-
-            <div class="InputRow">
-              <div class="InputFieldsContainer">
+              </div> -->
+                <div class="InputFieldsContainer">
                 <label class="inputLabel">Tax CGST (%)</label>
                 <div class="input-with-error">
                   <input type="number" class="inputField" formControlName="TaxCGST" placeholder="0.00" step="0.01" />
                 </div>
               </div>
+            </div>
+
+            <div class="InputRow">
+            
               <div class="InputFieldsContainer">
                 <label class="inputLabel">Tax SGST (%)</label>
                 <div class="input-with-error">
                   <input type="number" class="inputField" formControlName="TaxSGST" placeholder="0.00" step="0.01" />
                 </div>
               </div>
+               <div class="InputFieldsContainer">
+                <label class="inputLabel">Description</label>
+                <div class="input-with-error">
+                  <input type="text" class="inputField" formControlName="Description" placeholder="Enter Description" />
+                </div>
+              </div>
             </div>
+                
 
-            <div class="InputRow">
+            <!-- <div class="InputRow">
               <div class="InputFieldsContainer">
                 <label class="inputLabel">Description</label>
                 <div class="input-with-error">
@@ -294,7 +357,7 @@
               <div class="InputFieldsContainer">
                 <span style="visibility: hidden;">Spacer</span>
               </div>
-            </div>
+            </div> -->
 
             <div class="InputRow">
               <div class="noteActiveCard">
@@ -363,7 +426,7 @@
         <div><strong>Purchase Price:</strong> {{ viewItem.PurchasePrice }}</div>
         <div><strong>Selling Price:</strong> {{ viewItem.SellingPrice }}</div>
         <div><strong>Opening Stock:</strong> {{ viewItem.OpeningStock }}</div>
-        <div><strong>Reorder Level:</strong> {{ viewItem.ReorderLevel }}</div>
+        <!-- <div><strong>Reorder Level:</strong> {{ viewItem.ReorderLevel }}</div> -->
         <div><strong>Tax CGST (%):</strong> {{ viewItem.TaxCGST }}</div>
         <div><strong>Tax SGST (%):</strong> {{ viewItem.TaxSGST }}</div>
         <div><strong>Description:</strong> {{ viewItem.Description }}</div>

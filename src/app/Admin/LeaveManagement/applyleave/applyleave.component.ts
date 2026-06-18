@@ -1075,6 +1075,8 @@ private checkAndLoad(): void {
   } 
   else if (!this.isParent && !this.isActuallyStudent) {
     // ✅ ONLY STAFF
+        if (this.isSchoolAdmin && !this.selectedUserType) return; // <-- ADD THIS LINE
+
     this.loadBalances();
   }
 

@@ -164,6 +164,44 @@ export class MenuServiceService {
           }))
         }));
 
+        if (roleId === '1') {
+          const hasHostel = modules.some(m => m.moduleName.trim().toLowerCase() === 'hostel management');
+          if (!hasHostel) {
+            modules.push({
+              id: 'hostel_mgr',
+              moduleName: 'Hostel Management',
+              pages: [
+                {
+                  id: 'hostel_master',
+                  pageName: 'Hostel Master',
+                  moduleID: 'hostel_mgr',
+                  canView: '1',
+                  canAdd: '1',
+                  canEdit: '1',
+                  canDelete: '1'
+                }
+              ]
+            });
+          }
+          const hasMessaging = modules.some(m => m.moduleName.trim().toLowerCase() === 'messaging');
+          if (!hasMessaging) {
+            modules.push({
+              id: 'messaging_mgr',
+              moduleName: 'Messaging',
+              pages: [
+                {
+                  id: 'messaging_dashboard',
+                  pageName: 'Messaging',
+                  moduleID: 'messaging_mgr',
+                  canView: '1',
+                  canAdd: '1',
+                  canEdit: '1',
+                  canDelete: '1'
+                }
+              ]
+            });
+          }
+        }
         // Ensure Hostel Management is fully available for Admin (1) and School Admins (2, 8)
         this.ensureHostelPermissions(modules, roleId);
 

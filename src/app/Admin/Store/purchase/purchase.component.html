@@ -20,6 +20,30 @@
       </div>
     </div>
 
+    <div class="admission-stats-grid">
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--blue"><mat-icon>assignment</mat-icon></div>
+        <div>
+          <strong>{{ PurchaseCount }}</strong>
+          <span>Total Purchases</span>
+        </div>
+      </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--green"><mat-icon>schedule</mat-icon></div>
+        <div>
+          <strong>{{ pageSize }}</strong>
+          <span>Rows Per Page</span>
+        </div>
+      </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--amber"><mat-icon>calendar_month</mat-icon></div>
+        <div>
+          <strong>{{ currentPage }}</strong>
+          <span>Current Page</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Filters -->
     <div class="admission-filter-row">
       <div class="admission-searchbox">
@@ -271,8 +295,35 @@
                         <span style="font-weight: 500;">{{ row.currentStock ?? '-' }}</span>
                       </td>
                       <td>
-                        <input type="number" class="inputField" [(ngModel)]="row.quantity" [ngModelOptions]="{standalone: true}" min="1" (ngModelChange)="onQuantityChange(i)" style="padding: 6px; width: 80px;" />
-                      </td>
+<input
+  type="number"
+  class="inputField"
+  [(ngModel)]="row.quantity"
+  [ngModelOptions]="{standalone: true}"
+  (ngModelChange)="onQuantityChange(i)"
+ [step]="selectedUnitByRow[i]?.Difference || 1"
+[min]="selectedUnitByRow[i]?.MinimumValue"
+[max]="selectedUnitByRow[i]?.MaxValue"
+  style="padding: 6px; width: 80px;" />
+<div
+  *ngIf="quantityValidator(i)?.invalidRange"
+  class="text-danger">
+  <small>
+    Quantity must be between
+    {{ selectedUnitByRow[i]?.MinimumValue }}
+    and
+    {{ selectedUnitByRow[i]?.MaxValue }}
+  </small>
+</div>
+
+<div
+  *ngIf="quantityValidator(i)?.invalidStep"
+  class="text-danger">
+  <small>
+    Quantity should increase by
+    {{ selectedUnitByRow[i]?.Difference }}
+  </small>
+</div>                      </td>
                       <td>
                         <input type="number" class="inputField" [(ngModel)]="row.price" [ngModelOptions]="{standalone: true}" min="0" (ngModelChange)="onPriceChange(i)" style="padding: 6px; width: 100px;" />
                       </td>
