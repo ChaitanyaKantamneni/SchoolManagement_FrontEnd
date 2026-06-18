@@ -51,6 +51,10 @@ export class UnitsComponent extends BasePermissionComponent {
     ) {
       return;
     }
+    const target = event.target as HTMLInputElement;
+    if (event.key === '.' && target.value.indexOf('.') === -1) {
+      return;
+    }
     if (!/^[0-9]$/.test(event.key)) {
       event.preventDefault();
     }
@@ -96,9 +100,9 @@ export class UnitsComponent extends BasePermissionComponent {
     SchoolID: new FormControl(''),
     UnitName: new FormControl(null, [Validators.required]),
     Abbreviation: new FormControl(null, [Validators.required]),
-    MinimumValue: new FormControl('', [Validators.required, Validators.pattern('^[0-9]{1,3}$')]),
-    MaximumValue: new FormControl('', [Validators.required, Validators.pattern('^[0-9]{1,3}$')]),
-    MinimumDifference: new FormControl('', [Validators.required, Validators.pattern('^[0-9]{1,3}$')]),
+    MinimumValue: new FormControl('', [Validators.required, Validators.pattern('^\\d+(\\.\\d+)?$')]),
+    MaximumValue: new FormControl('', [Validators.required, Validators.pattern('^\\d+(\\.\\d+)?$')]),
+    MinimumDifference: new FormControl('', [Validators.required, Validators.pattern('^\\d+(\\.\\d+)?$')]),
     Description: new FormControl(''),
     School: new FormControl(0),
     AcademicYear: new FormControl(sessionStorage.getItem('ActiveAcademicYearID') ? Number(sessionStorage.getItem('ActiveAcademicYearID')) : 0, [Validators.required, Validators.min(1)])
@@ -257,6 +261,8 @@ export class UnitsComponent extends BasePermissionComponent {
       this.AdminselectedSchoolID = schoolFromSession;
       this.FetchAcademicYearsList();
     }
+    this.editclicked = false;
+    this.editclicked = false;
     this.UnitsForm.reset();
     this.UnitsForm.get('School').patchValue('0');
     this.UnitsForm.get('AcademicYear').patchValue(sessionStorage.getItem('ActiveAcademicYearID') ? Number(sessionStorage.getItem('ActiveAcademicYearID')) : 0);

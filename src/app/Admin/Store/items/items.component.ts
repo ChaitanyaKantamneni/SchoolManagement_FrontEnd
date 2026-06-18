@@ -9,7 +9,7 @@ import { MenuServiceService } from '../../../Services/menu-service.service';
 import { BasePermissionComponent } from '../../../shared/base-crud.component';
 import { LoaderService } from '../../../Services/loader.service';
 import { HttpClient } from '@angular/common/http';
-
+import {AbstractControl,ValidatorFn } from '@angular/forms';
 @Component({
   selector: 'app-items',
   standalone: true,
@@ -38,6 +38,10 @@ export class ItemsComponent extends BasePermissionComponent {
     this.FetchInitialData();
     if (!this.isAdmin) {
       this.ItemsForm.get('AcademicYear')?.disable({ emitEvent: false });
+    }
+     if (this.AdminselectedAcademicYearID) {
+      this.FetchCategoriesList();
+      this.FetchUnitsList();
     }
   }
 
@@ -71,8 +75,87 @@ export class ItemsComponent extends BasePermissionComponent {
       event.preventDefault();
     }
   }
+  selectedUnit: any = null;
+openingStockValidator(): ValidatorFn {
+  return (control: AbstractControl) => {
 
-  IsAddNewClicked: boolean = false;
+    if (!this.selectedUnit || control.value === null || control.value === '') {
+      return null;
+    }
+
+    const value = Number(control.value);
+
+    const min = Number(this.selectedUnit.MinimumValue);
+    const max = Number(this.selectedUnit.MaxValue);
+
+    if (value < min || value > max) {
+      return {
+        invalidRange: {
+          min,
+          max
+        }
+      };
+    }
+
+    return null;
+  };
+}
+onUnitChange(event: Event) {
+  const unitId = Number(
+    (event.target as HTMLSelectElement).value
+  );
+
+  this.selectedUnit = this.unitsList.find(
+    x => Number(x.ID) === unitId
+  );
+
+  if (this.selectedUnit) {
+    this.ItemsForm.patchValue({
+      OpeningStock: this.selectedUnit.MinimumValue
+    });
+  }
+
+  this.ItemsForm.get('OpeningStock')?.updateValueAndValidity();
+}
+increaseStock(event: Event) {
+  const keyboardEvent = event as KeyboardEvent;
+  keyboardEvent.preventDefault();
+
+  if (!this.selectedUnit) return;
+
+  const control = this.ItemsForm.get('OpeningStock');
+
+  const currentValue =
+    Number(control?.value) ||
+    Number(this.selectedUnit.MinimumValue);
+
+  const newValue =
+    currentValue + Number(this.selectedUnit.Difference);
+
+  if (newValue <= Number(this.selectedUnit.MaxValue)) {
+    control?.setValue(newValue);
+  }
+}
+
+decreaseStock(event: Event) {
+  const keyboardEvent = event as KeyboardEvent;
+  keyboardEvent.preventDefault();
+
+  if (!this.selectedUnit) return;
+  const control = this.ItemsForm.get('OpeningStock');
+
+  const currentValue =
+    Number(control?.value) ||
+    Number(this.selectedUnit.MinimumValue);
+
+  const newValue =
+    currentValue - Number(this.selectedUnit.Difference);
+
+  if (newValue >= Number(this.selectedUnit.MinimumValue)) {
+    control?.setValue(newValue);
+  }
+} 
+IsAddNewClicked: boolean = false;
   IsActiveStatus: boolean = false;
   ViewItemClicked: boolean = false;
   currentPage = 1;
@@ -118,8 +201,9 @@ export class ItemsComponent extends BasePermissionComponent {
     ItemName: new FormControl(null, [Validators.required]),
     PurchasePrice: new FormControl(null, [Validators.required, Validators.min(0)]),
     SellingPrice: new FormControl(null, [Validators.required, Validators.min(0)]),
-    OpeningStock: new FormControl(null, [Validators.min(0)]),
-    ReorderLevel: new FormControl(null, [Validators.min(0)]),
+OpeningStock: new FormControl(null, [
+  this.openingStockValidator()
+]),    ReorderLevel: new FormControl(null, [Validators.min(0)]),
     TaxCGST: new FormControl(null, [Validators.min(0), Validators.max(100)]),
     TaxSGST: new FormControl(null, [Validators.min(0), Validators.max(100)]),
     Description: new FormControl('')
@@ -199,6 +283,9 @@ export class ItemsComponent extends BasePermissionComponent {
           this.unitsList = response.data.map((item: any) => ({
             ID: item.id,
             Name: item.unitName,
+            MinimumValue: item.minimumValue,
+            MaxValue: item.maximumValue,
+            Difference: item.minimumDifference,
             IsActive: item.isActive === 'True' ? 'Active' : 'InActive'
           }));
         } else {

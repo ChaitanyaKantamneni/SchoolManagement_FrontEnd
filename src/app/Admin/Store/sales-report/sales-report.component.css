@@ -12,7 +12,7 @@
 .report-topbar-left { display: flex; align-items: center; gap: 14px; }
 .report-icon-wrap {
   width: 46px; height: 46px; border-radius: 12px;
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: linear-gradient(135deg, #2563eb, #2563eb);
   display: flex; align-items: center; justify-content: center; color: #fff;
 }
 .report-icon-wrap mat-icon { font-size: 22px; }
@@ -89,7 +89,7 @@
 
 .generate-btn {
   display: flex; align-items: center; gap: 5px;
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: linear-gradient(135deg, #2563eb , #2563eb );
   color: #fff; border: none; border-radius: 8px;
   padding: 9px 18px; font-size: 13px; font-weight: 700;
   cursor: pointer; transition: opacity 0.2s; white-space: nowrap;
@@ -151,7 +151,7 @@
   width: 100%; border-collapse: collapse; font-size: 12px;
 }
 .report-table thead tr {
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: linear-gradient(135deg, #667b9a);
 }
 .report-table th {
   padding: 11px 14px; font-weight: 700;
@@ -204,7 +204,7 @@
   font-size: 64px; color: #cbd5e1; margin-bottom: 16px;
 }
 .empty-state p { font-size: 14px; color: #64748b; }
-.empty-state strong { color: #10b981; }
+.empty-state strong { color: #2563eb ; }
 
 /* ── Responsive ──────────────────────────────── */
 @media (max-width: 1200px) {

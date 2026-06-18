@@ -30,6 +30,8 @@ interface PurchaseItemRow {
     TaxSGST: number;
     OpeningStock: number;
     CategoryID: string;
+      UnitID: string;
+
   }>;
 }
 
@@ -90,6 +92,11 @@ export class PurchaseComponent extends BasePermissionComponent implements OnInit
     if (!this.isAdmin) {
       this.purchaseForm.get('academicYearId')?.disable({ emitEvent: false });
     }
+     if (this.selectedAdminAcademicYearID) {
+      this.FetchSuppliersList();
+      this.FetchCategoriesList();
+      // this.FetchItemsList();
+    }
   }
 
   // ── state ─────────────────────────────────────────────────────────────────────
@@ -111,6 +118,8 @@ export class PurchaseComponent extends BasePermissionComponent implements OnInit
     SellingPrice: number;
     TaxCGST: number;
     TaxSGST: number;
+      UnitID: string;
+
     OpeningStock: number;
     CategoryID: string;
   }> = [];
@@ -127,6 +136,9 @@ export class PurchaseComponent extends BasePermissionComponent implements OnInit
   ViewPurchaseClicked: boolean = false;
 
   PurchaseList: PurchaseRow[] = [];
+    unitsList: any[] = [];
+    selectedUnitByRow: any[] = [];
+
   PurchaseCount: number = 0;
 
   searchQuery: string = '';
@@ -198,19 +210,27 @@ export class PurchaseComponent extends BasePermissionComponent implements OnInit
       : [];
   }
 
-  onItemSelect(index: number, event: Event): void {
-    const itemId = (event.target as HTMLSelectElement).value;
-    const row = this.purchaseItems[index];
-    const selected = row.filteredItems.find(i => i.ID === itemId)
-      || this.itemsList.find(i => i.ID === itemId);
-    if (!selected) return;
-    row.itemId = selected.ID; row.itemName = selected.Name;
-    row.currentStock = selected.OpeningStock ?? 0;
-    row.price = selected.PurchasePrice ?? 0;
-    row.cgst = selected.TaxCGST ?? 0;
-    row.sgst = selected.TaxSGST ?? 0;
-    this.recalculateRow(index);
-  }
+onItemSelect(index: number, event: Event): void {
+
+  const itemId = (event.target as HTMLSelectElement).value;
+  const row = this.purchaseItems[index];
+
+  const selected =
+    row.filteredItems.find(i => i.ID === itemId) ||
+    this.itemsList.find(i => i.ID === itemId);
+
+  if (!selected) return;
+
+this.FetchUnitsList(selected.UnitID, index);
+  row.itemId = selected.ID;
+  row.itemName = selected.Name;
+  row.currentStock = selected.OpeningStock ?? 0;
+  row.price = selected.PurchasePrice ?? 0;
+  row.cgst = selected.TaxCGST ?? 0;
+  row.sgst = selected.TaxSGST ?? 0;
+
+  this.recalculateRow(index);
+}
 
   onQuantityChange(index: number): void { this.recalculateRow(index); }
   onPriceChange(index: number): void { this.recalculateRow(index); }
@@ -253,6 +273,8 @@ export class PurchaseComponent extends BasePermissionComponent implements OnInit
       this.selectedAdminSchoolID = this.currentSchoolId;
       this.FetchAcademicYearsList(this.currentSchoolId);
       this.FetchSuppliersList();
+      this.FetchCategoriesList();   // <-- ADD THIS
+  this.FetchItemsList();        // <-- ADD THIS
     }
     if (!this.isAdmin) {
       this.purchaseForm.get('academicYearId')?.disable({ emitEvent: false });
@@ -358,50 +380,82 @@ export class PurchaseComponent extends BasePermissionComponent implements OnInit
     });
   }
 
-  rebuildItemRows(purchase: PurchaseRow): void {
-    const ids = (purchase.itemIDs || '').split(',').map(s => s.trim()).filter(Boolean);
-    const qtys = (purchase.quantities || '').split(',').map(s => Number(s.trim()));
-    const prices = (purchase.prices || '').split(',').map(s => Number(s.trim()));
-    const cgsts = (purchase.cgsts || '').split(',').map(s => Number(s.trim()));
-    const sgsts = (purchase.sgsts || '').split(',').map(s => Number(s.trim()));
-    const subTotals = (purchase.subTotals || '').split(',').map(s => Number(s.trim()));
-    const totalTaxes = (purchase.totalTaxes || '').split(',').map(s => Number(s.trim()));
+rebuildItemRows(purchase: PurchaseRow): void {
+  const ids = (purchase.itemIDs || '').split(',').map(s => s.trim()).filter(Boolean);
+  const qtys = (purchase.quantities || '').split(',').map(s => Number(s.trim()));
+  const prices = (purchase.prices || '').split(',').map(s => Number(s.trim()));
+  const cgsts = (purchase.cgsts || '').split(',').map(s => Number(s.trim()));
+  const sgsts = (purchase.sgsts || '').split(',').map(s => Number(s.trim()));
+  const subTotals = (purchase.subTotals || '').split(',').map(s => Number(s.trim()));
+  const totalTaxes = (purchase.totalTaxes || '').split(',').map(s => Number(s.trim()));
 
-    this.purchaseItems = ids.map((id, i) => {
-      const found = this.itemsList.find(it => it.ID === id);
-      const categoryId = found?.CategoryID || '';
-      const categoryName = this.categoriesList.find(c => c.ID === categoryId)?.Name || '';
-      const filteredItems = categoryId
-        ? this.itemsList.filter(it => it.CategoryID === categoryId)
-        : this.itemsList;
+  this.purchaseItems = ids.map((id, i) => {
+    const found = this.itemsList.find(it => it.ID === id);
+    const categoryId = found?.CategoryID || '';
+    const categoryName = this.categoriesList.find(c => c.ID === categoryId)?.Name || '';
+    const filteredItems = categoryId
+      ? this.itemsList.filter(it => it.CategoryID === categoryId)
+      : this.itemsList;
 
-      return {
-        itemId: id, itemName: found?.Name || id,
-        categoryId, categoryName,
-        currentStock: found?.OpeningStock ?? null,
-        quantity: qtys[i] ?? 1,
-        price: prices[i] ?? 0,
-        cgst: cgsts[i] ?? 0,
-        sgst: sgsts[i] ?? 0,
-        totalTax: totalTaxes[i] ?? 0,
-        subTotal: subTotals[i] ?? 0,
-        filteredItems
-      };
-    });
+    return {
+      itemId: id, itemName: found?.Name || id,
+      categoryId, categoryName,
+      currentStock: found?.OpeningStock ?? null,
+      quantity: qtys[i] ?? 1,
+      price: prices[i] ?? 0,
+      cgst: cgsts[i] ?? 0,
+      sgst: sgsts[i] ?? 0,
+      totalTax: totalTaxes[i] ?? 0,
+      subTotal: subTotals[i] ?? 0,
+      filteredItems
+    };
+  });
 
-    if (this.purchaseItems.length === 0) this.addItemRow();
-  }
+  if (this.purchaseItems.length === 0) this.addItemRow();
 
+  // populate selectedUnitByRow for every restored row so validation actually runs
+  this.purchaseItems.forEach((row, i) => {
+    const found = this.itemsList.find(it => it.ID === row.itemId);
+    if (found?.UnitID) {
+      this.FetchUnitsListForValidationOnly(found.UnitID, i);
+    }
+  });
+}
+FetchUnitsListForValidationOnly(unitId: string, rowIndex: number) {
+  const requestData = { ID: unitId, Flag: '4' };
+
+  this.apiurl.post<any>('Tbl_Units_CRUD_Operations', requestData).subscribe(
+    (response: any) => {
+      if (response?.data?.length) {
+        const unit = response.data[0];
+        this.selectedUnitByRow[rowIndex] = {
+          MinimumValue: Number(unit.minimumValue),
+          MaxValue: Number(unit.maximumValue),
+          Difference: Number(unit.minimumDifference)
+        };
+      }
+    }
+  );
+}
   SubmitPurchase(): void { this.savePurchase('1'); }
   UpdatePurchase(): void { this.savePurchase('5'); }
 
   private savePurchase(flag: string): void {
-    if (this.purchaseForm.invalid) {
-      this.purchaseForm.markAllAsTouched();
-      this.PurchaseInsStatus = 'Please fill all required fields correctly.';
-      this.isModalOpen = true;
-      return;
-    }
+     if (this.purchaseForm.invalid) {
+    this.purchaseForm.markAllAsTouched();
+    return;
+  }
+
+  const hasInvalidQuantity = this.purchaseItems.some(
+    (_, index) => this.quantityValidator(index) !== null
+  );
+
+  if (hasInvalidQuantity) {
+    this.PurchaseInsStatus =
+      'Please enter valid quantities for all items.';
+    this.isModalOpen = true;
+    return;
+  }
 
     const validItems = this.purchaseItems.filter(r => r.itemId && r.quantity > 0);
     if (validItems.length === 0) {
@@ -576,6 +630,8 @@ export class PurchaseComponent extends BasePermissionComponent implements OnInit
         if (!this.isAdmin && this.currentSchoolId) {
           this.FetchAcademicYearsList(this.currentSchoolId);
           this.FetchSuppliersList();
+          this.FetchCategoriesList();   // <-- ADD THIS
+        this.FetchItemsList();     
         }
         this.loadPurchases();
       },
@@ -649,6 +705,7 @@ export class PurchaseComponent extends BasePermissionComponent implements OnInit
             SellingPrice: Number(i.sellingPrice ?? i.SellingPrice ?? 0),
             TaxCGST: Number(i.taxCGST ?? i.TaxCGST ?? 0),
             TaxSGST: Number(i.taxSGST ?? i.TaxSGST ?? 0),
+            UnitID: String(i.unitID ?? i.UnitID ?? ''),
             OpeningStock: Number(i.openingStock ?? i.OpeningStock ?? 0),
             CategoryID: String(i.categoryID ?? i.CategoryID ?? '')
           }))
@@ -656,7 +713,31 @@ export class PurchaseComponent extends BasePermissionComponent implements OnInit
       }
     });
   }
+FetchUnitsList(unitId: string, rowIndex: number) {
+  const requestData = {
+    ID: unitId,
+    Flag: '4'
+  };
 
+  this.apiurl.post<any>('Tbl_Units_CRUD_Operations', requestData).subscribe(
+    (response: any) => {
+
+      if (response?.data?.length) {
+
+        const unit = response.data[0];
+
+        this.selectedUnitByRow[rowIndex] = {
+          MinimumValue: Number(unit.minimumValue),
+          MaxValue: Number(unit.maximumValue),
+          Difference: Number(unit.minimumDifference)
+        };
+
+        this.purchaseItems[rowIndex].quantity =
+          Number(unit.minimumValue);
+      }
+    }
+  );
+}
   onSearchChange(): void {
     clearTimeout(this.searchTimer);
     this.searchTimer = setTimeout(() => {
@@ -833,4 +914,65 @@ export class PurchaseComponent extends BasePermissionComponent implements OnInit
       error: () => { alert(`${type.toUpperCase()} export failed.`); this.loader.hide(); }
     });
   }
+ quantityValidator(index: number): any {
+
+  const row = this.purchaseItems[index];
+  const unit = this.selectedUnitByRow[index];
+
+  if (!unit || row.quantity == null) {
+    return null;
+  }
+
+  const value = Number(row.quantity);
+
+  const min = Number(unit.MinimumValue);
+  const max = Number(unit.MaxValue);
+
+  if (value < min || value > max) {
+    return { invalidRange: true };
+  }
+
+  return null;
+}
+
+increaseQuantity(index: number): void {
+
+  const unit = this.selectedUnitByRow[index];
+
+  if (!unit) return;
+
+  const row = this.purchaseItems[index];
+
+  const currentValue =
+    Number(row.quantity || unit.MinimumValue);
+
+  const nextValue =
+    currentValue + Number(unit.Difference);
+
+  if (nextValue <= Number(unit.MaxValue)) {
+    row.quantity = nextValue;
+    this.recalculateRow(index);
+  }
+}
+
+decreaseQuantity(index: number): void {
+
+  const unit = this.selectedUnitByRow[index];
+
+  if (!unit) return;
+
+  const row = this.purchaseItems[index];
+
+  const currentValue =
+    Number(row.quantity || unit.MinimumValue);
+
+  const nextValue =
+    currentValue - Number(unit.Difference);
+
+  if (nextValue >= Number(unit.MinimumValue)) {
+    row.quantity = nextValue;
+    this.recalculateRow(index);
+  }
+}
+
 }

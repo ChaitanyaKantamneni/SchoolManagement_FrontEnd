@@ -129,18 +129,20 @@ export class LeaveApplicationComponent implements OnInit {
     this.leaveBalances = {};
     this.childrenList = [];
   }
-
+academicYearId: string = '';
   private initializeSessionData(): void {
     this.schoolName = sessionStorage.getItem('SchoolName') || '';
     this.schoolId = sessionStorage.getItem('SchoolID') || '';
     this.academicYear = sessionStorage.getItem('AcademicYear') || '';
     this.parentEmail = sessionStorage.getItem('email') || '';
     this.selectedChildId = sessionStorage.getItem('selectedChildId') || '';
+    this.academicYearId =
+  sessionStorage.getItem('AcademicYearID') || '';
   }
 
   private loadChildren(): void {
     this.loaderService.show();
-    this.parentService.getChildrenList(this.parentEmail, this.schoolId, this.academicYear).subscribe({
+    this.parentService.getChildrenList(this.parentEmail, this.schoolId, this.academicYearId).subscribe({
       next: (response: any) => {
         console.log('Children response:', response);
         this.loaderService.hide();
@@ -196,7 +198,7 @@ export class LeaveApplicationComponent implements OnInit {
       vacationUsed: 0
     };
 
-    this.leaveService.getLeaveBalance(this.selectedChildId, this.academicYear).subscribe({
+    this.leaveService.getLeaveBalance(this.selectedChildId, this.academicYearId).subscribe({
       next: (response: any) => {
         if (response?.data?.[0]) {
           const balance = response.data[0];
@@ -225,7 +227,7 @@ export class LeaveApplicationComponent implements OnInit {
     // Initialize empty array
     this.existingLeaves = [];
 
-    this.leaveService.getStudentLeaves(this.selectedChildId, this.schoolId, this.academicYear).subscribe({
+    this.leaveService.getStudentLeaves(this.selectedChildId, this.schoolId, this.academicYearId).subscribe({
       next: (response: any) => {
         if (response?.data && Array.isArray(response.data)) {
           this.existingLeaves = response.data.map((leave: any) => ({
@@ -388,7 +390,7 @@ export class LeaveApplicationComponent implements OnInit {
       parentId: this.parentEmail,
       parentEmail: this.parentEmail,
       schoolId: this.schoolId,
-      academicYear: this.academicYear,
+      academicYear: this.academicYearId,
       classId: this.selectedChild.classId,
       className: this.selectedChild.className,
       divisionId: this.selectedChild.divisionId,

@@ -170,6 +170,7 @@ export class LeaveapprovalComponent extends BasePermissionComponent implements O
     // Set default user type based on role
     if (this.isTeacher) {
       this.userTypeFilter = 'Student'; // Teachers can only see students
+      // this.fetchTeacherClassDivision();
     } else if (this.isAdmin || this.isSchoolAdmin) {
       this.userTypeFilter = 'Student'; // Default to Student but can change
     }
@@ -243,9 +244,19 @@ const payload: any = {
   Limit: 500,
   Offset: 0,
   UserType: this.userTypeFilter,
+   Class:
+    this.isTeacher
+      ? this.teacherClass
+      : null,
+
+  Division:
+    this.isTeacher
+      ? this.teacherDivision
+      : null,
 
   // 👉 VERY IMPORTANT: pass StaffID for teacher filtering
   StaffID: this.isTeacher ? this.currentUserId : null
+
 };
 
 console.log('[LEAVE APPROVAL] Teacher payload - currentUserId:', this.currentUserId, 'isTeacher:', this.isTeacher, 'StaffID being sent:', payload.StaffID);
@@ -509,6 +520,7 @@ console.log('[LEAVE APPROVAL] Teacher payload - currentUserId:', this.currentUse
           this.resolvedStaffId = String(match.id || match.ID);
           console.log('[LEAVE APPROVAL] Resolved Teacher StaffID:', this.resolvedStaffId);
           // Reload leaves now that we have the definitive ID
+          this.fetchTeacherClassDivision();
           this.fetchLeaveRequests();
         }
       }
@@ -722,7 +734,64 @@ console.log('[LEAVE APPROVAL] Teacher payload - currentUserId:', this.currentUse
       }
       return roleFromLookup;
     }
+    
 
     return '-';
   }
+  teacherAllocations: any[] = [];
+  teacherClass: string = '';
+teacherDivision: string = '';
+
+fetchTeacherClassDivision(): void {
+
+  const payload = {
+    Flag: '9',
+    SchoolID: this.selectedSchoolId || this.schoolId,
+    ClassTeacher: this.currentUserId
+  };
+
+  console.log('Teacher Allocation Payload:', payload);
+
+  this.api.post<any>('Tbl_AllotClassTeacher_CRUD_Operations', payload)
+    .subscribe({
+
+      next: (res: any) => {
+
+        this.teacherAllocations =
+          Array.isArray(res?.data)
+            ? res.data
+            : (Array.isArray(res?.Data) ? res.Data : []);
+
+        console.log('Teacher Allocations:', this.teacherAllocations);
+
+        // // after getting class/division
+        // this.fetchTeacherLeaveApplications();
+        if (this.teacherAllocations.length > 0) {
+
+  this.teacherClass =
+    this.teacherAllocations[0].class ||
+    this.teacherAllocations[0].Class ||
+    '';
+
+  this.teacherDivision =
+    this.teacherAllocations[0].division ||
+    this.teacherAllocations[0].Division ||
+    '';
+
+  console.log('Teacher Class:', this.teacherClass);
+  console.log('Teacher Division:', this.teacherDivision);
+
+  // NOW FETCH LEAVES
+  this.fetchLeaveRequests();
+}
+
+      },
+
+      error: (err) => {
+        console.error('Failed to fetch teacher allocations', err);
+        this.teacherAllocations = [];
+      }
+
+    });
+}
 }

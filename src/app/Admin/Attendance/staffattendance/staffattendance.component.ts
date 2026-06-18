@@ -247,8 +247,9 @@ export class StaffattendanceComponent extends BasePermissionComponent {
       .subscribe(
         (response: any) => {
           if (response && Array.isArray(response.data)) {
-            this.StaffTypeList = response.data.map((item: any) => this.mapRoleItem(item));
-            this.refreshStaffTypeNames();
+this.StaffTypeList = response.data
+  .filter((item: any) => String(item.id ?? item.ID ?? '') !== '1')
+  .map((item: any) => this.mapRoleItem(item));            this.refreshStaffTypeNames();
           } else {
             this.StaffTypeList = [];
           }
@@ -263,8 +264,9 @@ export class StaffattendanceComponent extends BasePermissionComponent {
         .subscribe(
           (response: any) => {
             if (response && Array.isArray(response.data)) {
-              this.StaffTypeListBySchoolId = response.data.map((item: any) => this.mapRoleItem(item));
-            } else {
+this.StaffTypeListBySchoolId = response.data
+  .filter((item: any) => String(item.id ?? item.ID ?? '') !== '1')
+  .map((item: any) => this.mapRoleItem(item));            } else {
               this.StaffTypeListBySchoolId = [];
             }
             resolve();
