@@ -288,13 +288,16 @@ export class ExamattendenceComponent  extends BasePermissionComponent{
           console.log('[EXAM ATTENDANCE] Resolved Teacher StaffID:', this.resolvedStaffId);
         }
       },
-      complete: () => {
+    complete: () => {
         if (this.isTeacher && !this.currentUserId) {
           console.warn('[EXAM ATTENDANCE] Teacher StaffID could not be resolved from session/email mapping.');
         }
+        // Only sync here if academic year is already resolved;
+        // otherwise FetchAcademicYearsList() will trigger it after auto-selection
         if (this.isTeacher && this.AdminselectedAcademivYearID) {
           this.syncTeacherClassDivisionFromAllocation(() => this.FetchExamsList());
         }
+        // If year not yet set, FetchAcademicYearsList complete handler will call sync
       }
     });
   }
@@ -428,7 +431,7 @@ export class ExamattendenceComponent  extends BasePermissionComponent{
 
     this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData)
       .subscribe(
-        (response: any) => {
+       (response: any) => {
           if (response && Array.isArray(response.data)) {
             this.academicYearList = response.data.map((item: any) => {
               const isActiveString = item.isActive === "1" ? "Active" : "InActive";
@@ -437,7 +440,25 @@ export class ExamattendenceComponent  extends BasePermissionComponent{
                 Name: item.name,
                 IsActive: isActiveString
               };
-            });            
+            });
+
+            // Auto-select active academic year for teachers
+            if (this.isTeacher && this.AdminSelectedActiveAcademicYearID) {
+              const match = this.academicYearList.find(
+                y => y.ID === this.AdminSelectedActiveAcademicYearID
+              );
+              if (match) {
+                this.AdminselectedAcademivYearID = match.ID;
+                this.SyllabusForm.get('AcademicYear')?.patchValue(match.ID);
+              } else if (this.academicYearList.length > 0) {
+                this.AdminselectedAcademivYearID = this.academicYearList[0].ID;
+                this.SyllabusForm.get('AcademicYear')?.patchValue(this.academicYearList[0].ID);
+              }
+              // Now that year is set, sync allocation and fetch exams
+              if (this.AdminselectedAcademivYearID && this.currentUserId) {
+                this.syncTeacherClassDivisionFromAllocation(() => this.FetchExamsList());
+              }
+            }
           } else {
             this.academicYearList = [];
           }

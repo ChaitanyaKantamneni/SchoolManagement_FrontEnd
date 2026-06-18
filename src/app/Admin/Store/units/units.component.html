@@ -20,6 +20,30 @@
       </div>
     </div>
 
+    <div class="admission-stats-grid">
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--blue"><mat-icon>assignment</mat-icon></div>
+        <div>
+          <strong>{{ UnitsCount }}</strong>
+          <span>Total Units</span>
+        </div>
+      </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--green"><mat-icon>schedule</mat-icon></div>
+        <div>
+          <strong>{{ pageSize }}</strong>
+          <span>Rows Per Page</span>
+        </div>
+      </div>
+      <div class="admission-stat-card">
+        <div class="admission-stat-icon admission-stat-icon--amber"><mat-icon>calendar_month</mat-icon></div>
+        <div>
+          <strong>{{ currentPage }}</strong>
+          <span>Current Page</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Filters -->
     <div class="admission-filter-row">
       <div class="admission-searchbox">
@@ -215,7 +239,7 @@
               <div class="InputFieldsContainer">
                 <label class="inputLabel">Minimum Value <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input type="text" class="inputField" formControlName="MinimumValue" placeholder="Enter Min Value" maxlength="3" (keydown)="allowOnlyNumbers($event)" />
+                  <input type="text" class="inputField" formControlName="MinimumValue" placeholder="Enter Min Value" maxlength="6" (keydown)="allowOnlyNumbers($event)" />
                   <div *ngIf="UnitsForm.get('MinimumValue')?.touched && UnitsForm.get('MinimumValue')?.invalid" class="text-danger">
                     <small>Min Value is required.</small>
                   </div>
@@ -227,7 +251,7 @@
               <div class="InputFieldsContainer">
                 <label class="inputLabel">Maximum Value <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input type="text" class="inputField" formControlName="MaximumValue" placeholder="Enter Max Value" maxlength="3" (keydown)="allowOnlyNumbers($event)" />
+                  <input type="text" class="inputField" formControlName="MaximumValue" placeholder="Enter Max Value" maxlength="6" (keydown)="allowOnlyNumbers($event)" />
                   <div *ngIf="UnitsForm.get('MaximumValue')?.touched && UnitsForm.get('MaximumValue')?.invalid" class="text-danger">
                     <small>Max Value is required.</small>
                   </div>
@@ -236,7 +260,7 @@
               <div class="InputFieldsContainer">
                 <label class="inputLabel">Minimum Difference <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input type="text" class="inputField" formControlName="MinimumDifference" placeholder="Enter Min Difference" maxlength="3" (keydown)="allowOnlyNumbers($event)" />
+                  <input type="text" class="inputField" formControlName="MinimumDifference" placeholder="Enter Min Difference" maxlength="6" (keydown)="allowOnlyNumbers($event)" />
                   <div *ngIf="UnitsForm.get('MinimumDifference')?.touched && UnitsForm.get('MinimumDifference')?.invalid" class="text-danger">
                     <small>Min Difference is required.</small>
                   </div>

@@ -320,70 +320,87 @@
 
   <!-- Submission Modal -->
   <ng-container *ngIf="isEditModalOpen">
-    <div class="modal show" style="display:flex !important;" tabindex="-1" role="dialog">
-      <div class="modal-dialog" role="document" style="max-width:600px;width:100%;">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">{{ editingSubmission ? 'Edit Submission' : 'Submit Homework' }}</h5>
-            <button type="button" class="close" (click)="closeSubmissionModal()"><span>&times;</span></button>
+    <div class="modal-overlay" (click)="closeSubmissionModal()"></div>
+    <div class="submission-modal">
+      <div class="AddForm">
+        <div class="AddFormTop">
+          <button type="button" class="back-btn" (click)="closeSubmissionModal()">
+            <mat-icon>arrow_circle_left</mat-icon>
+          </button>
+          <div class="admission-record-header p-0">
+            <div>
+              <h5 class="modal-title">{{ editingSubmission ? 'Edit Submission' : 'Submit Homework' }}</h5>
+              <p>{{ editingSubmission ? 'Update your homework submission' : 'Upload your homework details and attachment' }}</p>
+            </div>
           </div>
-          <div class="modal-body">
-            <form [formGroup]="submissionForm" (ngSubmit)="submitHomework()">
+        </div>
+
+        <div class="AddFormConatiner">
+          <form [formGroup]="submissionForm" (ngSubmit)="submitHomework()">
+            <div class="FormInputRowsContainer">
               <!-- Assignment Info -->
-              <div class="assignment-info" *ngIf="selectedAssignment">
-                <h4>{{ selectedAssignment.title }}</h4>
-                <p>{{ selectedAssignment.subject }} &bull; Due: {{ selectedAssignment.submissionDate | date:'mediumDate' }}</p>
+              <div class="InputRow" *ngIf="selectedAssignment">
+                <div class="InputFieldsContainer full-width">
+                  <div class="assignment-info">
+                    <h4>{{ selectedAssignment.title }}</h4>
+                    <p>{{ selectedAssignment.subject }} &bull; Due: {{ selectedAssignment.submissionDate | date:'mediumDate' }}</p>
+                  </div>
+                </div>
               </div>
 
               <!-- Text Submission -->
-              <div class="InputFieldsContainer" style="margin-bottom:16px;">
-                <label class="inputLabel">Homework Text *</label>
-                <textarea class="inputField" formControlName="SubmissionText" rows="4"
-                          placeholder="Enter your homework text here..."></textarea>
-                <div *ngIf="submissionForm.get('SubmissionText')?.invalid && submissionForm.get('SubmissionText')?.touched" 
-                     class="error-message">
-                  Homework text is required
+              <div class="InputRow">
+                <div class="InputFieldsContainer full-width">
+                  <label class="inputLabel">Homework Text <span class="required">*</span></label>
+                  <textarea class="inputField" formControlName="SubmissionText" rows="5" placeholder="Enter your homework text here..."></textarea>
+                  <div *ngIf="submissionForm.get('SubmissionText')?.invalid && submissionForm.get('SubmissionText')?.touched" class="error-message">
+                    Homework text is required
+                  </div>
                 </div>
               </div>
 
               <!-- File Upload -->
-              <div class="InputFieldsContainer" style="margin-bottom:16px;">
-                <label class="inputLabel">Attach File *</label>
-                <div style="display:flex;align-items:center;gap:8px;">
-                  <input type="file" #fileInput style="display:none"
-                         accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif"
-                         (change)="onFileSelected($event)">
-                  <input class="inputField" readonly style="flex:1;cursor:pointer;"
-                         [value]="uploadedFileName || 'No file selected'"
-                         (click)="fileInput.click()">
-                  <button type="button" class="btn btn-primary" style="white-space:nowrap;" (click)="fileInput.click()">
-                    <mat-icon style="font-size:16px;vertical-align:middle;">attach_file</mat-icon> Browse
-                  </button>
-                </div>
-                <div *ngIf="submissionForm.get('AttachmentURL')?.invalid && submissionForm.get('AttachmentURL')?.touched" 
-                     class="error-message">
-                  File attachment is required
-                </div>
-                <div *ngIf="uploadedFileName" style="display:flex;align-items:center;gap:8px;margin-top:8px;">
-                  <mat-icon style="font-size:16px;">{{ getFileIcon(uploadedFileName) }}</mat-icon>
-                  <span style="font-size:13px;flex:1;">{{ uploadedFileName }}</span>
-                  <button type="button" class="btn btncancel" style="padding:2px 8px;" (click)="removeFile()">Remove</button>
-                </div>
-                <div *ngIf="filePreviewType === 'image' && filePreviewUrl" style="margin-top:10px;text-align:center;">
-                  <img [src]="filePreviewUrl" alt="Preview" style="max-width:100%;max-height:180px;border-radius:8px;">
+              <div class="InputRow">
+                <div class="InputFieldsContainer full-width">
+                  <label class="inputLabel">Attach File <span class="required">*</span></label>
+                  <div class="file-upload-section">
+                    <input type="file" #fileInput style="display:none"
+                           accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif"
+                           (change)="onFileSelected($event)">
+                    <div class="file-picker-row">
+                      <input class="inputField" readonly [value]="uploadedFileName || 'No file selected'" (click)="fileInput.click()" />
+                      <button type="button" class="btn btn-primary" (click)="fileInput.click()">
+                        <mat-icon style="font-size:16px;vertical-align:middle;">attach_file</mat-icon>
+                        Browse
+                      </button>
+                    </div>
+                    <div *ngIf="submissionForm.get('AttachmentURL')?.invalid && submissionForm.get('AttachmentURL')?.touched" class="error-message">
+                      File attachment is required
+                    </div>
+                    <div *ngIf="uploadedFileName" class="preview-item">
+                      <mat-icon style="font-size:16px;">{{ getFileIcon(uploadedFileName) }}</mat-icon>
+                      <span>{{ uploadedFileName }}</span>
+                      <button type="button" class="btn btncancel" (click)="removeFile()">Remove</button>
+                    </div>
+                    <div *ngIf="filePreviewType === 'image' && filePreviewUrl" class="image-preview">
+                      <img [src]="filePreviewUrl" alt="Preview" class="preview-image" />
+                    </div>
+                  </div>
                 </div>
               </div>
+            </div>
 
-              <!-- Form Actions -->
-              <div class="modal-footer" style="justify-content:flex-end;gap:10px;">
-                <button type="button" class="btn btncancel" (click)="closeSubmissionModal()">Cancel</button>
-                <button type="submit" class="btn btn-primary" [disabled]="submissionForm.invalid || isSubmitting">
+            <div class="form-bottom">
+              <span class="footer-hint">Fields marked <span class="required">*</span> are required</span>
+              <div class="footer-actions">
+                <button type="button" class="cancelbtn" (click)="closeSubmissionModal()">Cancel</button>
+                <button type="submit" class="submitbtn" [disabled]="submissionForm.invalid || isSubmitting">
                   <mat-icon *ngIf="isSubmitting" style="font-size:16px;vertical-align:middle;animation:spin 1s linear infinite;">autorenew</mat-icon>
                   {{ isSubmitting ? 'Submitting...' : (editingSubmission ? 'Update' : 'Submit') }}
                 </button>
               </div>
-            </form>
-          </div>
+            </div>
+          </form>
         </div>
       </div>
     </div>

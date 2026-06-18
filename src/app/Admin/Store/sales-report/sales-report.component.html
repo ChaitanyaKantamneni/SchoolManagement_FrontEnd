@@ -19,7 +19,7 @@
           </span>
         </div>
       </div>
-      <div class="report-topbar-right" *ngIf="hasSearched && ReportList.length > 0">
+      <!-- <div class="report-topbar-right" *ngIf="hasSearched && ReportList.length > 0">
         <button class="export-btn pdf-btn" (click)="exportReport('pdf')">
           <mat-icon>picture_as_pdf</mat-icon> PDF
         </button>
@@ -29,7 +29,7 @@
         <button class="export-btn print-btn" (click)="exportReport('print')">
           <mat-icon>print</mat-icon> Print
         </button>
-      </div>
+      </div> -->
     </div>
 
     <!-- ═══════════════════════════════════════════
@@ -165,8 +165,8 @@
       </div>
 
       <!-- Table -->
-      <div class="report-table-wrap" *ngIf="ReportList.length > 0">
-        <table class="report-table">
+      <div class="reviewstable admission-table-wrap" *ngIf="ReportList.length > 0">
+        <table class="table table-bordered admission-table">
           <thead>
             <tr>
               <th>SI.No</th>
@@ -177,10 +177,10 @@
               <th>Admission No</th>
               <th>Student Name</th>
               <th>Sale Date</th>
-              <th>Payment Mode</th>
               <th>Total Tax (₹)</th>
               <th>Grand Total (₹)</th>
               <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -195,9 +195,6 @@
               </td>
               <td>{{ row.studentName }}</td>
               <td>{{ row.saleDate }}</td>
-              <td>
-                <span class="payment-badge">{{ row.paymentMode }}</span>
-              </td>
               <td class="tax-cell">₹{{ row.totalTaxAmount | number:'1.2-2' }}</td>
               <td class="total-cell"><strong>₹{{ row.grandTotalAmount | number:'1.2-2' }}</strong></td>
               <td>
@@ -207,6 +204,11 @@
                   [style.borderColor]="row.isActive ? '#86efac' : '#fda4af'">
                   {{ row.isActive ? 'Active' : 'Inactive' }}
                 </span>
+              </td>
+              <td>
+                <button class="btn checkbtn" data-tooltip="View" (click)="viewReview(row)">
+                  <mat-icon class="mat-edit-icon">visibility</mat-icon>
+                </button>
               </td>
             </tr>
           </tbody>
@@ -255,6 +257,138 @@
     <div class="empty-state" *ngIf="!hasSearched">
       <mat-icon>bar_chart</mat-icon>
       <p>Select your filters above and click <strong>Generate</strong> to view the sales report.</p>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         VIEW MODAL  (same as sales.component)
+    ════════════════════════════════════════════ -->
+    <div class="modal-backdrop" *ngIf="isViewModalOpen" (click)="closeViewModal()"
+         style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+      <div class="admission-record-card" (click)="$event.stopPropagation()"
+           style="max-width: 700px; width: 90%; padding: 24px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+
+        <div class="admission-record-header" style="padding: 0; border-bottom: 1px solid #e5e7eb; padding-bottom: 12px; margin-bottom: 16px;">
+          <div>
+            <h5 style="margin: 0; color: #1f2937;">Sale Invoice Details</h5>
+            <p style="margin: 0; font-size: 12px; color: #6b7280;">Detailed billing of the selected sale record</p>
+          </div>
+          <button (click)="closeViewModal()" style="background: none; border: none; cursor: pointer; color: #9ca3af;">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 12px; font-size: 14px; color: #4b5563;" *ngIf="viewSale">
+          <div style="display: flex; justify-content: space-between;">
+            <div><strong>Student:</strong> {{ viewSale.studentName }}</div>
+            <div><strong>Admission No:</strong> {{ viewSale.admissionNo }}</div>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <div><strong>Class:</strong> {{ viewSale.className }}</div>
+            <div><strong>Division:</strong> {{ viewSale.divisionName }}</div>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <div><strong>Sale Date:</strong> {{ viewSale.saleDate }}</div>
+            <div><strong>Payment Mode:</strong> {{ viewSale.paymentMode }}</div>
+          </div>
+          <div *ngIf="viewSale.notes"><strong>Notes:</strong> {{ viewSale.notes }}</div>
+          <div style="display: flex; justify-content: space-between;" *ngIf="viewSale.schoolName">
+            <div><strong>School:</strong> {{ viewSale.schoolName }}</div>
+            <div><strong>Academic Year:</strong> {{ viewSale.academicYearName }}</div>
+          </div>
+
+          <hr style="margin: 8px 0; border-color: #e5e7eb;" />
+          <h6 style="margin: 0; font-weight: 600; color: #1f2937;">Items List</h6>
+          <div class="reviewstable admission-table-wrap" style="max-height: 200px; overflow-y: auto;">
+            <table class="table table-bordered admission-table" style="font-size: 12px;">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Item</th>
+                  <th>Price (₹)</th>
+                  <th>Tax Amount (₹)</th>
+                  <th>Sub-Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of getViewItemRows(); let j = index">
+                  <td>{{ j + 1 }}</td>
+                  <td>{{ row.name }}</td>
+                  <td>{{ row.price | number:'1.2-2' }}</td>
+                  <td>{{ row.taxAmount | number:'1.2-2' }}</td>
+                  <td><strong>₹{{ row.subTotal | number:'1.2-2' }}</strong></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 32px; font-size: 14px; margin-top: 12px;">
+            <div>Total Tax: <strong>₹{{ viewSale.totalTaxAmount | number:'1.2-2' }}</strong></div>
+            <div>Grand Total: <strong style="color: #4f46e5; font-size: 16px;">₹{{ viewSale.grandTotalAmount | number:'1.2-2' }}</strong></div>
+          </div>
+
+          <div style="margin-top: 8px;">
+            <strong>Status:</strong>
+            <span
+              class="status-pill"
+              [style.background]="viewSale.isActive ? '#d9f9e5' : '#fff0bd'"
+              [style.color]="viewSale.isActive ? '#00823a' : '#c25b00'"
+              [style.borderColor]="viewSale.isActive ? '#86efac' : '#f5d77a'">
+              {{ viewSale.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 10px;">
+          <button class="admission-btn admission-btn--secondary" (click)="closeViewModal()">Close</button>
+          <button class="admission-btn admission-btn--primary" (click)="printReceipt()">
+            <mat-icon>print</mat-icon> Print Receipt
+          </button>
+        </div>
+
+        <!-- Hidden printable receipt — UI unchanged, data uses getViewItemRows() -->
+        <div id="receiptPrintArea" style="display: none;" *ngIf="viewSale">
+          <div class="receipt-header">
+            <h2>SCHOOL STORE RECEIPT</h2>
+            <p>{{ viewSale.schoolName || 'School Store' }}</p>
+          </div>
+          <div class="receipt-meta">
+            <div><span>Receipt No:</span><span>{{ viewSale.id }}</span></div>
+            <div><span>Date:</span><span>{{ viewSale.saleDate }}</span></div>
+            <div><span>Student:</span><span>{{ viewSale.studentName }}</span></div>
+            <div><span>Admission No:</span><span>{{ viewSale.admissionNo }}</span></div>
+            <div><span>Class:</span><span>{{ viewSale.className }} - {{ viewSale.divisionName }}</span></div>
+            <div><span>Payment Mode:</span><span>{{ viewSale.paymentMode }}</span></div>
+          </div>
+          <div class="receipt-divider"></div>
+          <table>
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th class="text-right">Price</th>
+                <th class="text-right">Tax</th>
+                <th class="text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of getViewItemRows()">
+                <td>{{ row.name }}</td>
+                <td class="text-right">{{ row.price | number:'1.2-2' }}</td>
+                <td class="text-right">{{ row.taxAmount | number:'1.2-2' }}</td>
+                <td class="text-right">{{ row.subTotal | number:'1.2-2' }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="receipt-totals">
+            <div><span>Total Tax:</span><span>₹{{ viewSale.totalTaxAmount | number:'1.2-2' }}</span></div>
+            <div class="grand-row"><span>GRAND TOTAL:</span><span>₹{{ viewSale.grandTotalAmount | number:'1.2-2' }}</span></div>
+          </div>
+          <div class="receipt-footer">
+            <p>Thank you!</p>
+            <p>This is a computer-generated receipt.</p>
+          </div>
+        </div>
+
+      </div>
     </div>
 
   </div>

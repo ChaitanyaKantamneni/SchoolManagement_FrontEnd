@@ -22,11 +22,20 @@ interface SaleReportRow {
   divisionName: string;
   admissionNo: string;
   studentName: string;
+  categoryNames: string;
+  itemNames: string;
+  categoryIDs: string;
+  itemIDs: string;
+  prices: string;
+  taxAmounts: string;
+  subTotals: string;
   totalTaxAmount: number;
   grandTotalAmount: number;
   paymentMode: string;
+  notes: string;
   saleDate: string;
   isActive: boolean;
+  createdDate?: any;
 }
 
 @Component({
@@ -57,8 +66,6 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
     this.checkViewPermission();
     this.selectedAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
 
-    // Fix 3: pre-set school and load academic years for non-admin
-    // immediately — don't wait for FetchSchoolsList HTTP call
     if (!this.isAdmin && this.currentSchoolId) {
       this.selectedSchoolID = this.currentSchoolId;
       this.FetchAcademicYearsList(this.currentSchoolId);
@@ -67,8 +74,7 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
     this.FetchSchoolsList();
   }
 
-  // ── role ────────────────────────────────────────────────────────────────────
-  // getter so isAdmin is always read fresh from storage, never stale
+  // ── role ─────────────────────────────────────────────────────────────────────
   protected override get isAdmin(): boolean {
     const role = sessionStorage.getItem('RollID') || localStorage.getItem('RollID') || '';
     return role === '1';
@@ -80,33 +86,42 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
     localStorage.getItem('SchoolID') ||
     localStorage.getItem('schoolId') || '';
 
-  // ── dropdown lists ──────────────────────────────────────────────────────────
+  // ── dropdown lists ────────────────────────────────────────────────────────────
   schoolList: Array<{ ID: string; Name: string }> = [];
   academicYearList: Array<{ ID: string; Name: string }> = [];
   classLists: Array<{ ID: string; Name: string; Division: string }> = [];
   divisionsList: Array<{ ID: string; Name: string }> = [];
   studentsList: Array<{ ID: string; AdmissionNo: string; Name: string }> = [];
+  itemsList: Array<{
+    ID: string;
+    Name: string;
+    SellingPrice: number;
+    TaxCGST: number;
+    TaxSGST: number;
+    OpeningStock: number;
+    CategoryID: string;
+  }> = [];
 
-  // ── selected filter values ──────────────────────────────────────────────────
+  // ── selected filter values ────────────────────────────────────────────────────
   selectedSchoolID: string = '';
   selectedAcademicYearID: string = sessionStorage.getItem('ActiveAcademicYearID') || '';
   selectedClassID: string = '';
   selectedDivisionID: string = '';
   selectedAdmissionNo: string = '';
 
-  // ── report data ─────────────────────────────────────────────────────────────
+  // ── report data ───────────────────────────────────────────────────────────────
   ReportList: SaleReportRow[] = [];
   ReportCount: number = 0;
   hasSearched: boolean = false;
 
-  // ── pagination ──────────────────────────────────────────────────────────────
+  // ── pagination ────────────────────────────────────────────────────────────────
   currentPage = 1;
   pageSize = 10;
   visiblePageCount = 3;
   pageCursors: { lastCreatedDate: any; lastID: number }[] = [];
   sortDirection: 'asc' | 'desc' = 'desc';
 
-  // ── summary getters ─────────────────────────────────────────────────────────
+  // ── summary getters ───────────────────────────────────────────────────────────
   get totalSalesCount(): number { return this.ReportCount; }
 
   get totalRevenue(): number {
@@ -117,7 +132,7 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
     return this.ReportList.reduce((sum, r) => sum + (r.totalTaxAmount || 0), 0);
   }
 
-  // ── fetch schools ───────────────────────────────────────────────────────────
+  // ── fetch schools ─────────────────────────────────────────────────────────────
   private FetchSchoolsList(): void {
     this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', { Flag: '2' }).subscribe({
       next: (res: any) => {
@@ -125,16 +140,12 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
           ? res.data.map((i: any) => ({ ID: String(i.id), Name: String(i.name) }))
           : [];
 
-        // For non-admin: if academic years not yet loaded by ngOnInit
-        // (edge case where ngOnInit fired before storage was ready),
-        // retry here as a safety net
         if (!this.isAdmin && this.currentSchoolId && this.academicYearList.length === 0) {
           this.selectedSchoolID = this.currentSchoolId;
           this.FetchAcademicYearsList(this.currentSchoolId);
         }
       },
       error: () => {
-        // even on error, ensure non-admin school ID is set
         if (!this.isAdmin && this.currentSchoolId) {
           this.selectedSchoolID = this.currentSchoolId;
         }
@@ -142,7 +153,7 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
     });
   }
 
-  // ── fetch academic years ────────────────────────────────────────────────────
+  // ── fetch academic years ──────────────────────────────────────────────────────
   FetchAcademicYearsList(schoolId: string): void {
     this.academicYearList = [];
     this.classLists = [];
@@ -175,7 +186,7 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
     });
   }
 
-  // ── fetch classes ───────────────────────────────────────────────────────────
+  // ── fetch classes ─────────────────────────────────────────────────────────────
   FetchClassList(): void {
     this.classLists = [];
     this.divisionsList = [];
@@ -204,7 +215,7 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
     );
   }
 
-  // ── fetch divisions ─────────────────────────────────────────────────────────
+  // ── fetch divisions ───────────────────────────────────────────────────────────
   FetchDivisionsList(): void {
     this.divisionsList = [];
     this.studentsList = [];
@@ -231,7 +242,7 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
     );
   }
 
-  // ── fetch students ──────────────────────────────────────────────────────────
+  // ── fetch students ────────────────────────────────────────────────────────────
   FetchStudentsList(): void {
     this.studentsList = [];
     this.selectedAdmissionNo = '';
@@ -258,7 +269,7 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
     );
   }
 
-  // ── cascade handlers ────────────────────────────────────────────────────────
+  // ── cascade handlers ──────────────────────────────────────────────────────────
   onSchoolChange(event: Event): void {
     const schoolId = (event.target as HTMLSelectElement).value;
     this.selectedSchoolID = schoolId === '0' ? '' : schoolId;
@@ -334,14 +345,14 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
     this.hasSearched = false;
   }
 
-  // ── generate report ─────────────────────────────────────────────────────────
+  // ── generate report ───────────────────────────────────────────────────────────
   onGenerateReport(): void {
     this.currentPage = 1;
     this.pageCursors = [];
     this.FetchReport();
   }
 
-  // ── fetch report data ───────────────────────────────────────────────────────
+  // ── fetch report data ─────────────────────────────────────────────────────────
   FetchReport(extra: any = {}): void {
     const cursor = !extra.Offset && this.currentPage > 1
       ? this.pageCursors[this.currentPage - 2] || null
@@ -353,7 +364,6 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
       next: (countResp: any) => {
         this.ReportCount = countResp?.data?.[0]?.totalcount ?? 0;
 
-        // Fix 1: use capital Offset to match DAL parameter name
         const payload: any = {
           Flag: '2',
           SchoolID: this.selectedSchoolID || (this.isAdmin ? null : this.currentSchoolId),
@@ -365,7 +375,7 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
           SortDirection: this.sortDirection,
           LastCreatedDate: cursor?.lastCreatedDate ?? null,
           LastID: cursor?.lastID ?? null,
-          Offset: extra.Offset ?? null   // Fix 1: explicit capital Offset
+          Offset: extra.Offset ?? null
         };
 
         this.apiurl.post<any>('Tbl_Sales_CRUD_Operations', payload).subscribe({
@@ -398,7 +408,7 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
     });
   }
 
-  // ── fetch count ─────────────────────────────────────────────────────────────
+  // ── fetch count ───────────────────────────────────────────────────────────────
   FetchReportCount() {
     return this.apiurl.post<any>('Tbl_Sales_CRUD_Operations', {
       Flag: '6',
@@ -410,7 +420,7 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
     });
   }
 
-  // ── map response ────────────────────────────────────────────────────────────
+  // ── map response ──────────────────────────────────────────────────────────────
   mapReport(response: any): void {
     this.ReportList = (response.data || []).map((item: any) => ({
       id: String(item.id ?? item.ID ?? ''),
@@ -422,19 +432,28 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
       className: String(item.className ?? ''),
       divisionId: String(item.divisionID ?? ''),
       divisionName: String(item.divisionName ?? ''),
+      categoryNames: String(item.categoryNames ?? ''),
+      itemNames: String(item.itemNames ?? ''),
       admissionNo: String(item.admissionNo ?? ''),
       studentName: String(item.studentName ?? ''),
+      categoryIDs: String(item.categoryIDs ?? ''),
+      itemIDs: String(item.itemIDs ?? ''),
+      prices: String(item.prices ?? ''),
+      taxAmounts: String(item.taxAmounts ?? ''),
+      subTotals: String(item.subTotals ?? ''),
       totalTaxAmount: Number(item.totalTaxAmount ?? 0),
       grandTotalAmount: Number(item.grandTotalAmount ?? 0),
       paymentMode: String(item.paymentMode ?? ''),
+      notes: String(item.notes ?? ''),
       saleDate: item.saleDate
         ? new Date(item.saleDate).toISOString().split('T')[0]
         : '',
+      createdDate: item.createdDate,
       isActive: this.getBooleanValue(item.isActive ?? item.IsActive)
     }));
   }
 
-  // ── clear filters ───────────────────────────────────────────────────────────
+  // ── clear filters ─────────────────────────────────────────────────────────────
   onClearFilters(): void {
     this.selectedAcademicYearID = this.isAdmin ? '' : (sessionStorage.getItem('ActiveAcademicYearID') || '');
     this.selectedClassID = '';
@@ -453,12 +472,11 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
       this.selectedSchoolID = '';
       this.academicYearList = [];
     } else {
-      // non-admin: keep school, just reload academic years
       this.FetchAcademicYearsList(this.currentSchoolId);
     }
   }
 
-  // ── export ──────────────────────────────────────────────────────────────────
+  // ── export ────────────────────────────────────────────────────────────────────
   exportReport(type: 'pdf' | 'excel' | 'print'): void {
     const payload: any = {
       Flag: '2',
@@ -506,7 +524,7 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
     });
   }
 
-  // ── pagination ──────────────────────────────────────────────────────────────
+  // ── pagination ────────────────────────────────────────────────────────────────
   previousPage(): void { if (this.currentPage > 1) this.goToPage(this.currentPage - 1); }
   nextPage(): void { if (this.currentPage < this.totalPages()) this.goToPage(this.currentPage + 1); }
   firstPage(): void { this.goToPage(1); }
@@ -524,7 +542,6 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
       !this.pageCursors[pageNumber - 2];
 
     if (isBoundaryPage) {
-      // Fix 2: capital Offset to match DAL
       this.FetchReport({ Offset: (pageNumber - 1) * this.pageSize });
     } else {
       this.FetchReport();
@@ -543,8 +560,139 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
     return pages;
   }
 
-  // ── helpers ─────────────────────────────────────────────────────────────────
+  // ── helpers ───────────────────────────────────────────────────────────────────
   private getBooleanValue(val: any): boolean {
     return val === true || val === 1 || val === '1' || val === 'True' || val === 'active';
+  }
+
+  // ── view modal state ──────────────────────────────────────────────────────────
+  isViewModalOpen: boolean = false;
+  viewSale: SaleReportRow | null = null;
+
+ viewReview(row: SaleReportRow): void {
+  this.loader.show();
+  this.apiurl.post<any>('Tbl_Sales_CRUD_Operations', { ID: row.id, Flag: '4' }).subscribe({
+    next: (response: any) => {
+      this.loader.hide();
+      const item = response?.data?.[0];
+      if (!item) return;
+
+      this.viewSale = {
+        id: String(item.id ?? item.ID ?? ''),
+        schoolId: String(item.schoolID ?? ''),
+        schoolName: String(item.schoolName ?? ''),
+        academicYearId: String(item.academicYear ?? ''),
+        academicYearName: String(item.academicYearName ?? ''),
+        classId: String(item.classID ?? ''),
+        className: String(item.className ?? ''),
+        divisionId: String(item.divisionID ?? ''),
+        divisionName: String(item.divisionName ?? ''),
+        categoryNames: String(item.categoryNames ?? ''),
+        itemNames: String(item.itemNames ?? ''),
+        admissionNo: String(item.admissionNo ?? ''),
+        studentName: String(item.studentName ?? ''),
+        categoryIDs: String(item.categoryIDs ?? ''),
+        itemIDs: String(item.itemIDs ?? ''),
+        prices: String(item.prices ?? ''),
+        taxAmounts: String(item.taxAmounts ?? ''),
+        subTotals: String(item.subTotals ?? ''),
+        totalTaxAmount: Number(item.totalTaxAmount ?? 0),
+        grandTotalAmount: Number(item.grandTotalAmount ?? 0),
+        paymentMode: String(item.paymentMode ?? 'Cash'),
+        notes: String(item.notes ?? ''),
+        saleDate: item.saleDate
+          ? new Date(item.saleDate).toISOString().split('T')[0] : '',
+        createdDate: item.createdDate,
+        isActive: this.getBooleanValue(item.isActive ?? item.IsActive)
+      };
+      this.FetchItemsListForView(this.viewSale);
+    },
+    error: () => { this.loader.hide(); }
+  });
+}
+
+  FetchItemsListForView(sale: SaleReportRow): void {
+    const schoolId = sale.schoolId || this.currentSchoolId;
+    this.apiurl.post<any>('Tbl_Items_CRUD_Operations', {
+      SchoolID: schoolId,
+      AcademicYear: sale.academicYearId || '',
+      Flag: '3'
+    }).subscribe({
+      next: (res: any) => {
+        this.itemsList = Array.isArray(res?.data)
+          ? res.data.map((i: any) => ({
+            ID: String(i.id ?? i.ID),
+            Name: String(i.itemName ?? i.ItemName),
+            SellingPrice: Number(i.sellingPrice ?? i.SellingPrice ?? 0),
+            TaxCGST: Number(i.taxCGST ?? i.TaxCGST ?? 0),
+            TaxSGST: Number(i.taxSGST ?? i.TaxSGST ?? 0),
+            OpeningStock: Number(i.openingStock ?? i.OpeningStock ?? 0),
+            CategoryID: String(i.categoryID ?? i.CategoryID ?? '')
+          }))
+          : [];
+        this.isViewModalOpen = true;
+      }
+    });
+  }
+
+  closeViewModal(): void {
+    this.isViewModalOpen = false;
+    this.viewSale = null;
+  }
+
+  getViewItemRows(): { name: string; price: number; taxAmount: number; subTotal: number }[] {
+    if (!this.viewSale) return [];
+    const ids = (this.viewSale.itemIDs || '').split(',').map(s => s.trim());
+    const prices = (this.viewSale.prices || '').split(',').map(s => Number(s.trim()));
+    const taxAmounts = (this.viewSale.taxAmounts || '').split(',').map(s => Number(s.trim()));
+    const subTotals = (this.viewSale.subTotals || '').split(',').map(s => Number(s.trim()));
+
+    return ids.filter(Boolean).map((id, i) => {
+      const found = this.itemsList.find(it => it.ID === id);
+      return {
+        name: found?.Name || id,
+        price: prices[i] ?? 0,
+        taxAmount: taxAmounts[i] ?? 0,
+        subTotal: subTotals[i] ?? 0
+      };
+    });
+  }
+
+  printReceipt(): void {
+    const printContent = document.getElementById('receiptPrintArea')?.innerHTML;
+    if (!printContent) return;
+
+    const printWindow = window.open('', '_blank', 'width=420,height=600');
+    if (!printWindow) return;
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Receipt - ${this.viewSale?.admissionNo}</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: 'Courier New', monospace; padding: 16px; color: #000; font-size: 12px; }
+            .receipt-header { text-align: center; margin-bottom: 10px; border-bottom: 1px dashed #000; padding-bottom: 10px; }
+            .receipt-header h2 { font-size: 16px; margin-bottom: 2px; }
+            .receipt-header p { font-size: 11px; color: #333; }
+            .receipt-meta { margin: 10px 0; font-size: 11px; }
+            .receipt-meta div { display: flex; justify-content: space-between; padding: 2px 0; }
+            .receipt-divider { border-top: 1px dashed #000; margin: 8px 0; }
+            table { width: 100%; border-collapse: collapse; font-size: 11px; }
+            th { text-align: left; border-bottom: 1px solid #000; padding: 4px 2px; }
+            td { padding: 4px 2px; }
+            .text-right { text-align: right; }
+            .receipt-totals { margin-top: 8px; font-size: 12px; }
+            .receipt-totals div { display: flex; justify-content: space-between; padding: 2px 0; }
+            .grand-row { font-weight: bold; font-size: 14px; border-top: 1px dashed #000; padding-top: 6px; margin-top: 6px; }
+            .receipt-footer { text-align: center; margin-top: 16px; font-size: 11px; border-top: 1px dashed #000; padding-top: 10px; }
+          </style>
+        </head>
+        <body>${printContent}</body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => { printWindow.print(); printWindow.close(); }, 250);
   }
 }

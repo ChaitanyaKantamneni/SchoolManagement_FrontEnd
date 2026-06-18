@@ -287,10 +287,13 @@ export class ExammarksComponent extends BasePermissionComponent{
           this.resolvedStaffId = String(match.id || match.ID);
         }
       },
-      complete: () => {
+    complete: () => {
+        // Only sync here if academic year already resolved;
+        // otherwise FetchAcademicYearsList will trigger it after auto-selection
         if (this.isTeacher && this.AdminselectedAcademivYearID) {
           this.syncTeacherClassDivisionFromAllocation(() => this.FetchExamsList());
         }
+        // If year not yet set, FetchAcademicYearsList complete handler will call sync
       }
     });
   }
@@ -433,7 +436,25 @@ export class ExammarksComponent extends BasePermissionComponent{
                 Name: item.name,
                 IsActive: isActiveString
               };
-            });            
+            });
+
+            // Auto-select active academic year for teachers
+            if (this.isTeacher && this.AdminSelectedActiveAcademicYearID) {
+              const match = this.academicYearList.find(
+                y => y.ID === this.AdminSelectedActiveAcademicYearID
+              );
+              if (match) {
+                this.AdminselectedAcademivYearID = match.ID;
+                this.SyllabusForm.get('AcademicYear')?.patchValue(match.ID);
+              } else if (this.academicYearList.length > 0) {
+                this.AdminselectedAcademivYearID = this.academicYearList[0].ID;
+                this.SyllabusForm.get('AcademicYear')?.patchValue(this.academicYearList[0].ID);
+              }
+              // Now that year is set, sync allocation and fetch exams
+              if (this.AdminselectedAcademivYearID && this.currentUserId) {
+                this.syncTeacherClassDivisionFromAllocation(() => this.FetchExamsList());
+              }
+            }
           } else {
             this.academicYearList = [];
           }

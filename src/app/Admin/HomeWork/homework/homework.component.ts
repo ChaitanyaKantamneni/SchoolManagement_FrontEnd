@@ -267,6 +267,8 @@ export class HomeworkComponent extends BasePermissionComponent {
       this.FetchAcademicYearsList();
     } else if (this.currentRoleUI === 'admin') {
       // Super Admin - fetch all schools first, then behave like school admin
+        this.AdminselectedAcademivYearID = ''; // Do not auto-select for super admin
+
       this.FetchSchoolsList();
       this.selectedSchoolID = this.resolvedSchoolId || this.schoolId;
       this.AdminselectedSchoolID = this.resolvedSchoolId || this.schoolId;
@@ -492,13 +494,16 @@ export class HomeworkComponent extends BasePermissionComponent {
                 IsActive: isActiveString
               };
             });
-            const activeYearId = sessionStorage.getItem('ActiveAcademicYearID') || '';
-            const matchedYear = this.academicYearList.find(y => y.ID === activeYearId);
-            if (matchedYear) {
-              this.AdminselectedAcademivYearID = matchedYear.ID;
-            } else if (this.academicYearList.length > 0 && !this.AdminselectedAcademivYearID) {
-              this.AdminselectedAcademivYearID = this.academicYearList[0].ID;
-            }
+           // Only auto-select academic year for non-admin roles
+if (this.currentRoleUI !== 'admin') {
+  const activeYearId = sessionStorage.getItem('ActiveAcademicYearID') || '';
+  const matchedYear = this.academicYearList.find(y => y.ID === activeYearId);
+  if (matchedYear) {
+    this.AdminselectedAcademivYearID = matchedYear.ID;
+  } else if (this.academicYearList.length > 0 && !this.AdminselectedAcademivYearID) {
+    this.AdminselectedAcademivYearID = this.academicYearList[0].ID;
+  }
+}
 
             // Fetch subsequent lists that depend on academic year
             if (this.currentRoleUI === 'teacher') {

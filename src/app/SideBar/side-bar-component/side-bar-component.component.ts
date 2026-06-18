@@ -334,6 +334,9 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
       'advance salary': 'request_quote',
       'salary pay': 'paid',
       'salary issued': 'receipt_long',
+      'apply leave': 'event_note',
+      'leave approval': 'fact_check',
+      'leave details': 'event_note',
       'leave management': 'event_note',
       homework: 'assignment',
       'assign homework': 'assignment_turned_in',
@@ -347,6 +350,13 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
       'room allotment': 'hotel',
       'outpass': 'exit_to_app',
       'out pass': 'exit_to_app',
+      units: 'straighten',
+      categories: 'category',
+      items: 'inventory_2',
+      suppliers: 'local_shipping',
+      purchase: 'shopping_cart',
+      sales: 'sell',
+      'sales report': 'bar_chart'
     };
     return map[key] || 'menu';
   }
@@ -366,7 +376,8 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
       'leave management': 'event_note',
       homework: 'assignment',
       'holiday calendar': 'event',
-      'hostel management': 'apartment'
+      'hostel management': 'apartment',
+      store: 'storefront'
     };
 
     return map[key] || 'folder';
