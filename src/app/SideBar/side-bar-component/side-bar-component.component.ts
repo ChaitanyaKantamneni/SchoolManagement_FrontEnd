@@ -347,6 +347,7 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
       'room allotment': 'hotel',
       'outpass': 'exit_to_app',
       'out pass': 'exit_to_app',
+      'messaging': 'textsms'
     };
     return map[key] || 'menu';
   }
@@ -366,7 +367,8 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
       'leave management': 'event_note',
       homework: 'assignment',
       'holiday calendar': 'event',
-      'hostel management': 'apartment'
+      'hostel management': 'apartment',
+      'messaging': 'textsms'
     };
 
     return map[key] || 'folder';

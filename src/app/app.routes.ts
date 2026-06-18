@@ -82,6 +82,7 @@ import { HostelMasterComponent } from './Admin/hostel-management/hostel-master/h
 import { RoomMasterComponent } from './Admin/hostel-management/room-master/room-master.component';
 import { RoomAllotmentComponent } from './Admin/hostel-management/room-allotment/room-allotment.component';
 import { OutPassComponent } from './Admin/hostel-management/out-pass/out-pass.component';
+import { MessagingDashboardComponent } from './Admin/messaging/messaging-dashboard/messaging-dashboard.component';
 
 export const routes: Routes = [
   { path: '', component: SignInComponent },
@@ -166,6 +167,7 @@ export const routes: Routes = [
       { path: 'Purchase',  component: PurchaseComponent },
       { path: 'Sales',  component: SalesComponent },
       { path: 'SalesReport',  component: SalesReportComponent },
+      { path: 'Messaging',  component: MessagingDashboardComponent },
       
     ]
   },
@@ -247,6 +249,7 @@ export const routes: Routes = [
       { path: 'Purchase',  component: PurchaseComponent },
       { path: 'Sales',  component: SalesComponent },
       { path: 'SalesReport',  component: SalesReportComponent },
+      { path: 'Messaging',  component: MessagingDashboardComponent },
 
 
     ]
@@ -335,6 +338,7 @@ export const routes: Routes = [
       { path: 'Purchase',  component: PurchaseComponent },
       { path: 'Sales',  component: SalesComponent },
       { path: 'SalesReport',  component: SalesReportComponent },
+      { path: 'Messaging',  component: MessagingDashboardComponent },
     ]
   },
 

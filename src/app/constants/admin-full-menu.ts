@@ -160,5 +160,12 @@ export const FULL_ADMIN_MENU: Module[] = [
       { id : 'sales', pageName: 'Sales', moduleID: 'store', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
       { id : 'salesreport', pageName: 'Sales Report', moduleID: 'store', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
     ]
+  },
+  {
+    id: 'messaging',
+    moduleName: 'Messaging',
+    pages: [
+      { id: 'messaging_dashboard', pageName: 'Messaging', moduleID: 'messaging', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
+    ]
   }
 ];

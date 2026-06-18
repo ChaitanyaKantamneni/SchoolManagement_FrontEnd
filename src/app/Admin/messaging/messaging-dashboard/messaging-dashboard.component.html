@@ -1,0 +1,703 @@
+<div>
+  <app-dashboard-top-nav></app-dashboard-top-nav>
+</div>
+<div class="MainContentDiv">
+  <div class="w-100 admission-dashboard">
+    <!-- Breadcrumb / Header -->
+    <div class="admission-breadcrumb">
+      <div class="breadcrumb-left">
+        <h1>Messaging Dashboard</h1>
+        <p>Configure gateways, sync approved templates, and broadcast alerts via SMS or WhatsApp</p>
+      </div>
+    </div>
+
+  <!-- Multi-Tenant Selection Toolbar (Standard ERP Topbar) -->
+  <div class="AddForm top-toolbar-container">
+    <div class="FormInputRowsContainer">
+      <div class="InputRow">
+        <!-- School Selection -->
+        <div class="InputFieldsContainer" *ngIf="isAdmin" style="flex: 1; min-width: 240px;">
+          <label class="inputLabel">Select School <span class="required">*</span></label>
+          <select class="inputField" [value]="AdminselectedSchoolID" (change)="onSchoolChange($event)">
+            <option value="0">-- Select School --</option>
+            <option *ngFor="let sch of schoolList" [value]="sch.ID">{{ sch.Name }}</option>
+          </select>
+        </div>
+
+        <!-- Academic Year Selection (Locked/Blocked as per standard ExamType) -->
+        <div class="InputFieldsContainer" style="flex: 1; min-width: 240px;">
+          <label class="inputLabel">Academic Year <span class="required">*</span></label>
+          <select class="inputField" [value]="AdminselectedAcademivYearID" [disabled]="!isAdmin" (change)="onAcademicYearChange($event)">
+            <option value="">-- Academic Year --</option>
+            <option *ngFor="let ay of academicYearList" [value]="ay.ID">{{ ay.Name }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Main Tabs Navigation (Matching UI/UX screenshot style) -->
+  <div class="messaging-tabs">
+    <button type="button" class="tab-btn" [class.active]="activeTab === 'broadcast'" (click)="activeTab = 'broadcast'">
+      <mat-icon>campaign</mat-icon> Broadcast Hub
+    </button>
+    <button type="button" class="tab-btn" [class.active]="activeTab === 'bulk'" (click)="activeTab = 'bulk'; loadTemplates()">
+      <mat-icon>dashboard_customize</mat-icon> Bulk Templates
+    </button>
+    <button type="button" class="tab-btn" [class.active]="activeTab === 'whatsapp'" (click)="activeTab = 'whatsapp'; loadConfigs()">
+      <mat-icon>forum</mat-icon> WhatsApp Settings
+    </button>
+    <button type="button" class="tab-btn" [class.active]="activeTab === 'sms'" (click)="activeTab = 'sms'; loadConfigs()">
+      <mat-icon>sms</mat-icon> SMS Settings
+    </button>
+    <button type="button" class="tab-btn" [class.active]="activeTab === 'history'" (click)="activeTab = 'history'; loadHistory()">
+      <mat-icon>history</mat-icon> Delivery History
+    </button>
+  </div>
+
+  <!-- Tab Contents -->
+  <div class="tab-content-container">
+
+    <!-- TAB 1: BROADCAST HUB (COMPOSE & SEND) -->
+    <div *ngIf="activeTab === 'broadcast'" class="tab-pane animate-fade">
+      <div class="dashboard-grid">
+        
+        <!-- Recipient Panel -->
+        <div class="panel-card recipient-card">
+          <div class="panel-header">
+            <h3><mat-icon>group</mat-icon> 1. Select Recipients</h3>
+          </div>
+          
+          <div class="panel-body">
+            <!-- Channel Selection -->
+            <div class="form-row">
+              <label class="inputLabel">Channel Type</label>
+              <div class="btn-group">
+                <button type="button" class="toggle-btn" [class.selected]="channelType === 'SMS'" (click)="channelType = 'SMS'; recipientsList = []; selectedRecipientIds.clear()">
+                  <mat-icon>sms</mat-icon> SMS Gateway
+                </button>
+                <button type="button" class="toggle-btn" [class.selected]="channelType === 'WhatsApp'" (click)="channelType = 'WhatsApp'; recipientsList = []; selectedRecipientIds.clear()">
+                  <mat-icon>forum</mat-icon> WhatsApp
+                </button>
+              </div>
+            </div>
+
+            <!-- Recipient Group -->
+            <div class="form-row">
+              <label class="inputLabel">Recipient Group</label>
+              <div class="btn-group">
+                <button type="button" class="toggle-btn" [class.selected]="recipientGroup === 'Parents'" (click)="recipientGroup = 'Parents'; recipientsList = []; selectedRecipientIds.clear()">
+                  <mat-icon>people</mat-icon> Parents & Students
+                </button>
+                <button type="button" class="toggle-btn" [class.selected]="recipientGroup === 'Staff'" (click)="recipientGroup = 'Staff'; recipientsList = []; selectedRecipientIds.clear()">
+                  <mat-icon>badge</mat-icon> Staff Members
+                </button>
+              </div>
+            </div>
+
+            <!-- Conditional Filters (Parents) -->
+            <div class="filters-row animate-fade" *ngIf="recipientGroup === 'Parents'">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Select Class <span class="required">*</span></label>
+                <select class="inputField" [(ngModel)]="selectedClassID" (change)="onClassChange()">
+                  <option value="">-- Class --</option>
+                  <option *ngFor="let cls of classList" [value]="cls.ID">{{ cls.Name }}</option>
+                </select>
+              </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Select Division <span class="required">*</span></label>
+                <select class="inputField" [(ngModel)]="selectedDivisionID" (change)="onDivisionChange()">
+                  <option value="">-- Division --</option>
+                  <option *ngFor="let div of divisionList" [value]="div.ID">{{ div.Name }}</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Conditional Filters (Staff) -->
+            <div class="filters-row animate-fade" *ngIf="recipientGroup === 'Staff'">
+              <div class="InputFieldsContainer full-width">
+                <label class="inputLabel">Select Staff Type / Role <span class="required">*</span></label>
+                <select class="inputField" [(ngModel)]="selectedRoleID" (change)="onRoleChange()">
+                  <option value="">-- Staff Role --</option>
+                  <option *ngFor="let r of roleList" [value]="r.ID">{{ r.Name }}</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="button" class="submitbtn load-recipients-btn" (click)="loadRecipients()">
+              <mat-icon>search</mat-icon> Fetch Recipient List
+            </button>
+
+            <!-- Recipients List Selection Box -->
+            <div class="recipients-selection-box animate-fade" *ngIf="recipientsList.length > 0">
+              <div class="selection-box-header">
+                <div class="checkbox-container">
+                  <input type="checkbox" id="checkAll" [checked]="areAllRecipientsSelected()" (change)="toggleAllRecipients($event)" />
+                  <label for="checkAll" class="inputLabel" style="text-transform: none; margin: 0; color: #1e293b;">Select All ({{ selectedRecipientIds.size }} of {{ recipientsList.length }} selected)</label>
+                </div>
+              </div>
+              
+              <div class="selection-box-body">
+                <div class="recipient-row-item" *ngFor="let rec of recipientsList" [class.selected]="isRecipientSelected(rec.id)" (click)="toggleRecipient(rec.id)">
+                  <input type="checkbox" [checked]="isRecipientSelected(rec.id)" (change)="toggleRecipient(rec.id); $event.stopPropagation()" />
+                  <div class="rec-info">
+                    <span class="rec-name">{{ rec.name }}</span>
+                    <span class="rec-contact">{{ rec.contactName }} ({{ rec.mobile || 'No Phone' }})</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="empty-recipients-container" *ngIf="recipientsList.length === 0">
+              <mat-icon>groups</mat-icon>
+              <p>No recipients loaded. Select filters and click 'Fetch Recipient List'.</p>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Compose Panel -->
+        <div class="panel-card compose-card">
+          <div class="panel-header">
+            <h3><mat-icon>edit_note</mat-icon> 2. Compose Message</h3>
+          </div>
+
+          <div class="panel-body">
+            <form [formGroup]="messageForm" (ngSubmit)="sendMessage()">
+              <!-- Load Template Dropdown -->
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Apply Predefined / Custom Template</label>
+                <select class="inputField" formControlName="templateId" (change)="onTemplateChange()">
+                  <option value="">-- Choose Template (Optional) --</option>
+                  <ng-container *ngFor="let t of templatesList">
+                    <option *ngIf="t.channel === 'Both' || t.channel === channelType" [value]="t.id">
+                      [{{ t.category }}] {{ t.title }}
+                    </option>
+                  </ng-container>
+                </select>
+              </div>
+
+              <!-- Badges for Placeholders -->
+              <div class="placeholders-bar">
+                <span class="inputLabel" style="color: #64748b;">Insert Placeholder:</span>
+                <div class="placeholder-badges">
+                  <span class="badge" *ngIf="recipientGroup === 'Parents'" (click)="insertPlaceholder('{StudentName}')">&#123;StudentName&#125;</span>
+                  <span class="badge" *ngIf="recipientGroup === 'Parents'" (click)="insertPlaceholder('{ParentName}')">&#123;ParentName&#125;</span>
+                  <span class="badge" *ngIf="recipientGroup === 'Staff'" (click)="insertPlaceholder('{StaffName}')">&#123;StaffName&#125;</span>
+                  <span class="badge" (click)="insertPlaceholder('{SchoolName}')">&#123;SchoolName&#125;</span>
+                  <span class="badge" (click)="insertPlaceholder('{Date}')">&#123;Date&#125;</span>
+                  <span class="badge" (click)="insertPlaceholder('{Time}')">&#123;Time&#125;</span>
+                  <span class="badge" *ngIf="recipientGroup === 'Parents'" (click)="insertPlaceholder('{Amount}')">&#123;Amount&#125;</span>
+                  <span class="badge" *ngIf="recipientGroup === 'Parents'" (click)="insertPlaceholder('{DueDate}')">&#123;DueDate&#125;</span>
+                </div>
+              </div>
+
+              <!-- Message Textarea -->
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Message Content <span class="required">*</span></label>
+                <textarea class="inputField" formControlName="messageBody" rows="8" placeholder="Type message body here..."></textarea>
+                <div class="text-meta">
+                  <span class="char-count" [class.danger]="(messageForm.get('messageBody')?.value || '').length > 160">
+                    Characters: {{ (messageForm.get('messageBody')?.value || '').length }}
+                    <span *ngIf="channelType === 'SMS'">({{ Math.ceil((messageForm.get('messageBody')?.value || '').length / 160) }} SMS page/s)</span>
+                  </span>
+                  <span class="validation-error" *ngIf="messageForm.get('messageBody')?.touched && messageForm.get('messageBody')?.hasError('required')">
+                    Message body is required.
+                  </span>
+                </div>
+              </div>
+              <!-- Customize placeholders fields -->
+              <div class="placeholders-customizer animate-fade" *ngIf="hasPlaceholders()">
+                <div class="customizer-header">
+                  <mat-icon style="font-size: 16px; width: 16px; height: 16px; color: #4f46e5; vertical-align: middle;">tune</mat-icon>
+                  <span class="customizer-title">Customize Placeholder Values</span>
+                </div>
+                <div class="customizer-grid">
+                  <div class="InputFieldsContainer" *ngIf="messageBodyContains('{Date}')">
+                    <label class="inputLabel">Custom Date</label>
+                    <input type="date" class="inputField" [(ngModel)]="customPlaceholderValues.Date" [ngModelOptions]="{standalone: true}" />
+                  </div>
+                  <div class="InputFieldsContainer" *ngIf="messageBodyContains('{Time}')">
+                    <label class="inputLabel">Custom Time</label>
+                    <input type="time" class="inputField" [(ngModel)]="customPlaceholderValues.Time" [ngModelOptions]="{standalone: true}" />
+                  </div>
+                  <div class="InputFieldsContainer" *ngIf="messageBodyContains('{Amount}')">
+                    <label class="inputLabel">Custom Amount</label>
+                    <input type="text" class="inputField" placeholder="e.g. ₹ 5,200" [(ngModel)]="customPlaceholderValues.Amount" [ngModelOptions]="{standalone: true}" />
+                  </div>
+                  <div class="InputFieldsContainer" *ngIf="messageBodyContains('{DueDate}')">
+                    <label class="inputLabel">Custom Due Date</label>
+                    <input type="date" class="inputField" [(ngModel)]="customPlaceholderValues.DueDate" [ngModelOptions]="{standalone: true}" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="compose-actions">
+                <button type="button" class="cancelbtn" (click)="openPreview()">
+                  <mat-icon style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;">visibility</mat-icon> Preview Message
+                </button>
+                <button type="submit" class="submitbtn" [disabled]="selectedRecipientIds.size === 0">
+                  <mat-icon style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;">send</mat-icon> Broadcast Message
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB 2: BULK TEMPLATE MANAGEMENT -->
+    <div *ngIf="activeTab === 'bulk'" class="tab-pane animate-fade">
+      <div class="templates-header">
+        <h2>Message Templates</h2>
+        <button type="button" class="submitbtn" (click)="openNewTemplate()">
+          <mat-icon style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;">add</mat-icon> Create Custom Template
+        </button>
+      </div>
+
+      <div class="templates-grid">
+        <div class="template-item-card" *ngFor="let temp of templatesList" [class.default-card]="temp.isDefault">
+          <div class="card-top">
+            <div class="badge-row">
+              <span class="badge category-badge">{{ temp.category }}</span>
+              <span class="badge channel-badge" [ngClass]="temp.channel.toLowerCase()">{{ temp.channel }}</span>
+            </div>
+            <span class="default-pill" *ngIf="temp.isDefault">System Default</span>
+          </div>
+          
+          <h4 class="template-title">{{ temp.title }}</h4>
+          <p class="template-body">{{ temp.body }}</p>
+          
+          <div class="card-footer" *ngIf="!temp.isDefault">
+            <button type="button" class="edit-action" (click)="openEditTemplate(temp)">
+              <mat-icon>edit</mat-icon> Edit
+            </button>
+            <button type="button" class="delete-action" (click)="deleteTemplate(temp.id)">
+              <mat-icon>delete</mat-icon> Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: WHATSAPP SETTINGS (Matching exact screenshot design) -->
+    <div *ngIf="activeTab === 'whatsapp'" class="tab-pane animate-fade">
+      <!-- Action Command Bar -->
+      <div class="settings-action-bar">
+        <button type="button" class="action-secondary" (click)="loadConfigs()"><mat-icon>refresh</mat-icon> Reload</button>
+        <button type="button" class="action-secondary" (click)="testConnection('whatsapp')"><mat-icon>flash_on</mat-icon> Test Connection</button>
+        <button type="button" class="action-secondary" (click)="syncTemplatesFromMsg91('whatsapp')"><mat-icon>sync</mat-icon> Sync Templates</button>
+        <button type="button" class="action-primary" (click)="saveConfigs()"><mat-icon>save</mat-icon> Save Config</button>
+      </div>
+
+      <div class="settings-grid">
+        <!-- Left Side: Forms -->
+        <div class="settings-left-col">
+          
+          <!-- Configuration Card -->
+          <div class="card-box">
+            <div class="card-box-header">
+              <h3>WHATSAPP SETTINGS</h3>
+              <span class="subtitle">MSG91 CREDENTIALS & TEMPLATES — PER TENANT</span>
+            </div>
+            <div class="card-box-body">
+              <div class="form-row-two-col">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">INTEGRATED WHATSAPP NUMBER</label>
+                  <input type="text" class="inputField" [(ngModel)]="whatsappNumber" placeholder="e.g. +91XXXXXXXXXX" />
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">MSG91 AUTH KEY</label>
+                  <div class="input-with-badge">
+                    <input type="password" class="inputField" style="width: 100%;" [(ngModel)]="whatsappAuthKey" />
+                    <span class="badge-blue"># MAIN ACCOUNT KEY</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">ENCRYPTION SECRET</label>
+                <input type="text" class="inputField" [(ngModel)]="whatsappEncryptionSecret" placeholder="Secret used to encrypt the auth key" />
+                <span class="subtext-tip">Auth key is AES-256 encrypted using this secret before storing.</span>
+              </div>
+
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">WEBHOOK SECRET (OPTIONAL)</label>
+                <input type="text" class="inputField" [(ngModel)]="whatsappWebhookSecret" placeholder="Sent as x-whatsapp-webhook-secret header" />
+              </div>
+
+              <div class="toggle-switch-row">
+                <div class="toggle-info">
+                  <span class="toggle-title">Active Integration</span>
+                  <span class="toggle-sub">Enable message sending and template sync for this tenant.</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" [(ngModel)]="whatsappActive" />
+                  <span class="slider round"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Synced Templates Card -->
+          <div class="card-box">
+            <div class="card-box-body flex-center" *ngIf="whatsappTemplatesSynced.length === 0">
+              <span class="empty-state-text">No templates synced yet.</span>
+              <button type="button" class="btn-sync-action" (click)="syncTemplatesFromMsg91('whatsapp')">
+                <mat-icon>sync</mat-icon> Sync from Msg91
+              </button>
+            </div>
+            
+            <div class="synced-templates-list" *ngIf="whatsappTemplatesSynced.length > 0">
+              <div class="synced-template-item" *ngFor="let t of whatsappTemplatesSynced">
+                <div class="t-header">
+                  <span class="t-title">{{ t.title }}</span>
+                  <span class="t-badge">{{ t.category }}</span>
+                </div>
+                <p class="t-body">{{ t.body }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Test Message Card -->
+          <div class="card-box">
+            <div class="card-box-body">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">PHONE NUMBER</label>
+                <input type="text" class="inputField" [(ngModel)]="whatsappTestPhone" placeholder="91XXXXXXXXXX (with country code)" />
+              </div>
+
+              <div class="btn-toggle-group">
+                <button type="button" class="toggle-group-btn" [class.active]="whatsappTestMode === 'FREE TEXT'" (click)="whatsappTestMode = 'FREE TEXT'">FREE TEXT</button>
+                <button type="button" class="toggle-group-btn" [class.active]="whatsappTestMode === 'TEMPLATE'" (click)="whatsappTestMode = 'TEMPLATE'">TEMPLATE</button>
+              </div>
+
+              <div class="InputFieldsContainer">
+                <textarea class="inputField" rows="4" [(ngModel)]="whatsappTestBody" placeholder="Type your test message..."></textarea>
+              </div>
+
+              <button type="button" class="btn-send-test" (click)="sendTestMessage('whatsapp')">
+                <mat-icon style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;">send</mat-icon> Send Test Message
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Side: Instructions & Info -->
+        <div class="settings-right-col">
+          <!-- Instruction List Card -->
+          <div class="instruction-box">
+            <ol>
+              <li><span>1.</span> Login to Msg91 and get your Auth Key.</li>
+              <li><span>2.</span> Note your integrated WhatsApp number.</li>
+              <li><span>3.</span> Enter both above and click Save Config.</li>
+              <li><span>4.</span> Click Sync Templates to pull your approved templates.</li>
+              <li><span>5.</span> Use Test Message to verify everything works.</li>
+              <li><span>6.</span> Go to Bulk Messaging to send to students/parents.</li>
+            </ol>
+          </div>
+
+          <!-- Webhook Endpoint Info Box -->
+          <div class="webhook-endpoint-card">
+            <span class="box-title">Webhook endpoint:</span>
+            <div class="endpoint-code-box">/api/whatsapp/webhook</div>
+            <span class="box-sub">Set this URL in Msg91 dashboard under WhatsApp &rarr; Webhook.</span>
+          </div>
+
+          <!-- Alert Note Box -->
+          <div class="alert-info-box">
+            Each tenant has isolated credentials. Auth keys are AES-256 encrypted before storage. Only approved Msg91 templates can be used for first contact.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: SMS SETTINGS (Identical Msg91 UI pattern) -->
+    <div *ngIf="activeTab === 'sms'" class="tab-pane animate-fade">
+      <!-- Action Command Bar -->
+      <div class="settings-action-bar">
+        <button type="button" class="action-secondary" (click)="loadConfigs()"><mat-icon>refresh</mat-icon> Reload</button>
+        <button type="button" class="action-secondary" (click)="testConnection('sms')"><mat-icon>flash_on</mat-icon> Test Connection</button>
+        <button type="button" class="action-secondary" (click)="syncTemplatesFromMsg91('sms')"><mat-icon>sync</mat-icon> Sync Templates</button>
+        <button type="button" class="action-primary" (click)="saveConfigs()"><mat-icon>save</mat-icon> Save Config</button>
+      </div>
+
+      <div class="settings-grid">
+        <!-- Left Side: Forms -->
+        <div class="settings-left-col">
+          
+          <!-- Configuration Card -->
+          <div class="card-box">
+            <div class="card-box-header">
+              <h3>SMS SETTINGS</h3>
+              <span class="subtitle">MSG91 CREDENTIALS & TEMPLATES — PER TENANT</span>
+            </div>
+            <div class="card-box-body">
+              <div class="form-row-two-col">
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">INTEGRATED SMS SENDER ID</label>
+                  <input type="text" class="inputField" [(ngModel)]="smsSenderId" placeholder="e.g. SCHERP (6-char ID)" />
+                </div>
+                <div class="InputFieldsContainer">
+                  <label class="inputLabel">MSG91 AUTH KEY</label>
+                  <div class="input-with-badge">
+                    <input type="password" class="inputField" style="width: 100%;" [(ngModel)]="smsAuthKey" />
+                    <span class="badge-blue"># MAIN ACCOUNT KEY</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">ENCRYPTION SECRET</label>
+                <input type="text" class="inputField" [(ngModel)]="smsEncryptionSecret" placeholder="Secret used to encrypt the auth key" />
+                <span class="subtext-tip">Auth key is AES-256 encrypted using this secret before storing.</span>
+              </div>
+
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">WEBHOOK SECRET (OPTIONAL)</label>
+                <input type="text" class="inputField" [(ngModel)]="smsWebhookSecret" placeholder="Sent as x-sms-webhook-secret header" />
+              </div>
+
+              <div class="toggle-switch-row">
+                <div class="toggle-info">
+                  <span class="toggle-title">Active Integration</span>
+                  <span class="toggle-sub">Enable SMS sending and template sync for this tenant.</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" [(ngModel)]="smsActive" />
+                  <span class="slider round"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Synced Templates Card -->
+          <div class="card-box">
+            <div class="card-box-body flex-center" *ngIf="smsTemplatesSynced.length === 0">
+              <span class="empty-state-text">No templates synced yet.</span>
+              <button type="button" class="btn-sync-action" (click)="syncTemplatesFromMsg91('sms')">
+                <mat-icon>sync</mat-icon> Sync from Msg91
+              </button>
+            </div>
+            
+            <div class="synced-templates-list" *ngIf="smsTemplatesSynced.length > 0">
+              <div class="synced-template-item" *ngFor="let t of smsTemplatesSynced">
+                <div class="t-header">
+                  <span class="t-title">{{ t.title }}</span>
+                  <span class="t-badge">{{ t.category }}</span>
+                </div>
+                <p class="t-body">{{ t.body }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Test Message Card -->
+          <div class="card-box">
+            <div class="card-box-body">
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">PHONE NUMBER</label>
+                <input type="text" class="inputField" [(ngModel)]="smsTestPhone" placeholder="91XXXXXXXXXX (with country code)" />
+              </div>
+
+              <div class="btn-toggle-group">
+                <button type="button" class="toggle-group-btn" [class.active]="smsTestMode === 'FREE TEXT'" (click)="smsTestMode = 'FREE TEXT'">FREE TEXT</button>
+                <button type="button" class="toggle-group-btn" [class.active]="smsTestMode === 'TEMPLATE'" (click)="smsTestMode = 'TEMPLATE'">TEMPLATE</button>
+              </div>
+
+              <div class="InputFieldsContainer">
+                <textarea class="inputField" rows="4" [(ngModel)]="smsTestBody" placeholder="Type your test message..."></textarea>
+              </div>
+
+              <button type="button" class="btn-send-test" (click)="sendTestMessage('sms')">
+                <mat-icon style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;">send</mat-icon> Send Test Message
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Side: Instructions & Info -->
+        <div class="settings-right-col">
+          <!-- Instruction List Card -->
+          <div class="instruction-box">
+            <ol>
+              <li><span>1.</span> Login to Msg91 and get your Auth Key.</li>
+              <li><span>2.</span> Note your integrated SMS Sender ID.</li>
+              <li><span>3.</span> Enter both above and click Save Config.</li>
+              <li><span>4.</span> Click Sync Templates to pull your approved templates.</li>
+              <li><span>5.</span> Use Test Message to verify everything works.</li>
+              <li><span>6.</span> Go to Bulk Messaging to send to students/parents.</li>
+            </ol>
+          </div>
+
+          <!-- Webhook Endpoint Info Box -->
+          <div class="webhook-endpoint-card">
+            <span class="box-title">Webhook endpoint:</span>
+            <div class="endpoint-code-box">/api/sms/webhook</div>
+            <span class="box-sub">Set this URL in Msg91 dashboard under SMS &rarr; Webhook.</span>
+          </div>
+
+          <!-- Alert Note Box -->
+          <div class="alert-info-box">
+            Each tenant has isolated credentials. Auth keys are AES-256 encrypted before storage. Only approved Msg91 templates can be used for first contact.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: DELIVERY HISTORY LOGS -->
+    <div *ngIf="activeTab === 'history'" class="tab-pane animate-fade">
+      <div class="history-filters">
+        <div class="search-box">
+          <mat-icon>search</mat-icon>
+          <input type="text" placeholder="Search delivery logs..." [(ngModel)]="historySearchQuery" (input)="applyHistoryFilters()" />
+        </div>
+        
+        <div class="filter-box">
+          <label class="inputLabel">Filter Channel:</label>
+          <select class="inputField" [(ngModel)]="historyChannelFilter" (change)="applyHistoryFilters()">
+            <option value="All">All Channels</option>
+            <option value="SMS">SMS Gateway</option>
+            <option value="WhatsApp">WhatsApp</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="reviewstable history-table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Channel</th>
+              <th>Recipient Group</th>
+              <th>Recipients Count</th>
+              <th>Message Snippet</th>
+              <th>Delivery Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let log of filteredLogs">
+              <td>{{ log.timestamp | date:'dd-MM-yyyy hh:mm a' }}</td>
+              <td>
+                <span class="badge channel-badge" [ngClass]="log.channel.toLowerCase()">
+                  {{ log.channel }}
+                </span>
+              </td>
+              <td>{{ log.recipientType }}</td>
+              <td>{{ log.recipientCount }} member/s</td>
+              <td class="snippet-cell" [title]="log.messageSnippet">{{ log.messageSnippet }}</td>
+              <td>
+                <span class="badge status-badge sent">
+                  <mat-icon>check_circle</mat-icon> {{ log.status }}
+                </span>
+              </td>
+            </tr>
+            <tr *ngIf="filteredLogs.length === 0">
+              <td colspan="6" class="empty-table-cell">No transmission logs match your filters.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- MODAL: Custom Template Modal (Add/Edit) -->
+<div class="modal-overlay" *ngIf="showTemplateModal">
+  <div class="modal-card template-modal-card animate-zoom">
+    <div class="modal-header">
+      <h3>{{ isEditingTemplate ? 'Edit Message Template' : 'Create Custom Template' }}</h3>
+      <button class="close-modal-btn" (click)="showTemplateModal = false"><mat-icon>close</mat-icon></button>
+    </div>
+    
+    <form [formGroup]="templateForm" (ngSubmit)="saveTemplate()">
+      <div class="modal-body animate-fade">
+        <div class="InputFieldsContainer">
+          <label class="inputLabel">Template Title <span class="required">*</span></label>
+          <input type="text" class="inputField" formControlName="title" placeholder="e.g. Homework Reminder Alert" />
+          <span class="validation-error" *ngIf="templateForm.get('title')?.touched && templateForm.get('title')?.invalid">Title is required.</span>
+        </div>
+
+        <div class="modal-row-grid" style="margin-top: 12px;">
+          <div class="InputFieldsContainer">
+            <label class="inputLabel">Template Category</label>
+            <select class="inputField" formControlName="category">
+              <option value="Custom">Custom</option>
+              <option value="Attendance">Attendance</option>
+              <option value="Homework">Homework</option>
+              <option value="Fee Alert">Fee Alert</option>
+              <option value="Exam">Exam</option>
+              <option value="Notice">Notice</option>
+            </select>
+          </div>
+
+          <div class="InputFieldsContainer">
+            <label class="inputLabel">Channel Support</label>
+            <select class="inputField" formControlName="channel">
+              <option value="Both">Both SMS & WhatsApp</option>
+              <option value="SMS">SMS Only</option>
+              <option value="WhatsApp">WhatsApp Only</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="InputFieldsContainer" style="margin-top: 12px;">
+          <label class="inputLabel">Template Body <span class="required">*</span></label>
+          <textarea class="inputField" formControlName="body" rows="6" placeholder="Define template body here..."></textarea>
+          <span class="validation-error" *ngIf="templateForm.get('body')?.touched && templateForm.get('body')?.invalid">Body is required.</span>
+          <span class="help-text">You can include placeholders like &#123;StudentName&#125;, &#123;ParentName&#125;, &#123;StaffName&#125;, or &#123;SchoolName&#125;.</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="cancelbtn" (click)="showTemplateModal = false">Cancel</button>
+        <button type="submit" class="submitbtn">Save Template</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: Preview Modal -->
+<div class="modal-overlay" *ngIf="previewModalOpen">
+  <div class="modal-card preview-modal-card animate-zoom">
+    <div class="modal-header">
+      <h3>Message Preview (First Recipient)</h3>
+      <button class="close-modal-btn" (click)="previewModalOpen = false"><mat-icon>close</mat-icon></button>
+    </div>
+    <div class="modal-body preview-body animate-fade">
+      <div class="phone-mockup">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="message-bubble" [ngClass]="channelType.toLowerCase()">
+            <p class="bubble-text">{{ previewMessageText }}</p>
+            <div class="bubble-meta">
+              <span class="bubble-time">{{ getFormattedTime() }}</span>
+              <mat-icon *ngIf="channelType === 'WhatsApp'" class="wa-double-tick">done_all</mat-icon>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="cancelbtn" (click)="previewModalOpen = false">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: General Alert / Status Modal -->
+<div class="modal-overlay" *ngIf="statusModalOpen">
+  <div class="status-card error-status animate-zoom">
+    <div class="status-banner"></div>
+    <div class="status-content">
+      <mat-icon class="status-icon info">info</mat-icon>
+      <h3>Notification</h3>
+      <p class="status-message">{{ statusModalMessage }}</p>
+      <button class="okbtn" (click)="closeStatusModal()">OK</button>
+    </div>
+  </div>
+</div>

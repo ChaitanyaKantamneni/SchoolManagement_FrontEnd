@@ -86,18 +86,50 @@ export class FileService {
     );
   }
 
+  // getFullFileUrl(path: string): string {
+  //   if (!path) return '';
+
+  //   // If already full URL, return as-is
+  //   if (path.startsWith('http')) return path;
+
+  //   // Use imgUrl for static files (images, pdfs, etc.)
+  //   const baseUrl = environment.imgUrl.replace(/\/$/, '');
+  //   const cleanPath = path.replace(/^\//, '');
+
+  //   return `${baseUrl}/${cleanPath}`;
+  // }
+
   getFullFileUrl(path: string): string {
-    if (!path) return '';
+  if (!path) return '';
 
-    // If already full URL, return as-is
-    if (path.startsWith('http')) return path;
-
-    // Use imgUrl for static files (images, pdfs, etc.)
-    const baseUrl = environment.imgUrl.replace(/\/$/, '');
-    const cleanPath = path.replace(/^\//, '');
-
-    return `${baseUrl}/${cleanPath}`;
+  // Already full URL
+  if (path.startsWith('http')) {
+    return path;
   }
+
+  const cleanPath = path.replace(/^\//, '');
+
+  // Static files served from /Uploads
+  if (cleanPath.startsWith('Uploads/')) {
+    return `${environment.imgUrl}${cleanPath}`;
+  }
+
+  // Student Documents
+  if (cleanPath.startsWith('student/')) {
+    return `${environment.imgUrl}api/SchoolManagement/${cleanPath}`;
+  }
+
+  // Homework, Leave, Submission files if stored differently later
+  if (
+    cleanPath.startsWith('homework/') ||
+    cleanPath.startsWith('leave/')
+  ) {
+    return `${environment.imgUrl}api/SchoolManagement/${cleanPath}`;
+  }
+
+  // Default fallback
+  return `${environment.imgUrl}${cleanPath}`;
+}
 
   isImageFile(path: string): boolean {
     return /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(path);
