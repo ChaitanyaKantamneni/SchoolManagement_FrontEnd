@@ -22,6 +22,88 @@ import { HttpClient } from '@angular/common/http';
 })
 export class TeachersTimeTableComponent extends BasePermissionComponent {
   pageName = 'Teachers Time Table';
+
+  resolvedStaffId: string = '';
+
+  // ── session helpers ──────────────────────────────────────────────────────────
+  public ss(key: string) {
+    return sessionStorage.getItem(key) || localStorage.getItem(key) || '';
+  }
+
+  // Dynamic Role Getters based on Names
+  get currentRoleName(): string { return (this.ss('roleName') || this.ss('RoleName') || this.ss('rollName') || this.ss('RollName') || '').trim(); }
+  get currentRollID(): string { return (this.ss('RollID') || this.ss('rollID') || this.ss('menuRoleId') || this.ss('RoleID') || '').trim(); }
+
+  get isTeacher(): boolean {
+    const r = this.currentRoleName.toLowerCase();
+    const id = this.currentRollID;
+    return id === '3' || r.includes('teacher') || r.includes('teaching');
+  }
+
+  private get sessionApplicantId(): string {
+    const keys = ['StaffID', 'staffId', 'StaffId', 'UserID', 'userId', 'UserId', 'user_id', 'id', 'ID'];
+    for (const k of keys) {
+      const val = this.ss(k);
+      if (val && val !== '0' && val !== 'null' && val !== 'undefined' && !isNaN(Number(val))) {
+        return val.toString().trim();
+      }
+    }
+    return '';
+  }
+
+  get currentUserId(): string {
+    return this.resolvedStaffId || this.sessionApplicantId || this.ss('StaffID') || this.ss('UserID');
+  }
+
+  private getCurrentSchoolId(): string {
+    return (
+      this.AdminselectedSchoolID ||
+      sessionStorage.getItem('SchoolID')?.toString() ||
+      sessionStorage.getItem('schoolId')?.toString() ||
+      ''
+    );
+  }
+
+  public resolveStaffIdentity(onDone?: () => void): void {
+    const schoolId = this.getCurrentSchoolId();
+    const email = (this.ss('email') || this.ss('Email') || '').toString().trim().toLowerCase();
+
+    if (!schoolId || !email) {
+      onDone?.();
+      return;
+    }
+
+    this.apiurl.post<any>('Tbl_Staff_CRUD_Operations', {
+      Flag: '2',
+      SchoolID: schoolId
+    }).subscribe({
+      next: (res: any) => {
+        const list = res?.data || [];
+        const match = list.find((s: any) => (s.email || s.Email || '').toLowerCase() === email);
+        if (match) {
+          this.resolvedStaffId = String(match.id || match.ID);
+          console.log('[TEACHER TIMETABLE] Resolved Teacher StaffID:', this.resolvedStaffId);
+          this.AdminselectedClassID = this.resolvedStaffId;
+          this.ClassDivisionForm.patchValue({
+            Class: this.resolvedStaffId
+          });
+        }
+      },
+      complete: () => {
+        if (this.isTeacher && this.AdminSelectedActiveAcademicYearID) {
+          this.autoLoadTeacherTimetable();
+        }
+        onDone?.();
+      },
+      error: () => onDone?.()
+    });
+  }
+
+  autoLoadTeacherTimetable() {
+    this.AdminselectedSchoolID = this.getCurrentSchoolId();
+    this.AdminselectedAcademivYearID = this.AdminSelectedActiveAcademicYearID || '';
+    this.FetchInitialData();
+  }
   
     constructor(
       private http: HttpClient,
@@ -49,7 +131,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
           this.FetchAcademicYearsList();
           if(!this.isAdmin){
             this.ClassDivisionForm.get('AcademicYear').patchValue(this.AdminSelectedActiveAcademicYearID);
-            this.FetchStaffBySchoolAcademicYearList(); 
+            if (this.isTeacher) {
+              this.resolveStaffIdentity();
+            } else {
+              this.FetchStaffBySchoolAcademicYearList(); 
+            }
             this.FetchWorkingdaysList();
             this.FetchSessionsList();
           }      
@@ -729,7 +815,7 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
           };
 
           if (!extra.ID) {
-            payload.ID = this.AdminselectedClassID;
+            payload.ID = this.isTeacher ? this.currentUserId : this.AdminselectedClassID;
           }
   
           if (isSearch) payload.Class = this.searchQuery.trim();
@@ -764,24 +850,6 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
     };
   
     mapAcademicYears(response: any) {
-      // this.StudentsList = (response.data || []).map((item: any) => ({
-      //   ID: item.id,
-      //   SchoolID: item.schoolID,
-      //   AcademicYear: item.academicYear,
-      //   ClassID: item.classID,
-      //   DivisionID: item.divisionID,
-      //   DayID: item.dayID,
-      //   PeriodNo: item.periodNo,
-      //   SessionID: item.sessionID,
-      //   StartTime: item.startTime,
-      //   EndTime: item.endTime,
-      //   SubjectID: item.subjectID,
-      //   StaffID: item.staffID,
-      //   ClassName: item.className,
-      //   DivisionName: item.divisionName,
-      //   SubjectName: item.subjectName
-      // }));
-      // this.isViewModalOpen=true;
       const data = response?.data || [];
 
       this.StudentsList = data;
@@ -790,7 +858,9 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
 
       this.generatePeriodHeaders();
 
-      this.isViewModalOpen = true;
+      if (!this.isTeacher) {
+        this.isViewModalOpen = true;
+      }
 
       console.log('this.StudentsList',this.StudentsList);
     };
@@ -832,7 +902,7 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
           };
 
           if (!extra.ID) {
-            payload.ID = this.AdminselectedClassID;
+            payload.ID = this.isTeacher ? this.currentUserId : this.AdminselectedClassID;
           }
   
           if (isSearch) payload.Class = this.searchQuery.trim();
@@ -875,7 +945,9 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
 
       this.generatePeriodHeaders();
 
-      this.isViewModalOpen = true;
+      if (!this.isTeacher) {
+        this.isViewModalOpen = true;
+      }
 
       console.log('this.StudentsList',this.StudentsList);
     };
@@ -925,68 +997,60 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       const timetableArray = this.timetableArray;
       timetableArray.clear();
 
-      if (!details || details.length === 0) return;
-
       const grouped: any = {};
+      let maxPeriod = 8;
 
-      // get all unique periods
-      const periodSet = new Set<number>();
-
-      details.forEach(d => {
-
-        const dayId = d.dayID?.toString();
-
-        if (!grouped[dayId]) {
-          grouped[dayId] = {
-            dayName: d.day,
-            periods: []
-          };
-        }
-
-        grouped[dayId].periods.push(d);
-
-        periodSet.add(Number(d.periodNo));
-
-      });
-
-      const allPeriods = Array.from(periodSet).sort((a,b)=>a-b);
-
-      Object.keys(grouped)
-        .sort((a,b)=>Number(a)-Number(b))
-        .forEach(dayID => {
-
-          const dayData = grouped[dayID];
-
-          const dayGroup = new FormGroup({
-            DayID: new FormControl(dayID),
-            Day: new FormControl(dayData.dayName),
-            Periods: new FormArray([])
-          });
-
-          const periodsArray = dayGroup.get('Periods') as FormArray;
-
-          allPeriods.forEach(periodNo => {
-
-            const p = dayData.periods.find((x:any)=>x.periodNo == periodNo);
-
-            periodsArray.push(
-              new FormGroup({
-                Session: new FormControl(p?.sessionID || ''),
-                StartTime: new FormControl(p?.startTime?.substring(0,5) || ''),
-                EndTime: new FormControl(p?.endTime?.substring(0,5) || ''),
-                Subject: new FormControl(p?.subjectName || ''),
-                Staff: new FormControl(p?.staffID || ''),
-                ClassName: new FormControl(p?.className || ''),
-                DivisionName: new FormControl(p?.divisionName || ''),
-                StaffList: new FormControl([])
-              })
-            );
-
-          });
-
-          timetableArray.push(dayGroup);
-
+      if (details && details.length > 0) {
+        details.forEach(d => {
+          const dayId = d.dayID?.toString();
+          if (!grouped[dayId]) {
+            grouped[dayId] = [];
+          }
+          grouped[dayId].push(d);
+          const pNo = Number(d.periodNo || 0);
+          if (pNo > maxPeriod) {
+            maxPeriod = pNo;
+          }
         });
+      }
+
+      const allPeriods: number[] = [];
+      for (let i = 1; i <= maxPeriod; i++) {
+        allPeriods.push(i);
+      }
+
+      this.Workingdays.forEach(workingDay => {
+        const dayID = workingDay.ID.toString();
+        const dayName = workingDay.Day;
+
+        const dayGroup = new FormGroup({
+          DayID: new FormControl(dayID),
+          Day: new FormControl(dayName),
+          Periods: new FormArray([])
+        });
+
+        const periodsArray = dayGroup.get('Periods') as FormArray;
+        const dayPeriods = grouped[dayID] || [];
+
+        allPeriods.forEach(periodNo => {
+          const p = dayPeriods.find((x:any)=>Number(x.periodNo) === periodNo);
+
+          periodsArray.push(
+            new FormGroup({
+              Session: new FormControl(p?.sessionID || ''),
+              StartTime: new FormControl(p?.startTime?.substring(0,5) || ''),
+              EndTime: new FormControl(p?.endTime?.substring(0,5) || ''),
+              Subject: new FormControl(p?.subjectName || ''),
+              Staff: new FormControl(p?.staffID || ''),
+              ClassName: new FormControl(p?.className || ''),
+              DivisionName: new FormControl(p?.divisionName || ''),
+              StaffList: new FormControl([])
+            })
+          );
+        });
+
+        timetableArray.push(dayGroup);
+      });
     }
   
     FetchTimeTableByID(id: string, mode: 'view' | 'edit') {

@@ -61,7 +61,7 @@
         <option *ngFor="let s of schoolList" [value]="s.ID">{{ s.Name }}</option>
       </select>
       
-      <select class="admission-select" (change)="onAcademicYearFilterChange($event)" [disabled]="!isAdmin" [value]="filterAcademicYear">
+      <select class="admission-select" *ngIf="isAdmin" (change)="onAcademicYearFilterChange($event)" [disabled]="!isAdmin" [value]="filterAcademicYear">
         <option value="0">-- All Academic Years --</option>
         <option *ngFor="let a of academicYearList" [value]="a.ID">{{ a.Name }}</option>
       </select>

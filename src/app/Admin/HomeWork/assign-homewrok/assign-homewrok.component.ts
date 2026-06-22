@@ -81,6 +81,7 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
   academicYearList: any[] = [];
   AdminselectedSchoolID: string = '';
   AdminselectedAcademivYearID: string = sessionStorage.getItem('ActiveAcademicYearID') || '';
+  AdminSelectedActiveAcademicYearID: string = sessionStorage.getItem('ActiveAcademicYearID') || '';
   
   // Homework specific properties
   classList: any[] = [];
@@ -127,7 +128,7 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     SubjectID: new FormControl(0, [Validators.required, Validators.min(1)]),
     TeacherID: new FormControl(''),
     HomeworkTitle: new FormControl('', [Validators.required, Validators.minLength(3)]),
-    Description: new FormControl('', [Validators.required]),
+    Description: new FormControl(''),
     AssignedDate: new FormControl('', [Validators.required]),
     SubmissionDate: new FormControl('', [Validators.required]),
     AttachmentURL: new FormControl(''),
@@ -795,10 +796,8 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
 
     // If file selected, upload it first then submit to DB
     if (this.selectedFile) {
-      console.log('[SUBMIT] File selected, uploading first...');
       this.uploadFileThenSubmit('insert');
     } else {
-      console.log('[SUBMIT] No file, submitting directly to DB...');
       this.submitToDB('insert');
     }
   }
@@ -842,10 +841,15 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";    
     const attachmentUrl = this.HomeworkForm.get('AttachmentURL')?.value;
     
+    const AcademicYearIdSelected =
+      this.isAdmin
+        ? this.AdminselectedAcademivYearID?.trim()
+        : this.AdminSelectedActiveAcademicYearID || '';
+
     const data = {
       ID: operation === 'update' ? this.HomeworkForm.get('ID')?.value : undefined,
       SchoolID: this.HomeworkForm.get('School')?.value || this.AdminselectedSchoolID,
-      AcademicYear: this.HomeworkForm.get('AcademicYear')?.value || this.AdminselectedAcademivYearID,
+      AcademicYear: this.HomeworkForm.get('AcademicYear')?.value || AcademicYearIdSelected,
       Class: this.getIntValue(this.HomeworkForm.get('Class')?.value || this.AdminselectedClassID),
       Division: this.getIntValue(this.HomeworkForm.get('Division')?.value || this.AdminselectedDivisionID),
       SubjectID: this.getSubjectIdValue(this.HomeworkForm.get('SubjectID')?.value || this.AdminselectedSubjectID),
@@ -871,7 +875,7 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
         console.log(`[${operation.toUpperCase()}] API Response:`, response);
         console.log(`[${operation.toUpperCase()}] API Response:`, response);
         if (response.statusCode === 200) {
-          this.IsAddNewClicked = !this.IsAddNewClicked;
+          this.IsAddNewClicked = false;
           this.isModalOpen = true;
           this.AminityInsStatus = operation === 'insert' ? "Homework Assigned Successfully!" : "Homework Updated Successfully!";
           this.AminityInsStatus = operation === 'insert' ? "Homework Assigned Successfully!" : "Homework Updated Successfully!";
@@ -910,9 +914,6 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
   }
 
   UpdateHomework() {
-    console.log('[UPDATE] Starting homework update...');
-    
-    console.log('[UPDATE] Starting homework update...');
     
     if (this.HomeworkForm.invalid) {
       console.log('[UPDATE] Form is invalid:', this.HomeworkForm.errors);
@@ -1041,6 +1042,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
         console.log('Set totalCount:', this.totalCount);
         console.log('Set totalPagesCount:', this.totalPagesCount);
 
+        const AcademicYearIdSelected =
+          this.isAdmin
+            ? this.AdminselectedAcademivYearID?.trim()
+            : this.AdminSelectedActiveAcademicYearID || '';
+
         const payload: any = {
           Flag: flag,
           Limit: this.pageSize,
@@ -1049,7 +1055,7 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
           LastCreatedDate: cursor?.lastCreatedDate ?? null,
           LastID: cursor?.lastID ?? null,
           SchoolID: SchoolIdSelected,
-          AcademicYear: this.AdminselectedAcademivYearID || null,
+          AcademicYear: AcademicYearIdSelected || null,
           Class: this.getIntValue(this.AdminselectedClassID) || null,
           Division: this.getIntValue(this.AdminselectedDivisionID) || null,
           SubjectID: this.getSubjectIdValue(this.AdminselectedSubjectID),
@@ -1102,10 +1108,15 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
       SchoolIdSelected = this.selectedSchoolID.trim();
     }
 
+    const AcademicYearIdSelected =
+      this.isAdmin
+        ? this.AdminselectedAcademivYearID?.trim()
+        : this.AdminSelectedActiveAcademicYearID || '';
+
     const countPayload = {
       Flag: isSearch ? '8' : '6',
       SchoolID: SchoolIdSelected,
-      AcademicYear: this.AdminselectedAcademivYearID || null,
+      AcademicYear: AcademicYearIdSelected || null,
       Class: this.getIntValue(this.currentRoleUI === 'teacher' ? this.teacherAssignedClassID : this.AdminselectedClassID) || null,
       Division: this.getIntValue(this.currentRoleUI === 'teacher' ? this.teacherAssignedDivisionID : this.AdminselectedDivisionID) || null,
       SubjectID: this.getSubjectIdValue(this.AdminselectedSubjectID),
@@ -1183,6 +1194,13 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
                 IsActive: isActiveString
               };
             });
+            const activeYearId = sessionStorage.getItem('ActiveAcademicYearID') || '';
+            const matchedYear = this.academicYearList.find(y => y.ID === activeYearId);
+            if (matchedYear) {
+              this.AdminselectedAcademivYearID = matchedYear.ID;
+            } else if (this.academicYearList.length > 0 && !this.AdminselectedAcademivYearID) {
+              this.AdminselectedAcademivYearID = this.academicYearList[0].ID;
+            }
           } else {
             this.academicYearList = [];
           }
@@ -1194,9 +1212,14 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
   }
 
   FetchClassList() {
+    const AcademicYearIdSelected =
+      this.isAdmin
+        ? this.AdminselectedAcademivYearID?.trim()
+        : this.AdminSelectedActiveAcademicYearID || '';
+
     const requestData = {
       SchoolID: this.AdminselectedSchoolID || '',
-      AcademicYear: this.AdminselectedAcademivYearID || '',
+      AcademicYear: AcademicYearIdSelected,
       Flag: '9'
     };
 
@@ -1237,9 +1260,14 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
       return;
     }
 
+    const AcademicYearIdSelected =
+      this.isAdmin
+        ? this.AdminselectedAcademivYearID?.trim()
+        : this.AdminSelectedActiveAcademicYearID || '';
+
     const requestData = {
       SchoolID: this.AdminselectedSchoolID || '',
-      AcademicYear: this.AdminselectedAcademivYearID || '',
+      AcademicYear: AcademicYearIdSelected,
       Class: this.AdminselectedClassID || '',
       Flag: '3'
     };

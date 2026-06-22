@@ -73,13 +73,14 @@
               <tr>
                 <th class="visually-hidden">Session ID</th>
                 <th>SI.No</th>
-                <th (click)="sort('Session')" class="sortable-column">
+                <!-- <th (click)="sort('Session')" class="sortable-column">
                   <span class="column-text">Session</span>
                   <span class="arrows">
                     <mat-icon [style.color]="sortColumn === 'Session' && sortDirection === 'asc' ? 'red' : 'inherit'">keyboard_arrow_up</mat-icon>
                     <mat-icon [style.color]="sortColumn === 'Session' && sortDirection === 'desc' ? 'red' : 'inherit'">keyboard_arrow_down</mat-icon>
                   </span>
-                </th>
+                </th> -->
+                <th>Session</th>
                 <th>Start Time</th>
                 <th>End Time</th>
                 <th *ngIf="isAdmin">School Name</th>
@@ -297,7 +298,7 @@
       <div class="form-bottom">
         <span class="footer-hint">Fields marked <span class="required">*</span> are required</span>
         <div class="ActionButtons footer-actions">
-          <button type="button" class="cancelbtn" (click)="AddNewClicked()">Cancel</button>
+          <button type="button" class="cancelbtn" (click)="CancelSyllabus()">Cancel</button>
           <button type="button" class="submitbtn" *ngIf="ViewClassClicked && canEdit()" (click)="UpdateClass()">Update</button>
           <button type="button" class="submitbtn" *ngIf="!ViewClassClicked && canAdd()" (click)="SubmitClass()">Submit</button>
         </div>

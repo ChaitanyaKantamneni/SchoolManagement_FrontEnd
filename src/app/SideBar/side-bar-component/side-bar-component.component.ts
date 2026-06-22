@@ -42,6 +42,16 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
   private routeSub?: Subscription;
   isParentRole: boolean = false;
 
+  get currentRoleName(): string {
+    return (sessionStorage.getItem('roleName') || sessionStorage.getItem('RoleName') || sessionStorage.getItem('rollName') || sessionStorage.getItem('RollName') || '').trim();
+  }
+
+  get isTeacher(): boolean {
+    const r = this.currentRoleName.toLowerCase();
+    const id = this.roleId;
+    return id === '3' || r.includes('teacher') || r.includes('teaching');
+  }
+
   schoolLogoFromDb: any = null;
   logoUrl: string = 'Images/Logo1.jpg';
 
@@ -359,30 +369,55 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
       sales: 'sell',
       'sales report': 'bar_chart'
     };
-    return map[key] || 'menu';
+
+    if (map[key]) {
+      return map[key];
+    }
+
+    // Fuzzy substring checks
+    for (const mapKey of Object.keys(map)) {
+      if (key.includes(mapKey) || mapKey.includes(key)) {
+        return map[mapKey];
+      }
+    }
+
+    return 'menu';
   }
 
   getModuleIcon(moduleName: string): string {
-    const key = (moduleName || '').trim().toLowerCase();
+    const rawKey = (moduleName || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
     const map: Record<string, string> = {
       masters: 'widgets',
       academic: 'school',
       transportation: 'commute',
       finance: 'account_balance_wallet',
       timetable: 'schedule',
-      'time table': 'schedule',
+      timetablepage: 'schedule',
       exam: 'quiz',
       attendance: 'how_to_reg',
-      'hr & payroll': 'account_balance',
-      'leave management': 'event_note',
+      hrpayroll: 'account_balance',
+      leavemanagement: 'event_note',
       homework: 'assignment',
-      'holiday calendar': 'event',
-      'hostel management': 'apartment',
-      'messaging': 'textsms',
-      store: 'storefront'
+      holidaycalendar: 'event',
+      hostelmanagement: 'apartment',
+      messaging: 'textsms',
+      store: 'storefront',
+      reports: 'assessment',
+      notices: 'campaign'
     };
 
-    return map[key] || 'folder';
+    if (map[rawKey]) {
+      return map[rawKey];
+    }
+
+    // Substring match on stripped keys
+    for (const mapKey of Object.keys(map)) {
+      if (rawKey.includes(mapKey) || mapKey.includes(rawKey)) {
+        return map[mapKey];
+      }
+    }
+
+    return 'folder';
   }
 
   private dedupeModulesByName(modules: Module[]): Module[] {

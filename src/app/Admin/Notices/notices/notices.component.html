@@ -53,7 +53,7 @@
         <mat-icon>search</mat-icon>
         <input type="text" id="searchQuery" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" placeholder="Search notices..." />
       </div>
-      <button type="button" class="admission-chip admission-chip--active">All <span>{{ noticesCount }}</span></button>
+      <!-- <button type="button" class="admission-chip admission-chip--active">All <span>{{ noticesCount }}</span></button> -->
       
       <select class="admission-select" *ngIf="isAdmin" (change)="onSchoolFilterChange($event)">
         <option value="0">-- Select School --</option>
@@ -61,7 +61,7 @@
         <option *ngFor="let s of schoolList" [value]="s.ID">{{ s.Name }}</option>
       </select>
       
-      <select class="admission-select" (change)="onAcademicYearFilterChange($event)" [disabled]="!isAdmin" [value]="filterAcademicYear">
+      <select class="admission-select" *ngIf="isAdmin" (change)="onAcademicYearFilterChange($event)" [disabled]="!isAdmin" [value]="filterAcademicYear">
         <option value="0">-- All Academic Years --</option>
         <option *ngFor="let a of academicYearList" [value]="a.ID">{{ a.Name }}</option>
       </select>
@@ -71,7 +71,7 @@
         <option *ngFor="let t of NOTICE_TYPES" [value]="t">{{ t }}</option>
       </select>
 
-      <select class="admission-select" (change)="onAudienceFilterChange($event)">
+      <select class="admission-select" *ngIf="!isTeacher" (change)="onAudienceFilterChange($event)">
         <option value="0">-- All Audiences --</option>
         <option *ngFor="let a of AUDIENCE_TYPES" [value]="a">{{ a }}</option>
       </select>

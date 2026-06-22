@@ -193,16 +193,22 @@
                 </div>
               </div>
               <!-- For School Login, Leave Category pulls up to this row -->
-              <div class="InputFieldsContainer" *ngIf="!isAdmin">
+              <div class="InputFieldsContainer">
                 <label class="inputLabel">Leave Category <span class="required">*</span></label>
                 <div class="input-with-error">
                   <input class="inputField" formControlName="leaveType" placeholder="Enter Category" />
                 </div>
               </div>
+              <div class="InputFieldsContainer">
+                <label class="inputLabel">Allowance (Days) <span class="required">*</span></label>
+                <div class="input-with-error">
+                  <input class="inputField" type="number" formControlName="count" placeholder="Enter Days" />
+                </div>
+              </div>
             </div>
 
             <!-- Row 2: Leave Category & Allowance -->
-            <div class="InputRow">
+            <!-- <div class="InputRow">
               <div class="InputFieldsContainer" *ngIf="isAdmin">
                 <label class="inputLabel">Leave Category <span class="required">*</span></label>
                 <div class="input-with-error">
@@ -218,7 +224,7 @@
               <div class="InputFieldsContainer" *ngIf="!isAdmin">
                 <span style="visibility: hidden;">Spacer</span>
               </div>
-            </div>
+            </div> -->
 
             <!-- Row 3: Status -->
             <div class="InputRow">

@@ -175,7 +175,7 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
           error: (err: any) => {
             this.loader.hide();
             this.statusMessage = err?.error?.message || err?.error?.Message || 'Failed to load holidays.';
-            this.isStatusModalOpen = true;
+            // this.isStatusModalOpen = true;
             this.holidayList = [];
           }
         });

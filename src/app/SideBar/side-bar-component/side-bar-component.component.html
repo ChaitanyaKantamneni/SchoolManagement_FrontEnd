@@ -18,7 +18,7 @@
 
     <div class="sidebar">
       <ul class="menu">
-        <li>
+        <li *ngIf="!isTeacher">
           <a (click)="goToDashboard()" routerLinkActive="active">
             <mat-icon>dashboard</mat-icon>
             <span class="DashboardMenuLi">{{ isParentRole ? 'My Portal' : 'Dashboard' }}</span>
@@ -59,7 +59,7 @@
   </main>
 
   <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
-    <button type="button" class="mobile-nav-item" [class.active]="activeMobileSection === 'dashboard'" (click)="goToDashboard()">
+    <button *ngIf="!isTeacher" type="button" class="mobile-nav-item" [class.active]="activeMobileSection === 'dashboard'" (click)="goToDashboard()">
       <mat-icon>dashboard</mat-icon>
       <span>Dashboard</span>
     </button>

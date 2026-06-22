@@ -374,7 +374,7 @@
                   </div>
                 </td>
                 <td><strong>{{ row.subjectName }}</strong></td>
-                <td>
+                <!-- <td>
                   <div class="custom-multiselect">
                     <div class="select-box" (click)="toggleDivisionDropdown(i)">
                       {{ tableRows[i].selectedDivisions.length ? tableRows[i].selectedDivisions.length + ' selected' : 'Division' }}
@@ -389,7 +389,57 @@
                       </label>
                     </div>
                   </div>
-                </td>
+                </td> -->
+                <td>
+  <div class="custom-multiselect">
+
+    <div
+      class="select-box"
+      (click)="toggleDivisionDropdown(i); $event.stopPropagation()"
+    >
+      {{
+        isAllDivisionsSelected(i)
+          ? 'All Divisions Selected'
+          : tableRows[i].selectedDivisions.length
+            ? tableRows[i].selectedDivisions.length + ' selected'
+            : 'Select Division'
+      }}
+
+      <span class="arrow">
+        {{ tableRows[i].divisionDropdownOpen ? '▲' : '▼' }}
+      </span>
+    </div>
+
+    <div
+      class="options"
+      *ngIf="tableRows[i].divisionDropdownOpen"
+      (click)="$event.stopPropagation()"
+    >
+
+      <!-- Select All -->
+      <label>
+        <input
+          type="checkbox"
+          [checked]="isAllDivisionsSelected(i)"
+          (change)="toggleAllDivisions(i, $event)"
+        />
+        <strong>Select All</strong>
+      </label>
+
+      <!-- Division List -->
+      <label *ngFor="let div of row.divisions">
+        <input
+          type="checkbox"
+          [checked]="tableRows[i].selectedDivisions.includes(div.ID)"
+          (change)="toggleDivisionSelection(i, div.ID)"
+        />
+        {{ div.Name }}
+      </label>
+
+    </div>
+
+  </div>
+</td>
                 <td><input type="number" min="0" [(ngModel)]="tableRows[i].maxMarks" class="form-control form-control-sm" readonly /></td>
                 <td><input type="number" min="0" [(ngModel)]="tableRows[i].passMarks" class="form-control form-control-sm" readonly /></td>
                 <td><input type="datetime-local" [(ngModel)]="tableRows[i].examDateAndTime" class="form-control form-control-sm" (ngModelChange)="onExamDateTimeChange(i)" [min]="minDateTime" /></td>

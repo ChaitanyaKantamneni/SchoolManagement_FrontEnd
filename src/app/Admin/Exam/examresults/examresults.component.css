@@ -1,12 +1,62 @@
-.ComponentTop {
-  position: relative;
+/* ==========================================
+   Base styles matching attendance-sheet
+   ========================================== */
+
+.FormInputRowsContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
 }
 
-.FormInputRowsContainer{
+.InputRow {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: row !important;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 16px;
+  width: 100% !important;
+  flex-wrap: wrap;
+}
+
+.InputFieldsContainer {
+  flex: 1 1 calc(50% - 8px);
+  min-width: 260px;
+}
+
+.InputRow:last-child .InputFieldsContainer {
+  flex: 1 1 calc(50% - 8px);
+  max-width: calc(50% - 8px);
+}
+
+.InputFieldsContainer select.inputField {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.MainContentDiv {
+  display: flex;
   flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+  min-height: auto;
+  background: transparent;
+}
+
+.w-100,
+.ComponentRecords,
+.AddForm {
+  width: 100%;
+}
+
+/* Premium Form Card */
+.AddForm {
+  margin-top: 10px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  border: 1px solid #d7e0ec;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(29, 78, 216, 0.04);
+  border-radius: 16px;
+  overflow: hidden;
 }
 
 .AddFormTop {
@@ -39,7 +89,7 @@
   box-shadow: 0 12px 22px rgba(29, 78, 216, 0.16);
 }
 
-.AddFormTop p,
+/* .AddFormTop p, */
 .AddFormTop h5,
 .AddFormTop strong {
   margin: 0;
@@ -47,294 +97,11 @@
   font-weight: 700;
 }
 
-.InputRow{
-    width: 100% !important;
-    flex-direction: row !important;
-}
-
-.InputFieldsContainer {
-  flex: 1 1 0;
-  min-width: 0;
-}
-
-.InputFieldsContainer select.inputField {
-  width: 100%;
-}
-/* default for paired fields */
-.InputFieldsContainer {
-  flex: 1 1 0;
-  min-width: 0;
-}
-
-/* Keep single-field rows same width as normal half-row fields */
-.InputRow:last-child .InputFieldsContainer {
-  flex: 0 0 calc(50% - 8px);
-  max-width: calc(50% - 8px);
-  margin-right: auto;
-}
-
-/* make sure select follows container width */
-.InputFieldsContainer select.inputField {
-  width: 100%;
-  box-sizing: border-box;
-}
-.marksheet {
-  font-family: 'Segoe UI', sans-serif;
-}
-
-.marksheet h4 {
-  letter-spacing: 1px;
-}
-
-.marksheet table th,
-.marksheet table td {
-  vertical-align: middle;
-}
-
-.marksheet table {
-  border: 2px solid #000;
-}
-
-.marksheet thead {
-  font-size: 14px;
-}
-
-.marksheet tbody td {
-  font-size: 14px;
-}
-.exam-line {
-  position: relative;
-  text-align: center;
-  margin: 15px 0 20px;
-  font-weight: 600;
-}
-
-.exam-line::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background: #000;
-  z-index: 0;
-}
-
-.exam-line span {
-  position: relative;
-  background: #fff;
-  padding: 0 15px;
-  z-index: 1;
-  font-size: 16px;
-}
-
-/* Keep table/pagination compact with no trailing blank space */
-.compact-table-section {
-  padding-bottom: 8px;
-}
-
-.compact-table-section .reviewstable {
-  overflow-y: visible !important;
-}
-
-.compact-table-section .reviewstable .table {
-  margin-bottom: 0 !important;
-}
-
-.compact-table-section .pagination-controls {
-  margin: 12px 0 0 !important;
-}
-
-/* Exam Results page-specific layout tightening */
-:host {
-  display: block;
-}
-
-.MainContentDiv {
-  justify-content: flex-start !important;
-  margin-bottom: 0 !important;
-  padding-bottom: 0 !important;
-}
-
-.MainContentDiv .compact-table-section {
-  margin-bottom: 0 !important;
-  padding-bottom: 6px !important;
-}
-
-.MainContentDiv .compact-table-section > div {
-  margin-bottom: 0 !important;
-  padding-bottom: 0 !important;
-}
-
-.MainContentDiv .compact-table-section .reviewstable {
-  max-height: none !important;
-  overflow-y: visible !important;
-}
-
-.MainContentDiv .compact-table-section .pagination-controls {
-  margin-bottom: 0 !important;
-  padding-bottom: 0 !important;
-}
-
-.MainContentDiv > .w-100,
-.MainContentDiv > .compact-table-section {
-  width: 100%;
-  margin-bottom: 0 !important;
-}
-
-
-/* Child Tab Slider (Parent View) */
-.child-tab-slider {
-  display: flex;
-  gap: 8px;
-  width: 100%;
-  padding: 12px 0 4px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.child-tab-slider::-webkit-scrollbar { display: none; }
-
-.child-tab-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 18px;
-  border-radius: 10px;
-  border: 2px solid #e2e8f0;
-  background: #f8fafc;
-  color: #64748b;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s ease;
-}
-
-.child-tab-btn:hover {
-  border-color: #536ff7;
-  color: #536ff7;
-  background: #eff6ff;
-}
-
-.child-tab-btn.active {
-  background: #536ff7;
-  border-color: #536ff7;
-  color: white;
-  box-shadow: 0 4px 12px rgba(83,111,247,0.3);
-}
-
-.child-tab-btn mat-icon {
-  font-size: 16px;
-  width: 16px;
-  height: 16px;
-}
-
-/* Top Right Child Tab Slider for Parent View */
-.child-tab-slider-top-right {
-  position: absolute;
-  top: 15px;
-  right: 20px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  z-index: 10;
-  max-width: 500px;
-}
-
-.children-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #64748b;
-  white-space: nowrap;
-  margin-right: 4px;
-}
-
-.child-tabs-container {
-  display: flex;
-  gap: 6px;
-  flex: 1;
-  align-items: center;
-}
-
-.child-tab-slider-top-right .child-tab-btn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  background: #f8fafc;
-  color: #64748b;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.child-tab-slider-top-right .child-tab-btn:hover {
-  border-color: #536ff7;
-  color: #536ff7;
-  background: #eff6ff;
-}
-
-.child-tab-slider-top-right .child-tab-btn.active {
-  background: #536ff7;
-  border-color: #536ff7;
-  color: white;
-  box-shadow: 0 4px 12px rgba(83,111,247,0.3);
-}
-
-.child-tab-slider-top-right .child-tab-btn mat-icon {
-  font-size: 14px;
-  width: 14px;
-  height: 14px;
-}
-
-.MainContentDiv {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 14px;
-  min-height: auto;
-  background: transparent;
-}
-
-.w-100,
-.ComponentRecords,
-.AddForm {
-  width: 100%;
-}
-
-.FormInputRowsContainer {
-  align-items: stretch;
-  gap: 12px;
-}
-
-.InputRow {
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-start;
-  gap: 16px;
-  width: 100% !important;
-  flex-direction: row !important;
-  flex-wrap: wrap;
-}
-
-.InputFieldsContainer {
-  flex: 1 1 calc(50% - 8px);
-  min-width: 260px;
-}
-
-.InputRow:last-child .InputFieldsContainer {
-  flex: 1 1 calc(50% - 8px);
-  max-width: calc(50% - 8px);
-}
-
 .form-bottom {
-  justify-content: end !important;
+  display: flex;
+  justify-content: flex-end !important;
+  align-items: center;
+  padding: 14px;
 }
 
 .footer-actions {
@@ -343,6 +110,11 @@
 
 .admission-record-card {
   width: 100%;
+  margin-top: 10px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
 .admission-record-header h5 {
@@ -351,11 +123,135 @@
 
 .reviewstable table th {
   white-space: nowrap;
+  background-color: #f8fafc;
+  color: #475569;
+  font-weight: 600;
 }
 
 .reviewstable table td {
   vertical-align: middle;
   font-size: 12px;
+}
+
+/* Premium Buttons matching Attendance Sheet */
+.actionbuttons, .ActionButtons {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+
+.actionbuttons .btnsubmit, .ActionButtons .submitbtn, .actionbuttons .submitbtn {
+  background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
+  color: #fff;
+  border: 1px solid transparent;
+  font-size: smaller;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
+  cursor: pointer;
+}
+
+.actionbuttons .btnsubmit:hover, .ActionButtons .submitbtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(29, 78, 216, 0.3);
+}
+
+.actionbuttons .cancelbtn, .ActionButtons .cancelbtn {
+  background-color: #f8fafc;
+  color: #1d4ed8;
+  border: 1px solid #d7e0ec;
+  font-size: smaller;
+  border-radius: 10px;
+  padding: 8px 14px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.actionbuttons .cancelbtn:hover, .ActionButtons .cancelbtn:hover {
+  background-color: #f1f5f9;
+}
+
+/* Workflow Status Badges & Pills */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+/* Row-Level Buttons and Actions */
+.table .btn {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  font-size: 11px;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-weight: 600;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.table .btn:hover {
+  background: #dbeafe;
+  transform: translateY(-1px);
+}
+
+/* Disabled Field Overlay */
+.inputField:disabled {
+  background-color: #f8fafc !important;
+  color: #64748b !important;
+  border-color: #e2e8f0 !important;
+  cursor: not-allowed;
+}
+
+/* Parent Child tab slider */
+.child-tab-slider-top-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.children-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.child-tabs-container {
+  display: flex;
+  gap: 6px;
+}
+
+.child-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #475569;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.child-tab-btn.active {
+  background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
+  border-color: transparent;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.15);
 }
 
 @media (max-width: 768px) {
@@ -372,14 +268,8 @@
   }
 
   .child-tab-slider-top-right {
-    position: static;
-    margin-top: 12px;
-    align-items: flex-start;
-    flex-direction: column;
-    max-width: 100%;
-  }
-
-  .child-tabs-container {
+    width: 100%;
+    margin-top: 10px;
     flex-wrap: wrap;
   }
 }

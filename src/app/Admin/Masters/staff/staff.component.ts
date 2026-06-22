@@ -1004,6 +1004,7 @@ export class StaffComponent extends BasePermissionComponent {
     formData.append('MobileNo', this.StaffForm.get('MobileNumber')?.value ?? '');
     formData.append('Email', this.StaffForm.get('Email')?.value ?? '');
     formData.append('RollId', this.StaffForm.get('StaffType')?.value.join(','));
+    formData.append('Password', 'Welcome@2025');
     formData.append('IsActive', IsActiveStatusNumeric);
     formData.append('Flag', '7');
 

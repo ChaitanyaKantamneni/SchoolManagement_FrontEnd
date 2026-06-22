@@ -35,12 +35,12 @@
           <option *ngFor="let y of academicYearList" [value]="y.ID">{{ y.Name }}</option>
         </select>
         
-        <select class="admission-select" [(ngModel)]="selectedClass" (change)="onClassChange()">
+        <select class="admission-select" *ngIf="!isTeacher" [(ngModel)]="selectedClass" (change)="onClassChange()">
           <option value="">All Classes</option>
           <option *ngFor="let c of ClassList" [value]="c.ID">{{ c.Name }}</option>
         </select>
 
-        <select class="admission-select" [(ngModel)]="selectedDivision" (change)="onDivisionChange()">
+        <select class="admission-select" *ngIf="!isTeacher" [(ngModel)]="selectedDivision" (change)="onDivisionChange()">
           <option value="">All Divisions</option>
           <option *ngFor="let d of DivisionList" [value]="d.ID">{{ d.Name }}</option>
         </select>

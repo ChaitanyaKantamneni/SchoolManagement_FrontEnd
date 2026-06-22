@@ -31,7 +31,7 @@
         </div>
       </div>
     </div> 
-    <div *ngIf="!IsAddNewClicked">
+    <div *ngIf="!IsAddNewClicked && !isTeacher">
       <div class="AddForm">           
         <div class="AddFormConatiner">
           <form [formGroup]="ClassDivisionForm">
@@ -120,7 +120,7 @@
         <div>
           <div class="ComponentRecordsTop admission-record-header">
             <div>
-              <h5>Timetable Records</h5>
+              <h5>Time Table Records</h5>
               <p>Showing {{ StudentsList.length }} record{{ StudentsList.length === 1 ? '' : 's' }}</p>
             </div>
             <div class="admission-hero" *ngIf="canAdd() && StudentsList.length === 0">
@@ -172,6 +172,71 @@
               <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
             </div>
             <p>No data found.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!IsAddNewClicked && isTeacher" class="AddForm">
+      <div class="AddFormConatiner">
+        <div class="admission-record-header p-0 mb-3" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px !important;">
+          <div>
+            <h5 style="margin: 0; font-size: 1.25rem; font-weight: 600; color: #1e293b;">Allotted Class Timetable</h5>
+            <p style="margin: 5px 0 0 0; font-size: 0.875rem; color: #64748b;">Weekly schedule for Class {{ getClassName(AdminselectedClassID) }} - Division {{ getDivisionName(AdminselectedClassDivisionID) }}</p>
+          </div>
+          <div>
+            <button class="print-btn" (click)="printTimetable()" style="padding: 8px 16px; background: #4f46e5; color: white; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 500;">
+              <mat-icon style="font-size: 18px; width: 18px; height: 18px;">print</mat-icon> Print Timetable
+            </button>
+          </div>
+        </div>
+
+        <div class="reviewstable" id="printTimetable">
+          <form [formGroup]="ClassDivisionForm">
+            <table class="timetable-table">
+              <thead>
+                <tr>
+                  <th>Day</th>
+                  <th *ngFor="let period of periodHeaders">
+                    {{ period }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody formArrayName="Timetable">
+                <tr *ngFor="let dayGroup of timetableArray.controls; let i = index" [formGroupName]="i">
+                  <td class="day-cell">
+                    <h5>{{ dayGroup.get('Day')?.value }}</h5>
+                  </td>
+                  <ng-container formArrayName="Periods">
+                    <td *ngFor="let periodGroup of getPeriodsControls(dayGroup); let j = index"
+                        [formGroupName]="j"
+                        [ngClass]="{
+                          'current-period': isCurrentPeriod(dayGroup.get('DayID')?.value, j + 1)
+                        }">
+                      <div class="subject-name">
+                        {{ getSubjectName(periodGroup.get('Subject')?.value) || '-' }}
+                      </div>
+                      <div class="time-range">
+                        {{ periodGroup.get('StartTime')?.value }} -
+                        {{ periodGroup.get('EndTime')?.value }}
+                      </div>
+                      <div class="staff-name">
+                        {{ getStaffName(
+                            periodGroup.get('Staff')?.value,
+                            periodGroup.get('StaffList')?.value
+                          ) || '-' }}
+                      </div>
+                    </td>
+                  </ng-container>
+                </tr>
+              </tbody>
+            </table>
+          </form>
+          <div *ngIf="timetableArray.controls.length === 0" class="NoDataFound">
+            <div class="NoDataFoundImg">
+              <img class="h-100 w-100" src="Images/NoDataFound.jpg" alt="">
+            </div>
+            <p>No timetable configured for this class & division.</p>
           </div>
         </div>
       </div>

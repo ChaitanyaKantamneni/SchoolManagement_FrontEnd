@@ -87,30 +87,46 @@ alerts: Array<{ severity: 'high' | 'medium' | 'low'; title: string; reason: stri
 
 /* ================= INIT ================= */
 
-ngOnInit(){
+  get currentRoleName(): string {
+    return (sessionStorage.getItem('roleName') || sessionStorage.getItem('RoleName') || sessionStorage.getItem('rollName') || sessionStorage.getItem('RollName') || '').trim();
+  }
 
-console.log('Dashboard ngOnInit called');
+  get isTeacher(): boolean {
+    const r = this.currentRoleName.toLowerCase();
+    const id = this.roleId;
+    return id === '3' || r.includes('teacher') || r.includes('teaching');
+  }
 
-this.roleId = sessionStorage.getItem('RollID') || ''
-console.log('Role ID from sessionStorage:', this.roleId);
+  ngOnInit(){
 
-this.setRoleContext()
+    console.log('Dashboard ngOnInit called');
 
-const storedSchoolId = sessionStorage.getItem('schoolId') || sessionStorage.getItem('SchoolID') || ''
-if (storedSchoolId) {
-  this.selectedSchool = storedSchoolId
-}
+    this.roleId = sessionStorage.getItem('RollID') || ''
+    console.log('Role ID from sessionStorage:', this.roleId);
 
-console.log('Initial school ID:', this.selectedSchool);
+    const schoolName = sessionStorage.getItem('schoolName') || '';
+    if (this.isTeacher && schoolName) {
+      this.router.navigate([`/${schoolName}/TimeTable`]);
+      return;
+    }
 
-this.loadSchools()
-this.loadAcademicYears()
-this.loadDashboard()
-this.loadNotices()
-this.loadMenu()
-this.loadQuickLinks()
+    this.setRoleContext()
 
-}
+    const storedSchoolId = sessionStorage.getItem('schoolId') || sessionStorage.getItem('SchoolID') || ''
+    if (storedSchoolId) {
+      this.selectedSchool = storedSchoolId
+    }
+
+    console.log('Initial school ID:', this.selectedSchool);
+
+    this.loadSchools()
+    this.loadAcademicYears()
+    this.loadDashboard()
+    this.loadNotices()
+    this.loadMenu()
+    this.loadQuickLinks()
+
+  }
 
 setRoleContext(): void {
   this.roleKey = this.resolveRoleKey(this.roleId);

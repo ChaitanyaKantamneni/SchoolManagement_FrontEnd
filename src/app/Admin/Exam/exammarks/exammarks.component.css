@@ -1,79 +1,37 @@
-.FormInputRowsContainer{
+/* ==========================================
+   Base styles matching attendance-sheet
+   ========================================== */
+
+.FormInputRowsContainer {
   display: flex;
-  justify-content: center;
-  align-items: center;
   flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
 }
 
-.InputRow{
-    width: 100% !important;
-    flex-direction: row !important;
+.InputRow {
+  display: flex;
+  flex-direction: row !important;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 16px;
+  width: 100% !important;
+  flex-wrap: wrap;
 }
 
 .InputFieldsContainer {
-  flex: 1 1 0;
-  min-width: 0;
+  flex: 1 1 calc(50% - 8px);
+  min-width: 260px;
 }
 
-.InputFieldsContainer select.inputField {
-  width: 100%;
-}
-/* default for paired fields */
-.InputFieldsContainer {
-  flex: 1 1 0;
-  min-width: 0;
-}
-
-/* Keep single-field rows same width as normal half-row fields */
 .InputRow:last-child .InputFieldsContainer {
-  flex: 0 0 calc(50% - 8px);
+  flex: 1 1 calc(50% - 8px);
   max-width: calc(50% - 8px);
-  margin-right: auto;
 }
 
-/* make sure select follows container width */
 .InputFieldsContainer select.inputField {
   width: 100%;
   box-sizing: border-box;
-}
-
-.ComponentRecords .ActionButtons{
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-}
-
-.ComponentRecords .ActionButtons .btn{
-  background-color: #536ff7;
-  color: #fff;
-  border: none;
-  font-size: smaller;
-  border-radius: 5px;
-  padding: 5px 10px;
-  margin-left: 10px;
-  transition: background-color 0.3s ease;
-}
-
-.table .btn{
-  background-color: #536ff7;
-  color: #fff;
-  border: none;
-  font-size: smaller;
-  border-radius: 5px;
-  padding: 5px 10px;
-  transition: background-color 0.3s ease;
-}
-
-
-.status-pill {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-size: 9px;
-  font-weight: 600;
-  border: 1px solid;
-  white-space: nowrap;
 }
 
 .MainContentDiv {
@@ -89,6 +47,16 @@
 .ComponentRecords,
 .AddForm {
   width: 100%;
+}
+
+/* Premium Form Card */
+.AddForm {
+  margin-top: 10px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  border: 1px solid #d7e0ec;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(29, 78, 216, 0.04);
+  border-radius: 16px;
+  overflow: hidden;
 }
 
 .AddFormTop {
@@ -121,7 +89,7 @@
   box-shadow: 0 12px 22px rgba(29, 78, 216, 0.16);
 }
 
-.AddFormTop p,
+/* .AddFormTop p, */
 .AddFormTop h5,
 .AddFormTop strong {
   margin: 0;
@@ -129,33 +97,11 @@
   font-weight: 700;
 }
 
-.FormInputRowsContainer {
-  align-items: stretch;
-  gap: 12px;
-}
-
-.InputRow {
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-start;
-  gap: 16px;
-  width: 100% !important;
-  flex-direction: row !important;
-  flex-wrap: wrap;
-}
-
-.InputFieldsContainer {
-  flex: 1 1 calc(50% - 8px);
-  min-width: 260px;
-}
-
-.InputRow:last-child .InputFieldsContainer {
-  flex: 1 1 calc(50% - 8px);
-  max-width: calc(50% - 8px);
-}
-
 .form-bottom {
-  justify-content: end !important;
+  display: flex;
+  justify-content: flex-end !important;
+  align-items: center;
+  padding: 14px;
 }
 
 .footer-actions {
@@ -163,12 +109,19 @@
 }
 
 .exam-footer-actions {
+  display: flex;
   justify-content: flex-end !important;
   padding: 14px !important;
+  gap: 10px;
 }
 
 .admission-record-card {
   width: 100%;
+  margin-top: 10px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
 .admission-record-header h5 {
@@ -177,6 +130,9 @@
 
 .reviewstable table th {
   white-space: nowrap;
+  background-color: #f8fafc;
+  color: #475569;
+  font-weight: 600;
 }
 
 .reviewstable table td {
@@ -184,16 +140,84 @@
   font-size: 12px;
 }
 
-.table .btn,
-.ComponentRecords .ActionButtons .btn,
-.ComponentRecords .ActionButtons .submitbtn {
-  background-color: #536ff7;
+/* Premium Buttons matching Attendance Sheet */
+.actionbuttons, .ActionButtons {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+
+.actionbuttons .btnsubmit, .ActionButtons .submitbtn, .actionbuttons .submitbtn {
+  background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
   color: #fff;
-  border: none;
+  border: 1px solid transparent;
+  font-size: smaller;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
+  cursor: pointer;
+}
+
+.actionbuttons .btnsubmit:hover, .ActionButtons .submitbtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(29, 78, 216, 0.3);
+}
+
+.actionbuttons .cancelbtn, .ActionButtons .cancelbtn {
+  background-color: #f8fafc;
+  color: #1d4ed8;
+  border: 1px solid #d7e0ec;
+  font-size: smaller;
+  border-radius: 10px;
+  padding: 8px 14px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.actionbuttons .cancelbtn:hover, .ActionButtons .cancelbtn:hover {
+  background-color: #f1f5f9;
+}
+
+/* Workflow Status Badges & Pills */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+/* Row-Level Buttons and Actions */
+.table .btn {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
   font-size: 11px;
   border-radius: 6px;
   padding: 6px 12px;
-  transition: background-color 0.3s ease;
+  font-weight: 600;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.table .btn:hover {
+  background: #dbeafe;
+  transform: translateY(-1px);
+}
+
+/* Disabled Field Overlay */
+.inputField:disabled {
+  background-color: #f8fafc !important;
+  color: #64748b !important;
+  border-color: #e2e8f0 !important;
+  cursor: not-allowed;
 }
 
 @media (max-width: 768px) {

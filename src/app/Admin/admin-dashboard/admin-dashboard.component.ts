@@ -191,22 +191,39 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   getModuleIcon(moduleName: string): string {
-    const key = (moduleName || '').trim().toLowerCase();
+    const rawKey = (moduleName || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
     const map: Record<string, string> = {
       masters: 'widgets',
       academic: 'school',
       transportation: 'commute',
       finance: 'account_balance_wallet',
       timetable: 'schedule',
-      'time table': 'schedule',
+      timetablepage: 'schedule',
       exam: 'quiz',
       attendance: 'how_to_reg',
-      'hr & payroll': 'account_balance',
-      'leave management': 'event_note',
-      'holiday calendar': 'event'
+      hrpayroll: 'account_balance',
+      leavemanagement: 'event_note',
+      homework: 'assignment',
+      holidaycalendar: 'event',
+      hostelmanagement: 'apartment',
+      messaging: 'textsms',
+      store: 'storefront',
+      reports: 'assessment',
+      notices: 'campaign'
     };
 
-    return map[key] || 'folder';
+    if (map[rawKey]) {
+      return map[rawKey];
+    }
+
+    // Substring match on stripped keys
+    for (const mapKey of Object.keys(map)) {
+      if (rawKey.includes(mapKey) || mapKey.includes(rawKey)) {
+        return map[mapKey];
+      }
+    }
+
+    return 'folder';
   }
 
   getPageIcon(pageName: string): string {
@@ -270,12 +287,41 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       'apply leave': 'event_note',
       'leave approval': 'fact_check',
       'leave details': 'event_note',
+      'leave management': 'event_note',
+      homework: 'assignment',
+      'assign homework': 'assignment_turned_in',
       'holiday calendar': 'event',
-      'students report': 'bar_chart',
-      'fee report': 'bar_chart'
+      'students report': 'school',
+      'student report': 'school',
+      'fee report': 'receipt',
+      'notices': 'campaign',
+      'hostel master': 'apartment',
+      'room master': 'meeting_room',
+      'room allotment': 'hotel',
+      'outpass': 'exit_to_app',
+      'out pass': 'exit_to_app',
+      'messaging': 'textsms',
+      units: 'straighten',
+      categories: 'category',
+      items: 'inventory_2',
+      suppliers: 'local_shipping',
+      purchase: 'shopping_cart',
+      sales: 'sell',
+      'sales report': 'bar_chart'
     };
 
-    return map[key] || 'menu';
+    if (map[key]) {
+      return map[key];
+    }
+
+    // Fuzzy substring checks
+    for (const mapKey of Object.keys(map)) {
+      if (key.includes(mapKey) || mapKey.includes(key)) {
+        return map[mapKey];
+      }
+    }
+
+    return 'menu';
   }
 
   private formatRoute(name: string): string {

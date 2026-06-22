@@ -42,6 +42,19 @@ export class NoticesComponent extends BasePermissionComponent implements OnInit 
     return sessionStorage.getItem('RollID') === '1' || localStorage.getItem('RollID') === '1';
   }
 
+  public ss(key: string) {
+    return sessionStorage.getItem(key) || localStorage.getItem(key) || '';
+  }
+
+  get currentRoleName(): string { return (this.ss('roleName') || this.ss('RoleName') || this.ss('rollName') || this.ss('RollName') || '').trim(); }
+  get currentRollID(): string { return (this.ss('RollID') || this.ss('rollID') || this.ss('menuRoleId') || this.ss('RoleID') || '').trim(); }
+
+  get isTeacher(): boolean {
+    const r = this.currentRoleName.toLowerCase();
+    const id = this.currentRollID;
+    return id === '3' || r.includes('teacher') || r.includes('teaching');
+  }
+
   // ── State ──────────────────────────────────────────────────────────────────
   isFormOpen = false;
   isEditMode = false;
@@ -124,7 +137,11 @@ export class NoticesComponent extends BasePermissionComponent implements OnInit 
     };
     if (isSearch) payload.Title = this.searchQuery.trim();
     if (this.filterNoticeType && this.filterNoticeType !== '0') payload.NoticeType = this.filterNoticeType;
-    if (this.filterAudience && this.filterAudience !== '0') payload.Audience = this.filterAudience;
+    if (this.isTeacher) {
+      payload.Audience = 'Staff';
+    } else {
+      if (this.filterAudience && this.filterAudience !== '0') payload.Audience = this.filterAudience;
+    }
     return this.apiurl.post<any>('Tbl_Notices_CRUD_Operations', payload);
   }
 
@@ -155,7 +172,11 @@ export class NoticesComponent extends BasePermissionComponent implements OnInit 
         };
         if (isSearch) payload.Title = this.searchQuery.trim();
         if (this.filterNoticeType && this.filterNoticeType !== '0') payload.NoticeType = this.filterNoticeType;
-        if (this.filterAudience && this.filterAudience !== '0') payload.Audience = this.filterAudience;
+        if (this.isTeacher) {
+          payload.Audience = 'Staff';
+        } else {
+          if (this.filterAudience && this.filterAudience !== '0') payload.Audience = this.filterAudience;
+        }
 
         this.apiurl.post<any>('Tbl_Notices_CRUD_Operations', payload).subscribe({
           next: (res: any) => {
@@ -183,7 +204,11 @@ export class NoticesComponent extends BasePermissionComponent implements OnInit 
   }
 
   private mapNotices(res: any) {
-    this.noticesList = (res?.data || []).map((item: any) => ({
+    let data = res?.data || [];
+    if (this.isTeacher) {
+      data = data.filter((item: any) => (item.audience || '').trim().toLowerCase() === 'staff');
+    }
+    this.noticesList = data.map((item: any) => ({
       NoticeId:         item.noticeId,
       SchoolID:         item.schoolID,
       AcademicYear:     item.academicYear,
