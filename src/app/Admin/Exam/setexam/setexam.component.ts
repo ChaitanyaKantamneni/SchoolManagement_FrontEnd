@@ -1,5 +1,5 @@
 import { NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { DashboardTopNavComponent } from '../../../SignInAndSignUp/dashboard-top-nav/dashboard-top-nav.component';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -1489,11 +1489,11 @@ this.isInsertMode = false;
     this.updateTimeConflictWarning();
   }
 
-  toggleDivisionDropdown(index: number) {
-    this.tableRows.forEach((row, i) => {
-      row.divisionDropdownOpen = i === index ? !row.divisionDropdownOpen : false;
-    });
-  }
+  // toggleDivisionDropdown(index: number) {
+  //   this.tableRows.forEach((row, i) => {
+  //     row.divisionDropdownOpen = i === index ? !row.divisionDropdownOpen : false;
+  //   });
+  // }
 
   toggleDivisionSelection(rowIndex: number, divisionID: string) {
     const row = this.tableRows[rowIndex];
@@ -1708,5 +1708,47 @@ this.isInsertMode = false;
     this.currentPage = 1;
     this.FetchInitialData();
   }
+
+toggleDivisionDropdown(index: number): void {
+
+  // Close all other dropdowns
+  this.tableRows.forEach((row: any, i: number) => {
+    if (i !== index) {
+      row.divisionDropdownOpen = false;
+    }
+  });
+
+  this.tableRows[index].divisionDropdownOpen =
+    !this.tableRows[index].divisionDropdownOpen;
+}
+
+isAllDivisionsSelected(index: number): boolean {
+
+  const row = this.tableRows[index];
+
+  return (
+    row.divisions &&
+    row.divisions.length > 0 &&
+    row.selectedDivisions.length === row.divisions.length
+  );
+}
+
+toggleAllDivisions(index: number, event: any): void {
+
+  const row = this.tableRows[index];
+
+  if (event.target.checked) {
+    row.selectedDivisions = row.divisions.map((d: any) => d.ID);
+  } else {
+    row.selectedDivisions = [];
+  }
+}
+
+@HostListener('document:click')
+closeDivisionDropdowns(): void {
+  this.tableRows.forEach((row: any) => {
+    row.divisionDropdownOpen = false;
+  });
+}
 }
 

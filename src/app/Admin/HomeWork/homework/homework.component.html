@@ -1,12 +1,19 @@
-<div>
+<div class="DashboardTopNav">
   <app-dashboard-top-nav></app-dashboard-top-nav>
 </div>
 <div class="MainContentDiv">
-  <div class="w-100">
-    <div class="ComponentTop">
-      <div class="ComponentTopHeader">
-        <h5>Homework</h5>
-        <p>Total {{ totalCount }} Homework</p>
+  <div class="w-100 admission-dashboard">
+    <div class="admission-breadcrumb">
+      <span>Homework</span>
+      <mat-icon>chevron_right</mat-icon>
+      <strong>Homework List</strong>
+    </div>
+    <div class="AddFormTop">
+      <div class="admission-record-header p-0">
+        <div>
+          <h5>Homework List</h5>
+          <p>Filter and view student homework records</p>
+        </div>
       </div>
 
       <!-- Child Tab Slider for Parent View - Top Right -->
@@ -20,7 +27,6 @@
           </button>
         </div>
       </div>
-
     </div>
 
     <!-- Parent, Teacher & School Admin Filter Section -->
@@ -81,6 +87,9 @@
                 </select>
               </div>
             </div>
+            <div class="InputFieldsContainer">
+                <span style="visibility: hidden;height: 3px;">hello adding new academic year</span>
+              </div>
           </div>
 
           <!-- Parent/Teacher Row -->
@@ -190,131 +199,131 @@
 </div>
 
     <!-- Homework Table -->
-    <div class="row">
-      <div class="col-12">
-        <div class="card shadow-sm">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <!-- <h5 class="mb-0">Homework</h5> -->
-            <div class="searchreview input-container">
-              <input type="text" id="searchQuery" class="form-control floating-input" [(ngModel)]="searchQuery"
-                (ngModelChange)="onSearchChange()" placeholder="Search... " />
-              <mat-icon
-                style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
-            </div>
-            <span class="badge bg-info">Total: {{totalCount}}</span>
+    <div class="ComponentRecords admission-record-card compact-table-section mt-4" *ngIf="homeworkList.length > 0">
+      <div>
+        <div class="ComponentRecordsTop admission-record-header">
+          <div>
+            <h5>Homework Records</h5>
+            <p>Showing {{ homeworkList.length }} of {{ totalCount }} records</p>
           </div>
-          <div class="card-body">
-            <div class="table-responsive">
-              <table class="table table-striped table-hover">
-                <thead class="table-dark">
-                  <tr>
-                    <th>SI.No</th>
-                    <th>Homework Title</th>
-                    <th>Class</th>
-                    <th>Division</th>
-                    <th>Subject</th>
-                    <th>Assigned Date</th>
-                    <th>Submission Due Date</th>
-                    <th *ngIf="isParent || currentRoleUI === 'teacher' || currentRoleUI === 'school_admin' || currentRoleUI === 'admin'">Submission Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let homework of homeworkList; let i = index">
-                    <td>{{(currentPage - 1) * pageSize + i + 1}}</td>
-                    <td>{{homework.homeworkTitle}}</td>
-                    <td>{{homework.className}}</td>
-                    <td>{{homework.divisionName}}</td>
-                    <td>{{homework.subjectName}}</td>
-                    <td>{{homework.assignedDate | date:'dd/MM/yyyy'}}</td>
-                    <td>{{homework.submissionDate | date:'dd/MM/yyyy'}}</td>
-
-                    <!-- Parent/Teacher/School Admin/Admin submission status column -->
-                    <td *ngIf="isParent || currentRoleUI === 'teacher' || currentRoleUI === 'school_admin' || currentRoleUI === 'admin'">
-                      <span class="badge" [ngClass]="getSubmissionStatusClass(homework.id)">
-                        {{getSubmissionStatus(homework.id)}}
-                      </span>
-                      <small *ngIf="getSubmissionDate(homework.id)" class="d-block text-muted">
-                        Submitted: {{getSubmissionDate(homework.id) | date:'dd/MM/yyyy HH:mm'}}
-                      </small>
-                    </td>
-                    <td>
-                      <ng-container *ngIf="isParent">
-                        <!-- Not submitted yet -->
-                        <ng-container *ngIf="getSubmissionStatus(homework.id) === 'Not Submitted'">
-                          <div class="d-flex justify-content-center align-items-center h-100">
-                            <button class="btn checkbtn" data-tooltip="Submit"
-                              (click)="openParentSubmissionModal(homework, 'submit')">
-                              <mat-icon class="mat-edit-icon">upload</mat-icon>
-                            </button>
-                          </div>
-                        </ng-container>
-                        <!-- Already submitted -->
-                        <ng-container *ngIf="getSubmissionStatus(homework.id) !== 'Not Submitted'">
-                          <div class="d-flex justify-content-center align-items-center h-100">
-                            <button class="btn checkbtn edit" data-tooltip="Edit"
-                              *ngIf="getSubmissionStatus(homework.id) !== 'Reviewed'"
-                              (click)="openParentSubmissionModal(homework, 'edit')">
-                              <mat-icon class="mat-edit-icon">edit</mat-icon>
-                            </button>
-                            <button class="btn checkbtn" data-tooltip="View"
-                              (click)="viewParentSubmissionDetails(homework.id)">
-                              <mat-icon class="mat-edit-icon">visibility</mat-icon>
-                            </button>
-                          </div>
-                        </ng-container>
-                      </ng-container>
-                      <ng-container *ngIf="currentRoleUI === 'teacher'">
-                        <ng-container *ngIf="getSubmissionStatus(homework.id) !== 'Not Submitted'">
-                          <div class="d-flex justify-content-center align-items-center h-100">
-                            <button class="btn checkbtn" data-tooltip="View"
-                              (click)="viewParentSubmissionDetails(homework.id)">
-                              <mat-icon class="mat-edit-icon">visibility</mat-icon>
-                            </button>
-                          </div>
-                        </ng-container>
-                      </ng-container>
-                      <ng-container *ngIf="currentRoleUI === 'school_admin' || currentRoleUI === 'admin'">
-                        <ng-container *ngIf="getSubmissionStatus(homework.id) !== 'Not Submitted'">
-                          <div class="d-flex justify-content-center align-items-center h-100">
-                            <button class="btn checkbtn" data-tooltip="View"
-                              (click)="viewParentSubmissionDetails(homework.id)">
-                              <mat-icon class="mat-edit-icon">visibility</mat-icon>
-                            </button>
-                          </div>
-                        </ng-container>
-                      </ng-container>
-                    </td>
-                  </tr>
-                  <tr *ngIf="homeworkList.length === 0">
-                    <td [attr.colspan]="isParent || currentRoleUI === 'teacher' || currentRoleUI === 'school_admin' || currentRoleUI === 'admin' ? 9 : 8" class="text-center text-muted">No homework found</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <!-- Pagination -->
-            <div class="d-flex justify-content-between align-items-center mt-3">
-              <div>
-                <span class="text-muted">Showing {{homeworkList.length}} of {{totalCount}} records</span>
-              </div>
-              <div *ngIf="totalCount > pageSize" class="pagination-controls">
-                <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1"
-                  class="arrow-btn FirstandLastButton">First</button>
-                <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
-                <button *ngFor="let page of getVisiblePageNumbers()" class="page-btn"
-                  [ngClass]="{'active': page === currentPage}" (click)="goToPage(page)">
-                  {{ page }}
-                </button>
-                <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
-                <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())"
-                  [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
+          <div class="admission-hero">
+            <div class="ComponentTopBottom admission-header-actions">
+              <div class="searchreview input-container">
+                <input type="text" id="searchQuery" class="form-control floating-input" [(ngModel)]="searchQuery"
+                  (ngModelChange)="onSearchChange()" placeholder="Search... " />
+                <mat-icon
+                  style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none;">search</mat-icon>
               </div>
             </div>
           </div>
         </div>
+
+        <div class="reviewstable admission-table-wrap">
+          <table class="table table-bordered admission-table">
+            <thead>
+              <tr>
+                <th>SI.No</th>
+                <th>Homework Title</th>
+                <th>Class</th>
+                <th>Division</th>
+                <th>Subject</th>
+                <th>Assigned Date</th>
+                <th>Submission Due Date</th>
+                <th *ngIf="isParent || currentRoleUI === 'teacher' || currentRoleUI === 'school_admin' || currentRoleUI === 'admin'">Submission Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let homework of homeworkList; let i = index">
+                <td data-label="SI.No">{{(currentPage - 1) * pageSize + i + 1}}</td>
+                <td data-label="Homework Title">{{homework.homeworkTitle}}</td>
+                <td data-label="Class">{{homework.className}}</td>
+                <td data-label="Division">{{homework.divisionName}}</td>
+                <td data-label="Subject">{{homework.subjectName}}</td>
+                <td data-label="Assigned Date">{{homework.homeworkDate | date:'dd-MMM-yyyy'}}</td>
+                <td data-label="Submission Due Date">{{homework.submissionDate | date:'dd-MMM-yyyy'}}</td>
+                <td data-label="Submission Status" *ngIf="isParent || currentRoleUI === 'teacher' || currentRoleUI === 'school_admin' || currentRoleUI === 'admin'">
+                  <span class="badge" [ngClass]="{
+                    'bg-success': getSubmissionStatus(homework.id) === 'Evaluated',
+                    'bg-primary': getSubmissionStatus(homework.id) === 'Submitted',
+                    'bg-warning': getSubmissionStatus(homework.id) === 'Pending',
+                    'bg-danger': getSubmissionStatus(homework.id) === 'Not Submitted'
+                  }">{{getSubmissionStatus(homework.id)}}</span>
+                </td>
+                <td data-label="Actions">
+                  <!-- Parent Submission Modals -->
+                  <ng-container *ngIf="isParent">
+                    <!-- Pending -> Submit homework -->
+                    <ng-container *ngIf="getSubmissionStatus(homework.id) === 'Not Submitted'">
+                      <div class="d-flex justify-content-center align-items-center h-100">
+                        <button class="btn checkbtn" data-tooltip="Submit Homework"
+                          (click)="openParentSubmissionModal(homework, 'submit')">
+                          <mat-icon class="mat-edit-icon">publish</mat-icon>
+                        </button>
+                      </div>
+                    </ng-container>
+                    <!-- Submitted -> Edit submission -->
+                    <ng-container *ngIf="getSubmissionStatus(homework.id) === 'Submitted'">
+                      <div class="d-flex justify-content-center align-items-center h-100" style="gap: 8px;">
+                        <button class="btn checkbtn" data-tooltip="Edit Submission"
+                          (click)="openParentSubmissionModal(homework, 'edit')">
+                          <mat-icon class="mat-edit-icon">edit</mat-icon>
+                        </button>
+                        <button class="btn checkbtn" data-tooltip="View Submission"
+                          (click)="viewParentSubmissionDetails(homework.id)">
+                          <mat-icon class="mat-edit-icon">visibility</mat-icon>
+                        </button>
+                      </div>
+                    </ng-container>
+                    <!-- Evaluated -> View status & feedback -->
+                    <ng-container *ngIf="getSubmissionStatus(homework.id) === 'Evaluated'">
+                      <div class="d-flex justify-content-center align-items-center h-100">
+                        <button class="btn checkbtn" data-tooltip="View Evaluated Status"
+                          (click)="viewParentSubmissionDetails(homework.id)">
+                          <mat-icon class="mat-edit-icon">assignment_turned_in</mat-icon>
+                        </button>
+                      </div>
+                    </ng-container>
+                  </ng-container>
+                  <ng-container *ngIf="currentRoleUI === 'school_admin' || currentRoleUI === 'admin'">
+                    <ng-container *ngIf="getSubmissionStatus(homework.id) !== 'Not Submitted'">
+                      <div class="d-flex justify-content-center align-items-center h-100">
+                        <button class="btn checkbtn" data-tooltip="View"
+                          (click)="viewParentSubmissionDetails(homework.id)">
+                          <mat-icon class="mat-edit-icon">visibility</mat-icon>
+                        </button>
+                      </div>
+                    </ng-container>
+                  </ng-container>
+                </td>
+              </tr>
+              <tr *ngIf="homeworkList.length === 0">
+                <td [attr.colspan]="isParent || currentRoleUI === 'teacher' || currentRoleUI === 'school_admin' || currentRoleUI === 'admin' ? 9 : 8" class="text-center text-muted">No homework found</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="d-flex justify-content-between align-items-center mt-3" style="padding: 16px;">
+          <div>
+            <span class="text-muted">Showing {{homeworkList.length}} of {{totalCount}} records</span>
+          </div>
+          <div *ngIf="totalCount > pageSize" class="pagination-controls">
+            <button *ngIf="totalPages() > 3" (click)="goToPage(1)" [disabled]="currentPage === 1"
+              class="arrow-btn FirstandLastButton">First</button>
+            <button (click)="previousPage()" [disabled]="currentPage === 1" class="arrow-btn">←</button>
+            <button *ngFor="let page of getVisiblePageNumbers()" class="page-btn"
+              [ngClass]="{'active': page === currentPage}" (click)="goToPage(page)">
+              {{ page }}
+            </button>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages()" class="arrow-btn">→</button>
+            <button *ngIf="totalPages() > 3" (click)="goToPage(totalPages())"
+              [disabled]="currentPage === totalPages()" class="arrow-btn FirstandLastButton">Last</button>
+          </div>
+        </div>
       </div>
-    </div>
+    </div></div>
   </div>
 
 

@@ -1,57 +1,37 @@
-.FormInputRowsContainer{
+/* ==========================================
+   Base styles matching attendance-sheet
+   ========================================== */
+
+.FormInputRowsContainer {
   display: flex;
-  justify-content: center;
-  align-items: center;
   flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
 }
 
-.InputRow{
-    width: 100% !important;
-    flex-direction: row !important;
+.InputRow {
+  display: flex;
+  flex-direction: row !important;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 16px;
+  width: 100% !important;
+  flex-wrap: wrap;
 }
 
 .InputFieldsContainer {
-  flex: 1 1 0;
-  min-width: 0;
+  flex: 1 1 calc(50% - 8px);
+  min-width: 260px;
 }
 
-.InputFieldsContainer select.inputField {
-  width: 100%;
-}
-/* default for paired fields */
-.InputFieldsContainer {
-  flex: 1 1 0;
-  min-width: 0;
-}
-
-/* Keep single-field rows same width as normal half-row fields */
 .InputRow:last-child .InputFieldsContainer {
-  flex: 0 0 calc(50% - 8px);
+  flex: 1 1 calc(50% - 8px);
   max-width: calc(50% - 8px);
-  margin-right: auto;
 }
 
-/* make sure select follows container width */
 .InputFieldsContainer select.inputField {
   width: 100%;
   box-sizing: border-box;
-}
-
-/* Keep table/pagination compact with no trailing blank space */
-.compact-table-section {
-  padding-bottom: 8px;
-}
-
-.compact-table-section .reviewstable {
-  overflow-y: visible !important;
-}
-
-.compact-table-section .reviewstable .table {
-  margin-bottom: 0 !important;
-}
-
-.compact-table-section .pagination-controls {
-  margin: 12px 0 0 !important;
 }
 
 .MainContentDiv {
@@ -67,6 +47,16 @@
 .ComponentRecords,
 .AddForm {
   width: 100%;
+}
+
+/* Premium Form Card */
+.AddForm {
+  margin-top: 10px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  border: 1px solid #d7e0ec;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(29, 78, 216, 0.04);
+  border-radius: 16px;
+  overflow: hidden;
 }
 
 .AddFormTop {
@@ -99,7 +89,7 @@
   box-shadow: 0 12px 22px rgba(29, 78, 216, 0.16);
 }
 
-.AddFormTop p,
+/* .AddFormTop p, */
 .AddFormTop h5,
 .AddFormTop strong {
   margin: 0;
@@ -107,33 +97,11 @@
   font-weight: 700;
 }
 
-.FormInputRowsContainer {
-  align-items: stretch;
-  gap: 12px;
-}
-
-.InputRow {
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-start;
-  gap: 16px;
-  width: 100% !important;
-  flex-direction: row !important;
-  flex-wrap: wrap;
-}
-
-.InputFieldsContainer {
-  flex: 1 1 calc(50% - 8px);
-  min-width: 260px;
-}
-
-.InputRow:last-child .InputFieldsContainer {
-  flex: 1 1 calc(50% - 8px);
-  max-width: calc(50% - 8px);
-}
-
 .form-bottom {
-  justify-content: end !important;
+  display: flex;
+  justify-content: flex-end !important;
+  align-items: center;
+  padding: 14px;
 }
 
 .footer-actions {
@@ -142,6 +110,11 @@
 
 .admission-record-card {
   width: 100%;
+  margin-top: 10px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
 .admission-record-header h5 {
@@ -150,6 +123,9 @@
 
 .reviewstable table th {
   white-space: nowrap;
+  background-color: #f8fafc;
+  color: #475569;
+  font-weight: 600;
 }
 
 .reviewstable table td {
@@ -157,41 +133,91 @@
   font-size: 12px;
 }
 
+/* Premium Buttons matching Attendance Sheet */
+.actionbuttons, .ActionButtons {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+
+.actionbuttons .btnsubmit, .ActionButtons .submitbtn {
+  background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
+  color: #fff;
+  border: 1px solid transparent;
+  font-size: smaller;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
+  cursor: pointer;
+}
+
+.actionbuttons .btnsubmit:hover, .ActionButtons .submitbtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(29, 78, 216, 0.3);
+}
+
+.actionbuttons .cancelbtn, .ActionButtons .cancelbtn {
+  background-color: #f8fafc;
+  color: #1d4ed8;
+  border: 1px solid #d7e0ec;
+  font-size: smaller;
+  border-radius: 10px;
+  padding: 8px 14px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.actionbuttons .cancelbtn:hover, .ActionButtons .cancelbtn:hover {
+  background-color: #f1f5f9;
+}
+
+/* Workflow Status Badges */
 .status-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 22px;
-  padding: 3px 10px;
+  min-height: 24px;
+  padding: 4px 12px;
   border-radius: 999px;
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   border: 1px solid transparent;
   white-space: nowrap;
 }
 
 .status-scheduled {
-  background: #fff0bd;
-  border-color: #f5d77a;
-  color: #c25b00;
+  background: #fef3c7;
+  border-color: #fde68a;
+  color: #b45309;
 }
 
 .status-attendance {
   background: #dbeafe;
-  border-color: #93c5fd;
+  border-color: #bfdbfe;
   color: #1d4ed8;
 }
 
 .status-published {
-  background: #d9f9e5;
-  border-color: #86efac;
-  color: #00823a;
+  background: #d1fae5;
+  border-color: #a7f3d0;
+  color: #065f46;
 }
 
 .status-default {
   background: #f1f5f9;
-  border-color: #cbd5e1;
+  border-color: #e2e8f0;
   color: #475569;
+}
+
+/* Disabled Field Overlay */
+.inputField:disabled {
+  background-color: #f8fafc !important;
+  color: #64748b !important;
+  border-color: #e2e8f0 !important;
+  cursor: not-allowed;
 }
 
 @media (max-width: 768px) {
@@ -207,4 +233,3 @@
     flex: 1 1 100%;
   }
 }
-

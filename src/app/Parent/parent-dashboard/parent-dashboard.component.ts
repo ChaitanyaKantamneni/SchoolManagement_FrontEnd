@@ -18,6 +18,7 @@ import {
   LeaveBalance
 } from '../../models/leave.models';
 import { LeaveBalancePolicyService } from '../../Services/leave-balance-policy.service';
+import { FileService } from '../../Services/file.service';
 
 @Component({
   selector: 'app-parent-dashboard',
@@ -979,7 +980,10 @@ export class ParentDashboardComponent implements OnInit {
 
   private buildTimetableGrid(): void {
     // Get unique days from timetable data (like Admin view)
-    const uniqueDays = [...new Set(this.timetableRaw.map(t => t.day))].sort();
+    const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const uniqueDays = [...new Set(this.timetableRaw.map(t => t.day))].sort((a, b) => {
+      return dayOrder.indexOf(a) - dayOrder.indexOf(b);
+    });
 
     // Determine number of periods from the data
     const maxPeriod = this.timetableRaw.length > 0
@@ -1041,7 +1045,8 @@ export class ParentDashboardComponent implements OnInit {
     private leaveService: LeaveService,
     private leaveBalancePolicyService: LeaveBalancePolicyService,
     private fb: FormBuilder,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private fileService: FileService
   ) {
     this.initializeLeaveForm();
   }
@@ -1323,7 +1328,12 @@ export class ParentDashboardComponent implements OnInit {
     this.parentService.getParentNotices(this.schoolId)
       .pipe(catchError(() => of(null))).subscribe((res: any) => {
         const data: any[] = res?.data ?? (Array.isArray(res) ? res : []);
-        this.noticesList = data.map((n: any) => ({
+        // Filter out notices meant for staff (keeping Student/All notices)
+        const studentNotices = data.filter((n: any) => {
+          const aud = (n.audience || n.Audience || '').toString().trim().toLowerCase();
+          return aud !== 'staff';
+        });
+        this.noticesList = studentNotices.map((n: any) => ({
           title: n.title || n.noticeTitle || 'Notice',
           date: n.date || n.noticeDate || '',
           description: n.description || n.content || ''
@@ -1370,6 +1380,18 @@ export class ParentDashboardComponent implements OnInit {
   private loadFullFees(): void {
     if (!this.selectedChildId || this.feeRecords.length) return;
     this.loadingFees = true;
+
+    const schoolId = sessionStorage.getItem('SchoolID');
+
+    if (schoolId) {
+      this.fileService.getSchoolLogo(schoolId).subscribe((res: any) => {
+        this.schoolLogoFromDb = res;
+
+        if (res?.filePath) {
+          this.logoUrl = this.fileService.getFullLogoFileUrl(res.filePath);
+        }
+      });
+    }
     // Load both payment history and fee dues
     forkJoin({
       payments: this.parentService.getChildFees(this.selectedChildId, this.schoolId, this.selectedAcademicYearId).pipe(catchError(() => of(null))),
@@ -2116,4 +2138,7 @@ this.examRecords = Array.from(groupedExams.values()).map((subjects: any[]) => {
       this.leaveForm.patchValue({ attachment: file });
     }
   }
+
+  schoolLogoFromDb: any = null;
+  logoUrl: string = 'Images/Logo1.jpg';
 }

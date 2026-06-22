@@ -97,6 +97,106 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
 
   // List
   Math = Math;
+  resolvedStaffId: string = '';
+  teacherAssignedClassID: string = '';
+  teacherAssignedDivisionID: string = '';
+
+  private get sessionApplicantId(): string {
+    const keys = ['StaffID', 'staffId', 'StaffId', 'UserID', 'userId', 'UserId', 'user_id', 'id', 'ID'];
+    for (const k of keys) {
+      const val = this.ss(k);
+      if (val && val !== '0' && val !== 'null' && val !== 'undefined' && !isNaN(Number(val))) {
+        return val.toString().trim();
+      }
+    }
+    return '';
+  }
+
+  get currentUserId(): string {
+    return this.resolvedStaffId || this.sessionApplicantId || this.ss('StaffID') || this.ss('UserID');
+  }
+
+  public resolveStaffIdentity(onDone?: () => void): void {
+    const schoolId = this.getCurrentSchoolId();
+    const email = (this.ss('email') || this.ss('Email') || '').toString().trim().toLowerCase();
+
+    if (!schoolId || !email) {
+      onDone?.();
+      return;
+    }
+
+    this.apiurl.post<any>('Tbl_Staff_CRUD_Operations', {
+      Flag: '2',
+      SchoolID: schoolId
+    }).subscribe({
+      next: (res: any) => {
+        const list = res?.data || [];
+        const match = list.find((s: any) => (s.email || s.Email || '').toLowerCase() === email);
+        if (match) {
+          this.resolvedStaffId = String(match.id || match.ID);
+          console.log('[STUDENT REPORT] Resolved Teacher StaffID:', this.resolvedStaffId);
+        }
+      },
+      complete: () => {
+        if (this.isTeacher) {
+          this.syncTeacherClassDivisionFromAllocation(onDone);
+        } else {
+          onDone?.();
+        }
+      },
+      error: () => onDone?.()
+    });
+  }
+
+  public syncTeacherClassDivisionFromAllocation(onDone?: () => void): void {
+    if (!this.isTeacher) {
+      onDone?.();
+      return;
+    }
+
+    const AcademicYearIdSelected = this.selectedAcademicYear || sessionStorage.getItem('ActiveAcademicYearID') || '';
+    const schoolId = this.getCurrentSchoolId();
+    const staffId = this.currentUserId || '';
+
+    if (!schoolId || !AcademicYearIdSelected || !staffId) {
+      onDone?.();
+      return;
+    }
+
+    this.apiurl.post<any>('Tbl_AllotClassTeacher_CRUD_Operations', {
+      Flag: '2',
+      SchoolID: schoolId,
+      AcademicYear: AcademicYearIdSelected,
+      ClassTeacher: staffId
+    }).subscribe({
+      next: (res: any) => {
+        const rows = Array.isArray(res?.data) ? res.data : [];
+        const currentStaff = String(staffId).trim();
+        const match = rows.find((x: any) =>
+          String(x?.classTeacher ?? x?.ClassTeacher).trim() === currentStaff
+        ) || rows[0];
+
+        if (!match) return;
+
+        const classId = String(match?.class ?? match?.Class).trim();
+        const divisionId = String(match?.division ?? match?.Division).trim();
+
+        if (classId) {
+          this.teacherAssignedClassID = classId;
+          this.selectedClass = classId;
+        }
+
+        if (divisionId) {
+          this.teacherAssignedDivisionID = divisionId;
+          this.selectedDivision = divisionId;
+        }
+      },
+      complete: () => onDone?.(),
+      error: () => onDone?.()
+    });
+  }
+
+  // List
   studentsList: any[] = [];
   totalCount = 0;
   searchQuery = '';
@@ -188,7 +288,14 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
             if (this.selectedSchoolID && this.selectedSchoolID !== '0') {
               this.fetchAcademicYearsList();
               this.fetchClassList();
-              this.fetchStudents();
+              if (this.isTeacher) {
+                this.selectedAcademicYear = sessionStorage.getItem('ActiveAcademicYearID') || '';
+                this.resolveStaffIdentity(() => {
+                  this.fetchStudents();
+                });
+              } else {
+                this.fetchStudents();
+              }
             }
           }
         });
@@ -198,8 +305,12 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     this.fetchAcademicYearsList();
     this.fetchClassList();
 
-    // For parents, fetch children first before loading students
-    if (this.isParent) {
+    if (this.isTeacher) {
+      this.selectedAcademicYear = sessionStorage.getItem('ActiveAcademicYearID') || '';
+      this.resolveStaffIdentity(() => {
+        this.fetchStudents();
+      });
+    } else if (this.isParent) {
       this.fetchParentChildren();
     } else {
       this.fetchStudents();
@@ -256,11 +367,15 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     this.resetPagination();
 
     // Fetch parent children when academic year changes
-    if (this.isParent && this.selectedAcademicYear) {
+    if (this.isTeacher) {
+      this.syncTeacherClassDivisionFromAllocation(() => {
+        this.fetchStudents();
+      });
+    } else if (this.isParent && this.selectedAcademicYear) {
       this.fetchParentChildren();
+    } else {
+      this.fetchStudents();
     }
-
-    this.fetchStudents();
   }
 
   fetchClassList() {
@@ -347,8 +462,15 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     };
     if (schoolIdToUse) payload.SchoolID = schoolIdToUse;
     if (this.selectedAcademicYear) payload.AcademicYear = this.selectedAcademicYear;
-    if (this.selectedClass) payload.Class = this.selectedClass;
-    if (this.selectedDivision) payload.Division = this.selectedDivision;
+    
+    if (this.isTeacher) {
+      payload.Class = this.teacherAssignedClassID || this.selectedClass;
+      payload.Division = this.teacherAssignedDivisionID || this.selectedDivision;
+    } else {
+      if (this.selectedClass) payload.Class = this.selectedClass;
+      if (this.selectedDivision) payload.Division = this.selectedDivision;
+    }
+    
     if (this.searchQuery?.trim()) payload.AdmissionNo = this.searchQuery.trim();
 
     this.apiurl.post<any>('Tbl_StudentDetails_CRUD_Operations', payload).subscribe({
@@ -362,7 +484,18 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
   }
 
   private processStudentData(data: any[]) {
-    this.allStudentsList = data.map((item: any) => ({
+    let filtered = data;
+    if (this.isTeacher) {
+      const assignedClass = (this.teacherAssignedClassID || this.selectedClass || '').trim();
+      const assignedDivision = (this.teacherAssignedDivisionID || this.selectedDivision || '').trim();
+      filtered = data.filter((item: any) => {
+        const itemClass = String(item.class ?? '').trim();
+        const itemDivision = String(item.division ?? '').trim();
+        return (!assignedClass || itemClass === assignedClass) && (!assignedDivision || itemDivision === assignedDivision);
+      });
+    }
+
+    this.allStudentsList = filtered.map((item: any) => ({
       ID: item.id,
       AdmissionNo: item.admissionNo,
       Name: `${item.firstName ?? ''} ${item.middleName ?? ''} ${item.lastName ?? ''}`.replace(/\s+/g, ' ').trim(),

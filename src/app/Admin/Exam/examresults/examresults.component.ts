@@ -33,9 +33,9 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
       this.checkViewPermission();
       this.SchoolSelectionChange = false;
       this.initializeUserRole();
-      this.FetchSchoolsList();
       this.AdminSelectedActiveAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
       if (this.isAdmin) {
+        this.FetchSchoolsList();
         this.SyllabusForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
         this.SyllabusForm.get('School').patchValue('0');
         this.SyllabusForm.get('AcademicYear').patchValue('0');
@@ -44,13 +44,26 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
         this.SyllabusForm.get('AcademicYear')?.disable({ emitEvent: false });
       }
 
-      if(this.AdminselectedSchoolID==''){
+      if (this.isTeacher) {
+        this.AdminselectedSchoolID = this.resolvedSchoolId || this.ss('SchoolID') || this.ss('schoolId');
+        this.resolveStaffIdentity();
         this.FetchAcademicYearsList();
-        if(!this.isAdmin){
-          this.SyllabusForm.get('AcademicYear').patchValue(this.AdminSelectedActiveAcademicYearID);
-          this.FetchExamsList();
-          this.FetchClassList();
-        } 
+        
+        // Lock selections for teacher
+        this.SyllabusForm.get('School').clearValidators();
+        this.SyllabusForm.get('School').updateValueAndValidity();
+        this.SyllabusForm.get('Class').disable({ emitEvent: false });
+        this.SyllabusForm.get('Divisions').disable({ emitEvent: false });
+      } else {
+        this.FetchSchoolsList();
+        if(this.AdminselectedSchoolID==''){
+          this.FetchAcademicYearsList();
+          if(!this.isAdmin){
+            this.SyllabusForm.get('AcademicYear').patchValue(this.AdminSelectedActiveAcademicYearID);
+            this.FetchExamsList();
+            this.FetchClassList();
+          } 
+        }
       }
     };
   
@@ -124,6 +137,9 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
     AdminselectedDiviosnID:string = '';
     AdminselecteExamID:string = '';
     AdminselectedStudentID:string='';
+    teacherAssignedClassID: string = '';
+    teacherAssignedDivisionID: string = '';
+    resolvedStaffId: string = '';
     AdminSelectedActiveAcademicYearID:string = sessionStorage.getItem('ActiveAcademicYearID') || '';
   
   
@@ -323,6 +339,144 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
     }
   }
 
+  get isTeacher(): boolean {
+    const r = this.currentRoleName.toLowerCase();
+    const id = this.currentRollID;
+    return id === '3' || r.includes('teacher') || r.includes('teaching');
+  }
+
+  private get sessionApplicantId(): string {
+    const keys = ['StaffID', 'staffId', 'StaffId', 'UserID', 'userId', 'UserId', 'user_id', 'id', 'ID'];
+    for (const k of keys) {
+      const val = this.ss(k);
+      if (val && val !== '0' && val !== 'null' && val !== 'undefined' && !isNaN(Number(val))) {
+        return val.toString().trim();
+      }
+    }
+    return '';
+  }
+
+  get currentUserId(): string {
+    return this.resolvedStaffId || this.sessionApplicantId || this.ss('StaffID') || this.ss('UserID');
+  }
+
+  private getCurrentSchoolId(): string {
+    if (this.isAdmin) {
+      return this.AdminselectedSchoolID || '';
+    }
+    return (
+      this.AdminselectedSchoolID ||
+      sessionStorage.getItem('SchoolID')?.toString() ||
+      sessionStorage.getItem('schoolId')?.toString() ||
+      ''
+    );
+  }
+
+  private resolveStaffIdentity(): void {
+    const schoolId = this.resolvedSchoolId;
+    const email = (this.ss('email') || this.ss('Email') || '').toString().trim().toLowerCase();
+
+    if (!schoolId || !email) return;
+
+    this.apiurl.post<any>('Tbl_Staff_CRUD_Operations', {
+      Flag: '2',
+      SchoolID: schoolId
+    }).subscribe({
+      next: (res: any) => {
+        const list = res?.data || [];
+        const match = list.find((s: any) => (s.email || s.Email || '').toLowerCase() === email);
+        if (match) {
+          this.resolvedStaffId = String(match.id || match.ID);
+          console.log('[EXAM RESULTS] Resolved Teacher StaffID:', this.resolvedStaffId);
+        }
+      },
+      complete: () => {
+        if (this.isTeacher && !this.currentUserId) {
+          console.warn('[EXAM RESULTS] Teacher StaffID could not be resolved from session/email mapping.');
+        }
+        if (this.isTeacher && this.AdminselectedAcademivYearID) {
+          this.syncTeacherClassDivisionFromAllocation(() => {
+            this.FetchExamsList();
+            this.FetchClassStudentsList();
+          });
+        }
+      }
+    });
+  }
+
+  private syncTeacherClassDivisionFromAllocation(onDone?: () => void): void {
+    if (!this.isTeacher) {
+      onDone?.();
+      return;
+    }
+
+    const AcademicYearIdSelected =
+    this.isAdmin
+      ? (
+          this.SchoolAcademicYearChange
+            ? this.selectedAcademicYearID?.trim()
+            : this.AdminselectedAcademivYearID?.trim()
+        )
+      : this.AdminSelectedActiveAcademicYearID || '';
+
+    const schoolId = this.getCurrentSchoolId();
+    const academicYear = AcademicYearIdSelected || '';
+    const staffId = this.currentUserId || '';
+
+    if (!schoolId || !academicYear || !staffId) {
+      onDone?.();
+      return;
+    }
+
+    this.apiurl.post<any>('Tbl_AllotClassTeacher_CRUD_Operations', {
+      Flag: '2',
+      SchoolID: schoolId,
+      AcademicYear: academicYear,
+      ClassTeacher: staffId
+    }).subscribe({
+      next: (res: any) => {
+        const rows = Array.isArray(res?.data) ? res.data : [];
+        const currentStaff = String(staffId).trim();
+        const match = rows.find((x: any) =>
+          String(x?.classTeacher ?? x?.ClassTeacher).trim() === currentStaff
+        ) || rows[0];
+
+        if (!match) return;
+
+        const classId = String(match?.class ?? match?.Class).trim();
+        const divisionId = String(match?.division ?? match?.Division).trim();
+        const className = String(match?.className ?? match?.ClassName ?? '').trim();
+        const divisionName = String(match?.divisionName ?? match?.DivisionName ?? '').trim();
+
+        if (classId) {
+          this.teacherAssignedClassID = classId;
+          this.AdminselectedClassID = classId;
+          this.classLists = [{
+            ID: classId,
+            Name: className || `Class ${classId}`,
+            Division: divisionName || ''
+          }];
+        }
+
+        if (divisionId) {
+          this.teacherAssignedDivisionID = divisionId;
+          this.AdminselectedDiviosnID = divisionId;
+          this.divisionsList = [{
+            ID: divisionId,
+            Name: divisionName || `Division ${divisionId}`
+          }];
+        }
+
+        this.SyllabusForm.patchValue({
+          Class: this.AdminselectedClassID || '0',
+          Divisions: this.AdminselectedDiviosnID || '0'
+        });
+      },
+      complete: () => onDone?.(),
+      error: () => onDone?.()
+    });
+  }
+
         
     FetchAcademicYearsList() {
       const schoolId =
@@ -347,6 +501,27 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
                   IsActive: isActiveString
                 };
               });            
+
+              // Auto-select active academic year for teachers
+              if (this.isTeacher && this.AdminSelectedActiveAcademicYearID) {
+                const match = this.academicYearList.find(
+                  y => y.ID === this.AdminSelectedActiveAcademicYearID
+                );
+                if (match) {
+                  this.AdminselectedAcademivYearID = match.ID;
+                  this.SyllabusForm.get('AcademicYear')?.patchValue(match.ID);
+                } else if (this.academicYearList.length > 0) {
+                  this.AdminselectedAcademivYearID = this.academicYearList[0].ID;
+                  this.SyllabusForm.get('AcademicYear')?.patchValue(this.academicYearList[0].ID);
+                }
+                // Now that year is set, sync allocation and fetch exams/students
+                if (this.AdminselectedAcademivYearID && this.currentUserId) {
+                  this.syncTeacherClassDivisionFromAllocation(() => {
+                    this.FetchExamsList();
+                    this.FetchClassStudentsList();
+                  });
+                }
+              }
             } else {
               this.academicYearList = [];
             }
@@ -366,42 +541,26 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
             : this.AdminselectedAcademivYearID?.trim()
         )
       : this.AdminSelectedActiveAcademicYearID || '';
-
+      
     const requestData = {
       SchoolID: this.AdminselectedSchoolID || '',
-      AcademicYear: AcademicYearIdSelected,
+      AcademicYear: AcademicYearIdSelected || '',
       Flag: '9'
     };
-   
     this.apiurl.post<any>('Tbl_ClassDivision_CRUD_Operations', requestData)
       .subscribe(
         (response: any) => {
-  
           if (response && Array.isArray(response.data)) {
-            console.log(response);
-  
-  
             this.classLists = response.data.map((item: any) => {
-                              console.log(this.classLists)
-  
-  
-              const isActiveString =
-                item.isActive === "1" || item.isActive === "True"
-                  ? "Active"
-                  : "InActive";
-  
               return {
                ID: item.sNo.toString(),
                Name: item.syllabusClassName,
                Division: item.class
               };
-  
             });
-  
           } else {
             this.classLists = [];
           }
-  
         },
         (error) => {
           this.classLists = [];
@@ -419,6 +578,45 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
         )
       : this.AdminSelectedActiveAcademicYearID || '';
 
+    if (this.isTeacher) {
+      if (!this.AdminselectedAcademivYearID || !this.currentUserId) {
+        this.examLists = [];
+        return;
+      }
+
+      const teacherPayload: any = {
+        SchoolID: this.AdminselectedSchoolID || '',
+        AcademicYear: AcademicYearIdSelected || '',
+        Divisions: this.teacherAssignedDivisionID || this.AdminselectedDiviosnID || '',
+        StaffID: this.currentUserId || '-1',
+        Flag: '12'
+      };
+
+      this.apiurl.post<any>('Tbl_SetExam_CRUD_Operations', teacherPayload)
+        .subscribe(
+          (response: any) => {
+            const rows = Array.isArray(response?.data) ? response.data : [];
+            const byId = new Map<string, any>();
+
+            rows.forEach((item: any) => {
+              const id = String(item?.examType ?? item?.ExamType ?? item?.examTypeID ?? item?.ExamTypeID ?? '').trim();
+              const name = String(item?.examTypeName ?? item?.ExamTypeName ?? item?.examType ?? item?.ExamType ?? '').trim();
+              if (!id) return;
+              if (!byId.has(id)) {
+                byId.set(id, { ID: id, Name: name || `Exam ${id}` });
+              }
+            });
+
+            this.examLists = Array.from(byId.values());
+            console.log('[EXAM RESULTS] Teacher exam list (Flag 12):', this.examLists);
+          },
+          () => {
+            this.examLists = [];
+          }
+        );
+      return;
+    }
+
     const requestData = {
       SchoolID: this.AdminselectedSchoolID || '',
       AcademicYear: AcademicYearIdSelected,
@@ -428,41 +626,22 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
     this.apiurl.post<any>('Tbl_Examtype_CRUD_Operations', requestData)
       .subscribe(
         (response: any) => {
-  
           if (response && Array.isArray(response.data)) {
-            console.log(response);
-  
-  
             this.examLists = response.data.map((item: any) => {
-                              console.log(this.examLists)
-  
-  
-  
-              const isActiveString =
-                item.isActive === "1" || item.isActive === "True"
-                  ? "Active"
-                  : "InActive";
-
-  
               return {
-               ID: item.id,
-               Name: item.examType,
-               Priority:item.priority,
-               MaxMark :item.maxMark,
-               PassMarks:item.passMarks,
-               ExamDuration:item.examDuration,
-               NoofQuestion:item.noofQuestion,
-               Instructions:item.instructions
+                ID: item.id,
+                Name: item.examType,
+                Priority: item.priority,
+                MaxMark: item.maxMark,
+                PassMarks: item.passMarks,
+                ExamDuration: item.examDuration,
+                NoofQuestion: item.noofQuestion,
+                Instructions: item.instructions
               };
-  
             });
-            //  this.listenExamTypeChanges();   // 👈 call here
-  
-  
           } else {
             this.examLists = [];
           }
-  
         },
         (error) => {
           this.examLists = [];
@@ -688,11 +867,14 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
       );
   }
     FetchClassStudentsList() {
+    const requestClass = this.isTeacher ? this.teacherAssignedClassID : (this.AdminselectedClassID || '');
+    const requestDivision = this.isTeacher ? this.teacherAssignedDivisionID : (this.AdminselectedDiviosnID || '');
+
     const requestData = { 
             SchoolID:this.AdminselectedSchoolID || '',
             AcademicYear:this.AdminselectedAcademivYearID || '',
-            Class:this.AdminselectedClassID || '',
-            Division:this.AdminselectedDiviosnID,
+            Class:requestClass,
+            Division:requestDivision,
             Flag: '3' };
 
     this.apiurl.post<any>('Tbl_StudentDetails_CRUD_Operations', requestData)
@@ -942,11 +1124,14 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
   }
 
   FetchExamResultsList() {
+    const requestClass = this.isTeacher ? this.teacherAssignedClassID : (this.AdminselectedClassID || '');
+    const requestDivision = this.isTeacher ? this.teacherAssignedDivisionID : (this.AdminselectedDiviosnID || '');
+
     const requestData = {
       SchoolID: this.AdminselectedSchoolID || '',
       AcademicYear: this.AdminselectedAcademivYearID || '',
-      Class: this.AdminselectedClassID || '',
-      Division: this.AdminselectedDiviosnID || '',
+      Class: requestClass,
+      Division: requestDivision,
       ExamID: this.AdminselecteExamID || '',
       AdmissionID: this.AdminselectedStudentID || '',
       Flag: '10'
@@ -1417,7 +1602,13 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
       // this.tableRows = [];   
       this.FetchExamsList();
       if (!this.isParent) {
-        this.FetchClassList();
+        if (this.isTeacher) {
+          this.syncTeacherClassDivisionFromAllocation(() => {
+            this.FetchClassStudentsList();
+          });
+        } else {
+          this.FetchClassList();
+        }
       }
       this.resetResultView();
       // this.resetPaginationAndFetch();

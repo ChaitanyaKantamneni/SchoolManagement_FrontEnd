@@ -49,7 +49,7 @@ export class PaymentModeComponent extends BasePermissionComponent implements OnI
   visiblePageCount = 3;
   modeCount = 0;
 
-  accountTypes: string[] = ['Personal Account', 'Fees', 'Student', 'Store Sale', 'Staff Salary', 'Staff'];
+  accountTypes: string[] = ['Fees', 'Staff Salary', 'Income', 'Expense'];
 
   form = {
     schoolID: '',

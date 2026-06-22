@@ -65,6 +65,7 @@ export class HomeworkComponent extends BasePermissionComponent {
   academicYearList: any[] = [];
   AdminselectedSchoolID: string = '';
   AdminselectedAcademivYearID: string = sessionStorage.getItem('ActiveAcademicYearID') || '';
+  AdminSelectedActiveAcademicYearID: string = sessionStorage.getItem('ActiveAcademicYearID') || '';
   
   // Homework specific properties
   classList: any[] = [];
@@ -528,9 +529,14 @@ if (this.currentRoleUI !== 'admin') {
   }
 
   FetchClassList() {
+    const AcademicYearIdSelected =
+      this.isAdmin
+        ? this.AdminselectedAcademivYearID?.trim()
+        : this.AdminSelectedActiveAcademicYearID || '';
+
     const requestData = {
       SchoolID: this.AdminselectedSchoolID || '',
-      AcademicYear: this.AdminselectedAcademivYearID || '',
+      AcademicYear: AcademicYearIdSelected,
       Flag: '9'
     };
 
@@ -557,9 +563,14 @@ if (this.currentRoleUI !== 'admin') {
   }
 
   FetchSubjectsList() {
+    const AcademicYearIdSelected =
+      this.isAdmin
+        ? this.AdminselectedAcademivYearID?.trim()
+        : this.AdminSelectedActiveAcademicYearID || '';
+
     const requestData = {
       SchoolID: this.AdminselectedSchoolID || '',
-      AcademicYear: this.AdminselectedAcademivYearID || '',
+      AcademicYear: AcademicYearIdSelected,
       Class: this.AdminselectedClassID || '',
       Flag: '3'
     };
@@ -592,6 +603,11 @@ if (this.currentRoleUI !== 'admin') {
 
     const isSearching = this.searchQuery.trim().length > 0;
     
+    const AcademicYearIdSelected =
+      this.isAdmin
+        ? this.AdminselectedAcademivYearID?.trim()
+        : this.AdminSelectedActiveAcademicYearID || '';
+
     // Determine flags based on user role
     let dataFlag: string;
     let countFlag: string;
@@ -604,7 +620,7 @@ if (this.currentRoleUI === 'admin') {
       payload = {
         Flag: dataFlag,
         SchoolID: this.AdminselectedSchoolID || '',
-        AcademicYear: this.AdminselectedAcademivYearID || '',
+        AcademicYear: AcademicYearIdSelected,
         Class: this.getIntValue(this.AdminselectedClassID),
         Division: this.getIntValue(this.AdminselectedDivisionID),
         SubjectID: this.getSubjectIdValue(this.AdminselectedSubjectID),
@@ -621,7 +637,7 @@ if (this.currentRoleUI === 'admin') {
       payload = {
         Flag: dataFlag,
         SchoolID: this.AdminselectedSchoolID || '',
-        AcademicYear: this.AdminselectedAcademivYearID || '',
+        AcademicYear: AcademicYearIdSelected,
         Class: this.getIntValue(this.AdminselectedClassID),
         Division: this.getIntValue(this.AdminselectedDivisionID),
         SubjectID: this.getSubjectIdValue(this.AdminselectedSubjectID),
@@ -643,7 +659,7 @@ if (this.currentRoleUI === 'admin') {
       payload = {
         Flag: dataFlag,
         SchoolID: this.selectedSchoolID || this.schoolId,
-        AcademicYear: this.AdminselectedAcademivYearID || '',
+        AcademicYear: AcademicYearIdSelected,
         Class: this.getIntValue(this.AdminselectedClassID),
         Division: this.getIntValue(this.AdminselectedDivisionID),
         SubjectID: this.getSubjectIdValue(this.AdminselectedSubjectID),
@@ -665,7 +681,7 @@ if (this.currentRoleUI === 'admin') {
         Flag: dataFlag,
         StudentAdmissionNo: this.currentUserId,
         SchoolID: this.selectedSchoolID || this.schoolId,
-        AcademicYear: this.AdminselectedAcademivYearID || '',
+        AcademicYear: AcademicYearIdSelected,
         Class: this.getIntValue(this.AdminselectedClassID),
         Division: this.getIntValue(this.AdminselectedDivisionID),
         Limit: this.pageSize,
@@ -681,7 +697,7 @@ if (this.currentRoleUI === 'admin') {
       payload = {
         Flag: dataFlag,
         SchoolID: this.AdminselectedSchoolID || '',
-        AcademicYear: this.AdminselectedAcademivYearID || '',
+        AcademicYear: AcademicYearIdSelected,
         Class: this.getIntValue(this.AdminselectedClassID),
         Division: this.getIntValue(this.AdminselectedDivisionID),
         SubjectID: this.getSubjectIdValue(this.AdminselectedSubjectID),
@@ -1028,10 +1044,15 @@ if (this.currentRoleUI === 'admin') {
       return;
     }
 
+    const AcademicYearIdSelected =
+      this.isAdmin
+        ? this.AdminselectedAcademivYearID?.trim()
+        : this.AdminSelectedActiveAcademicYearID || '';
+
     const submissionData: HomeworkSubmission = {
       ...this.submissionForm.value,
       SchoolID: this.selectedSchoolID || this.schoolId,
-      AcademicYear: this.AdminselectedAcademivYearID,
+      AcademicYear: AcademicYearIdSelected,
       Class: this.getIntValue(this.AdminselectedClassID),
       Division: this.getIntValue(this.AdminselectedDivisionID),
       CreatedBy: this.currentUserId,
@@ -1058,12 +1079,17 @@ if (this.currentRoleUI === 'admin') {
   }
 
   fetchHomeworkSubmissions(): void {
+    const AcademicYearIdSelected =
+      this.isAdmin
+        ? this.AdminselectedAcademivYearID?.trim()
+        : this.AdminSelectedActiveAcademicYearID || '';
+
     if (this.currentRoleUI === 'student' || this.currentRoleUI === 'parent') {
       // Students/parents fetch homework assigned to them
       const params: any = {
         StudentAdmissionNo: this.currentUserId, // Filter by student's admission number
         SchoolID: this.selectedSchoolID || this.schoolId,
-        AcademicYear: this.AdminselectedAcademivYearID,
+        AcademicYear: AcademicYearIdSelected,
         Class: this.getIntValue(this.AdminselectedClassID) || undefined,
         Division: this.getIntValue(this.AdminselectedDivisionID) || undefined,
         Limit: this.pageSize,
@@ -1089,7 +1115,7 @@ if (this.currentRoleUI === 'admin') {
       const params: any = {
         TeacherID: this.currentUserId,
         SchoolID: this.selectedSchoolID || this.schoolId,
-        AcademicYear: this.AdminselectedAcademivYearID,
+        AcademicYear: AcademicYearIdSelected,
         Class: this.getIntValue(this.AdminselectedClassID) || undefined,
         Division: this.getIntValue(this.AdminselectedDivisionID) || undefined,
         Limit: this.pageSize,
@@ -1114,7 +1140,7 @@ if (this.currentRoleUI === 'admin') {
       // School Admins fetch submissions for selected student (like parent/teacher)
       const params: any = {
         SchoolID: this.selectedSchoolID || this.schoolId,
-        AcademicYear: this.AdminselectedAcademivYearID,
+        AcademicYear: AcademicYearIdSelected,
         Class: this.getIntValue(this.AdminselectedClassID) || undefined,
         Division: this.getIntValue(this.AdminselectedDivisionID) || undefined,
         // Filter by selected student if one is selected
@@ -1141,7 +1167,7 @@ if (this.currentRoleUI === 'admin') {
       // Default submission fetching for other roles
       const params: any = {
         SchoolID: this.selectedSchoolID || this.schoolId,
-        AcademicYear: this.AdminselectedAcademivYearID,
+        AcademicYear: AcademicYearIdSelected,
         Class: this.getIntValue(this.AdminselectedClassID) || undefined,
         Division: this.getIntValue(this.AdminselectedDivisionID) || undefined,
         Limit: this.pageSize,
@@ -1215,11 +1241,16 @@ if (this.currentRoleUI === 'admin') {
       return;
     }
 
+    const AcademicYearIdSelected =
+      this.isAdmin
+        ? this.AdminselectedAcademivYearID?.trim()
+        : this.AdminSelectedActiveAcademicYearID || '';
+
     const payload = {
       Flag: '9',
       FatherEmail: parentEmail,
       MotherEmail: parentEmail,
-      AcademicYear: this.AdminselectedAcademivYearID || ''
+      AcademicYear: AcademicYearIdSelected || ''
     };
 
     console.log('[HOMEWORK] Fetching parent children:', payload);
@@ -1324,9 +1355,14 @@ if (this.currentRoleUI === 'admin') {
 
   
   FetchDivisionsList() {
+    const AcademicYearIdSelected =
+      this.isAdmin
+        ? this.AdminselectedAcademivYearID?.trim()
+        : this.AdminSelectedActiveAcademicYearID || '';
+
     const requestData = {
       SchoolID: this.AdminselectedSchoolID || '',
-      AcademicYear: this.AdminselectedAcademivYearID || '',
+      AcademicYear: AcademicYearIdSelected,
       Class: this.AdminselectedClassID || '',
       Flag: '3'
     };

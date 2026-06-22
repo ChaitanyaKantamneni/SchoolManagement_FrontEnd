@@ -269,8 +269,8 @@ export class WorkingDaysComponent extends BasePermissionComponent {
         this.ClassForm.get('AcademicYear')?.disable({ emitEvent: false });
       }
       if(this.AdminselectedSchoolID==''){
-        const schoolFromSession = sessionStorage.getItem('SchoolID') || localStorage.getItem('SchoolID') || '';
-        this.AdminselectedSchoolID = schoolFromSession;
+        // const schoolFromSession = sessionStorage.getItem('SchoolID') || localStorage.getItem('SchoolID') || '';
+        // this.AdminselectedSchoolID = schoolFromSession;
         this.FetchAcademicYearsList();
         if(!this.isAdmin){
           this.ClassForm.get('AcademicYear').patchValue(this.AdminSelectedActiveAcademicYearID);
