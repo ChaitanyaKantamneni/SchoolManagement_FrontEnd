@@ -28,6 +28,9 @@ interface Permission {
   templateUrl: './roles.component.html',
   styleUrls: ['./roles.component.css']
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for RolesComponent.
+ */
 export class RolesComponent {
   selectedRoleId: string = '';
   selectedModuleName: string = '';
@@ -60,6 +63,9 @@ schoolList: any[] = [];
 
   constructor(private router: Router, private apiurl: ApiServiceService,private schoolCache: SchoolCacheService,public loader: LoaderService) {}
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
 this.FetchSchoolsList();
     this.FetchInitialData();
@@ -68,6 +74,11 @@ this.FetchSchoolsList();
 
   roleId: string | null = sessionStorage.getItem('RollID');
 
+  /**
+   * Executes the operation: isAdmin
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   isAdmin(): boolean {
     return this.roleId === '1';
   }
@@ -101,6 +112,11 @@ this.FetchSchoolsList();
   //   });
   // };
 
+  /**
+   * Executes the operation: FetchSchoolsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
 FetchSchoolsList() {
     const requestData = { Flag: '2' };
 
@@ -126,6 +142,11 @@ FetchSchoolsList() {
       );
   };
 
+  /**
+   * Executes the operation: FetchAcademicYearsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchAcademicYearsList() {
     const requestData = { SchoolID:this.AdminselectedSchoolID||'',Flag: '2' };
 
@@ -151,6 +172,11 @@ FetchSchoolsList() {
       );
   };
 
+  /**
+   * Executes the operation: FetchInitialData
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchInitialData() {
     const rolesReq = this.apiurl
       .post<any>('Tbl_Roles_CRUD_Operations', { Flag: '2' })
@@ -195,6 +221,11 @@ FetchSchoolsList() {
     });
   };
 
+  /**
+   * Executes the operation: mapRoles
+   * Parameters: response: any
+   * Rationale: Standard operational controller for the active view.
+   */
   mapRoles(response: any) {
     const schoolMap = this.isAdmin()
       ? this.schoolCache.getSchoolMap()
@@ -227,6 +258,11 @@ FetchSchoolsList() {
     AcademicYear: new FormControl()
   });
 
+  /**
+   * Executes the operation: allowAlphaAndSpecial
+   * Parameters: event: KeyboardEvent
+   * Rationale: Standard operational controller for the active view.
+   */
   allowAlphaAndSpecial(event: KeyboardEvent) {
     const allowedRegex = /^[a-zA-Z ]$/;
     if (
@@ -244,6 +280,11 @@ FetchSchoolsList() {
     }
   }
 
+  /**
+   * Executes the operation: getPaginatedRoleLists
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getPaginatedRoleLists() {
     const start = (this.currentPage - 1) * this.pageSize;
     return this.ListedRoleList.slice(start, start + this.pageSize);
@@ -255,6 +296,11 @@ FetchSchoolsList() {
     );
   };
 
+  /**
+   * Executes the operation: AddNewClicked
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   AddNewClicked() {
 // if (this.isAdmin()) {
 //       this.RoleForm.get('School')?.setValidators([Validators.required,Validators.min(1)]);
@@ -280,6 +326,11 @@ FetchSchoolsList() {
     this.ViewRoleClicked = false;
   };
 
+  /**
+   * Executes the operation: SubmitRole
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   SubmitRole() {
     console.log('this.permissionsList',this.permissionsList);
     if (this.RoleForm.invalid) {
@@ -337,6 +388,11 @@ SchoolID: this.RoleForm.get('School')?.value,
     
   };
 
+  /**
+   * Executes the operation: assignRoleIdToPermissions
+   * Parameters: roleId: string
+   * Rationale: Standard operational controller for the active view.
+   */
   assignRoleIdToPermissions(roleId: string) {
     this.permissionsList = this.permissionsList.map(p => ({
       ...p,
@@ -345,6 +401,11 @@ SchoolID: this.RoleForm.get('School')?.value,
   }
 
 
+  /**
+   * Executes the operation: FetchRoleDetByID
+   * Parameters: RoleID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchRoleDetByID(RoleID: string) {
     const data = {
       ID: RoleID,
@@ -376,6 +437,11 @@ School: item.schoolID,
     );
   };
 
+  /**
+   * Executes the operation: UpdateRole
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   UpdateRole() {
     if (this.RoleForm.invalid) {
 this.RoleForm.markAllAsTouched();
@@ -418,6 +484,11 @@ SchoolID: this.RoleForm.get('School')?.value,
     }
   };
 
+  /**
+   * Executes the operation: formatDateYYYYMMDD
+   * Parameters: dateStr: string | null
+   * Rationale: Standard operational controller for the active view.
+   */
   formatDateYYYYMMDD(dateStr: string | null): string {
     const convertToYYYYMMDD = (dateStr: string | null): string => {
       if (!dateStr) return '';
@@ -431,6 +502,11 @@ SchoolID: this.RoleForm.get('School')?.value,
     return convertToYYYYMMDD(dateStr);
   };
 
+  /**
+   * Executes the operation: formatDateDDMMYYYY
+   * Parameters: dateStr: string | null
+   * Rationale: Standard operational controller for the active view.
+   */
   formatDateDDMMYYYY(dateStr: string | null): string {
     const convertToDDMMYYYY = (dateStr: string | null): string => {
       if (!dateStr) return '';
@@ -444,6 +520,11 @@ SchoolID: this.RoleForm.get('School')?.value,
     return convertToDDMMYYYY(dateStr);
   };
 
+  /**
+   * Executes the operation: editreview
+   * Parameters: RoleID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   editreview(RoleID: string): void {
     this.updatedPermissionsList=[];
     this.FetchRoleDetByID(RoleID);
@@ -451,24 +532,49 @@ SchoolID: this.RoleForm.get('School')?.value,
     this.ViewRoleClicked = true;
   };
 
+  /**
+   * Executes the operation: toggleChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   toggleChange() {
     this.IsActiveStatus = !this.IsActiveStatus;
   };
 
+  /**
+   * Executes the operation: onSearchChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onSearchChange(): void {
     this.currentPage = 1;
     this.getPaginatedRoleLists();
   };
 
+  /**
+   * Executes the operation: closeModal
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeModal() {
     this.isModalOpen = false;
   };
 
+  /**
+   * Executes the operation: handleOk
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   handleOk() {
     this.isModalOpen = false;
     this.FetchInitialData();
   };
 
+  /**
+   * Executes the operation: fetchModulesFromDB
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   fetchModulesFromDB(){
     const requestData = { Flag: '2' };
 
@@ -494,6 +600,11 @@ SchoolID: this.RoleForm.get('School')?.value,
       );
   };
 
+  /**
+   * Executes the operation: FetchPageList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchPageList() {
     const requestData = { Flag: '2' };
 
@@ -518,6 +629,11 @@ SchoolID: this.RoleForm.get('School')?.value,
       );
   };
 
+  /**
+   * Executes the operation: ModuleClick
+   * Parameters: moduleId: string
+   * Rationale: Standard operational controller for the active view.
+   */
   ModuleClick(moduleId: string) {
     console.log('this.selectedRoleId',this.selectedRoleId);
     if (this.expandedModuleId === moduleId) {
@@ -535,6 +651,11 @@ SchoolID: this.RoleForm.get('School')?.value,
     }
   };
 
+  /**
+   * Executes the operation: fetchPagesByModule
+   * Parameters: moduleId: string
+   * Rationale: Standard operational controller for the active view.
+   */
   fetchPagesByModule(moduleId: string) {
     const pagesForModule = this.PagesListFromDB.filter(
       page => page.Class?.toString() === moduleId
@@ -559,6 +680,11 @@ SchoolID: this.RoleForm.get('School')?.value,
 
 updatedPermissionsList: Permission[] = [];
 
+  /**
+   * Executes the operation: togglePagePermission
+   * Parameters: page: any, permission: string, moduleId: string, pageId: string
+   * Rationale: Standard operational controller for the active view.
+   */
 togglePagePermission(page: any, permission: string, moduleId: string, pageId: string): void {
   const validPermission: "CanView" | "CanAdd" | "CanEdit" | "CanDelete" = permission as any;
 
@@ -665,6 +791,11 @@ updateUpdatedPermissionsList(
     console.log('Updated toggled permissions:', this.permissionsList);
   };
 
+  /**
+   * Executes the operation: submitpermission
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   submitpermission() {
 
     if (!this.permissionsList || this.permissionsList.length === 0) {
@@ -702,6 +833,11 @@ updateUpdatedPermissionsList(
     });
   };
 
+  /**
+   * Executes the operation: FetchPermissionByRoleID
+   * Parameters: roleID: string,modueID:string
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchPermissionByRoleID(roleID: string,modueID:string) {
     const payload = {
       RoleID: roleID,
@@ -758,11 +894,21 @@ updateUpdatedPermissionsList(
     });
   };
 
+  /**
+   * Executes the operation: showError
+   * Parameters: message: string
+   * Rationale: Standard operational controller for the active view.
+   */
   showError(message: string) {
     this.AminityInsStatus = message;
     this.isModalOpen = true;
   };
 
+  /**
+   * Executes the operation: updatepermission
+   * Parameters: RollId: string
+   * Rationale: Standard operational controller for the active view.
+   */
 updatepermission(RollId: string) {
   if (!this.updatedPermissionsList || this.updatedPermissionsList.length === 0) {
     this.AminityInsStatus = "No permissions to submit.";
@@ -802,6 +948,11 @@ updatepermission(RollId: string) {
   });
 }
 
+  /**
+   * Executes the operation: getUpdatedFinalList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
 getUpdatedFinalList(): Permission[] {
   if (!this.permissionsList || this.permissionsList.length === 0) {
     console.warn('permissionsList is empty!');
@@ -828,6 +979,11 @@ getUpdatedFinalList(): Permission[] {
   });
 }
 
+  /**
+   * Executes the operation: fetchNewRoleId
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
 fetchNewRoleId(){
   const data = {
       Flag: "6"
@@ -849,12 +1005,22 @@ fetchNewRoleId(){
     );
 }
 
+  /**
+   * Executes the operation: previousPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
 previousPage() {
     if (this.currentPage > 1) {
       this.currentPage--;  // Decrease the current page number
     }
   };
 
+  /**
+   * Executes the operation: nextPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   nextPage() {
     if (this.currentPage < this.totalPages()) {
       this.currentPage++;  // Increase the current page number
@@ -862,6 +1028,11 @@ previousPage() {
   };
 
 
+  /**
+   * Executes the operation: goToPage
+   * Parameters: pageNumber: number
+   * Rationale: Standard operational controller for the active view.
+   */
   goToPage(pageNumber: number) {
     if (pageNumber >= 1 && pageNumber <= this.totalPages()) {
       this.currentPage = pageNumber;  // Set currentPage to the selected page number
@@ -869,6 +1040,11 @@ previousPage() {
   };
 
 
+  /**
+   * Executes the operation: getVisiblePageNumbers
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getVisiblePageNumbers() {
     const totalPages = this.totalPages();
     const visiblePages = [];
@@ -889,10 +1065,20 @@ previousPage() {
   };
 
 
+  /**
+   * Executes the operation: totalPages
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   totalPages() {
     return Math.ceil(this.RoleCount / this.pageSize);  // Calculate total pages based on page size
   };
 
+  /**
+   * Executes the operation: onAdminSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminSchoolChange(event: Event) {
     this.academicYearList=[];  
     this.RoleForm.get('AcademicYear').patchValue('0');
@@ -906,6 +1092,11 @@ previousPage() {
     this.FetchAcademicYearsList();
   };
 
+  /**
+   * Executes the operation: toPermissionBoolean
+   * Parameters: value: unknown
+   * Rationale: Standard operational controller for the active view.
+   */
   private toPermissionBoolean(value: unknown): boolean {
     const normalized = `${value ?? ''}`.trim().toLowerCase();
     return ['true', '1', 'yes'].includes(normalized);

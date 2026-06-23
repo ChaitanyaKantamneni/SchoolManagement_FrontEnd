@@ -13,6 +13,9 @@ export interface CurrentUserContext {
 @Injectable({
   providedIn: 'root'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for CurrentUserContextService.
+ */
 export class CurrentUserContextService {
   getContext(): CurrentUserContext {
     const roleId = this.read('RollID');

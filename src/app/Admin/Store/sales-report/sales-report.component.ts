@@ -49,6 +49,9 @@ interface SaleReportRow {
   templateUrl: './sales-report.component.html',
   styleUrl: './sales-report.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for SalesReportComponent.
+ */
 export class SalesReportComponent extends BasePermissionComponent implements OnInit {
   pageName = 'Sales Report';
 
@@ -62,6 +65,9 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
     super(mService, rtr);
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.checkViewPermission();
     this.selectedAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
@@ -290,6 +296,11 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
     }
   }
 
+  /**
+   * Executes the operation: onAcademicYearChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAcademicYearChange(event: Event): void {
     const yearId = (event.target as HTMLSelectElement).value;
     this.selectedAcademicYearID = yearId === '0' ? '' : yearId;
@@ -308,6 +319,11 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
     }
   }
 
+  /**
+   * Executes the operation: onClassChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onClassChange(event: Event): void {
     const classId = (event.target as HTMLSelectElement).value;
     this.selectedClassID = classId === '0' ? '' : classId;
@@ -324,6 +340,11 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
     }
   }
 
+  /**
+   * Executes the operation: onDivisionChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onDivisionChange(event: Event): void {
     const divisionId = (event.target as HTMLSelectElement).value;
     this.selectedDivisionID = divisionId === '0' ? '' : divisionId;
@@ -338,6 +359,11 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
     }
   }
 
+  /**
+   * Executes the operation: onStudentChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onStudentChange(event: Event): void {
     const admissionNo = (event.target as HTMLSelectElement).value;
     this.selectedAdmissionNo = admissionNo === '0' ? '' : admissionNo;
@@ -526,10 +552,30 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
 
   // ── pagination ────────────────────────────────────────────────────────────────
   previousPage(): void { if (this.currentPage > 1) this.goToPage(this.currentPage - 1); }
+  /**
+   * Executes the operation: nextPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   nextPage(): void { if (this.currentPage < this.totalPages()) this.goToPage(this.currentPage + 1); }
+  /**
+   * Executes the operation: firstPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   firstPage(): void { this.goToPage(1); }
+  /**
+   * Executes the operation: lastPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   lastPage(): void { this.goToPage(this.totalPages()); }
 
+  /**
+   * Executes the operation: goToPage
+   * Parameters: pageNumber: number
+   * Rationale: Standard operational controller for the active view.
+   */
   goToPage(pageNumber: number): void {
     const total = this.totalPages();
     if (pageNumber < 1) pageNumber = 1;
@@ -548,8 +594,18 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
     }
   }
 
+  /**
+   * Executes the operation: totalPages
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   totalPages(): number { return Math.ceil(this.ReportCount / this.pageSize); }
 
+  /**
+   * Executes the operation: getVisiblePageNumbers
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getVisiblePageNumbers(): number[] {
     const totalPages = this.totalPages();
     const pages: number[] = [];
@@ -569,6 +625,11 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
   isViewModalOpen: boolean = false;
   viewSale: SaleReportRow | null = null;
 
+  /**
+   * Executes the operation: viewReview
+   * Parameters: row: SaleReportRow
+   * Rationale: Standard operational controller for the active view.
+   */
  viewReview(row: SaleReportRow): void {
   this.loader.show();
   this.apiurl.post<any>('Tbl_Sales_CRUD_Operations', { ID: row.id, Flag: '4' }).subscribe({
@@ -611,6 +672,11 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
   });
 }
 
+  /**
+   * Executes the operation: FetchItemsListForView
+   * Parameters: sale: SaleReportRow
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchItemsListForView(sale: SaleReportRow): void {
     const schoolId = sale.schoolId || this.currentSchoolId;
     this.apiurl.post<any>('Tbl_Items_CRUD_Operations', {
@@ -635,6 +701,11 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
     });
   }
 
+  /**
+   * Executes the operation: closeViewModal
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeViewModal(): void {
     this.isViewModalOpen = false;
     this.viewSale = null;
@@ -658,6 +729,11 @@ export class SalesReportComponent extends BasePermissionComponent implements OnI
     });
   }
 
+  /**
+   * Executes the operation: printReceipt
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   printReceipt(): void {
     const printContent = document.getElementById('receiptPrintArea')?.innerHTML;
     if (!printContent) return;

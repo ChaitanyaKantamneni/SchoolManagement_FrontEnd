@@ -6,6 +6,9 @@ import { OutPass, OutPassResponse } from './out-pass.model';
 @Injectable({
   providedIn: 'root'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for OutPassService.
+ */
 export class OutPassService {
   private readonly endpoint = 'Tbl_OutPass_CRUD_Operations';
 

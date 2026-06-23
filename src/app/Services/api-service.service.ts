@@ -65,6 +65,9 @@ import { Observable } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for ApiServiceService.
+ */
 export class ApiServiceService {
   api_url = environment.baseUrl;
   api_img_url = environment.imgUrl;

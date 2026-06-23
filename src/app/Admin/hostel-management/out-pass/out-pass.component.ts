@@ -19,6 +19,9 @@ import { RoomAllotmentService } from '../room-allotment/room-allotment.service';
   templateUrl: './out-pass.component.html',
   styleUrls: ['./out-pass.component.css']
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for OutPassComponent.
+ */
 export class OutPassComponent extends BasePermissionComponent implements OnInit {
   pageName = 'Outpass';
 
@@ -91,6 +94,9 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
     super(menuService, router);
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.checkViewPermission();
     this.FetchSchoolsList();
@@ -106,6 +112,11 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
     }
   }
 
+  /**
+   * Executes the operation: FetchStudentDetailsForMap
+   * Parameters: schoolId: string
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchStudentDetailsForMap(schoolId: string) {
     this.apiurl.post<any>('Tbl_StudentDetails_CRUD_Operations', { SchoolID: schoolId, Flag: '2', Limit: 9999, Offset: 0 }).subscribe({
       next: (res: any) => {
@@ -133,6 +144,11 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
   // DATA FETCHING
   // ------------------------------------------------------------
 
+  /**
+   * Executes the operation: onFilterChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onFilterChange() {
     this.currentPage = 1;
     this.FetchOutPassList();
@@ -142,6 +158,11 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
     }
   }
 
+  /**
+   * Executes the operation: FetchSchoolsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSchoolsList() {
     this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', { Flag: '2' }).subscribe({
       next: (res: any) => {
@@ -152,6 +173,11 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
     });
   }
 
+  /**
+   * Executes the operation: FetchAcademicYearsList
+   * Parameters: schoolId: string
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchAcademicYearsList(schoolId: string) {
     if (!schoolId) return;
     this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', { SchoolID: schoolId, Flag: '2' }).subscribe({
@@ -163,6 +189,11 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
     });
   }
 
+  /**
+   * Executes the operation: FetchStudentList
+   * Parameters: schoolId: string, academicYearId?: string
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchStudentList(schoolId: string, academicYearId?: string) {
     this.studentList = [];
     if (!schoolId) return;
@@ -206,6 +237,11 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
     });
   }
 
+  /**
+   * Executes the operation: FetchOutPassList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchOutPassList() {
     this.loader.show();
     const payload: any = {
@@ -237,6 +273,11 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
     });
   }
 
+  /**
+   * Executes the operation: UpdateStats
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   UpdateStats() {
     // Note: For accurate global stats, we should call Flag 3 or a separate summary endpoint.
     // Here we'll just mock or use current list for demonstration.
@@ -254,6 +295,11 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
   // ACTIONS
   // ------------------------------------------------------------
 
+  /**
+   * Executes the operation: onModalSchoolChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onModalSchoolChange() {
     const schoolID = this.OutPassForm.get('School')?.value;
     const activeYear = sessionStorage.getItem('ActiveAcademicYearID') || '0';
@@ -267,6 +313,11 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
     }
   }
 
+  /**
+   * Executes the operation: onModalYearChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onModalYearChange() {
     const schoolID = this.isAdmin ? this.OutPassForm.get('School')?.value : sessionStorage.getItem('SchoolID');
     const academicYearID = this.OutPassForm.get('AcademicYear')?.value;
@@ -276,6 +327,11 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
     }
   }
 
+  /**
+   * Executes the operation: AddNewClicked
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   AddNewClicked() {
     this.OutPassForm.reset();
     const schoolId = sessionStorage.getItem('SchoolID') || '0';
@@ -304,6 +360,11 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
     this.isAddNewClicked = true;
   }
 
+  /**
+   * Executes the operation: onStudentChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onStudentChange(event: Event) {
     const studentID = (event.target as HTMLSelectElement).value;
     const selectedStudent = this.studentList.find(s => s.ID === studentID);
@@ -315,6 +376,11 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
     }
   }
 
+  /**
+   * Executes the operation: SubmitOutPass
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   SubmitOutPass() {
     if (this.OutPassForm.invalid || this.OutPassForm.value.StudentID === '0') {
       this.OutPassForm.markAllAsTouched();
@@ -372,6 +438,11 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
     });
   }
 
+  /**
+   * Executes the operation: updateStatus
+   * Parameters: item: any, newStatus: string
+   * Rationale: Standard operational controller for the active view.
+   */
   updateStatus(item: any, newStatus: string) {
     const payload: any = {
       Flag: '5',
@@ -396,6 +467,11 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
     });
   }
 
+  /**
+   * Executes the operation: viewRecordDetails
+   * Parameters: record: any
+   * Rationale: Standard operational controller for the active view.
+   */
   viewRecordDetails(record: any) {
     this.viewRecord = record;
     this.isViewModalOpen = true;
@@ -405,6 +481,11 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
   // HELPERS
   // ------------------------------------------------------------
 
+  /**
+   * Executes the operation: onSearchChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onSearchChange() {
     clearTimeout(this.searchTimer);
     this.searchTimer = setTimeout(() => {
@@ -413,6 +494,11 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
     }, this.SEARCH_DEBOUNCE);
   }
 
+  /**
+   * Executes the operation: getStatusClass
+   * Parameters: status: string
+   * Rationale: Standard operational controller for the active view.
+   */
   getStatusClass(status: string): string {
     switch (status?.toLowerCase()) {
       case 'pending': return 'badge-warning';
@@ -423,6 +509,11 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
     }
   }
 
+  /**
+   * Executes the operation: formatDateTime
+   * Parameters: dateStr: string | null
+   * Rationale: Standard operational controller for the active view.
+   */
   formatDateTime(dateStr: string | null): string {
     if (!dateStr) return '-';
     return new Date(dateStr).toLocaleString('en-IN', {
@@ -434,10 +525,20 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
     });
   }
 
+  /**
+   * Executes the operation: totalPages
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   totalPages(): number {
     return Math.ceil(this.totalCount / this.pageSize) || 1;
   }
 
+  /**
+   * Executes the operation: goToPage
+   * Parameters: page: number
+   * Rationale: Standard operational controller for the active view.
+   */
   goToPage(page: number) {
     const total = this.totalPages();
     if (page < 1) page = 1;
@@ -446,27 +547,57 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
     this.FetchOutPassList();
   }
 
+  /**
+   * Executes the operation: previousPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   previousPage() {
     if (this.currentPage > 1) this.goToPage(this.currentPage - 1);
   }
 
+  /**
+   * Executes the operation: nextPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   nextPage() {
     if (this.currentPage < this.totalPages()) this.goToPage(this.currentPage + 1);
   }
 
+  /**
+   * Executes the operation: pageStartIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageStartIndex(): number {
     return this.totalCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
   }
 
+  /**
+   * Executes the operation: pageEndIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageEndIndex(): number {
     return Math.min(this.currentPage * this.pageSize, this.totalCount);
   }
 
+  /**
+   * Executes the operation: onRowsCountChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onRowsCountChange() {
     this.currentPage = 1;
     this.FetchOutPassList();
   }
 
+  /**
+   * Executes the operation: getVisiblePageNumbers
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getVisiblePageNumbers(): number[] {
     const total = this.totalPages();
     const pages: number[] = [];
@@ -477,6 +608,16 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
     return pages;
   }
 
+  /**
+   * Executes the operation: closeModal
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeModal() { this.isAddNewClicked = false; }
+  /**
+   * Executes the operation: closeStatusModal
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeStatusModal() { this.isStatusModalOpen = false; }
 }

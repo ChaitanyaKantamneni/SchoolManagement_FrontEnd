@@ -17,6 +17,9 @@ import { HttpClient } from '@angular/common/http';
   templateUrl: './units.component.html',
   styleUrl: './units.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for UnitsComponent.
+ */
 export class UnitsComponent extends BasePermissionComponent {
   pageName = 'Units';
   Math = Math;
@@ -31,6 +34,9 @@ export class UnitsComponent extends BasePermissionComponent {
     super(menuService, router);
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.checkViewPermission();
     this.SchoolSelectionChange = false;
@@ -41,6 +47,11 @@ export class UnitsComponent extends BasePermissionComponent {
     }
   }
 
+  /**
+   * Executes the operation: allowOnlyNumbers
+   * Parameters: event: KeyboardEvent
+   * Rationale: Standard operational controller for the active view.
+   */
   allowOnlyNumbers(event: KeyboardEvent) {
     if (
       event.key === 'Backspace' ||
@@ -108,6 +119,11 @@ export class UnitsComponent extends BasePermissionComponent {
     AcademicYear: new FormControl(sessionStorage.getItem('ActiveAcademicYearID') ? Number(sessionStorage.getItem('ActiveAcademicYearID')) : 0, [Validators.required, Validators.min(1)])
   });
 
+  /**
+   * Executes the operation: FetchSchoolsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSchoolsList() {
     const requestData = { Flag: '2' };
 
@@ -127,6 +143,11 @@ export class UnitsComponent extends BasePermissionComponent {
     );
   }
 
+  /**
+   * Executes the operation: FetchAcademicYearsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchAcademicYearsList() {
     const requestData = { SchoolID: this.AdminselectedSchoolID || '', Flag: '2' };
 
@@ -151,6 +172,11 @@ export class UnitsComponent extends BasePermissionComponent {
     return role === '1';
   }
 
+  /**
+   * Executes the operation: FetchUnitsCount
+   * Parameters: isSearch: boolean
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchUnitsCount(isSearch: boolean) {
     let SchoolIdSelected = '';
     if (this.SchoolSelectionChange) {
@@ -167,6 +193,11 @@ export class UnitsComponent extends BasePermissionComponent {
     return this.apiurl.post<any>('Tbl_Units_CRUD_Operations', payload);
   }
 
+  /**
+   * Executes the operation: FetchInitialData
+   * Parameters: extra: any = {}
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchInitialData(extra: any = {}) {
     const isSearch = !!this.searchQuery?.trim();
     const flag = isSearch ? '7' : '2';
@@ -230,6 +261,11 @@ export class UnitsComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Executes the operation: mapUnits
+   * Parameters: response: any
+   * Rationale: Standard operational controller for the active view.
+   */
   mapUnits(response: any) {
     this.UnitsList = (response.data || []).map((item: any) => ({
       ID: item.id,
@@ -247,6 +283,11 @@ export class UnitsComponent extends BasePermissionComponent {
     }));
   }
 
+  /**
+   * Executes the operation: AddNewClicked
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   AddNewClicked() {
     if (this.isAdmin) {
       this.UnitsForm.get('School')?.setValidators([Validators.required, Validators.min(1)]);
@@ -274,6 +315,11 @@ export class UnitsComponent extends BasePermissionComponent {
     this.ViewUnitClicked = false;
   }
 
+  /**
+   * Executes the operation: SubmitUnit
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   SubmitUnit() {
     if (this.UnitsForm.invalid) {
       this.UnitsForm.markAllAsTouched();
@@ -336,6 +382,11 @@ export class UnitsComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Executes the operation: FetchUnitByID
+   * Parameters: UnitID: string, mode: 'view' | 'edit'
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchUnitByID(UnitID: string, mode: 'view' | 'edit') {
     const data = { ID: UnitID, Flag: '4' };
 
@@ -398,6 +449,11 @@ export class UnitsComponent extends BasePermissionComponent {
     );
   }
 
+  /**
+   * Executes the operation: UpdateUnit
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   UpdateUnit() {
     if (this.UnitsForm.invalid) {
       this.UnitsForm.markAllAsTouched();
@@ -456,18 +512,43 @@ export class UnitsComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Executes the operation: previousPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   previousPage() {
     if (this.currentPage > 1) this.goToPage(this.currentPage - 1);
   }
 
+  /**
+   * Executes the operation: nextPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   nextPage() {
     if (this.currentPage < this.totalPages()) this.goToPage(this.currentPage + 1);
   }
 
+  /**
+   * Executes the operation: firstPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   firstPage() { this.goToPage(1); }
 
+  /**
+   * Executes the operation: lastPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   lastPage() { this.goToPage(this.totalPages()); }
 
+  /**
+   * Executes the operation: goToPage
+   * Parameters: pageNumber: number
+   * Rationale: Standard operational controller for the active view.
+   */
   goToPage(pageNumber: number) {
     const total = this.totalPages();
     if (pageNumber < 1) pageNumber = 1;
@@ -488,24 +569,49 @@ export class UnitsComponent extends BasePermissionComponent {
     }
   }
 
+  /**
+   * Executes the operation: totalPages
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   totalPages() {
     return Math.ceil(this.UnitsCount / this.pageSize);
   }
 
+  /**
+   * Executes the operation: pageStartIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageStartIndex(): number {
     return this.UnitsCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
   }
 
+  /**
+   * Executes the operation: pageEndIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageEndIndex(): number {
     return Math.min(this.currentPage * this.pageSize, this.UnitsCount);
   }
 
+  /**
+   * Executes the operation: onRowsCountChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onRowsCountChange() {
     this.currentPage = 1;
     this.pageCursors = [];
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: getVisiblePageNumbers
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getVisiblePageNumbers() {
     const totalPages = this.totalPages();
     const pages = [];
@@ -516,6 +622,11 @@ export class UnitsComponent extends BasePermissionComponent {
     return pages;
   }
 
+  /**
+   * Executes the operation: onSearchChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onSearchChange() {
     clearTimeout(this.searchTimer);
 
@@ -541,6 +652,11 @@ export class UnitsComponent extends BasePermissionComponent {
     }, this.SEARCH_DEBOUNCE);
   }
 
+  /**
+   * Executes the operation: closeModal
+   * Parameters: type: 'view' | 'status'
+   * Rationale: Standard operational controller for the active view.
+   */
   closeModal(type: 'view' | 'status') {
     if (type === 'view') {
       this.isViewModalOpen = false;
@@ -551,21 +667,41 @@ export class UnitsComponent extends BasePermissionComponent {
     }
   }
 
+  /**
+   * Executes the operation: handleOk
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   handleOk() {
     this.isModalOpen = false;
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: editreview
+   * Parameters: UnitID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   editreview(UnitID: string): void {
     this.editclicked = true;
     this.FetchUnitByID(UnitID, 'edit');
     this.ViewUnitClicked = true;
   }
 
+  /**
+   * Executes the operation: toggleChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   toggleChange() {
     this.IsActiveStatus = !this.IsActiveStatus;
   }
 
+  /**
+   * Executes the operation: sort
+   * Parameters: column: string
+   * Rationale: Standard operational controller for the active view.
+   */
   sort(column: string) {
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -578,6 +714,11 @@ export class UnitsComponent extends BasePermissionComponent {
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: onSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onSchoolChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     const schoolID = target.value;
@@ -586,6 +727,11 @@ export class UnitsComponent extends BasePermissionComponent {
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: onAdminSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminSchoolChange(event: Event) {
     this.academicYearList = [];
     // FIX 7: Reset AdminselectedAcademicYearID when school changes so stale
@@ -598,6 +744,11 @@ export class UnitsComponent extends BasePermissionComponent {
     this.FetchAcademicYearsList();
   }
 
+  /**
+   * Executes the operation: exportUnits
+   * Parameters: type: 'pdf' | 'excel' | 'print'
+   * Rationale: Standard operational controller for the active view.
+   */
   exportUnits(type: 'pdf' | 'excel' | 'print') {
     const isSearch = !!this.searchQuery?.trim();
     const flag = isSearch ? '7' : '2';
@@ -645,6 +796,11 @@ export class UnitsComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Executes the operation: viewReview
+   * Parameters: UnitID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   viewReview(UnitID: string): void {
     this.FetchUnitByID(UnitID, 'view');
     this.isViewModalOpen = true;

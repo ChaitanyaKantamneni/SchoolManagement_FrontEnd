@@ -14,6 +14,9 @@ import {
 @Injectable({
   providedIn: 'root'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for LeaveService.
+ */
 export class LeaveService {
   private apiUrl = environment.baseUrl;
 

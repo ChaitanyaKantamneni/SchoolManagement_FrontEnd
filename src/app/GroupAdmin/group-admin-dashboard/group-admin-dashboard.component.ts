@@ -26,6 +26,9 @@ import { ChangeDetectorRef } from '@angular/core';
   templateUrl: './group-admin-dashboard.component.html',
   styleUrl: './group-admin-dashboard.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for GroupAdminDashboardComponent.
+ */
 export class GroupAdminDashboardComponent implements OnInit {
 
   isMobileNavOpen = false;
@@ -89,6 +92,9 @@ export class GroupAdminDashboardComponent implements OnInit {
 
   /* ================= INIT ================= */
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit() {
     this.roleId          = sessionStorage.getItem('RollID')    || '';
     this.taggedSchoolIds = sessionStorage.getItem('schoolIds') || '';
@@ -115,6 +121,11 @@ export class GroupAdminDashboardComponent implements OnInit {
 
   /* ================= ROLE CONTEXT ================= */
 
+  /**
+   * Executes the operation: setRoleContext
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   setRoleContext(): void {
     this.roleKey          = this.resolveRoleKey(this.roleId);
     this.kpiCards         = this.getRoleKpis(this.roleKey);
@@ -174,6 +185,11 @@ export class GroupAdminDashboardComponent implements OnInit {
         || this.roleId  === '10';
   }
 
+  /**
+   * Executes the operation: getRoleKpis
+   * Parameters: role: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private getRoleKpis(role: string): Array<{ key: string; label: string; icon: string; accent: string; fallback: string[] }> {
     const common = {
       students:  { key: 'students',  label: 'Students',  icon: 'groups',       accent: 'kpi-students',  fallback: ['counts.studentsCount']  },
@@ -223,6 +239,11 @@ export class GroupAdminDashboardComponent implements OnInit {
     }
   }
 
+  /**
+   * Executes the operation: getRoleActivities
+   * Parameters: role: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private getRoleActivities(role: string): Array<{ title: string; dataKey: string; icon: string; type: 'people' | 'notice' }> {
     if (role === 'parent') {
       return [
@@ -247,6 +268,11 @@ export class GroupAdminDashboardComponent implements OnInit {
 
   /* ================= LOAD SCHOOLS ================= */
 
+  /**
+   * Executes the operation: loadSchools
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   loadSchools() {
     const req: any = { Flag: '2' };
 
@@ -273,6 +299,11 @@ export class GroupAdminDashboardComponent implements OnInit {
 
   /* ================= LOAD ACADEMIC YEARS ================= */
 
+  /**
+   * Executes the operation: loadAcademicYears
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   loadAcademicYears() {
     // Skip until a school is selected for roles that use the school filter
     if (this.showSchoolFilter() && !this.selectedSchool) {
@@ -311,6 +342,11 @@ export class GroupAdminDashboardComponent implements OnInit {
 
   /* ================= FILTER EVENTS ================= */
 
+  /**
+   * Executes the operation: onSchoolChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onSchoolChange(): void {
     this.selectedAcademicYear = null;
     this.selectedClass        = null;
@@ -328,6 +364,11 @@ export class GroupAdminDashboardComponent implements OnInit {
     this.loadNotices();
   }
 
+  /**
+   * Executes the operation: onAcademicYearChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onAcademicYearChange(): void {
     this.selectedClass    = null;
     this.selectedDivision = null;
@@ -337,17 +378,42 @@ export class GroupAdminDashboardComponent implements OnInit {
     this.loadNotices();
   }
 
+  /**
+   * Executes the operation: onTimePeriodChange
+   * Parameters: period: string
+   * Rationale: Standard operational controller for the active view.
+   */
   onTimePeriodChange(period: string): void {
     this.selectedTimePeriod = period;
     this.loadDashboard();
   }
 
+  /**
+   * Executes the operation: onBranchChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onBranchChange(): void    { this.loadDashboard(); }
+  /**
+   * Executes the operation: onDateRangeChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onDateRangeChange(): void  { this.loadDashboard(); }
+  /**
+   * Executes the operation: onCompareModeChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onCompareModeChange(): void { this.loadDashboard(); }
 
   /* ================= LOAD DASHBOARD ================= */
 
+  /**
+   * Executes the operation: loadDashboard
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   loadDashboard() {
     const toNullableNumber = (value: any): number | null => {
       if (value === null || value === undefined || value === '') return null;
@@ -394,6 +460,11 @@ export class GroupAdminDashboardComponent implements OnInit {
     });
   }
 
+  /**
+   * Executes the operation: normalizeResponse
+   * Parameters: data: any
+   * Rationale: Standard operational controller for the active view.
+   */
   normalizeResponse(data: any) {
     if (!data) return {};
     return {
@@ -427,6 +498,11 @@ export class GroupAdminDashboardComponent implements OnInit {
 
   /* ================= BUILD CHARTS ================= */
 
+  /**
+   * Executes the operation: buildCharts
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   buildCharts() {
     this.buildStudentsChart();
     this.buildStaffChart();
@@ -442,6 +518,11 @@ export class GroupAdminDashboardComponent implements OnInit {
   staffLegend: any[]    = [];
   staffLegendColors = ['#4f46e5', '#0ea5e9', '#14b8a6', '#a855f7', '#f59e0b', '#ef4444'];
 
+  /**
+   * Executes the operation: buildStudentsChart
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   buildStudentsChart() {
     const labels   = this.dashboard.studentChart?.map((x: any) => x.name)         || [];
     const values   = this.dashboard.studentChart?.map((x: any) => x.studentCount)  || [];
@@ -455,6 +536,11 @@ export class GroupAdminDashboardComponent implements OnInit {
     };
   }
 
+  /**
+   * Executes the operation: buildStaffChart
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   buildStaffChart() {
     if (!this.dashboard?.staffChart) return;
     const total = this.dashboard.staffChart.reduce((a: any, b: any) => a + b.count, 0);
@@ -480,6 +566,11 @@ export class GroupAdminDashboardComponent implements OnInit {
     };
   }
 
+  /**
+   * Executes the operation: buildAttendanceChart
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   buildAttendanceChart() {
     const attendanceData  = (this.dashboard.attendance || []).filter((x: any) => x.month !== 'No Data');
     const displayMonths   = attendanceData.length > 0 ? attendanceData.map((x: any) => x.month)      : ['No Data'];
@@ -513,6 +604,11 @@ export class GroupAdminDashboardComponent implements OnInit {
     }));
   }
 
+  /**
+   * Executes the operation: buildFeeChart
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   buildFeeChart() {
     const feeData       = (this.dashboard.fees || []).filter((x: any) => x.month !== 'No Data');
     const displayMonths = feeData.length > 0 ? feeData.map((x: any) => x.month)  : ['No Data'];
@@ -548,6 +644,11 @@ export class GroupAdminDashboardComponent implements OnInit {
     }));
   }
 
+  /**
+   * Executes the operation: buildStaffDepartmentChart
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   buildStaffDepartmentChart(): void {
     const staffData = this.dashboard?.staffChart || [];
     if (!Array.isArray(staffData) || staffData.length === 0) {
@@ -571,6 +672,11 @@ export class GroupAdminDashboardComponent implements OnInit {
 
   /* ================= DRILLDOWN ================= */
 
+  /**
+   * Executes the operation: onChartClick
+   * Parameters: event: any
+   * Rationale: Standard operational controller for the active view.
+   */
   onChartClick(event: any) {
     const index = event.dataIndex;
     if (!this.selectedClass) {
@@ -584,6 +690,11 @@ export class GroupAdminDashboardComponent implements OnInit {
     this.loadDashboard();
   }
 
+  /**
+   * Executes the operation: resetDrill
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   resetDrill(): void {
     this.selectedClass    = null;
     this.selectedDivision = null;
@@ -604,6 +715,11 @@ export class GroupAdminDashboardComponent implements OnInit {
     return this.academicYearList.find((a: any) => String(a.ID) === String(this.selectedAcademicYear))?.Name ?? 'All Years';
   }
 
+  /**
+   * Executes the operation: getKpiValue
+   * Parameters: key: string
+   * Rationale: Standard operational controller for the active view.
+   */
   getKpiValue(key: string): number {
     const apiRoleKpis = this.dashboard?.roleKpis;
     if (apiRoleKpis && typeof apiRoleKpis === 'object' && apiRoleKpis[key] !== undefined && apiRoleKpis[key] !== null) {
@@ -619,17 +735,37 @@ export class GroupAdminDashboardComponent implements OnInit {
   }
 
   getKpiTrendDirection(value: number): 'up' | 'flat' { return value > 0 ? 'up' : 'flat'; }
+  /**
+   * Executes the operation: getKpiTrendLabel
+   * Parameters: value: number
+   * Rationale: Standard operational controller for the active view.
+   */
   getKpiTrendLabel(value: number): string            { return value > 0 ? 'Healthy' : 'No data'; }
 
+  /**
+   * Executes the operation: readPath
+   * Parameters: path: string
+   * Rationale: Standard operational controller for the active view.
+   */
   readPath(path: string): any {
     return path.split('.').reduce((acc: any, part: string) => acc?.[part], this.dashboard);
   }
 
+  /**
+   * Executes the operation: getActivityData
+   * Parameters: dataKey: string
+   * Rationale: Standard operational controller for the active view.
+   */
   getActivityData(dataKey: string): any[] {
     const list = this.dashboard?.roleActivities?.[dataKey] ?? this.dashboard?.[dataKey];
     return Array.isArray(list) ? list : [];
   }
 
+  /**
+   * Executes the operation: getMiniKpiValue
+   * Parameters: key: 'attendancePercent' | 'activeUsers' | 'pendingFees' | 'upcomingExams' | 'totalCollection'
+   * Rationale: Standard operational controller for the active view.
+   */
   getMiniKpiValue(key: 'attendancePercent' | 'activeUsers' | 'pendingFees' | 'upcomingExams' | 'totalCollection'): number {
     const mini  = this.dashboard?.miniKpis;
     const direct = this.dashboard?.[key];
@@ -676,6 +812,11 @@ export class GroupAdminDashboardComponent implements OnInit {
     return curr > prev ? 'up' : curr < prev ? 'down' : 'flat';
   }
 
+  /**
+   * Executes the operation: buildAlerts
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   buildAlerts(): void {
     const list = this.dashboard?.alerts;
     if (Array.isArray(list) && list.length) { this.alerts = list.slice(0, 3); return; }
@@ -700,6 +841,11 @@ export class GroupAdminDashboardComponent implements OnInit {
 
   /* ================= NOTICES ================= */
 
+  /**
+   * Executes the operation: loadNotices
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   loadNotices(): void {
     const payload: any = {
       Flag:         '2',
@@ -748,16 +894,36 @@ export class GroupAdminDashboardComponent implements OnInit {
     return this.activeNotices.slice(start, start + 3);
   }
 
+  /**
+   * Executes the operation: prevNoticeSlide
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   prevNoticeSlide(): void { if (this.noticeSlide > 0) this.noticeSlide--; }
+  /**
+   * Executes the operation: nextNoticeSlide
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   nextNoticeSlide(): void { if (this.noticeSlide < this.noticeSlideCount - 1) this.noticeSlide++; }
 
   /* ================= MENU & QUICK LINKS ================= */
 
+  /**
+   * Executes the operation: loadMenu
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   loadMenu(): void {
     try   { this.menu = this.menuService.getMenu(); }
     catch { this.menu = []; }
   }
 
+  /**
+   * Executes the operation: loadQuickLinks
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   loadQuickLinks(): void {
     this.quickLinks = [];
     const sourceMenu = this.roleId === '1' ? this.fullAdminMenu : this.menu;
@@ -790,10 +956,20 @@ export class GroupAdminDashboardComponent implements OnInit {
     });
   }
 
+  /**
+   * Executes the operation: formatRoute
+   * Parameters: pageName: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private formatRoute(pageName: string): string {
     return pageName.split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join('');
   }
 
+  /**
+   * Executes the operation: getPageIcon
+   * Parameters: pageName: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private getPageIcon(pageName: string): string {
     const key = (pageName || '').trim().toLowerCase();
     const iconMap: Record<string, string> = {
@@ -808,39 +984,84 @@ export class GroupAdminDashboardComponent implements OnInit {
 
   /* ================= UTILS ================= */
 
+  /**
+   * Executes the operation: getCurrentDate
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getCurrentDate(): string {
     return new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   }
 
+  /**
+   * Executes the operation: calculatePresentStudents
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   calculatePresentStudents(): number {
     const total   = this.getKpiValue('students')              || 0;
     const percent = this.getMiniKpiValue('attendancePercent') || 0;
     return Math.round(total * percent / 100);
   }
 
+  /**
+   * Executes the operation: getUserInitials
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getUserInitials(): string {
     const userName = sessionStorage.getItem('UserName') || 'User';
     const names    = userName.split(' ');
     return names.length >= 2 ? (names[0][0] + names[1][0]).toUpperCase() : userName.substring(0, 2).toUpperCase();
   }
 
+  /**
+   * Executes the operation: getUserName
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getUserName(): string { return sessionStorage.getItem('UserName') || 'User'; }
 
+  /**
+   * Executes the operation: toggleMobileNav
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   toggleMobileNav(): void { this.isMobileNavOpen = !this.isMobileNavOpen; }
 
+  /**
+   * Executes the operation: getNoticeIcon
+   * Parameters: noticeType: string
+   * Rationale: Standard operational controller for the active view.
+   */
   getNoticeIcon(noticeType: string): string {
     const iconMap: Record<string, string> = { 'General': 'campaign', 'Exam': 'quiz', 'Holiday': 'celebration', 'Urgent': 'priority_high' };
     return iconMap[noticeType] || 'campaign';
   }
 
+  /**
+   * Executes the operation: formatDate
+   * Parameters: dateString: string
+   * Rationale: Standard operational controller for the active view.
+   */
   formatDate(dateString: string): string {
     if (!dateString) return '';
     const d = new Date(dateString);
     return `${d.getDate().toString().padStart(2, '0')}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getFullYear()}`;
   }
 
+  /**
+   * Executes the operation: navigateTo
+   * Parameters: route: string
+   * Rationale: Standard operational controller for the active view.
+   */
   navigateTo(route: string): void { this.router.navigate([route]); }
 
+  /**
+   * Executes the operation: logout
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   logout() {
     this.menuService.clearMenu();
     sessionStorage.clear();

@@ -60,6 +60,9 @@ interface BalanceItem {
   templateUrl: './applyleave.component.html',
   styleUrl: './applyleave.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for ApplyleaveComponent.
+ */
 export class ApplyleaveComponent extends BasePermissionComponent implements OnInit {
   pageName = 'Apply Leave';
 
@@ -261,6 +264,9 @@ export class ApplyleaveComponent extends BasePermissionComponent implements OnIn
     super(menu, router);
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.selectedAcademicYearId = sessionStorage.getItem('ActiveAcademicYearID') || '';
     this.fetchRoles();
@@ -362,6 +368,11 @@ export class ApplyleaveComponent extends BasePermissionComponent implements OnIn
     }
   }
 
+  /**
+   * Executes the operation: applyValidators
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private applyValidators(): void {
     const leaveTypeCtrl = this.leaveForm.get('leaveType');
 if (!this.isActuallyStudent && !this.isParent) {
@@ -378,6 +389,11 @@ if (!this.isActuallyStudent && !this.isParent) {
     if (tab === 'list') this.fetchHistory();
   }
 
+  /**
+   * Executes the operation: onSchoolChange
+   * Parameters: e: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onSchoolChange(e: Event): void {
     this.selectedSchoolId = (e.target as HTMLSelectElement).value;
     this.academicYears = []; this.staffList = []; this.studentList = [];
@@ -397,6 +413,11 @@ if (!this.isActuallyStudent && !this.isParent) {
     }
   }
 
+  /**
+   * Executes the operation: onClassChange
+   * Parameters: e: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onClassChange(e: Event): void {
     this.selectedClassId = (e.target as HTMLSelectElement).value;
     this.selectedDivisionId = '';
@@ -407,12 +428,22 @@ if (!this.isActuallyStudent && !this.isParent) {
     }
   }
 
+  /**
+   * Executes the operation: onDivisionChange
+   * Parameters: e: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onDivisionChange(e: Event): void {
     this.selectedDivisionId = (e.target as HTMLSelectElement).value;
     this.studentList = [];
     this.fetchStudents();
   }
 
+  /**
+   * Executes the operation: onUserTypeChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onUserTypeChange(): void {
     this.staffList = [];
     this.studentList = [];
@@ -442,6 +473,11 @@ if (!this.isActuallyStudent && !this.isParent) {
     this.applyValidators();
   }
 
+  /**
+   * Executes the operation: onYearChange
+   * Parameters: e: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onYearChange(e: Event): void {
     const val = (e.target as HTMLSelectElement).value;
     const yearObj = this.academicYears.find(y => y.ID === val);
@@ -460,6 +496,11 @@ if (!this.isActuallyStudent && !this.isParent) {
     // this.fetchHistory();
   }
 
+  /**
+   * Executes the operation: onStaffChange
+   * Parameters: e: Event
+   * Rationale: Standard operational controller for the active view.
+   */
  onStaffChange(e: Event): void {
   const id = (e.target as HTMLSelectElement).value;
 
@@ -589,6 +630,11 @@ if (!this.isActuallyStudent && !this.isParent) {
     }
   }
 
+  /**
+   * Executes the operation: doSubmit
+   * Parameters: payload: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private doSubmit(payload: any): void {
     this.isSubmitting = true;
     this.loader.show();
@@ -632,6 +678,11 @@ if (!this.isActuallyStudent && !this.isParent) {
     });
   }
 
+  /**
+   * Executes the operation: deleteTempFileOnFailure
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private deleteTempFileOnFailure(): void {
     const schoolId = this.selectedSchoolId || this.resolvedSchoolId;
     const fileName = this.uploadedFileUrl.split('/').pop() || '';
@@ -653,6 +704,11 @@ if (!this.isActuallyStudent && !this.isParent) {
   }
 
 
+  /**
+   * Executes the operation: resetForm
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   resetForm(): void {
     console.log('Resetting form...');
 
@@ -742,6 +798,11 @@ if (!this.isActuallyStudent && !this.isParent) {
     this.generateFilePreview(file);
   }
 
+  /**
+   * Executes the operation: generateFilePreview
+   * Parameters: file: File
+   * Rationale: Standard operational controller for the active view.
+   */
   generateFilePreview(file: File): void {
     this.isPreviewVisible = true;
     if (file.type.startsWith('image/')) {
@@ -755,6 +816,11 @@ if (!this.isActuallyStudent && !this.isParent) {
     }
   }
 
+  /**
+   * Executes the operation: clearFileSelection
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   clearFileSelection(): void {
     this.selectedFile = null;
     this.selectedFileName = '';
@@ -778,6 +844,11 @@ if (!this.isActuallyStudent && !this.isParent) {
     }, 0);
   }
 
+  /**
+   * Executes the operation: removeFile
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   removeFile(): void {
     // If the file is already uploaded to server, delete it
     if (this.uploadedFileUrl) {
@@ -806,18 +877,38 @@ if (!this.isActuallyStudent && !this.isParent) {
     return this.fileService.getFullFileUrl(url);
   }
 
+  /**
+   * Executes the operation: isImageFile
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   isImageFile(): boolean {
     return this.fileService.isImageFile(this.uploadedFileUrl || this.selectedFileName);
   }
 
+  /**
+   * Executes the operation: isPdfFile
+   * Parameters: path?: string
+   * Rationale: Standard operational controller for the active view.
+   */
   isPdfFile(path?: string): boolean {
     return this.fileService.isPdfFile(path || this.uploadedFileUrl || this.selectedFileName);
   }
 
+  /**
+   * Executes the operation: getFileIcon
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getFileIcon(): string {
     return this.fileService.getFileIcon(this.uploadedFileUrl || this.selectedFileName);
   }
 
+  /**
+   * Executes the operation: downloadAttachment
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   downloadAttachment(): void {
     if (this.uploadedFileUrl) {
       const filename = this.uploadedFileUrl.split('/').pop() || 'download';
@@ -825,6 +916,11 @@ if (!this.isActuallyStudent && !this.isParent) {
     }
   }
 
+  /**
+   * Executes the operation: downloadHistoryAttachment
+   * Parameters: url: string
+   * Rationale: Standard operational controller for the active view.
+   */
   downloadHistoryAttachment(url: string): void {
     if (url) {
       const filename = url.split('/').pop() || 'download';
@@ -832,11 +928,21 @@ if (!this.isActuallyStudent && !this.isParent) {
     }
   }
 
+  /**
+   * Executes the operation: getFileName
+   * Parameters: url?: string
+   * Rationale: Standard operational controller for the active view.
+   */
   getFileName(url?: string): string {
     if (!url) return '';
     return url.split('/').pop() || '';
   }
 
+  /**
+   * Executes the operation: removeHistoryAttachment
+   * Parameters: l: LeaveHistoryItem
+   * Rationale: Standard operational controller for the active view.
+   */
   removeHistoryAttachment(l: LeaveHistoryItem): void {
     if (!confirm('Are you sure you want to remove this attachment?')) return;
 
@@ -877,6 +983,11 @@ if (!this.isActuallyStudent && !this.isParent) {
     });
   }
 
+  /**
+   * Executes the operation: onHistoryFileChange
+   * Parameters: event: Event, l: LeaveHistoryItem
+   * Rationale: Standard operational controller for the active view.
+   */
   onHistoryFileChange(event: Event, l: LeaveHistoryItem): void {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
@@ -931,17 +1042,37 @@ if (!this.isActuallyStudent && !this.isParent) {
     this.AminityInsStatus = msg;
     this.isModalOpen = true;
   }
+  /**
+   * Executes the operation: handleOk
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   handleOk() {
     this.isModalOpen = false;
     this.fetchHistory();
   }
+  /**
+   * Executes the operation: closeModal
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeModal() {
     this.isModalOpen = false;
   }
+  /**
+   * Executes the operation: viewLeave
+   * Parameters: l: LeaveHistoryItem
+   * Rationale: Standard operational controller for the active view.
+   */
   viewLeave(l: LeaveHistoryItem) {
     this.selectedLeave = l;
     this.isDetailOpen = true;
   }
+  /**
+   * Executes the operation: closeDetail
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeDetail() {
     this.isDetailOpen = false;
     this.selectedLeave = null;
@@ -950,14 +1081,34 @@ if (!this.isActuallyStudent && !this.isParent) {
     this.cancelRemarks = '';
   }
 
+  /**
+   * Executes the operation: approveLeave
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   approveLeave(): void { this.updateStatus('Approved'); }
+  /**
+   * Executes the operation: rejectLeave
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   rejectLeave(): void { this.updateStatus('Rejected'); }
   
+  /**
+   * Executes the operation: confirmCancelLeave
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   confirmCancelLeave(): void {
     this.actionRemarks = this.cancelRemarks.trim() || 'Cancelled by applicant';
     this.updateStatus('Cancelled');
   }
 
+  /**
+   * Executes the operation: updateStatus
+   * Parameters: status: 'Approved' | 'Rejected' | 'Cancelled'
+   * Rationale: Standard operational controller for the active view.
+   */
   private updateStatus(status: 'Approved' | 'Rejected' | 'Cancelled'): void {
     if (!this.selectedLeave || this.isSubmittingAction) return;
     this.isSubmittingAction = true;
@@ -1000,6 +1151,11 @@ if (!this.isActuallyStudent && !this.isParent) {
     this.proceedWithStatusUpdate(payload, status);
   }
 
+  /**
+   * Executes the operation: proceedWithStatusUpdate
+   * Parameters: payload: any, status: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private proceedWithStatusUpdate(payload: any, status: string): void {
     this.api.post<any>('Tbl_LeaveApplication_Operations', payload).subscribe({
       next: (res) => {
@@ -1023,7 +1179,17 @@ if (!this.isActuallyStudent && !this.isParent) {
     });
   }
 
+  /**
+   * Executes the operation: getStatusClass
+   * Parameters: s: string
+   * Rationale: Standard operational controller for the active view.
+   */
   getStatusClass(s: string) { return s?.toLowerCase() || 'pending'; }
+  /**
+   * Executes the operation: trackById
+   * Parameters: _: number, l: LeaveHistoryItem
+   * Rationale: Standard operational controller for the active view.
+   */
   trackById(_: number, l: LeaveHistoryItem) { return l.id; }
   
   // Pagination methods
@@ -1032,6 +1198,11 @@ if (!this.isActuallyStudent && !this.isParent) {
     this.fetchHistory();
   }
   
+  /**
+   * Executes the operation: historyGoToPage
+   * Parameters: page: number
+   * Rationale: Standard operational controller for the active view.
+   */
   historyGoToPage(page: number): void {
     if (page < 1) page = 1;
     if (page > this.historyTotalPages) page = this.historyTotalPages;
@@ -1039,22 +1210,42 @@ if (!this.isActuallyStudent && !this.isParent) {
     this.fetchHistory();
   }
   
+  /**
+   * Executes the operation: historyPreviousPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   historyPreviousPage(): void {
     if (this.historyCurrentPage > 1) {
       this.historyGoToPage(this.historyCurrentPage - 1);
     }
   }
   
+  /**
+   * Executes the operation: historyNextPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   historyNextPage(): void {
     if (this.historyCurrentPage < this.historyTotalPages) {
       this.historyGoToPage(this.historyCurrentPage + 1);
     }
   }
   
+  /**
+   * Executes the operation: historyFirstPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   historyFirstPage(): void {
     this.historyGoToPage(1);
   }
   
+  /**
+   * Executes the operation: historyLastPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   historyLastPage(): void {
     this.historyGoToPage(this.historyTotalPages);
   }
@@ -1066,6 +1257,11 @@ if (!this.isActuallyStudent && !this.isParent) {
     return f && t && new Date(t) < new Date(f) ? { invalidDateRange: true } : null;
   }
 
+  /**
+   * Executes the operation: checkAndLoad
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
 private checkAndLoad(): void {
   const hasContext = this.selectedSchoolId && this.selectedAcademicYearId;
   if (!hasContext) return;
@@ -1084,6 +1280,11 @@ private checkAndLoad(): void {
   this.fetchHistory();
 }
 
+  /**
+   * Executes the operation: loadBalances
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private loadBalances(): void {
     const schoolId = this.resolvedSchoolId;
     console.log('loadBalances Prerequisites Check:', {
@@ -1162,12 +1363,22 @@ private checkAndLoad(): void {
     });
   }
 
+  /**
+   * Executes the operation: ensureLeaveTypeIsValid
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private ensureLeaveTypeIsValid(): void {
     if (!this.leaveTypes.includes(String(this.leaveForm.get('leaveType')?.value || ''))) {
       this.leaveForm.get('leaveType')?.patchValue('');
     }
   }
 
+  /**
+   * Executes the operation: fetchHistory
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchHistory(): void {
   const schoolId = this.resolvedSchoolId;
 
@@ -1276,6 +1487,11 @@ private checkAndLoad(): void {
   });
 }
 
+  /**
+   * Executes the operation: fetchAcademicYears
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchAcademicYears(): void {
     if (!this.selectedSchoolId || this.selectedSchoolId === '0' || !this.selectedSchoolId.trim()) return;
 
@@ -1316,6 +1532,11 @@ private checkAndLoad(): void {
     tryFetch('2');
   }
 
+  /**
+   * Executes the operation: fetchSchools
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchSchools(): void {
     this.api.post<any>('Tbl_SchoolDetails_CRUD', { Flag: '2' }).subscribe({
       next: (res: any) => {
@@ -1326,6 +1547,11 @@ private checkAndLoad(): void {
     });
   }
 
+  /**
+   * Executes the operation: resolveStaffIdentity
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private resolveStaffIdentity(): void {
     const schoolId = this.resolvedSchoolId;
     const email = (this.ss('email') || this.ss('Email') || '').toString().trim().toLowerCase();
@@ -1350,6 +1576,11 @@ private checkAndLoad(): void {
     });
   }
 
+  /**
+   * Executes the operation: fetchStaff
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchStaff(): void {
     if (!this.selectedSchoolId) return;
     this.api.post<any>('Tbl_Staff_CRUD_Operations', { SchoolID: this.selectedSchoolId, Flag: '2' }).subscribe({
@@ -1479,6 +1710,11 @@ private checkAndLoad(): void {
     return '-';
   }
 
+  /**
+   * Executes the operation: fetchStudents
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchStudents(): void {
     if (!this.selectedSchoolId) return;
 
@@ -1511,6 +1747,11 @@ private checkAndLoad(): void {
     });
   }
 
+  /**
+   * Executes the operation: fetchClassList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchClassList(): void {
     if (!this.selectedSchoolId || !this.selectedAcademicYearId) return;
     const req = { SchoolID: this.selectedSchoolId, AcademicYear: this.selectedAcademicYearId, Flag: '9' };
@@ -1522,6 +1763,11 @@ private checkAndLoad(): void {
     });
   }
 
+  /**
+   * Executes the operation: fetchDivisionsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchDivisionsList(): void {
     if (!this.selectedSchoolId || !this.selectedAcademicYearId || !this.selectedClassId) return;
     const req = { SchoolID: this.selectedSchoolId, AcademicYear: this.selectedAcademicYearId, Class: this.selectedClassId, Flag: '3' };
@@ -1532,6 +1778,11 @@ private checkAndLoad(): void {
       }));
     });
   }
+  /**
+   * Executes the operation: fetchRoles
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchRoles(): void {
     this.api.post<any>('Tbl_Roles_CRUD_Operations', { Flag: '2', SchoolID: this.selectedSchoolId || '' }).subscribe({
       next: (res) => {
@@ -1542,6 +1793,11 @@ private checkAndLoad(): void {
     });
   }
 
+  /**
+   * Executes the operation: fetchParentChildren
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchParentChildren(): void {
     const parentEmail = (this.ss('email') || '').toString().trim();
     if (!parentEmail) return;
@@ -1601,6 +1857,11 @@ private checkAndLoad(): void {
 
   selectedChildIndex: number = 0;
 
+  /**
+   * Executes the operation: selectChild
+   * Parameters: index: number
+   * Rationale: Standard operational controller for the active view.
+   */
   selectChild(index: number): void {
     this.selectedChildIndex = index;
     const child = this.parentChildren[index];
@@ -1612,6 +1873,11 @@ private checkAndLoad(): void {
     this.fetchHistory();
   }
 
+  /**
+   * Executes the operation: loadStudentsByAdmissionIds
+   * Parameters: _admissionIds: string[]
+   * Rationale: Standard operational controller for the active view.
+   */
   private loadStudentsByAdmissionIds(_admissionIds: string[]): void {
     // No longer used — replaced by server-side Flag 9
   }

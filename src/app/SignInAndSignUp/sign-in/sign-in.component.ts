@@ -631,6 +631,9 @@ interface PendingLoginState {
   templateUrl: './sign-in.component.html',
   styleUrls: ['./sign-in.component.css']
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for SignInComponent.
+ */
 export class SignInComponent implements OnInit, OnDestroy {
 
   // UI
@@ -670,6 +673,9 @@ export class SignInComponent implements OnInit, OnDestroy {
   ) { }
 
   // ================= INIT =================
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
 
@@ -688,6 +694,11 @@ export class SignInComponent implements OnInit, OnDestroy {
     this.generateCaptcha();
   }
 
+  /**
+   * Executes the operation: ngOnDestroy
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   ngOnDestroy(): void {
     this.clearResendTimer();
   }
@@ -813,6 +824,11 @@ export class SignInComponent implements OnInit, OnDestroy {
   //   });
   // }
 
+  /**
+   * Executes the operation: OnSubmitSignIn
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   OnSubmitSignIn(): void {
 
     if (this.isLoginLoading) return;
@@ -1053,11 +1069,21 @@ export class SignInComponent implements OnInit, OnDestroy {
     this.LoginForms.get('otp')?.reset();
   }
 
+  /**
+   * Executes the operation: resendOtp
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   resendOtp() {
     if (!this.pendingLoginData) return;
     this.sendOtp(this.pendingLoginData.email);
   }
 
+  /**
+   * Executes the operation: getMaskedEmail
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getMaskedEmail(): string {
     const email = this.pendingLoginData?.email || '';
     const [name, domain] = email.split('@');
@@ -1076,6 +1102,11 @@ export class SignInComponent implements OnInit, OnDestroy {
     }, 1000);
   }
 
+  /**
+   * Executes the operation: clearResendTimer
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private clearResendTimer() {
     if (this.resendTimerId) {
       clearInterval(this.resendTimerId);

@@ -22,6 +22,9 @@ import { FileService } from '../../../Services/file.service';
   templateUrl: './admission.component.html',
   styleUrls: ['./admission.component.css']
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for AdmissionComponent.
+ */
 export class AdmissionComponent extends BasePermissionComponent {
   pageName = 'Admission';
 
@@ -39,6 +42,9 @@ export class AdmissionComponent extends BasePermissionComponent {
     super(menuService, router);
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.checkViewPermission();
     this.SchoolSelectionChange=false;
@@ -209,6 +215,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     { id: '4', name: 'Karnataka' }
   ];
 
+  /**
+   * Executes the operation: noFutureDateValidator
+   * Parameters: control: any
+   * Rationale: Standard operational controller for the active view.
+   */
   noFutureDateValidator(control: any) {
     if (!control.value) return null;
 
@@ -220,6 +231,11 @@ export class AdmissionComponent extends BasePermissionComponent {
   }
 
 
+  /**
+   * Executes the operation: toggleSelection
+   * Parameters: value: string
+   * Rationale: Standard operational controller for the active view.
+   */
   toggleSelection(value: string) {
     const index = this.selectedCategories.indexOf(value);
     if (index > -1) {
@@ -230,6 +246,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     this.ModuleForm.get('Class')?.setValue(this.selectedCategories);
   }
 
+  /**
+   * Executes the operation: allowAlphaAndSpecial
+   * Parameters: event: KeyboardEvent
+   * Rationale: Standard operational controller for the active view.
+   */
   allowAlphaAndSpecial(event: KeyboardEvent) {
     const allowedRegex = /^[a-zA-Z ]$/;
     if (
@@ -247,6 +268,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     }
   }
 
+  /**
+   * Executes the operation: allowOnlyNumbers
+   * Parameters: event: KeyboardEvent
+   * Rationale: Standard operational controller for the active view.
+   */
   allowOnlyNumbers(event: KeyboardEvent) {
     if (
       event.key === 'Backspace' ||
@@ -263,6 +289,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     }
   }
 
+  /**
+   * Executes the operation: FetchSchoolsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSchoolsList() {
     const requestData = { Flag: '2' };
 
@@ -288,6 +319,11 @@ export class AdmissionComponent extends BasePermissionComponent {
       );
   };
 
+  /**
+   * Executes the operation: FetchAcademicYearsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchAcademicYearsList() {
     const schoolId =
     this.SchoolSelectionChange
@@ -336,6 +372,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     return '';
   }
 
+  /**
+   * Executes the operation: FetchAcademicYearCount
+   * Parameters: isSearch: boolean
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchAcademicYearCount(isSearch: boolean) {
     let SchoolIdSelected = '';
     let AcademicYearIdSelected='';
@@ -364,6 +405,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     return this.apiurl.post<any>('Tbl_StudentDetails_CRUD_Operations', payload);
   }
 
+  /**
+   * Executes the operation: FetchInitialData
+   * Parameters: extra: any = {}
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchInitialData(extra: any = {}) {
     const isSearch = !!this.searchQuery?.trim();
     const flag = isSearch ? '7' : '2';
@@ -442,6 +488,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     });
   };
 
+  /**
+   * Executes the operation: mapAcademicYears
+   * Parameters: response: any
+   * Rationale: Standard operational controller for the active view.
+   */
   mapAcademicYears(response: any) {
     this.SubjectsList = (response.data || []).map((item: any) => ({
       ID: item.id,
@@ -472,6 +523,11 @@ export class AdmissionComponent extends BasePermissionComponent {
   };
 
 
+  /**
+   * Executes the operation: AddNewClicked
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   AddNewClicked(){
     this.ModuleForm.reset();
     this.activeTab="personal";
@@ -505,6 +561,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     this.ViewModuleClicked=false;
   };
 
+  /**
+   * Executes the operation: FetchClassList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchClassList() {
     const AcademicYearIdSelected =
     this.isAdmin
@@ -537,6 +598,11 @@ export class AdmissionComponent extends BasePermissionComponent {
       );
   };
 
+  /**
+   * Executes the operation: FetchDivisionList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchDivisionList() {
     const requestData = {
       SchoolID:this.AdminselectedSchoolID,
@@ -565,6 +631,11 @@ export class AdmissionComponent extends BasePermissionComponent {
       );
   };
 
+  /**
+   * Executes the operation: FetchAdmissionNo
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchAdmissionNo(){
     const AcademicYearIdSelected =
     this.isAdmin
@@ -590,6 +661,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     );
   };
 
+  /**
+   * Executes the operation: FetchRoutesList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchRoutesList() {
     const requestData = {
       SchoolID:this.AdminselectedSchoolID,
@@ -617,6 +693,11 @@ export class AdmissionComponent extends BasePermissionComponent {
       );
   };
 
+  /**
+   * Executes the operation: FetchStopsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchStopsList() {
     const requestData = {
       SchoolID:this.AdminselectedSchoolID,
@@ -645,6 +726,11 @@ export class AdmissionComponent extends BasePermissionComponent {
       );
   };
 
+  /**
+   * Executes the operation: FetchBusList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchBusList() {
     const requestData = {
       SchoolID:this.AdminselectedSchoolID,
@@ -674,6 +760,11 @@ export class AdmissionComponent extends BasePermissionComponent {
       );
   };
 
+  /**
+   * Executes the operation: FetchFareList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchFareList() {
     const requestData = {
       SchoolID:this.AdminselectedSchoolID,
@@ -704,6 +795,11 @@ export class AdmissionComponent extends BasePermissionComponent {
       );
   };
 
+  /**
+   * Executes the operation: SubmitPersonalDetails
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   SubmitPersonalDetails(){
     if(this.activeTab=="personal"){
       this.ModuleForm.markAllAsTouched();
@@ -977,6 +1073,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     }
   };
 
+  /**
+   * Executes the operation: SubmitUser
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   SubmitUser(){
     const currentSchoolId = this.currentSchoolId;
     if(this.activeTab=="personal"){
@@ -1048,6 +1149,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     }
   };
 
+  /**
+   * Executes the operation: UpdateUser
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   UpdateUser(){
     const currentSchoolId = this.currentSchoolId;
     if(this.activeTab=="personal"){
@@ -1117,6 +1223,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     }
   };
 
+  /**
+   * Executes the operation: FetchPersonalDetByID
+   * Parameters: SyllabusID: string, mode: 'view' | 'edit'
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchPersonalDetByID(SyllabusID: string, mode: 'view' | 'edit') {
     const data = {
       AdmissionNo: SyllabusID,
@@ -1210,6 +1321,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     );
   };
 
+  /**
+   * Executes the operation: FetchParentDetByAdmissionID
+   * Parameters: mode: 'view' | 'edit'
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchParentDetByAdmissionID(mode: 'view' | 'edit') {
     const data = {
       AdmissionID: this.selectedAdmissionID,
@@ -1269,6 +1385,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     );
   };
 
+  /**
+   * Executes the operation: FetchPermanentAddressByAdmissionID
+   * Parameters: mode: 'view' | 'edit'
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchPermanentAddressByAdmissionID(mode: 'view' | 'edit') {
     const data = {
       AdmissionID: this.selectedAdmissionID,
@@ -1320,6 +1441,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     );
   };
 
+  /**
+   * Executes the operation: FetchTemporaryAddressByAdmissionID
+   * Parameters: mode: 'view' | 'edit'
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchTemporaryAddressByAdmissionID(mode: 'view' | 'edit') {
     const data = {
       AdmissionID: this.selectedAdmissionID,
@@ -1371,6 +1497,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     );
   };
 
+  /**
+   * Executes the operation: FetchTransportationDetByAdmissionID
+   * Parameters: mode: 'view' | 'edit'
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchTransportationDetByAdmissionID(mode: 'view' | 'edit') {
     const data = {
       AdmissionID: this.selectedAdmissionID,
@@ -1429,6 +1560,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     );
   };
 
+  /**
+   * Executes the operation: FetchStudentDocuments
+   * Parameters: mode: 'view' | 'edit'
+   * Rationale: Standard operational controller for the active view.
+   */
  FetchStudentDocuments(mode: 'view' | 'edit') {
 
   const admissionId = this.selectedAdmissionID;
@@ -1456,6 +1592,11 @@ export class AdmissionComponent extends BasePermissionComponent {
   this.loadStudentFiles();
 }
 
+  /**
+   * Executes the operation: UpdateModule
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   UpdateModule(){
     if(this.activeTab=="personal"){
       this.ModuleForm.markAllAsTouched();
@@ -1720,26 +1861,51 @@ export class AdmissionComponent extends BasePermissionComponent {
     }
   };
 
+  /**
+   * Executes the operation: previousPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   previousPage() {
     if (this.currentPage > 1) {
       this.goToPage(this.currentPage - 1);
     }
   };
 
+  /**
+   * Executes the operation: nextPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   nextPage() {
     if (this.currentPage < this.totalPages()) {
       this.goToPage(this.currentPage + 1);
     }
   };
 
+  /**
+   * Executes the operation: firstPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   firstPage() {
     this.goToPage(1);
   };
 
+  /**
+   * Executes the operation: lastPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   lastPage() {
     this.goToPage(this.totalPages());
   };
 
+  /**
+   * Executes the operation: goToPage
+   * Parameters: pageNumber: number
+   * Rationale: Standard operational controller for the active view.
+   */
   goToPage(pageNumber: number) {
     const total = this.totalPages();
 
@@ -1761,19 +1927,39 @@ export class AdmissionComponent extends BasePermissionComponent {
     }
   };
 
+  /**
+   * Executes the operation: totalPages
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   totalPages() {
     return Math.ceil(this.SubjectsCount / this.pageSize);
   };
 
+  /**
+   * Executes the operation: isAdmissionActive
+   * Parameters: module: any
+   * Rationale: Standard operational controller for the active view.
+   */
   isAdmissionActive(module: any): boolean {
     return module?.IsActive === true || module?.IsActive === 'true' || module?.IsActive === 'Active' || module?.IsActive === 1;
   }
 
+  /**
+   * Executes the operation: getStudentName
+   * Parameters: module: any
+   * Rationale: Standard operational controller for the active view.
+   */
   getStudentName(module: any): string {
     const name = `${module?.FirstName ?? ''} ${module?.MiddleName ?? ''} ${module?.LastName ?? ''}`.replace(/\s+/g, ' ').trim();
     return name || module?.Name || module?.AdmissionNo || 'Student';
   }
 
+  /**
+   * Executes the operation: getStudentInitials
+   * Parameters: module: any
+   * Rationale: Standard operational controller for the active view.
+   */
   getStudentInitials(module: any): string {
     const name = this.getStudentName(module);
     const parts = name.split(' ').filter(Boolean);
@@ -1781,19 +1967,39 @@ export class AdmissionComponent extends BasePermissionComponent {
     return initials.toUpperCase();
   }
 
+  /**
+   * Executes the operation: getAvatarTone
+   * Parameters: index: number
+   * Rationale: Standard operational controller for the active view.
+   */
   getAvatarTone(index: number): string {
     const tones = ['tone-blue', 'tone-green', 'tone-amber', 'tone-purple'];
     return tones[index % tones.length];
   }
 
+  /**
+   * Executes the operation: formatSerial
+   * Parameters: value: number, size: number
+   * Rationale: Standard operational controller for the active view.
+   */
   formatSerial(value: number, size: number): string {
     return String(value).padStart(size, '0');
   }
 
+  /**
+   * Executes the operation: getAcademicYearLabel
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getAcademicYearLabel(): string {
     return this.SubjectsList[0]?.AcademicYearName || this.academicYearList[0]?.Name;
   }
 
+  /**
+   * Executes the operation: getAcademicYearSuffix
+   * Parameters: module: any
+   * Rationale: Standard operational controller for the active view.
+   */
   getAcademicYearSuffix(module: any): string {
     const year = String(module?.AcademicYearName || this.getAcademicYearLabel());
     const match = year.match(/\d{4}/g);
@@ -1801,31 +2007,66 @@ export class AdmissionComponent extends BasePermissionComponent {
   }
 
   
+  /**
+   * Executes the operation: getActiveAdmissionCount
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getActiveAdmissionCount(): number {
     return this.SubjectsList.filter(user => user.IsActive === 'Active').length;
   }
 
+  /**
+   * Executes the operation: getPendingAdmissionCount
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getPendingAdmissionCount(): number {
     return Math.max(this.SubjectsList.length - this.getActiveAdmissionCount(), 0);
   }
 
+  /**
+   * Executes the operation: getActiveRate
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getActiveRate(): string {
     if (!this.SubjectsList.length) return '0%';
     return `${Math.round((this.getActiveAdmissionCount() / this.SubjectsList.length) * 100)}%`;
   }
 
+  /**
+   * Executes the operation: getCoveredClassCount
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getCoveredClassCount(): number {
     return new Set(this.SubjectsList.map((module) => module?.ClassName).filter(Boolean)).size || this.SubjectsList.length;
   }
 
+  /**
+   * Executes the operation: pageStartIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageStartIndex(): number {
     return this.SubjectsCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
   }
 
+  /**
+   * Executes the operation: pageEndIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageEndIndex(): number {
     return Math.min(this.currentPage * this.pageSize, this.SubjectsCount);
   }
 
+  /**
+   * Executes the operation: getVisiblePageNumbers
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getVisiblePageNumbers() {
     const totalPages = this.totalPages();
     const pages = [];
@@ -1836,6 +2077,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     return pages;
   };
 
+  /**
+   * Executes the operation: onSearchChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onSearchChange() {
     clearTimeout(this.searchTimer);
 
@@ -1862,18 +2108,33 @@ export class AdmissionComponent extends BasePermissionComponent {
     }, this.SEARCH_DEBOUNCE);
   };
 
+  /**
+   * Executes the operation: formatDateYYYYMMDD
+   * Parameters: dateStr: string | null
+   * Rationale: Standard operational controller for the active view.
+   */
   formatDateYYYYMMDD(dateStr: string | null) {
     if (!dateStr) return '';
     const d = new Date(dateStr);
     return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
   };
 
+  /**
+   * Executes the operation: formatDateDDMMYYYY
+   * Parameters: dateStr: string | null
+   * Rationale: Standard operational controller for the active view.
+   */
   formatDateDDMMYYYY(dateStr: string | null) {
     if (!dateStr) return '';
     const d = new Date(dateStr);
     return `${d.getDate().toString().padStart(2,'0')}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getFullYear()}`;
   };
 
+  /**
+   * Executes the operation: closeModal
+   * Parameters: type: 'view' | 'status'
+   * Rationale: Standard operational controller for the active view.
+   */
   closeModal(type: 'view' | 'status') {
     if (type === 'view') {
       this.isViewModalOpen = false;
@@ -1885,6 +2146,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     }
   };
 
+  /**
+   * Executes the operation: handleOk
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   handleOk() {
     this.isModalOpen = false;
     this.FetchInitialData();
@@ -1901,6 +2167,11 @@ export class AdmissionComponent extends BasePermissionComponent {
   //   this.ViewModuleClicked=true;
   // };
 
+  /**
+   * Executes the operation: editreview
+   * Parameters: SyllabusID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   editreview(SyllabusID: string): void {
     this.activeTab="personal";
     this.currentMode = 'edit';
@@ -1917,10 +2188,20 @@ export class AdmissionComponent extends BasePermissionComponent {
   }
 
 
+  /**
+   * Executes the operation: toggleChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   toggleChange(){
     this.IsActiveStatus = !this.IsActiveStatus;
   };
 
+  /**
+   * Executes the operation: sort
+   * Parameters: column: string
+   * Rationale: Standard operational controller for the active view.
+   */
   sort(column: string) {
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -1933,6 +2214,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     this.FetchInitialData();
   };
 
+  /**
+   * Executes the operation: onSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onSchoolChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     const schoolID = target.value;
@@ -1945,6 +2231,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     this.FetchInitialData();
   };
 
+  /**
+   * Executes the operation: exportToExcel
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   exportToExcel() {
       const isSearch = !!this.searchQuery?.trim();
       const flag = isSearch ? '7' : '2';
@@ -1974,6 +2265,11 @@ export class AdmissionComponent extends BasePermissionComponent {
         });
   };
 
+  /**
+   * Executes the operation: exportSyllabus
+   * Parameters: type: 'pdf' | 'excel' | 'print'
+   * Rationale: Standard operational controller for the active view.
+   */
   exportSyllabus(type: 'pdf' | 'excel' | 'print') {
     const isSearch = !!this.searchQuery?.trim();
     const flag = isSearch ? '7' : '2';
@@ -2030,6 +2326,11 @@ export class AdmissionComponent extends BasePermissionComponent {
   //   this.isViewModalOpen=true;
   // };
 
+  /**
+   * Executes the operation: viewReview
+   * Parameters: SyllabusID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   viewReview(SyllabusID: string): void {
     this.currentMode = 'view';
     this.selectedAdmissionID = SyllabusID;
@@ -2038,6 +2339,11 @@ export class AdmissionComponent extends BasePermissionComponent {
   };
 
 
+  /**
+   * Executes the operation: onAdminSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminSchoolChange(event: Event) {
     this.academicYearList=[];
     this.SyllabusList = [];
@@ -2053,6 +2359,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     this.FetchAcademicYearsList();
   };
 
+  /**
+   * Executes the operation: onAdminAcademicYearChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminAcademicYearChange(event: Event) {
     this.ClassList = [];
     this.ModuleForm.get('Class').patchValue('0');
@@ -2068,12 +2379,22 @@ export class AdmissionComponent extends BasePermissionComponent {
   };
 
   
+  /**
+   * Executes the operation: onAcademicYearChange
+   * Parameters: event:Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAcademicYearChange(event:Event){
     const target = event.target as HTMLSelectElement;     
     this.AcademicYearSelected=target.value;
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: onClassSelectedChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onClassSelectedChange(event: Event) {
     this.DivisionList = [];
     this.ModuleForm.get('Division').patchValue('0');
@@ -2082,6 +2403,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     this.FetchDivisionList();
   };
 
+  /**
+   * Executes the operation: onRouteSelectedChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onRouteSelectedChange(event: Event) {
     this.StopsList = [];
     this.ModuleForm.get('Stop').patchValue('0');
@@ -2090,6 +2416,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     this.FetchStopsList();
   };
 
+  /**
+   * Executes the operation: onStopSelectedChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onStopSelectedChange(event: Event) {
     this.BusList = [];
     this.ModuleForm.get('Bus').patchValue('0');
@@ -2098,6 +2429,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     this.FetchBusList();
   };
 
+  /**
+   * Executes the operation: onBusSelectedChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onBusSelectedChange(event: Event) {
     this.FareList = [];
     this.ModuleForm.get('Fare').patchValue('0');
@@ -2113,6 +2449,11 @@ export class AdmissionComponent extends BasePermissionComponent {
   //   this.cd.detectChanges();
   // }
 
+  /**
+   * Executes the operation: tabChange
+   * Parameters: tab: string
+   * Rationale: Standard operational controller for the active view.
+   */
   tabChange(tab: string) {
     this.activeTab = tab;
     this.cd.detectChanges();
@@ -2141,6 +2482,11 @@ export class AdmissionComponent extends BasePermissionComponent {
   }
 
 
+  /**
+   * Executes the operation: SkipButtonClick
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   SkipButtonClick(){
     this.ModuleForm.get('Route').patchValue('0');
     this.ModuleForm.get('Stop').patchValue('0');
@@ -2150,15 +2496,30 @@ export class AdmissionComponent extends BasePermissionComponent {
     this.activeTab="bus"
   }
 
+  /**
+   * Executes the operation: CancelButtonClick
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   CancelButtonClick(){
     this.IsAddNewClicked=!this.IsAddNewClicked;
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: openBulkUploadModal
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   openBulkUploadModal(): void {
     this.isBulkUploadModalOpen = true;
   }
 
+  /**
+   * Executes the operation: clearBulkUploadFileSelection
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   clearBulkUploadFileSelection(): void {
     this.bulkUploadFileName = '';
     this.bulkUploadRows = [];
@@ -2170,11 +2531,21 @@ export class AdmissionComponent extends BasePermissionComponent {
     this.cd.detectChanges();
   }
 
+  /**
+   * Executes the operation: closeBulkUploadModal
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeBulkUploadModal(): void {
     this.clearBulkUploadFileSelection();
     this.isBulkUploadModalOpen = false;
   }
 
+  /**
+   * Executes the operation: downloadBulkTemplate
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   async downloadBulkTemplate() {
     this.loader.show();
     try {
@@ -2596,6 +2967,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     }
   }
 
+  /**
+   * Executes the operation: getBulkHeaders
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private getBulkHeaders(): string[] {
     const headers = [
       'AcademicYear', 'AdmissionNo', 'Syllabus', 'Class', 'Division', 'JoinDate',
@@ -2884,11 +3260,21 @@ export class AdmissionComponent extends BasePermissionComponent {
     return col + 1;
   }
 
+  /**
+   * Executes the operation: sanitizeRangeName
+   * Parameters: value: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private sanitizeRangeName(value: string): string {
     const cleaned = value.replace(/[^A-Za-z0-9_]/g, '_');
     return /^[A-Za-z_]/.test(cleaned) ? cleaned : `N_${cleaned}`;
   }
 
+  /**
+   * Executes the operation: pickField
+   * Parameters: obj: any, keys: string[]
+   * Rationale: Standard operational controller for the active view.
+   */
   private pickField(obj: any, keys: string[]): string {
     for (const key of keys) {
       const val = obj?.[key];
@@ -2899,6 +3285,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     return '';
   }
 
+  /**
+   * Executes the operation: normalizeSchoolId
+   * Parameters: value: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private normalizeSchoolId(value: any): string {
     const raw = String(value ?? '').trim();
     if (!raw) return '';
@@ -2908,6 +3299,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     return parsed;
   }
 
+  /**
+   * Executes the operation: getEffectiveSchoolId
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private getEffectiveSchoolId(): string {
     const candidate =
       this.AdminselectedSchoolID ||
@@ -2920,6 +3316,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     return this.normalizeSchoolId(candidate);
   }
 
+  /**
+   * Executes the operation: onBulkFileSelected
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onBulkFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
@@ -2961,6 +3362,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     reader.readAsArrayBuffer(file);
   }
 
+  /**
+   * Executes the operation: normalizeBulkRow
+   * Parameters: row: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private normalizeBulkRow(row: any): any {
     const normalized: any = {};
     Object.keys(row).forEach((key) => {
@@ -2984,6 +3390,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     return Number.isNaN(date.getTime()) ? null : date.toISOString().slice(0, 10);
   }
 
+  /**
+   * Executes the operation: startBulkUpload
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   async startBulkUpload() {
     if (!this.bulkUploadRows.length) {
       this.bulkUploadStatus = 'Please upload a file first.';
@@ -3190,6 +3601,11 @@ export class AdmissionComponent extends BasePermissionComponent {
     }
   }
 
+  /**
+   * Executes the operation: parseLookupId
+   * Parameters: value: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private parseLookupId(value: any): string {
     const raw = String(value ?? '').trim();
     if (!raw) return '';
@@ -3414,12 +3830,22 @@ onFileSelected(event: any) {
   this.addDocs(files);
 }
 
+  /**
+   * Executes the operation: onDrop
+   * Parameters: event: DragEvent
+   * Rationale: Standard operational controller for the active view.
+   */
 onDrop(event: DragEvent) {
   event.preventDefault();
   const files = Array.from(event.dataTransfer?.files || []);
   this.addDocs(files);
 }
 
+  /**
+   * Executes the operation: addDocs
+   * Parameters: files: any[]
+   * Rationale: Standard operational controller for the active view.
+   */
 addDocs(files: any[]) {
   files.forEach(file => {
     if (!this.validateFile(file)) return;
@@ -3431,6 +3857,11 @@ addDocs(files: any[]) {
   });
 }
 
+  /**
+   * Executes the operation: removePending
+   * Parameters: index: number
+   * Rationale: Standard operational controller for the active view.
+   */
 removePending(index: number) {
   this.pendingDocs.splice(index, 1);
 }
@@ -3540,6 +3971,11 @@ previewUrl: any = '';
 previewType: 'image' | 'pdf' = 'image';
 isPreviewOpen = false;
 
+  /**
+   * Executes the operation: previewFile
+   * Parameters: file: any
+   * Rationale: Standard operational controller for the active view.
+   */
 previewFile(file: any) {
 
   this.previewUrl = this.getFileUrl(file.filePath);
@@ -3551,6 +3987,11 @@ previewFile(file: any) {
   this.isPreviewOpen = true;
 }
 
+  /**
+   * Executes the operation: closePreview
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
 closePreview() {
   this.isPreviewOpen = false;
 }
@@ -3561,10 +4002,20 @@ getFileUrl(path: string) {
   return this.fileService.getFullFileUrl(path);
 }
 
+  /**
+   * Executes the operation: onDragOver
+   * Parameters: event: DragEvent
+   * Rationale: Standard operational controller for the active view.
+   */
 onDragOver(event: DragEvent) {
   event.preventDefault();
 }
 
+  /**
+   * Executes the operation: onRowsCountChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onRowsCountChange() {
     this.currentPage = 1;
     this.FetchInitialData();

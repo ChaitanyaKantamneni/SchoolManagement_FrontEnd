@@ -47,6 +47,9 @@ import { FileService } from '../../Services/file.service';
   templateUrl: './homework.component.html',
   styleUrls: ['./homework.component.css']
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for ParentHomeworkComponent.
+ */
 export class ParentHomeworkComponent implements OnInit {
   
   // ─── View Management ────────────────────────────────────────────────────────
@@ -107,6 +110,9 @@ export class ParentHomeworkComponent implements OnInit {
     });
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     // Initialize session data - use data from Parent Dashboard
     this.schoolId = sessionStorage.getItem('SchoolID') || '';
@@ -186,6 +192,11 @@ export class ParentHomeworkComponent implements OnInit {
     tryFetch('2');
   }
 
+  /**
+   * Executes the operation: loadInitialData
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private loadInitialData(): void {
     // If we already have child data, just load homework
     if (this.selectedChild && this.selectedChildId) {
@@ -196,6 +207,11 @@ export class ParentHomeworkComponent implements OnInit {
     }
   }
 
+  /**
+   * Executes the operation: loadChildren
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private loadChildren(): void {
     const parentId = sessionStorage.getItem('email') || sessionStorage.getItem('UserId') || '';
     console.log('[PARENT HOMEWORK] Loading children for parentId:', parentId, 'schoolId:', this.schoolId);
@@ -234,10 +250,20 @@ export class ParentHomeworkComponent implements OnInit {
     });
   }
 
+  /**
+   * Executes the operation: loadChildData
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private loadChildData(): void {
     // Load child specific data if needed
   }
 
+  /**
+   * Executes the operation: loadAllHomeworkData
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private loadAllHomeworkData(): void {
     // Load submitted first so getSubmissionStatus() has data when assignments map
     this.loadSubmittedHomework(() => {
@@ -245,6 +271,11 @@ export class ParentHomeworkComponent implements OnInit {
     });
   }
 
+  /**
+   * Executes the operation: loadAssignedHomework
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private loadAssignedHomework(): void {
     // Don't load if we don't have the required data
     if (!this.selectedChild || !this.schoolId) {
@@ -345,6 +376,11 @@ export class ParentHomeworkComponent implements OnInit {
     });
   }
 
+  /**
+   * Executes the operation: backfillSubmittedList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private backfillSubmittedList(): void {
     if (this.submittedList && this.assignmentsList) {
       this.submittedList.forEach(sub => {
@@ -453,6 +489,11 @@ export class ParentHomeworkComponent implements OnInit {
     }
   }
 
+  /**
+   * Executes the operation: onTabChange
+   * Parameters: event: any
+   * Rationale: Standard operational controller for the active view.
+   */
   onTabChange(event: any): void {
     this.currentTabIndex = event.index;
     if (event.index === 1) {
@@ -582,6 +623,11 @@ export class ParentHomeworkComponent implements OnInit {
     this.isEditModalOpen = true;
   }
 
+  /**
+   * Executes the operation: closeSubmissionModal
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeSubmissionModal(): void {
     this.isEditModalOpen = false;
     this.selectedAssignment = null;
@@ -594,6 +640,11 @@ export class ParentHomeworkComponent implements OnInit {
     this.submissionForm.reset();
   }
 
+  /**
+   * Executes the operation: onFileSelected
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onFileSelected(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (file) {
@@ -620,6 +671,11 @@ export class ParentHomeworkComponent implements OnInit {
     }
   }
 
+  /**
+   * Executes the operation: removeFile
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   removeFile(): void {
     this.selectedFile = null;
     this.filePreviewUrl = null;
@@ -633,6 +689,11 @@ export class ParentHomeworkComponent implements OnInit {
     });
   }
 
+  /**
+   * Executes the operation: submitHomework
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   submitHomework(): void {
     // Ensure required fields are set before validation
     if (!this.submissionForm.get('HomeworkID')?.value && this.selectedAssignment) {
@@ -701,6 +762,11 @@ export class ParentHomeworkComponent implements OnInit {
     }
   }
 
+  /**
+   * Executes the operation: submitHomeworkData
+   * Parameters: submissionData: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private submitHomeworkData(submissionData: any): void {
     const submitMethod = this.editingSubmission
       ? this.homeworkSubmissionService.updateSubmission(submissionData)
@@ -743,31 +809,61 @@ export class ParentHomeworkComponent implements OnInit {
   isSubmissionViewModalOpen = false;
   selectedSubmissionForView: HomeworkSubmission | null = null;
 
+  /**
+   * Executes the operation: viewHomeworkDetails
+   * Parameters: assignment: any
+   * Rationale: Standard operational controller for the active view.
+   */
   viewHomeworkDetails(assignment: any): void {
     this.selectedHomeworkForView = assignment;
     this.isViewModalOpen = true;
   }
 
+  /**
+   * Executes the operation: closeViewModal
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeViewModal(): void {
     this.isViewModalOpen = false;
     this.selectedHomeworkForView = null;
   }
 
+  /**
+   * Executes the operation: viewSubmissionDetails
+   * Parameters: submission: HomeworkSubmission
+   * Rationale: Standard operational controller for the active view.
+   */
   viewSubmissionDetails(submission: HomeworkSubmission): void {
     this.selectedSubmissionForView = submission;
     this.isSubmissionViewModalOpen = true;
   }
 
+  /**
+   * Executes the operation: closeSubmissionViewModal
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeSubmissionViewModal(): void {
     this.isSubmissionViewModalOpen = false;
     this.selectedSubmissionForView = null;
   }
 
+  /**
+   * Executes the operation: getCleanFileName
+   * Parameters: url: string | undefined
+   * Rationale: Standard operational controller for the active view.
+   */
   getCleanFileName(url: string | undefined): string {
     if (!url) return '';
     return this.fileService.getCleanFileName(url);
   }
 
+  /**
+   * Executes the operation: downloadAttachment
+   * Parameters: url: string, submissionId?: string
+   * Rationale: Standard operational controller for the active view.
+   */
   downloadAttachment(url: string, submissionId?: string): void {
     if (!url) return;
     
@@ -790,6 +886,11 @@ export class ParentHomeworkComponent implements OnInit {
     return isNaN(numValue) ? null : numValue;
   }
 
+  /**
+   * Executes the operation: getSubmissionStatus
+   * Parameters: homeworkId: number
+   * Rationale: Standard operational controller for the active view.
+   */
   private getSubmissionStatus(homeworkId: number): string {
     const submission = this.submittedList.find(s => s.HomeworkID === homeworkId);
     if (submission) {
@@ -798,10 +899,20 @@ export class ParentHomeworkComponent implements OnInit {
     return 'Pending';
   }
 
+  /**
+   * Executes the operation: getFileName
+   * Parameters: url: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private getFileName(url: string): string {
     return url.split('/').pop() || 'attachment';
   }
 
+  /**
+   * Executes the operation: markFormGroupTouched
+   * Parameters: formGroup: FormGroup
+   * Rationale: Standard operational controller for the active view.
+   */
   private markFormGroupTouched(formGroup: FormGroup): void {
     Object.values(formGroup.controls).forEach(control => {
       control.markAsTouched();
@@ -827,6 +938,11 @@ export class ParentHomeworkComponent implements OnInit {
     }
   }
 
+  /**
+   * Executes the operation: getStatusIcon
+   * Parameters: status: string
+   * Rationale: Standard operational controller for the active view.
+   */
   getStatusIcon(status: string): string {
     switch (status?.toLowerCase()) {
       case 'accepted':
@@ -851,10 +967,20 @@ export class ParentHomeworkComponent implements OnInit {
            lowerUrl.endsWith('.webp');
   }
 
+  /**
+   * Executes the operation: isFilePdf
+   * Parameters: url: string
+   * Rationale: Standard operational controller for the active view.
+   */
   isFilePdf(url: string): boolean {
     return url?.toLowerCase().endsWith('.pdf') || false;
   }
 
+  /**
+   * Executes the operation: getFileIcon
+   * Parameters: url: string
+   * Rationale: Standard operational controller for the active view.
+   */
   getFileIcon(url: string): string {
     if (!url) return 'insert_drive_file';
     if (this.isFilePdf(url)) return 'picture_as_pdf';
@@ -866,6 +992,11 @@ export class ParentHomeworkComponent implements OnInit {
   // ─── Children List (for completeness) ───────────────────────────────────────────
   childrenList: any[] = [];
 
+  /**
+   * Executes the operation: selectChild
+   * Parameters: childId: string
+   * Rationale: Standard operational controller for the active view.
+   */
   selectChild(childId: string): void {
     this.selectedChildId = childId;
     this.selectedChild = this.childrenList.find(c => c.id === childId) || null;

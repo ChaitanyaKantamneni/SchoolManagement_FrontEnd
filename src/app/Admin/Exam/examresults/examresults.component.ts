@@ -16,6 +16,9 @@ import { HttpClient } from '@angular/common/http';
   templateUrl: './examresults.component.html',
   styleUrl: './examresults.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for ExamresultsComponent.
+ */
 export class ExamresultsComponent extends BasePermissionComponent implements OnInit{
    pageName = 'Exam Results';
 
@@ -29,6 +32,9 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
       super(menuService, router);
     }
   
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
     ngOnInit(): void {
       this.checkViewPermission();
       this.SchoolSelectionChange = false;
@@ -67,6 +73,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
       }
     };
   
+  /**
+   * Executes the operation: allowOnlyNumbers
+   * Parameters: event: KeyboardEvent
+   * Rationale: Standard operational controller for the active view.
+   */
     allowOnlyNumbers(event: KeyboardEvent) {
       if (
         event.key === 'Backspace' ||
@@ -154,6 +165,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
       AcademicYear: new FormControl('0', [Validators.required, Validators.min(1)])
     });
   
+  /**
+   * Executes the operation: FetchSchoolsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     FetchSchoolsList() {
       const requestData = { Flag: '2' };
   
@@ -218,6 +234,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
   selectedChildId: string = '';
   selectedChildIndex: number = 0;
 
+  /**
+   * Executes the operation: selectChild
+   * Parameters: index: number
+   * Rationale: Standard operational controller for the active view.
+   */
   selectChild(index: number): void {
     this.selectedChildIndex = index;
     const child = this.parentChildren[index];
@@ -238,6 +259,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
     }
   }
 
+  /**
+   * Executes the operation: initializeUserRole
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private initializeUserRole(): void {
     if (this.isParent) {
       // Auto-set school ID from session for parents
@@ -246,6 +272,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
     }
   }
 
+  /**
+   * Executes the operation: fetchParentChildren
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchParentChildren(): void {
     const parentEmail = (this.ss('email') || '').toString().trim();
     if (!parentEmail) return;
@@ -302,6 +333,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
     });
   }
 
+  /**
+   * Executes the operation: onChildChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onChildChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
     const childId = target.value;
@@ -360,6 +396,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
     return this.resolvedStaffId || this.sessionApplicantId || this.ss('StaffID') || this.ss('UserID');
   }
 
+  /**
+   * Executes the operation: getCurrentSchoolId
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private getCurrentSchoolId(): string {
     if (this.isAdmin) {
       return this.AdminselectedSchoolID || '';
@@ -372,6 +413,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
     );
   }
 
+  /**
+   * Executes the operation: resolveStaffIdentity
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private resolveStaffIdentity(): void {
     const schoolId = this.resolvedSchoolId;
     const email = (this.ss('email') || this.ss('Email') || '').toString().trim().toLowerCase();
@@ -478,6 +524,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
   }
 
         
+  /**
+   * Executes the operation: FetchAcademicYearsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     FetchAcademicYearsList() {
       const schoolId =
       this.SchoolSelectionChange
@@ -532,6 +583,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
         );
     };
 
+  /**
+   * Executes the operation: FetchClassList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchClassList() {
     const AcademicYearIdSelected =
     this.isAdmin
@@ -568,6 +624,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
       );
   }
 
+  /**
+   * Executes the operation: FetchExamsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchExamsList() {
     const AcademicYearIdSelected =
     this.isAdmin
@@ -649,6 +710,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
       );
   }
 
+  /**
+   * Executes the operation: FetchMarkDetailReport
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchMarkDetailReport() {
     const AcademicYearIdSelected =
     this.isAdmin
@@ -728,6 +794,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
     );
   }
 
+  /**
+   * Executes the operation: FetchDivisionsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchDivisionsList() {
     const AcademicYearIdSelected =
     this.isAdmin
@@ -780,6 +851,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
       );
   }
   
+  /**
+   * Executes the operation: FetchExamsbyclassanddivisionList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchExamsbyclassanddivisionList() {
     const AcademicYearIdSelected =
     this.isAdmin
@@ -866,6 +942,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
         }
       );
   }
+  /**
+   * Executes the operation: FetchClassStudentsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     FetchClassStudentsList() {
     const requestClass = this.isTeacher ? this.teacherAssignedClassID : (this.AdminselectedClassID || '');
     const requestDivision = this.isTeacher ? this.teacherAssignedDivisionID : (this.AdminselectedDiviosnID || '');
@@ -915,6 +996,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
       );
   };
   
+  /**
+   * Executes the operation: FetchAcademicYearCount
+   * Parameters: isSearch: boolean
+   * Rationale: Standard operational controller for the active view.
+   */
     FetchAcademicYearCount(isSearch: boolean) {
       let SchoolIdSelected = '';
   
@@ -932,6 +1018,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
         ExamTypeName: isSearch ? this.searchQuery.trim() : null
       });
     }
+  /**
+   * Executes the operation: resetPaginationAndFetch
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private resetPaginationAndFetch() {
    this.currentPage = 1;
     this.pageCursors = [];        // ← Critical: clears old cursors
@@ -939,6 +1030,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
     this.FetchInitialData();
   }
   
+  /**
+   * Executes the operation: FetchInitialData
+   * Parameters: extra: any = {}
+   * Rationale: Standard operational controller for the active view.
+   */
     FetchInitialData(extra: any = {}) {
     const isSearch = !!this.searchQuery?.trim();
     const flag = isSearch ? '7' : '10';
@@ -1000,6 +1096,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
     });
   }
   
+  /**
+   * Executes the operation: mapAcademicYears
+   * Parameters: response: any
+   * Rationale: Standard operational controller for the active view.
+   */
     mapAcademicYears(response: any) {
     this.SyllabusList = (response.data || []).map((item: any) => {
         
@@ -1060,6 +1161,9 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
     });
   }
   
+  /**
+   * Handles form submission: Validates input fields and transmits data payloads.
+   */
   onSubmit() {
     const AcademicYearIdSelected =
     this.isAdmin
@@ -1123,6 +1227,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
     this.FetchExamResultsList();
   }
 
+  /**
+   * Executes the operation: FetchExamResultsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchExamResultsList() {
     const requestClass = this.isTeacher ? this.teacherAssignedClassID : (this.AdminselectedClassID || '');
     const requestDivision = this.isTeacher ? this.teacherAssignedDivisionID : (this.AdminselectedDiviosnID || '');
@@ -1201,12 +1310,22 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
       );
   }
   
+  /**
+   * Executes the operation: formatDateYYYYMMDD
+   * Parameters: dateStr: string | null
+   * Rationale: Standard operational controller for the active view.
+   */
   formatDateYYYYMMDD(dateStr: string | null) {
       if (!dateStr) return '';
       const d = new Date(dateStr);
       return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
     }
   
+  /**
+   * Executes the operation: formatDateDDMMYYYY
+   * Parameters: dateStr: string | null
+   * Rationale: Standard operational controller for the active view.
+   */
     formatDateDDMMYYYY(dateStr: string | null) {
       if (!dateStr) return '';
       const d = new Date(dateStr);
@@ -1215,6 +1334,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
    
   
   
+  /**
+   * Executes the operation: FetchSyllabusDetByID
+   * Parameters: SyllabusID: string, mode: 'view' | 'edit'
+   * Rationale: Standard operational controller for the active view.
+   */
     FetchSyllabusDetByID(SyllabusID: string, mode: 'view' | 'edit') {
       const data = {
         ID: SyllabusID,
@@ -1307,26 +1431,51 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
   
   
   
+  /**
+   * Executes the operation: previousPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     previousPage() {
       if (this.currentPage > 1) {
         this.goToPage(this.currentPage - 1);
       }
     };
   
+  /**
+   * Executes the operation: nextPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     nextPage() {
       if (this.currentPage < this.totalPages()) {
         this.goToPage(this.currentPage + 1);
       }
     };
   
+  /**
+   * Executes the operation: firstPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     firstPage() {
       this.goToPage(1);
     };
   
+  /**
+   * Executes the operation: lastPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     lastPage() {
       this.goToPage(this.totalPages());
     };
   
+  /**
+   * Executes the operation: goToPage
+   * Parameters: pageNumber: number
+   * Rationale: Standard operational controller for the active view.
+   */
     goToPage(pageNumber: number) {
       const total = this.totalPages();
   
@@ -1341,6 +1490,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
       }, 150);
     };
   
+  /**
+   * Executes the operation: totalPages
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     totalPages() {
       return Math.ceil(this.SyllabusCount / this.pageSize);
     };
@@ -1350,6 +1504,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
       return this.examResultsList.slice(start, start + this.pageSize);
     }
   
+  /**
+   * Executes the operation: getVisiblePageNumbers
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     getVisiblePageNumbers() {
       const totalPages = this.totalPages();
       const pages = [];
@@ -1360,6 +1519,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
       return pages;
     };
   
+  /**
+   * Executes the operation: onSearchChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     onSearchChange() {
       clearTimeout(this.searchTimer);
   
@@ -1386,6 +1550,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
       }, this.SEARCH_DEBOUNCE);
     };
   
+  /**
+   * Executes the operation: closeModal
+   * Parameters: type: 'view' | 'status'
+   * Rationale: Standard operational controller for the active view.
+   */
     closeModal(type: 'view' | 'status') {
       if (type === 'view') {
         this.isViewModalOpen = false;
@@ -1401,21 +1570,41 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
       }
     };
   
+  /**
+   * Executes the operation: handleOk
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     handleOk() {
       this.isModalOpen = false;
       this.FetchInitialData();
     };
   
+  /**
+   * Executes the operation: editreview
+   * Parameters: SyllabusID: string
+   * Rationale: Standard operational controller for the active view.
+   */
     editreview(SyllabusID: string): void {
       this.editclicked = true;
       this.FetchSyllabusDetByID(SyllabusID, 'edit');
       this.ViewSyllabusClicked = true;
     };
   
+  /**
+   * Executes the operation: toggleChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     toggleChange() {
       this.IsActiveStatus = !this.IsActiveStatus;
     };
   
+  /**
+   * Executes the operation: sort
+   * Parameters: column: string
+   * Rationale: Standard operational controller for the active view.
+   */
     sort(column: string) {
       if (this.sortColumn === column) {
         this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -1428,6 +1617,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
       this.FetchInitialData();
     };
   
+  /**
+   * Executes the operation: onSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
     onSchoolChange(event: Event) {
       const target = event.target as HTMLSelectElement;
       const schoolID = target.value;
@@ -1439,6 +1633,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
       this.SchoolSelectionChange = true;
       this.FetchInitialData();
     };
+  /**
+   * Executes the operation: printMarksheet
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   printMarksheet() {
   const content = document.getElementById('marksheetContent')?.innerHTML;
 
@@ -1492,6 +1691,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
   printWindow?.focus();
   printWindow?.print();
 }
+  /**
+   * Executes the operation: exportSyllabus
+   * Parameters: type: 'pdf' | 'excel' | 'print'
+   * Rationale: Standard operational controller for the active view.
+   */
     exportSyllabus(type: 'pdf' | 'excel' | 'print') {
       const isSearch = !!this.searchQuery?.trim();
       const flag = isSearch ? '7' : '2';
@@ -1542,10 +1746,20 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
       });
     };
   
+  /**
+   * Executes the operation: viewReview
+   * Parameters: studentId: string
+   * Rationale: Standard operational controller for the active view.
+   */
     viewReview(studentId: string): void {
       this.AdminselectedStudentID = studentId;
       this.FetchMarkDetailReport();
     }
+  /**
+   * Executes the operation: onAdminSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
       onAdminSchoolChange(event: Event) {
       this.academicYearList=[];
       this.examLists =[];
@@ -1574,6 +1788,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
       // this.resetPaginationAndFetch();
     };
   
+  /**
+   * Executes the operation: onAdminAcademicYearchange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
      onAdminAcademicYearchange(event: Event){
       this.examLists =[];
       this.classLists=[];
@@ -1614,6 +1833,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
       // this.resetPaginationAndFetch();
     };
     
+  /**
+   * Executes the operation: onAdminClasschange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
       onAdminClasschange(event: Event){
       this.divisionsList =[];
       this.studentsList = [];
@@ -1635,6 +1859,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
       // this.resetPaginationAndFetch();
     };
   
+  /**
+   * Executes the operation: onAdminDivisionsChange
+   * Parameters: event:Event
+   * Rationale: Standard operational controller for the active view.
+   */
     onAdminDivisionsChange(event:Event){
       const target = event.target as HTMLSelectElement;
       this.studentsList = [];
@@ -1653,6 +1882,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
       this.resetResultView();
     }
 
+  /**
+   * Executes the operation: onAdminStudentChange
+   * Parameters: event:Event
+   * Rationale: Standard operational controller for the active view.
+   */
     onAdminStudentChange(event:Event){
       const target = event.target as HTMLSelectElement;
       const admissionId = target.value;
@@ -1660,6 +1894,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
       this.resetResultView();
     }
 
+  /**
+   * Executes the operation: onAdminExamtypeChange
+   * Parameters: event:Event
+   * Rationale: Standard operational controller for the active view.
+   */
     onAdminExamtypeChange(event:Event){
       const target = event.target as HTMLSelectElement;
       const examId = target.value;
@@ -1672,6 +1911,11 @@ export class ExamresultsComponent extends BasePermissionComponent implements OnI
       }
     }
 
+  /**
+   * Executes the operation: resetResultView
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
 private resetResultView() {
   this.hasSubmittedSearch = false;
   this.examResultsList = [];
@@ -1679,10 +1923,20 @@ private resetResultView() {
   this.currentPage = 1;
 }
 
+  /**
+   * Executes the operation: getFinalResultForRecords
+   * Parameters: records: any[]
+   * Rationale: Standard operational controller for the active view.
+   */
 getFinalResultForRecords(records: any[]): string {
   return this.calculateFinalResult(records);
 }
 
+  /**
+   * Executes the operation: calculateFinalResult
+   * Parameters: records: any[]
+   * Rationale: Standard operational controller for the active view.
+   */
 calculateFinalResult(records: any[]): string {
   return records?.every(
     (item: any) => {
@@ -1693,6 +1947,11 @@ calculateFinalResult(records: any[]): string {
   ) ? 'PASS' : 'FAIL';
 }
 
+  /**
+   * Executes the operation: getFinalResult
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
 getFinalResult(): string {
   return this.calculateFinalResult(this.studentReport);
 }

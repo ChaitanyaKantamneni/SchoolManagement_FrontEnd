@@ -17,6 +17,9 @@ import { LoaderService } from '../../../Services/loader.service';
   templateUrl: './advance-salary.component.html',
   styleUrl: './advance-salary.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for AdvanceSalaryComponent.
+ */
 export class AdvanceSalaryComponent extends BasePermissionComponent implements OnInit {
   pageName = 'Advance Salary';
 
@@ -88,6 +91,11 @@ export class AdvanceSalaryComponent extends BasePermissionComponent implements O
     return this.filteredRecords.slice(start, start + this.pageSize);
   }
 
+  /**
+   * Executes the operation: AddNewClicked
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
 AddNewClicked(): void {
   this.IsAddNewClicked = !this.IsAddNewClicked;
 
@@ -149,6 +157,9 @@ AddNewClicked(): void {
     return role === '1';
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.checkViewPermission();
     this.selectedAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
@@ -161,6 +172,11 @@ AddNewClicked(): void {
     this.fetchAdvanceSalaryList();
   }
 
+  /**
+   * Executes the operation: FetchSchoolsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSchoolsList() {
     this.loader.show();
     this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', { Flag: '2' }).subscribe({
@@ -177,6 +193,11 @@ AddNewClicked(): void {
     });
   }
 
+  /**
+   * Executes the operation: FetchAcademicYearsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchAcademicYearsList() {
     if (!this.selectedSchoolID) {
       this.academicYearList = [];
@@ -218,6 +239,11 @@ AddNewClicked(): void {
       });
   }
 
+  /**
+   * Executes the operation: onAdminSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminSchoolChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     this.selectedSchoolID = target.value === '0' ? '' : target.value;
@@ -228,6 +254,11 @@ AddNewClicked(): void {
     this.fetchAdvanceSalaryList();
   }
 
+  /**
+   * Executes the operation: onAcademicYearChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onAcademicYearChange(): void {
     this.form.staffID = '';
     this.currentPage = 1;
@@ -235,6 +266,11 @@ AddNewClicked(): void {
     this.fetchAdvanceSalaryList();
   }
 
+  /**
+   * Executes the operation: FetchStaffList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchStaffList(): void {
     if (!this.selectedSchoolID || !this.selectedAcademicYearID) {
       this.staffList = [];
@@ -266,6 +302,11 @@ AddNewClicked(): void {
     });
   }
 
+  /**
+   * Executes the operation: getStaffDisplayName
+   * Parameters: item: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private getStaffDisplayName(item: any): string {
     const directName = `${item?.Name ?? item?.name ?? item?.StaffName ?? item?.staffName ?? ''}`.trim();
     if (directName) return directName;
@@ -275,6 +316,11 @@ AddNewClicked(): void {
     return [first, middle, last].filter(Boolean).join(' ').trim();
   }
 
+  /**
+   * Executes the operation: fetchAdvanceSalaryList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   fetchAdvanceSalaryList(): void {
     const payload: any = {
       Flag: '2',
@@ -311,6 +357,11 @@ AddNewClicked(): void {
     });
   }
 
+  /**
+   * Executes the operation: addAdvanceSalary
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   addAdvanceSalary(): void {
     this.formSubmitAttempted = true;
     if (this.isSubmitting) return;
@@ -410,6 +461,11 @@ AddNewClicked(): void {
     });
   }
 
+  /**
+   * Executes the operation: postAdvanceSalaryApi
+   * Parameters: payload: any, endpointIndex = 0
+   * Rationale: Standard operational controller for the active view.
+   */
   private postAdvanceSalaryApi(payload: any, endpointIndex = 0): any {
     const endpoint = this.advanceSalaryEndpoints[endpointIndex];
     return new Observable((observer) => {
@@ -435,6 +491,11 @@ AddNewClicked(): void {
     });
   }
 
+  /**
+   * Executes the operation: resetAdvanceSalaryFormState
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private resetAdvanceSalaryFormState(): void {
     this.IsAddNewClicked = false;
     this.editIndex = null;
@@ -444,6 +505,11 @@ AddNewClicked(): void {
     this.staffList = [];
   }
 
+  /**
+   * Executes the operation: editReview
+   * Parameters: row: any
+   * Rationale: Standard operational controller for the active view.
+   */
   editReview(row: any): void {
     this.editIndex = row.id ?? null;
     this.selectedSchoolID = `${row.schoolID || this.selectedSchoolID || ''}`;
@@ -460,16 +526,31 @@ AddNewClicked(): void {
     this.IsAddNewClicked = true;
   }
 
+  /**
+   * Executes the operation: viewReview
+   * Parameters: row: any
+   * Rationale: Standard operational controller for the active view.
+   */
   viewReview(row: any): void {
     this.viewRow = row;
     this.isViewModalOpen = true;
   }
 
+  /**
+   * Executes the operation: closeViewModal
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeViewModal(): void {
     this.isViewModalOpen = false;
     this.viewRow = null;
   }
 
+  /**
+   * Executes the operation: closeModal
+   * Parameters: type: 'view' | 'status'
+   * Rationale: Standard operational controller for the active view.
+   */
   closeModal(type: 'view' | 'status') {
     if (type === 'view') {
       this.closeViewModal();
@@ -479,19 +560,39 @@ AddNewClicked(): void {
     }
   }
 
+  /**
+   * Executes the operation: handleOk
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   handleOk() {
     this.isModalOpen = false;
     this.fetchAdvanceSalaryList();
   }
 
+  /**
+   * Executes the operation: onTenureChange
+   * Parameters: value: string
+   * Rationale: Standard operational controller for the active view.
+   */
   onTenureChange(value: string): void {
     this.form.tenure = value.replace(/\D/g, '').slice(0, 2);
   }
 
+  /**
+   * Executes the operation: isTenureValid
+   * Parameters: value: string
+   * Rationale: Standard operational controller for the active view.
+   */
   isTenureValid(value: string): boolean {
     return /^(0[1-9]|1[0-9]|2[0-4])$/.test((value || '').trim());
   }
 
+  /**
+   * Executes the operation: isDuplicateAdvanceSalary
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private isDuplicateAdvanceSalary(): boolean {
     const formDate = this.toDateOnly(this.form.date);
     const targetAmount = Number(this.form.amount);
@@ -514,6 +615,11 @@ AddNewClicked(): void {
     });
   }
 
+  /**
+   * Executes the operation: addRecordToTop
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private addRecordToTop(): void {
     const selectedSchool = this.schoolList.find((school: any) => `${school.ID}` === `${this.selectedSchoolID}`);
     const selectedAcademicYear = this.academicYearList.find((year: any) => `${year.ID}` === `${this.selectedAcademicYearID}`);
@@ -535,12 +641,22 @@ AddNewClicked(): void {
     this.records = [optimisticRecord, ...this.records];
   }
 
+  /**
+   * Executes the operation: toDateOnly
+   * Parameters: value: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private toDateOnly(value: string): string {
     const raw = `${value || ''}`.trim();
     if (!raw) return '';
     return raw.includes('T') ? raw.split('T')[0] : raw.split(' ')[0];
   }
 
+  /**
+   * Executes the operation: toDateInputValue
+   * Parameters: value: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private toDateInputValue(value: string): string {
     const dateOnly = this.toDateOnly(value);
     if (/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
@@ -554,18 +670,33 @@ AddNewClicked(): void {
     return `${yyyy}-${mm}-${dd}`;
   }
 
+  /**
+   * Executes the operation: previousPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   previousPage(): void {
     if (this.currentPage > 1) {
       this.goToPage(this.currentPage - 1);
     }
   }
 
+  /**
+   * Executes the operation: nextPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   nextPage(): void {
     if (this.currentPage < this.totalPages()) {
       this.goToPage(this.currentPage + 1);
     }
   }
 
+  /**
+   * Executes the operation: goToPage
+   * Parameters: pageNumber: number
+   * Rationale: Standard operational controller for the active view.
+   */
   goToPage(pageNumber: number): void {
     const total = this.totalPages();
     if (total <= 0) {
@@ -575,22 +706,47 @@ AddNewClicked(): void {
     this.currentPage = Math.max(1, Math.min(pageNumber, total));
   }
 
+  /**
+   * Executes the operation: pageStartIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageStartIndex(): number {
     return this.filteredRecords.length === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
   }
 
+  /**
+   * Executes the operation: pageEndIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageEndIndex(): number {
     return Math.min(this.currentPage * this.pageSize, this.filteredRecords.length);
   }
 
+  /**
+   * Executes the operation: onRowsCountChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onRowsCountChange() {
     this.currentPage = 1;
   }
 
+  /**
+   * Executes the operation: totalPages
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   totalPages(): number {
     return Math.ceil(this.filteredRecords.length / this.pageSize);
   }
 
+  /**
+   * Executes the operation: getVisiblePageNumbers
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getVisiblePageNumbers(): number[] {
     const totalPages = this.totalPages();
     const pages: number[] = [];
@@ -603,11 +759,21 @@ AddNewClicked(): void {
     return pages;
   }
 
+  /**
+   * Executes the operation: clampCurrentPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private clampCurrentPage(): void {
     const total = this.totalPages();
     this.currentPage = total > 0 ? Math.min(this.currentPage, total) : 1;
   }
 
+  /**
+   * Executes the operation: extractApiMessage
+   * Parameters: response: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private extractApiMessage(response: any): string {
     const rootMessage = response?.Message || response?.message;
     if (rootMessage) {
@@ -625,6 +791,11 @@ AddNewClicked(): void {
     return '';
   }
 
+  /**
+   * Executes the operation: extractErrorMessage
+   * Parameters: error: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private extractErrorMessage(error: any): string {
     const direct =
       error?.error?.Message ||
@@ -647,6 +818,11 @@ AddNewClicked(): void {
     return '';
   }
 
+  /**
+   * Executes the operation: isPostWriteProjectionError
+   * Parameters: message: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private isPostWriteProjectionError(message: string): boolean {
     if (!message) return false;
     const hasProjectionColumnError =
@@ -659,6 +835,11 @@ AddNewClicked(): void {
     return hasProjectionColumnError && hasDalErrorPrefix;
   }
 
+  /**
+   * Executes the operation: readStoredSchoolIdFromBrowserStorage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private readStoredSchoolIdFromBrowserStorage(): string {
     const keys = ['SchoolID', 'schoolID', 'schoolId'] as const;
     for (const key of keys) {
@@ -670,6 +851,11 @@ AddNewClicked(): void {
     return '';
   }
 
+  /**
+   * Executes the operation: tryReadSchoolIdFromAccessToken
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private tryReadSchoolIdFromAccessToken(): string {
     const token = sessionStorage.getItem('accessToken') || localStorage.getItem('accessToken') || '';
     const parts = token.split('.');
@@ -686,6 +872,11 @@ AddNewClicked(): void {
     }
   }
 
+  /**
+   * Executes the operation: resolveNonAdminSchoolId
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private resolveNonAdminSchoolId(): string {
     return this.readStoredSchoolIdFromBrowserStorage() || this.tryReadSchoolIdFromAccessToken();
   }

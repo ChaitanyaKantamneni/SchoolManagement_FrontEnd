@@ -17,6 +17,9 @@ import {AbstractControl,ValidatorFn } from '@angular/forms';
   templateUrl: './items.component.html',
   styleUrl: './items.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for ItemsComponent.
+ */
 export class ItemsComponent extends BasePermissionComponent {
   pageName = 'Items';
   Math = Math;
@@ -31,6 +34,9 @@ export class ItemsComponent extends BasePermissionComponent {
     super(menuService, router);
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.checkViewPermission();
     this.SchoolSelectionChange = false;
@@ -45,6 +51,11 @@ export class ItemsComponent extends BasePermissionComponent {
     }
   }
 
+  /**
+   * Executes the operation: allowOnlyNumbers
+   * Parameters: event: KeyboardEvent
+   * Rationale: Standard operational controller for the active view.
+   */
   allowOnlyNumbers(event: KeyboardEvent) {
     if (
       event.key === 'Backspace' ||
@@ -60,6 +71,11 @@ export class ItemsComponent extends BasePermissionComponent {
     }
   }
 
+  /**
+   * Executes the operation: allowDecimalNumbers
+   * Parameters: event: KeyboardEvent
+   * Rationale: Standard operational controller for the active view.
+   */
   allowDecimalNumbers(event: KeyboardEvent) {
     if (
       event.key === 'Backspace' ||
@@ -76,6 +92,11 @@ export class ItemsComponent extends BasePermissionComponent {
     }
   }
   selectedUnit: any = null;
+  /**
+   * Executes the operation: openingStockValidator
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
 openingStockValidator(): ValidatorFn {
   return (control: AbstractControl) => {
 
@@ -100,6 +121,11 @@ openingStockValidator(): ValidatorFn {
     return null;
   };
 }
+  /**
+   * Executes the operation: onUnitChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
 onUnitChange(event: Event) {
   const unitId = Number(
     (event.target as HTMLSelectElement).value
@@ -117,6 +143,11 @@ onUnitChange(event: Event) {
 
   this.ItemsForm.get('OpeningStock')?.updateValueAndValidity();
 }
+  /**
+   * Executes the operation: increaseStock
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
 increaseStock(event: Event) {
   const keyboardEvent = event as KeyboardEvent;
   keyboardEvent.preventDefault();
@@ -137,6 +168,11 @@ increaseStock(event: Event) {
   }
 }
 
+  /**
+   * Executes the operation: decreaseStock
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
 decreaseStock(event: Event) {
   const keyboardEvent = event as KeyboardEvent;
   keyboardEvent.preventDefault();
@@ -209,6 +245,11 @@ OpeningStock: new FormControl(null, [
     Description: new FormControl('')
   });
 
+  /**
+   * Executes the operation: FetchSchoolsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSchoolsList() {
     const requestData = { Flag: '2' };
 
@@ -228,6 +269,11 @@ OpeningStock: new FormControl(null, [
     );
   }
 
+  /**
+   * Executes the operation: FetchAcademicYearsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchAcademicYearsList() {
     const requestData = { SchoolID: this.AdminselectedSchoolID || '', Flag: '2' };
 
@@ -247,6 +293,11 @@ OpeningStock: new FormControl(null, [
     );
   }
 
+  /**
+   * Executes the operation: FetchCategoriesList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchCategoriesList() {
     const requestData = {
       SchoolID: this.AdminselectedSchoolID || '',
@@ -270,6 +321,11 @@ OpeningStock: new FormControl(null, [
     );
   }
 
+  /**
+   * Executes the operation: FetchUnitsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchUnitsList() {
     const requestData = {
       SchoolID: this.AdminselectedSchoolID || '',
@@ -301,6 +357,11 @@ OpeningStock: new FormControl(null, [
     return role === '1';
   }
 
+  /**
+   * Executes the operation: FetchItemsCount
+   * Parameters: isSearch: boolean
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchItemsCount(isSearch: boolean) {
     let SchoolIdSelected = '';
     if (this.SchoolSelectionChange) {
@@ -317,6 +378,11 @@ OpeningStock: new FormControl(null, [
     return this.apiurl.post<any>('Tbl_Items_CRUD_Operations', payload);
   }
 
+  /**
+   * Executes the operation: FetchInitialData
+   * Parameters: extra: any = {}
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchInitialData(extra: any = {}) {
     const isSearch = !!this.searchQuery?.trim();
     const flag = isSearch ? '7' : '2';
@@ -380,6 +446,11 @@ OpeningStock: new FormControl(null, [
     });
   }
 
+  /**
+   * Executes the operation: mapItems
+   * Parameters: response: any
+   * Rationale: Standard operational controller for the active view.
+   */
   mapItems(response: any) {
     this.ItemsList = (response.data || []).map((item: any) => ({
       ID: item.id,
@@ -403,6 +474,11 @@ OpeningStock: new FormControl(null, [
     }));
   }
 
+  /**
+   * Executes the operation: AddNewClicked
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   AddNewClicked() {
     if (this.isAdmin) {
       this.ItemsForm.get('School')?.setValidators([Validators.required, Validators.min(1)]);
@@ -427,6 +503,11 @@ OpeningStock: new FormControl(null, [
     this.ViewItemClicked = false;
   }
 
+  /**
+   * Executes the operation: SubmitItem
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   SubmitItem() {
     if (this.ItemsForm.invalid) {
       this.ItemsForm.markAllAsTouched();
@@ -484,6 +565,11 @@ OpeningStock: new FormControl(null, [
     });
   }
 
+  /**
+   * Executes the operation: FetchItemByID
+   * Parameters: ItemID: string, mode: 'view' | 'edit'
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchItemByID(ItemID: string, mode: 'view' | 'edit') {
     const data = { ID: ItemID, Flag: '4' };
 
@@ -556,6 +642,11 @@ OpeningStock: new FormControl(null, [
     );
   }
 
+  /**
+   * Executes the operation: UpdateItem
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   UpdateItem() {
     if (this.ItemsForm.invalid) {
       this.ItemsForm.markAllAsTouched();
@@ -607,18 +698,43 @@ OpeningStock: new FormControl(null, [
     });
   }
 
+  /**
+   * Executes the operation: previousPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   previousPage() {
     if (this.currentPage > 1) this.goToPage(this.currentPage - 1);
   }
 
+  /**
+   * Executes the operation: nextPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   nextPage() {
     if (this.currentPage < this.totalPages()) this.goToPage(this.currentPage + 1);
   }
 
+  /**
+   * Executes the operation: firstPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   firstPage() { this.goToPage(1); }
 
+  /**
+   * Executes the operation: lastPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   lastPage() { this.goToPage(this.totalPages()); }
 
+  /**
+   * Executes the operation: goToPage
+   * Parameters: pageNumber: number
+   * Rationale: Standard operational controller for the active view.
+   */
   goToPage(pageNumber: number) {
     const total = this.totalPages();
     if (pageNumber < 1) pageNumber = 1;
@@ -639,24 +755,49 @@ OpeningStock: new FormControl(null, [
     }
   }
 
+  /**
+   * Executes the operation: totalPages
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   totalPages() {
     return Math.ceil(this.ItemsCount / this.pageSize);
   }
 
+  /**
+   * Executes the operation: pageStartIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageStartIndex(): number {
     return this.ItemsCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
   }
 
+  /**
+   * Executes the operation: pageEndIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageEndIndex(): number {
     return Math.min(this.currentPage * this.pageSize, this.ItemsCount);
   }
 
+  /**
+   * Executes the operation: onRowsCountChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onRowsCountChange() {
     this.currentPage = 1;
     this.pageCursors = [];
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: getVisiblePageNumbers
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getVisiblePageNumbers() {
     const totalPages = this.totalPages();
     const pages = [];
@@ -667,6 +808,11 @@ OpeningStock: new FormControl(null, [
     return pages;
   }
 
+  /**
+   * Executes the operation: onSearchChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onSearchChange() {
     clearTimeout(this.searchTimer);
 
@@ -692,6 +838,11 @@ OpeningStock: new FormControl(null, [
     }, this.SEARCH_DEBOUNCE);
   }
 
+  /**
+   * Executes the operation: closeModal
+   * Parameters: type: 'view' | 'status'
+   * Rationale: Standard operational controller for the active view.
+   */
   closeModal(type: 'view' | 'status') {
     if (type === 'view') {
       this.isViewModalOpen = false;
@@ -702,21 +853,41 @@ OpeningStock: new FormControl(null, [
     }
   }
 
+  /**
+   * Executes the operation: handleOk
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   handleOk() {
     this.isModalOpen = false;
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: editreview
+   * Parameters: ItemID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   editreview(ItemID: string): void {
     this.editclicked = true;
     this.FetchItemByID(ItemID, 'edit');
     this.ViewItemClicked = true;
   }
 
+  /**
+   * Executes the operation: toggleChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   toggleChange() {
     this.IsActiveStatus = !this.IsActiveStatus;
   }
 
+  /**
+   * Executes the operation: sort
+   * Parameters: column: string
+   * Rationale: Standard operational controller for the active view.
+   */
   sort(column: string) {
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -729,6 +900,11 @@ OpeningStock: new FormControl(null, [
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: onSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onSchoolChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     const schoolID = target.value;
@@ -737,6 +913,11 @@ OpeningStock: new FormControl(null, [
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: onAdminSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminSchoolChange(event: Event) {
     this.academicYearList = [];
     this.categoriesList = [];
@@ -750,6 +931,11 @@ OpeningStock: new FormControl(null, [
     this.FetchAcademicYearsList();
   }
 
+  /**
+   * Executes the operation: onAdminAcademicYearChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminAcademicYearChange(event: Event) {
     this.categoriesList = [];
     this.unitsList = [];
@@ -764,6 +950,11 @@ OpeningStock: new FormControl(null, [
     }
   }
 
+  /**
+   * Executes the operation: exportItems
+   * Parameters: type: 'pdf' | 'excel' | 'print'
+   * Rationale: Standard operational controller for the active view.
+   */
   exportItems(type: 'pdf' | 'excel' | 'print') {
     const isSearch = !!this.searchQuery?.trim();
     const flag = isSearch ? '7' : '2';
@@ -811,6 +1002,11 @@ OpeningStock: new FormControl(null, [
     });
   }
 
+  /**
+   * Executes the operation: viewReview
+   * Parameters: ItemID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   viewReview(ItemID: string): void {
     this.FetchItemByID(ItemID, 'view');
     this.isViewModalOpen = true;

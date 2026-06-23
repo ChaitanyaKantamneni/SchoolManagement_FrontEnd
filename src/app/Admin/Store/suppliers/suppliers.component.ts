@@ -31,6 +31,9 @@ interface SupplierRow {
   templateUrl: './suppliers.component.html',
   styleUrl: './suppliers.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for SuppliersComponent.
+ */
 export class SuppliersComponent extends BasePermissionComponent implements OnInit {
   pageName = 'Suppliers';
   Math = Math;
@@ -45,6 +48,9 @@ export class SuppliersComponent extends BasePermissionComponent implements OnIni
     super(mService, rtr);
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.checkViewPermission();
     this.FetchSchoolsList();  // loadSuppliers() is called inside this callback
@@ -114,6 +120,11 @@ export class SuppliersComponent extends BasePermissionComponent implements OnIni
     this.IsActiveStatus = !this.IsActiveStatus;
   }
 
+  /**
+   * Executes the operation: AddNewClicked
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   AddNewClicked(): void {
     this.editingId = null;
     this.selectedAdminSchoolID = '';
@@ -139,14 +150,29 @@ export class SuppliersComponent extends BasePermissionComponent implements OnIni
     this.IsAddNewClicked = !this.IsAddNewClicked;
   }
 
+  /**
+   * Executes the operation: editreview
+   * Parameters: SupplierID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   editreview(SupplierID: string): void {
     this.FetchSupplierByID(SupplierID, 'edit');
   }
 
+  /**
+   * Executes the operation: viewReview
+   * Parameters: SupplierID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   viewReview(SupplierID: string): void {
     this.FetchSupplierByID(SupplierID, 'view');
   }
 
+  /**
+   * Executes the operation: FetchSupplierByID
+   * Parameters: SupplierID: string, mode: 'view' | 'edit'
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSupplierByID(SupplierID: string, mode: 'view' | 'edit'): void {
     const supplier = this.SuppliersList.find(s => s.id === SupplierID);
     if (!supplier) return;
@@ -178,9 +204,24 @@ export class SuppliersComponent extends BasePermissionComponent implements OnIni
     }
   }
 
+  /**
+   * Executes the operation: SubmitSupplier
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   SubmitSupplier(): void { this.saveSupplier('1'); }
+  /**
+   * Executes the operation: UpdateSupplier
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   UpdateSupplier(): void { this.saveSupplier('5'); }
 
+  /**
+   * Executes the operation: saveSupplier
+   * Parameters: flag: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private saveSupplier(flag: string): void {
     if (this.supplierForm.invalid) {
       this.supplierForm.markAllAsTouched();
@@ -292,12 +333,22 @@ export class SuppliersComponent extends BasePermissionComponent implements OnIni
     });
   }
 
+  /**
+   * Executes the operation: loadSuppliers
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   loadSuppliers(): void {
     this.currentPage = 1;
     this.pageCursors = [];
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: mapSuppliers
+   * Parameters: response: any
+   * Rationale: Standard operational controller for the active view.
+   */
   mapSuppliers(response: any): void {
     this.SuppliersList = (response.data || []).map((item: any) => ({
       id: String(item.id ?? item.ID ?? ''),
@@ -328,6 +379,11 @@ export class SuppliersComponent extends BasePermissionComponent implements OnIni
     });
   }
 
+  /**
+   * Executes the operation: onSearchChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onSearchChange(): void {
     clearTimeout(this.searchTimer);
     this.searchTimer = setTimeout(() => {
@@ -349,12 +405,22 @@ export class SuppliersComponent extends BasePermissionComponent implements OnIni
     }, this.SEARCH_DEBOUNCE);
   }
 
+  /**
+   * Executes the operation: onSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onSchoolChange(event: Event): void {
     const schoolID = (event.target as HTMLSelectElement).value;
     this.selectedSchoolID = schoolID === '0' ? '' : schoolID;
     this.loadSuppliers();
   }
 
+  /**
+   * Executes the operation: onAdminSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminSchoolChange(event: Event): void {
     const schoolId = (event.target as HTMLSelectElement).value;
     this.academicYearList = [];
@@ -365,8 +431,18 @@ export class SuppliersComponent extends BasePermissionComponent implements OnIni
     }
   }
 
+  /**
+   * Executes the operation: handleOk
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   handleOk(): void { this.isModalOpen = false; }
 
+  /**
+   * Executes the operation: closeModal
+   * Parameters: type: 'view' | 'status'
+   * Rationale: Standard operational controller for the active view.
+   */
   closeModal(type: 'view' | 'status'): void {
     if (type === 'view') { this.isViewModalOpen = false; this.viewSupplier = null; }
     if (type === 'status') this.isModalOpen = false;
@@ -391,6 +467,11 @@ export class SuppliersComponent extends BasePermissionComponent implements OnIni
     });
   }
 
+  /**
+   * Executes the operation: FetchAcademicYearsList
+   * Parameters: schoolId: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private FetchAcademicYearsList(schoolId: string): void {
     this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', { SchoolID: schoolId, Flag: '2' }).subscribe({
       next: (res: any) => {
@@ -401,10 +482,20 @@ export class SuppliersComponent extends BasePermissionComponent implements OnIni
     });
   }
 
+  /**
+   * Executes the operation: getBooleanValue
+   * Parameters: val: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private getBooleanValue(val: any): boolean {
     return val === true || val === 1 || val === '1' || val === 'True' || val === 'active';
   }
 
+  /**
+   * Executes the operation: exportSuppliers
+   * Parameters: type: 'pdf' | 'excel' | 'print'
+   * Rationale: Standard operational controller for the active view.
+   */
   exportSuppliers(type: 'pdf' | 'excel' | 'print'): void {
     const isSearch = !!this.searchQuery?.trim();
     const payload: any = {
@@ -445,11 +536,36 @@ export class SuppliersComponent extends BasePermissionComponent implements OnIni
     });
   }
 
+  /**
+   * Executes the operation: previousPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   previousPage(): void { if (this.currentPage > 1) this.goToPage(this.currentPage - 1); }
+  /**
+   * Executes the operation: nextPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   nextPage(): void { if (this.currentPage < this.totalPages()) this.goToPage(this.currentPage + 1); }
+  /**
+   * Executes the operation: firstPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   firstPage(): void { this.goToPage(1); }
+  /**
+   * Executes the operation: lastPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   lastPage(): void { this.goToPage(this.totalPages()); }
 
+  /**
+   * Executes the operation: goToPage
+   * Parameters: pageNumber: number
+   * Rationale: Standard operational controller for the active view.
+   */
   goToPage(pageNumber: number): void {
     const total = this.totalPages();
     if (pageNumber < 1) pageNumber = 1;
@@ -466,22 +582,47 @@ export class SuppliersComponent extends BasePermissionComponent implements OnIni
     }
   }
 
+  /**
+   * Executes the operation: totalPages
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   totalPages(): number { return Math.ceil(this.SuppliersCount / this.pageSize); }
 
+  /**
+   * Executes the operation: pageStartIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageStartIndex(): number {
     return this.SuppliersCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
   }
 
+  /**
+   * Executes the operation: pageEndIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageEndIndex(): number {
     return Math.min(this.currentPage * this.pageSize, this.SuppliersCount);
   }
 
+  /**
+   * Executes the operation: onRowsCountChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onRowsCountChange() {
     this.currentPage = 1;
     this.pageCursors = [];
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: getVisiblePageNumbers
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getVisiblePageNumbers(): number[] {
     const totalPages = this.totalPages();
     const pages: number[] = [];

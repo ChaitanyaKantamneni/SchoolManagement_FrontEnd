@@ -18,6 +18,9 @@ import { FileService } from '../../../Services/file.service';
   templateUrl: './assign-homewrok.component.html',
   styleUrl: './assign-homewrok.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for AssignHomewrokComponent.
+ */
 export class AssignHomewrokComponent extends BasePermissionComponent {
   pageName = 'Assign Homework';
 
@@ -223,6 +226,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     return 'admin';
   }
 
+  /**
+   * Executes the operation: initializeRoleBasedUI
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   initializeRoleBasedUI(): void {
     console.log('[ASSIGN HOMEWORK] Initializing dynamic role-based UI');
     
@@ -248,6 +256,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     this.initializeDataBasedOnRole();
   }
 
+  /**
+   * Executes the operation: initializeDataBasedOnRole
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   initializeDataBasedOnRole(): void {
     console.log('[ASSIGN HOMEWORK] Initializing data for role:', this.currentRoleUI);
     
@@ -426,6 +439,9 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
   roleId = this.currentRollID;
 
   // ── Lifecycle Methods ───────────────────────────────────────────────────────
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     console.log('[ASSIGN HOMEWORK] ngOnInit - Role detection:', {
       currentRoleName: this.currentRoleName,
@@ -494,6 +510,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     this.generateFilePreview(file);
   }
 
+  /**
+   * Executes the operation: generateFilePreview
+   * Parameters: file: File
+   * Rationale: Standard operational controller for the active view.
+   */
   generateFilePreview(file: File): void {
     this.isPreviewVisible = true;
 
@@ -512,6 +533,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     }
   }
 
+  /**
+   * Executes the operation: confirmUpload
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   confirmUpload(): void {
     // Don't upload file yet - keep it in memory
     // File will be uploaded during Submit/Update
@@ -521,6 +547,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     }
   }
 
+  /**
+   * Executes the operation: cancelPreview
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   cancelPreview(): void {
     this.isPreviewVisible = false;
     this.filePreviewUrl = null;
@@ -530,6 +561,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     this.clearFileSelection();
   }
 
+  /**
+   * Executes the operation: uploadFile
+   * Parameters: file: File
+   * Rationale: Standard operational controller for the active view.
+   */
   uploadFile(file: File): void {
     if (!file) return;
 
@@ -578,6 +614,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Executes the operation: clearFileSelection
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   clearFileSelection(): void {
     this.selectedFile = null;
     this.uploadedFileName = '';
@@ -592,6 +633,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     }
   }
 
+  /**
+   * Executes the operation: removeAttachment
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   removeAttachment(): void {
     const attachmentUrl = this.HomeworkForm.get('AttachmentURL')?.value;
     const homeworkId = this.HomeworkForm.get('ID')?.value || 'temp';
@@ -641,21 +687,41 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     return this.fileService.getFullFileUrl(url);
   }
 
+  /**
+   * Executes the operation: isImageFile
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   isImageFile(): boolean {
     const url = this.HomeworkForm.get('AttachmentURL')?.value || '';
     return this.fileService.isImageFile(url);
   }
 
+  /**
+   * Executes the operation: isPdfFile
+   * Parameters: path?: string
+   * Rationale: Standard operational controller for the active view.
+   */
   isPdfFile(path?: string): boolean {
     const checkPath = path || this.HomeworkForm.get('AttachmentURL')?.value || this.selectedFile?.name || '';
     return this.fileService.isPdfFile(checkPath);
   }
 
+  /**
+   * Executes the operation: isDocumentFile
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   isDocumentFile(): boolean {
     const url = this.HomeworkForm.get('AttachmentURL')?.value || '';
     return /\.(doc|docx|txt)$/i.test(url);
   }
 
+  /**
+   * Executes the operation: getFileIcon
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getFileIcon(): string {
     const url = this.HomeworkForm.get('AttachmentURL')?.value || '';
     return this.fileService.getFileIcon(url);
@@ -730,6 +796,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     }
   }
 
+  /**
+   * Executes the operation: AddNewClicked
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   AddNewClicked() {
     if (this.isAdmin) {
       this.HomeworkForm.get('School')?.setValidators([Validators.required, Validators.min(1)]);
@@ -802,6 +873,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     }
   }
 
+  /**
+   * Executes the operation: uploadFileThenSubmit
+   * Parameters: operation: 'insert' | 'update'
+   * Rationale: Standard operational controller for the active view.
+   */
   uploadFileThenSubmit(operation: 'insert' | 'update') {
     const schoolId = this.AdminselectedSchoolID || this.ss('SchoolID') || '';
     const homeworkId = operation === 'update' ? this.HomeworkForm.get('ID')?.value || 'temp' : 'temp';
@@ -837,6 +913,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Executes the operation: submitToDB
+   * Parameters: operation: 'insert' | 'update'
+   * Rationale: Standard operational controller for the active view.
+   */
   submitToDB(operation: 'insert' | 'update') {
     const IsActiveStatusNumeric = this.IsActiveStatus ? "1" : "0";    
     const attachmentUrl = this.HomeworkForm.get('AttachmentURL')?.value;
@@ -913,6 +994,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Executes the operation: UpdateHomework
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   UpdateHomework() {
     
     if (this.HomeworkForm.invalid) {
@@ -1101,6 +1187,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Executes the operation: FetchHomeworkCount
+   * Parameters: isSearch: boolean
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchHomeworkCount(isSearch: boolean) {
     let SchoolIdSelected = '';
 
@@ -1129,6 +1220,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     return this.apiurl.post<any>('Tbl_Homework_CRUD_Operations', countPayload);
   }
 
+  /**
+   * Executes the operation: mapHomeworkData
+   * Parameters: response: any
+   * Rationale: Standard operational controller for the active view.
+   */
   mapHomeworkData(response: any) {
     this.homeworkList = (response.data || []).map((item: any) => ({
       id: item.id,
@@ -1154,6 +1250,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     }));
   }
 
+  /**
+   * Executes the operation: FetchSchoolsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSchoolsList() {
     const requestData = { Flag: '2' };
 
@@ -1179,6 +1280,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
       );
   }
 
+  /**
+   * Executes the operation: FetchAcademicYearsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchAcademicYearsList() {
     const requestData = { SchoolID: this.AdminselectedSchoolID || '', Flag: '2' };
 
@@ -1211,6 +1317,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
       );
   }
 
+  /**
+   * Executes the operation: FetchClassList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchClassList() {
     const AcademicYearIdSelected =
       this.isAdmin
@@ -1245,6 +1356,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
       );
   }
 
+  /**
+   * Executes the operation: FetchSubjectsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSubjectsList() {
     console.log('[ASSIGN HOMEWORK] FetchSubjectsList called with:', {
       AdminselectedSchoolID: this.AdminselectedSchoolID,
@@ -1296,6 +1412,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
       );
   }
 
+  /**
+   * Executes the operation: FetchHomeworkList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchHomeworkList(): void {
     console.log('[ASSIGN HOMEWORK] FetchHomeworkList called - Current values:', {
       currentRoleUI: this.currentRoleUI,
@@ -1431,6 +1552,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Executes the operation: FetchHomeworkDetByID
+   * Parameters: homeworkID: string, mode: 'view' | 'edit'
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchHomeworkDetByID(homeworkID: string, mode: 'view' | 'edit'): void {
     const data = {
       ID: homeworkID,
@@ -1554,20 +1680,40 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     return this.totalPagesCount;
   }
 
+  /**
+   * Executes the operation: pageStartIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageStartIndex(): number {
     return this.totalCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
   }
 
+  /**
+   * Executes the operation: pageEndIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageEndIndex(): number {
     return Math.min(this.currentPage * this.pageSize, this.totalCount);
   }
 
+  /**
+   * Executes the operation: onRowsCountChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onRowsCountChange() {
     this.currentPage = 1;
     this.pageCursors = [];
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: getVisiblePageNumbers
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getVisiblePageNumbers(): number[] {
     const total = this.totalPages();
     const pages: number[] = [];
@@ -1578,18 +1724,33 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     return pages;
   }
 
+  /**
+   * Executes the operation: previousPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   previousPage(): void {
     if (this.currentPage > 1) {
       this.goToPage(this.currentPage - 1);
     }
   }
 
+  /**
+   * Executes the operation: nextPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   nextPage(): void {
     if (this.currentPage < this.totalPages()) {
       this.goToPage(this.currentPage + 1);
     }
   }
 
+  /**
+   * Executes the operation: goToPage
+   * Parameters: page: number
+   * Rationale: Standard operational controller for the active view.
+   */
   goToPage(page: number): void {
     const total = this.totalPages();
     if (page < 1) page = 1;
@@ -1616,6 +1777,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     }
   }
 
+  /**
+   * Executes the operation: handleOk
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   handleOk(): void {
     this.isModalOpen = false;
   }
@@ -1625,11 +1791,21 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     this.FetchHomeworkDetByID(homeworkID, 'edit');
   }
 
+  /**
+   * Executes the operation: viewReview
+   * Parameters: homeworkID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   viewReview(homeworkID: string): void {
     this.FetchHomeworkDetByID(homeworkID, 'view');
     this.isViewModalOpen = true;
   }
 
+  /**
+   * Executes the operation: toggleChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   toggleChange() {
     this.IsActiveStatus = !this.IsActiveStatus;
   }
@@ -1655,6 +1831,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     this.FetchAcademicYearsList();
   }
 
+  /**
+   * Executes the operation: onSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onSchoolChange(event: Event) {
     const schoolID = (event.target as HTMLSelectElement).value;
     this.selectedSchoolID = schoolID;
@@ -1670,6 +1851,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: onAcademicYearChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAcademicYearChange(event: Event) {
     this.classList = [];
     this.divisionList = [];
@@ -1707,6 +1893,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     }
   }
 
+  /**
+   * Executes the operation: onClassChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onClassChange(event: Event) {
     this.divisionList = [];
     this.subjectList = [];
@@ -1723,6 +1914,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     this.FetchDivisionsList();
   }
 
+  /**
+   * Executes the operation: onDivisionChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onDivisionChange(event: Event) {
     this.subjectList = [];
     this.HomeworkForm.get('SubjectID')?.patchValue('0');
@@ -1737,6 +1933,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     this.FetchSubjectsList();
   }
 
+  /**
+   * Executes the operation: FetchDivisionsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchDivisionsList() {
     const requestData = {
       SchoolID: this.AdminselectedSchoolID || '',
@@ -1781,6 +1982,11 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     return this.getIntValue(value);
   }
 
+  /**
+   * Executes the operation: resolveStaffIdentity
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private resolveStaffIdentity(): void {
     const schoolId = this.resolvedSchoolId;
     const email = (this.ss('email') || this.ss('Email') || '').toString().trim().toLowerCase();
@@ -1813,12 +2019,22 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     this.FetchSubmissions();
   }
 
+  /**
+   * Executes the operation: backToHomeworkList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   backToHomeworkList(): void {
     this.IsViewSubmissions = false;
     this.selectedHomeworkForSubmissions = null;
     this.submissionsList = [];
   }
 
+  /**
+   * Executes the operation: FetchSubmissions
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSubmissions(): void {
     if (!this.selectedHomeworkForSubmissions) return;
     this.loader.show();
@@ -1879,12 +2095,22 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Executes the operation: submissionsGoToPage
+   * Parameters: page: number
+   * Rationale: Standard operational controller for the active view.
+   */
   submissionsGoToPage(page: number): void {
     if (page < 1 || page > this.submissionsTotalPages) return;
     this.submissionsPage = page;
     this.FetchSubmissions();
   }
 
+  /**
+   * Executes the operation: openEvaluateModal
+   * Parameters: submission: any
+   * Rationale: Standard operational controller for the active view.
+   */
   openEvaluateModal(submission: any): void {
     this.selectedSubmissionForEval = submission;
     this.EvaluateForm.reset({
@@ -1895,22 +2121,42 @@ export class AssignHomewrokComponent extends BasePermissionComponent {
     this.isEvaluateModalOpen = true;
   }
 
+  /**
+   * Executes the operation: closeEvaluateModal
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeEvaluateModal(): void {
     this.isEvaluateModalOpen = false;
     this.selectedSubmissionForEval = null;
     this.EvaluateForm.reset();
   }
 
+  /**
+   * Executes the operation: openSubmissionViewModal
+   * Parameters: submission: any
+   * Rationale: Standard operational controller for the active view.
+   */
   openSubmissionViewModal(submission: any): void {
     this.selectedSubmissionView = submission;
     this.isSubmissionViewModalOpen = true;
   }
 
+  /**
+   * Executes the operation: closeSubmissionViewModal
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeSubmissionViewModal(): void {
     this.isSubmissionViewModalOpen = false;
     this.selectedSubmissionView = null;
   }
 
+  /**
+   * Executes the operation: SubmitEvaluation
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   SubmitEvaluation(): void {
     if (this.EvaluateForm.invalid) {
       this.EvaluateForm.markAllAsTouched();

@@ -107,6 +107,9 @@ export interface Module {
 @Injectable({
   providedIn: 'root'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for MenuServiceService.
+ */
 export class MenuServiceService {
   private menu: Module[] = [];
   private loadedRoleId: string | null = null;

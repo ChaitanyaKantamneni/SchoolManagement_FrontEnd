@@ -6,6 +6,9 @@ import { switchMap } from 'rxjs/operators';
 @Injectable({
   providedIn: 'root'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for ParentServiceService.
+ */
 export class ParentServiceService {
 
   constructor(private apiService: ApiServiceService) {}

@@ -22,6 +22,9 @@ import { FileService } from '../../../Services/file.service';
   templateUrl: './fee-collection.component.html',
   styleUrl: './fee-collection.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for FeeCollectionComponent.
+ */
 export class FeeCollectionComponent extends BasePermissionComponent {
   pageName = 'Fee Collection';
 
@@ -36,6 +39,9 @@ constructor(
     super(menuService, router);
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.checkViewPermission();
     this.SchoolSelectionChange=false;
@@ -62,6 +68,11 @@ constructor(
     });
   };
   
+  /**
+   * Executes the operation: ngOnDestroy
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   ngOnDestroy(): void {
     this.admissionNoSubscription?.unsubscribe();
   }
@@ -131,12 +142,22 @@ constructor(
   private suppressAdmissionNoWatcher = false;
   AdminSelectedActiveAcademicYearID:string = sessionStorage.getItem('ActiveAcademicYearID') || '';
 
+  /**
+   * Executes the operation: getResponseData
+   * Parameters: response: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private getResponseData(response: any): any[] {
     if (Array.isArray(response?.data)) return response.data;
     if (Array.isArray(response?.Data)) return response.Data;
     return [];
   }
 
+  /**
+   * Executes the operation: isApiSuccess
+   * Parameters: response: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private isApiSuccess(response: any): boolean {
     const code = response?.statusCode ?? response?.StatusCode;
     const success = response?.success ?? response?.Success;
@@ -158,6 +179,11 @@ constructor(
     ChequeNo: new FormControl('')
   });
 
+  /**
+   * Executes the operation: lockHierarchyFields
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private lockHierarchyFields(): void {
     ['School', 'AcademicYear', 'Class', 'Division', 'ClassTeacher'].forEach((field) => {
       const control = this.ClassDivisionForm.get(field);
@@ -167,6 +193,11 @@ constructor(
     });
   }
 
+  /**
+   * Executes the operation: unlockHierarchyFields
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private unlockHierarchyFields(): void {
     ['School', 'AcademicYear', 'Class', 'Division', 'ClassTeacher'].forEach((field) => {
       const control = this.ClassDivisionForm.get(field);
@@ -176,6 +207,11 @@ constructor(
     });
   }
 
+  /**
+   * Executes the operation: clearAdmissionDrivenSelectionAndUnlock
+   * Parameters: reloadSchools: boolean = true
+   * Rationale: Standard operational controller for the active view.
+   */
   private clearAdmissionDrivenSelectionAndUnlock(reloadSchools: boolean = true): void {
     this.admissionLookupRequestToken++;
     this.isAdmissionLookupMode = false;
@@ -217,6 +253,11 @@ constructor(
     }
   }
 
+  /**
+   * Executes the operation: resetHierarchyFieldsAfterAdmissionNoChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private resetHierarchyFieldsAfterAdmissionNoChange(): void {
     this.admissionLookupRequestToken++;
     this.isAdmissionLookupMode = false;
@@ -243,6 +284,11 @@ constructor(
     this.admissionLookupNoData = false;
   }
 
+  /**
+   * Executes the operation: resetFeePreviewState
+   * Parameters: clearStudentSelection: boolean
+   * Rationale: Standard operational controller for the active view.
+   */
   private resetFeePreviewState(clearStudentSelection: boolean): void {
     this.showFeeTable = false;
     this.showFeeTableAfterFeeCategory = false;
@@ -269,6 +315,11 @@ constructor(
     }
   }
 
+  /**
+   * Executes the operation: allowOnlyNumbers
+   * Parameters: event: KeyboardEvent
+   * Rationale: Standard operational controller for the active view.
+   */
   allowOnlyNumbers(event: KeyboardEvent) {
     if (
       event.key === 'Backspace' ||
@@ -285,6 +336,11 @@ constructor(
     }
   }
 
+  /**
+   * Executes the operation: FetchSchoolsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSchoolsList() {
     const requestData = { Flag: '2' };
 
@@ -310,6 +366,11 @@ constructor(
       );
   };
 
+  /**
+   * Executes the operation: FetchAcademicYearsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchAcademicYearsList() {
     const schoolId =
     this.SchoolSelectionChange
@@ -371,6 +432,11 @@ constructor(
     return role === '1';
   }
 
+  /**
+   * Executes the operation: FetchAcademicYearCount
+   * Parameters: isSearch: boolean
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchAcademicYearCount(isSearch: boolean) {
     let SchoolIdSelected = '';
     let AcademicYearIdSelected='';
@@ -404,6 +470,11 @@ constructor(
 
   }
 
+  /**
+   * Executes the operation: FetchInitialData
+   * Parameters: extra: any = {}
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchInitialData(extra: any = {}) {
     const isSearch = !!this.searchQuery?.trim();
     const flag = '2';
@@ -480,6 +551,11 @@ constructor(
     });
   };
 
+  /**
+   * Executes the operation: mapAcademicYears
+   * Parameters: response: any
+   * Rationale: Standard operational controller for the active view.
+   */
   mapAcademicYears(response: any) {
     this.ClassDivisionList = this.getResponseData(response).map((item: any) => ({
       ID: item.id,
@@ -498,6 +574,11 @@ constructor(
     this.applyAdmissionNoFilter();
   }
 
+  /**
+   * Executes the operation: applyAdmissionNoFilter
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private applyAdmissionNoFilter(): void {
     const normalizedSearchTerm = (this.searchQuery || '').toString().trim().toLowerCase();
 
@@ -511,6 +592,11 @@ constructor(
     );
   }
 
+  /**
+   * Executes the operation: AddNewClicked
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   AddNewClicked(){
     this.ClassDivisionForm.reset();
     this.isAdmissionLookupMode = false;
@@ -549,6 +635,11 @@ constructor(
     this.clearAdmissionDrivenSelectionAndUnlock(false);
   };
 
+  /**
+   * Executes the operation: FetchClassList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchClassList() {
     const AcademicYearIdSelected =
       this.isAdmin
@@ -617,6 +708,11 @@ constructor(
     }
   }
 
+  /**
+   * Executes the operation: FetchDivisionsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchDivisionsList() {
     const AcademicYearIdSelected =
       this.isAdmin
@@ -687,6 +783,11 @@ constructor(
     }
   }
 
+  /**
+   * Executes the operation: FetchClassStudentsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchClassStudentsList() {
     const AcademicYearIdSelected =
       this.isAdmin
@@ -769,6 +870,11 @@ constructor(
   }
 
 
+  /**
+   * Executes the operation: SubmitClassDivision
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   SubmitClassDivision(){
     if(this.ClassDivisionForm.invalid){
       console.log('Invalid form',this.ClassDivisionForm);
@@ -813,6 +919,11 @@ constructor(
     }
   };
 
+  /**
+   * Executes the operation: FetchSyllabusDetByID
+   * Parameters: SyllabusID: string, mode: 'view' | 'edit'
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSyllabusDetByID(SyllabusID: string, mode: 'view' | 'edit') {
     const schoolId = sessionStorage.getItem('SchoolID');
 
@@ -884,6 +995,11 @@ constructor(
     );
   };
 
+  /**
+   * Executes the operation: UpdateClassDivision
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   UpdateClassDivision(){
     if(this.ClassDivisionForm.invalid){
       this.ClassDivisionForm.markAllAsTouched();
@@ -928,26 +1044,51 @@ constructor(
     }
   };
 
+  /**
+   * Executes the operation: previousPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   previousPage() {
     if (this.currentPage > 1) {
       this.goToPage(this.currentPage - 1);
     }
   };
 
+  /**
+   * Executes the operation: nextPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   nextPage() {
     if (this.currentPage < this.totalPages()) {
       this.goToPage(this.currentPage + 1);
     }
   };
 
+  /**
+   * Executes the operation: firstPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   firstPage() {
     this.goToPage(1);
   };
 
+  /**
+   * Executes the operation: lastPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   lastPage() {
     this.goToPage(this.totalPages());
   };
 
+  /**
+   * Executes the operation: goToPage
+   * Parameters: pageNumber: number
+   * Rationale: Standard operational controller for the active view.
+   */
   goToPage(pageNumber: number) {
     const total = this.totalPages();
 
@@ -961,10 +1102,20 @@ constructor(
     this.FetchInitialData({ offset });
   };
 
+  /**
+   * Executes the operation: totalPages
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   totalPages() {
     return Math.ceil(this.ClassDivisionCount / this.pageSize);
   };
 
+  /**
+   * Executes the operation: getVisiblePageNumbers
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getVisiblePageNumbers() {
     const totalPages = this.totalPages();
     const pages = [];
@@ -975,6 +1126,11 @@ constructor(
     return pages;
   };
 
+  /**
+   * Executes the operation: onSearchChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onSearchChange() {
     clearTimeout(this.searchTimer);
 
@@ -983,18 +1139,33 @@ constructor(
     }, this.SEARCH_DEBOUNCE);
   };
 
+  /**
+   * Executes the operation: formatDateYYYYMMDD
+   * Parameters: dateStr: string | null
+   * Rationale: Standard operational controller for the active view.
+   */
   formatDateYYYYMMDD(dateStr: string | null) {
     if (!dateStr) return '';
     const d = new Date(dateStr);
     return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
   };
 
+  /**
+   * Executes the operation: formatDateDDMMYYYY
+   * Parameters: dateStr: string | null
+   * Rationale: Standard operational controller for the active view.
+   */
   formatDateDDMMYYYY(dateStr: string | null) {
     if (!dateStr) return '';
     const d = new Date(dateStr);
     return `${d.getDate().toString().padStart(2,'0')}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getFullYear()}`;
   };
 
+  /**
+   * Executes the operation: closeModal
+   * Parameters: type: 'view' | 'status'
+   * Rationale: Standard operational controller for the active view.
+   */
   closeModal(type: 'view' | 'status') {
     console.log('type',type);
     if (type === 'view') {
@@ -1007,17 +1178,32 @@ constructor(
     }
   };
 
+  /**
+   * Executes the operation: handleOk
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   handleOk() {
     this.isModalOpen = false;
     this.currentPage = 1;
     this.FetchInitialData({ offset: 0 });
   };
 
+  /**
+   * Executes the operation: getReceiptPaymentModeLabel
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getReceiptPaymentModeLabel(): string {
     const rawMode = this.viewSyllabus?.PaymentMode;
     return this.getPaymentModeDisplayValue(rawMode);
   }
 
+  /**
+   * Executes the operation: getPaymentModeDisplayValue
+   * Parameters: rawMode: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private getPaymentModeDisplayValue(rawMode: any): string {
     const mode = (rawMode ?? '').toString().trim().toLowerCase();
     if (mode === '1' || mode === 'cash') return 'Cash';
@@ -1027,20 +1213,40 @@ constructor(
     return rawMode || '-';
   }
 
+  /**
+   * Executes the operation: isReceiptUpiOrCardMode
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   isReceiptUpiOrCardMode(): boolean {
     const mode = this.getReceiptPaymentModeLabel().toLowerCase();
     return mode === 'upi' || mode === 'card';
   }
 
+  /**
+   * Executes the operation: isReceiptChequeMode
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   isReceiptChequeMode(): boolean {
     return this.getReceiptPaymentModeLabel().toLowerCase() === 'cheque';
   }
 
+  /**
+   * Executes the operation: getReceiptPaymentReferenceValue
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getReceiptPaymentReferenceValue(): string {
     const value = this.viewSyllabus?.TransactionID;
     return value && value.toString().trim() ? value : '-';
   }
 
+  /**
+   * Executes the operation: editreview
+   * Parameters: SyllabusID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   editreview(SyllabusID: string): void {
     this.ClassDivisionForm.get('School')?.clearValidators();
     this.editclicked=true;
@@ -1048,10 +1254,20 @@ constructor(
     this.ViewClassDivisionClicked=true;
   };
 
+  /**
+   * Executes the operation: toggleChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   toggleChange(){
     this.IsActiveStatus = !this.IsActiveStatus;
   };
 
+  /**
+   * Executes the operation: sort
+   * Parameters: column: string
+   * Rationale: Standard operational controller for the active view.
+   */
   sort(column: string) {
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -1063,6 +1279,11 @@ constructor(
     this.FetchInitialData({ offset: 0 });
   };
 
+  /**
+   * Executes the operation: onSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onSchoolChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     const schoolID = target.value;
@@ -1076,6 +1297,11 @@ constructor(
     this.FetchInitialData({ offset: 0 });
   };
 
+  /**
+   * Executes the operation: exportToExcel
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   exportToExcel() {
       const isSearch = !!this.searchQuery?.trim();
       const flag = isSearch ? '7' : '2';
@@ -1105,6 +1331,11 @@ constructor(
         });
   };
 
+  /**
+   * Executes the operation: exportSyllabus
+   * Parameters: type: 'pdf' | 'excel' | 'print'
+   * Rationale: Standard operational controller for the active view.
+   */
   exportSyllabus(type: 'pdf' | 'excel' | 'print') {
     const isSearch = !!this.searchQuery?.trim();
     const flag = isSearch ? '7' : '2';
@@ -1156,11 +1387,21 @@ constructor(
     });
   };
 
+  /**
+   * Executes the operation: viewReview
+   * Parameters: SyllabusID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   viewReview(SyllabusID: string): void {
     this.FetchSyllabusDetByID(SyllabusID,'view');
     this.isViewModalOpen=true;
   };
 
+  /**
+   * Executes the operation: onAdminSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminSchoolChange(event: Event) {
     if (this.isAdmissionLookupMode) return;
     this.isAdmissionLookupMode = false;
@@ -1186,6 +1427,11 @@ constructor(
     this.FetchAcademicYearsList();
   };
 
+  /**
+   * Executes the operation: onAdminAcademicYearChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminAcademicYearChange(event: Event) {
     if (this.isAdmissionLookupMode) return;
     this.isAdmissionLookupMode = false;
@@ -1208,6 +1454,11 @@ constructor(
     this.FetchClassList();
   };
 
+  /**
+   * Executes the operation: onAdminClassChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminClassChange(event: Event) {
     if (this.isAdmissionLookupMode) return;
     this.isAdmissionLookupMode = false;
@@ -1228,6 +1479,11 @@ constructor(
     this.FetchDivisionsList();
   };
 
+  /**
+   * Executes the operation: onAdminDivisionChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminDivisionChange(event: Event) {
       if (this.isAdmissionLookupMode) return;
       this.isAdmissionLookupMode = false;
@@ -1246,6 +1502,11 @@ constructor(
       this.FetchClassStudentsList();
   };
 
+  /**
+   * Executes the operation: onStudentChange
+   * Parameters: event: any
+   * Rationale: Standard operational controller for the active view.
+   */
   onStudentChange(event: any) {
     if (this.isAdmissionLookupMode) return;
     this.isAdmissionLookupMode = false;
@@ -1257,24 +1518,49 @@ constructor(
     this.selectedStudentID = studentId;    
   }
 
+  /**
+   * Executes the operation: onPaymentModeChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onPaymentModeChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     const selectedMode = target.value;
     this.setTransactionValidatorsByPaymentMode(selectedMode);
   }
 
+  /**
+   * Executes the operation: isUpiModeSelected
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   isUpiModeSelected(): boolean {
     return this.ClassDivisionForm.get('PaymentMode')?.value?.toString() === '2';
   }
 
+  /**
+   * Executes the operation: isCardModeSelected
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   isCardModeSelected(): boolean {
     return this.ClassDivisionForm.get('PaymentMode')?.value?.toString() === '4';
   }
 
+  /**
+   * Executes the operation: isChequeModeSelected
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   isChequeModeSelected(): boolean {
     return this.ClassDivisionForm.get('PaymentMode')?.value?.toString() === '3';
   }
 
+  /**
+   * Executes the operation: setTransactionValidatorsByPaymentMode
+   * Parameters: selectedMode: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private setTransactionValidatorsByPaymentMode(selectedMode: string) {
     const transactionControl = this.ClassDivisionForm.get('TransactionID');
     const chequeControl = this.ClassDivisionForm.get('ChequeNo');
@@ -1315,6 +1601,11 @@ constructor(
     transactionControl.updateValueAndValidity();
   }
 
+  /**
+   * Executes the operation: CollectFee
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   CollectFee() {
     const amountControl = this.ClassDivisionForm.get('AmountToBePaid');
     this.validateAmountAgainstDue(amountControl?.value);
@@ -1392,6 +1683,11 @@ constructor(
     }
   }
 
+  /**
+   * Executes the operation: SubmitFilterList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   async SubmitFilterList(){
     const requestToken = ++this.admissionLookupRequestToken;
     this.amountPaid = 0;
@@ -1514,10 +1810,18 @@ constructor(
     this.FetchFeeCategoryList();
   }
 
+  /**
+   * Handles form submission: Validates input fields and transmits data payloads.
+   */
   async onSubmit(): Promise<void> {
     await this.SubmitFilterList();
   }
 
+  /**
+   * Executes the operation: onCancelClick
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onCancelClick(): void {
     this.suppressAdmissionNoWatcher = true;
     this.ClassDivisionForm.get('AdmissionNo')?.patchValue('', { emitEvent: false });
@@ -1525,6 +1829,11 @@ constructor(
     this.clearAdmissionDrivenSelectionAndUnlock();
   }
 
+  /**
+   * Executes the operation: onFeeCategoryChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onFeeCategoryChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     const schoolID = target.value;
@@ -1544,6 +1853,11 @@ constructor(
 
   DueAmount: number = 0;
 
+  /**
+   * Executes the operation: loadStudentFees
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   loadStudentFees() {
     const payload = {
       SchoolID: this.AdminselectedSchoolID,
@@ -1575,6 +1889,11 @@ constructor(
       });
   }
 
+  /**
+   * Executes the operation: FetchReciptNo
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchReciptNo() {
     const requestData = { 
       SchoolID: this.AdminselectedSchoolID,
@@ -1600,6 +1919,11 @@ constructor(
       );
   }
 
+  /**
+   * Executes the operation: FetchFeeCategoryList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchFeeCategoryList(){
     this.ClassDivisionForm.get('FeeCategory')?.patchValue('0');
     const requestData = { 
@@ -1632,12 +1956,22 @@ constructor(
 
   totalAmount: number = 0;
 
+  /**
+   * Executes the operation: updateTotal
+   * Parameters: event: any
+   * Rationale: Standard operational controller for the active view.
+   */
   updateTotal(event: any) {
     this.totalAmount = Number(event.target.value || 0);
     const amountControl = this.ClassDivisionForm.get('AmountToBePaid');
     this.validateAmountAgainstDue(event.target.value);
   }
 
+  /**
+   * Executes the operation: validateAmountAgainstDue
+   * Parameters: inputValue: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private validateAmountAgainstDue(inputValue: any): void {
     const amountControl = this.ClassDivisionForm.get('AmountToBePaid');
     if (!amountControl) return;
@@ -1687,6 +2021,11 @@ constructor(
   // win?.document.close();
   // }
 
+  /**
+   * Executes the operation: printReceipt
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   printReceipt() {
     const content = document.getElementById('receiptSection')?.innerHTML;
   
@@ -1839,14 +2178,29 @@ constructor(
     win?.document.close();
   }
 
+  /**
+   * Executes the operation: pageStartIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageStartIndex(): number {
     return this.ClassDivisionCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
   }
 
+  /**
+   * Executes the operation: pageEndIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageEndIndex(): number {
     return Math.min(this.currentPage * this.pageSize, this.ClassDivisionCount);
   }
 
+  /**
+   * Executes the operation: CancelSyllabus
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   CancelSyllabus(){
     this.IsAddNewClicked=false;
     this.AdminselectedSchoolID = '';
@@ -1855,6 +2209,11 @@ constructor(
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: onRowsCountChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onRowsCountChange() {
     this.currentPage = 1;
     this.FetchInitialData();

@@ -15,6 +15,9 @@ export interface LeaveBalancePolicy {
 @Injectable({
   providedIn: 'root'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for LeaveBalancePolicyService.
+ */
 export class LeaveBalancePolicyService {
   private readonly storageKey = 'leave-balance-policies-v1';
 

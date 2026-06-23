@@ -57,6 +57,9 @@ import {
   templateUrl: './student-leave-management.component.html',
   styleUrls: ['./student-leave-management.component.css']
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for StudentLeaveManagementComponent.
+ */
 export class StudentLeaveManagementComponent implements OnInit {
   // Tab Management
   selectedTab = 0;
@@ -109,11 +112,19 @@ export class StudentLeaveManagementComponent implements OnInit {
     this.initializeFilterForm();
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.initializeSessionData();
     this.loadInitialData();
   }
 
+  /**
+   * Executes the operation: initializeSessionData
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private initializeSessionData(): void {
     this.schoolId = sessionStorage.getItem('SchoolID') || '';
     this.schoolName = sessionStorage.getItem('SchoolName') || '';
@@ -121,6 +132,11 @@ export class StudentLeaveManagementComponent implements OnInit {
     this.currentUser = sessionStorage.getItem('UserName') || sessionStorage.getItem('email') || '';
   }
 
+  /**
+   * Executes the operation: initializeFilterForm
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private initializeFilterForm(): void {
     this.filterForm = this.fb.group({
       status: [''],
@@ -133,6 +149,11 @@ export class StudentLeaveManagementComponent implements OnInit {
     });
   }
 
+  /**
+   * Executes the operation: loadInitialData
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private loadInitialData(): void {
     this.loadStatistics();
     this.loadPendingLeaves();
@@ -140,6 +161,11 @@ export class StudentLeaveManagementComponent implements OnInit {
     this.loadMasterData();
   }
 
+  /**
+   * Executes the operation: loadStatistics
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private loadStatistics(): void {
     this.leaveService.getLeaveStatistics(this.schoolId, this.academicYear).subscribe({
       next: (response: any) => {
@@ -159,6 +185,11 @@ export class StudentLeaveManagementComponent implements OnInit {
     });
   }
 
+  /**
+   * Executes the operation: loadPendingLeaves
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private loadPendingLeaves(): void {
     this.isLoading = true;
     this.leaveService.getPendingLeaves(this.schoolId, this.academicYear).subscribe({
@@ -175,6 +206,11 @@ export class StudentLeaveManagementComponent implements OnInit {
     });
   }
 
+  /**
+   * Executes the operation: loadAllLeaves
+   * Parameters: filter?: LeaveFilter
+   * Rationale: Standard operational controller for the active view.
+   */
   private loadAllLeaves(filter?: LeaveFilter): void {
     this.isLoading = true;
     this.leaveService.getAllLeaves(this.schoolId, this.academicYear, filter).subscribe({
@@ -191,6 +227,11 @@ export class StudentLeaveManagementComponent implements OnInit {
     });
   }
 
+  /**
+   * Executes the operation: mapLeaveData
+   * Parameters: data: any[]
+   * Rationale: Standard operational controller for the active view.
+   */
   private mapLeaveData(data: any[]): LeaveApplication[] {
     return data.map((item: any) => ({
       id: item.id,
@@ -222,6 +263,11 @@ export class StudentLeaveManagementComponent implements OnInit {
     }));
   }
 
+  /**
+   * Executes the operation: loadMasterData
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private loadMasterData(): void {
     // Load classes, divisions, and students for filters
     // This would typically call your existing master data services
@@ -251,6 +297,11 @@ export class StudentLeaveManagementComponent implements OnInit {
     this.loadAllLeaves(filter);
   }
 
+  /**
+   * Executes the operation: clearFilters
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   clearFilters(): void {
     this.filterForm.reset();
     this.loadAllLeaves();
@@ -262,6 +313,11 @@ export class StudentLeaveManagementComponent implements OnInit {
     this.showSnackBar('View details dialog will be implemented soon', 'warning');
   }
 
+  /**
+   * Executes the operation: approveLeave
+   * Parameters: leave: LeaveApplication
+   * Rationale: Standard operational controller for the active view.
+   */
   approveLeave(leave: LeaveApplication): void {
     // TODO: Implement approval dialog
     if (confirm('Are you sure you want to approve this leave application?')) {
@@ -269,6 +325,11 @@ export class StudentLeaveManagementComponent implements OnInit {
     }
   }
 
+  /**
+   * Executes the operation: processLeaveApproval
+   * Parameters: leave: LeaveApplication
+   * Rationale: Standard operational controller for the active view.
+   */
   private processLeaveApproval(leave: LeaveApplication): void {
     this.isProcessing = true;
     this.loaderService.show();
@@ -288,6 +349,11 @@ export class StudentLeaveManagementComponent implements OnInit {
     });
   }
 
+  /**
+   * Executes the operation: rejectLeave
+   * Parameters: leave: LeaveApplication
+   * Rationale: Standard operational controller for the active view.
+   */
   rejectLeave(leave: LeaveApplication): void {
     const reason = prompt('Please enter reason for rejection:');
     if (reason && reason.trim()) {
@@ -295,6 +361,11 @@ export class StudentLeaveManagementComponent implements OnInit {
     }
   }
 
+  /**
+   * Executes the operation: processLeaveRejection
+   * Parameters: leave: LeaveApplication, reason: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private processLeaveRejection(leave: LeaveApplication, reason: string): void {
     this.isProcessing = true;
     this.loaderService.show();
@@ -315,6 +386,11 @@ export class StudentLeaveManagementComponent implements OnInit {
   }
 
   
+  /**
+   * Executes the operation: refreshData
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private refreshData(): void {
     this.loadStatistics();
     this.loadPendingLeaves();
@@ -328,14 +404,29 @@ export class StudentLeaveManagementComponent implements OnInit {
     return this.datePipe.transform(date, 'dd MMM yyyy') || '';
   }
 
+  /**
+   * Executes the operation: getStatusColor
+   * Parameters: status: LeaveStatus
+   * Rationale: Standard operational controller for the active view.
+   */
   getStatusColor(status: LeaveStatus): string {
     return this.leaveService.getLeaveStatusColor(status);
   }
 
+  /**
+   * Executes the operation: getStatusClass
+   * Parameters: status: LeaveStatus
+   * Rationale: Standard operational controller for the active view.
+   */
   getStatusClass(status: LeaveStatus): string {
     return this.leaveService.getLeaveStatusClass(status);
   }
 
+  /**
+   * Executes the operation: getLeaveTypeColor
+   * Parameters: leaveType: LeaveType
+   * Rationale: Standard operational controller for the active view.
+   */
   getLeaveTypeColor(leaveType: LeaveType): string {
     switch (leaveType) {
       case LeaveType.SICK_LEAVE:
@@ -353,6 +444,11 @@ export class StudentLeaveManagementComponent implements OnInit {
     }
   }
 
+  /**
+   * Executes the operation: showSnackBar
+   * Parameters: message: string, type: 'success' | 'error' | 'warning'
+   * Rationale: Standard operational controller for the active view.
+   */
   private showSnackBar(message: string, type: 'success' | 'error' | 'warning'): void {
     this.snackBar.open(message, 'Close', {
       duration: 3000,
@@ -374,6 +470,11 @@ export class StudentLeaveManagementComponent implements OnInit {
     window.print();
   }
 
+  /**
+   * Executes the operation: downloadAttachment
+   * Parameters: leave: LeaveApplication
+   * Rationale: Standard operational controller for the active view.
+   */
   downloadAttachment(leave: LeaveApplication): void {
     if (!leave.attachmentName) return;
     

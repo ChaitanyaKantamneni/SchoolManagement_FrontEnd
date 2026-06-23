@@ -6,6 +6,9 @@ import { environment } from '../Environments/environment';
 @Injectable({
   providedIn: 'root'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for FileService.
+ */
 export class FileService {
 
   private baseUrl = environment.baseUrl;

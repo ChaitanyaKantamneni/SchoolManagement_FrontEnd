@@ -34,6 +34,9 @@ export interface HomeworkSubmission {
 @Injectable({
   providedIn: 'root'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for HomeworkSubmissionService.
+ */
 export class HomeworkSubmissionService {
   constructor(private apiService: ApiServiceService) {}
 

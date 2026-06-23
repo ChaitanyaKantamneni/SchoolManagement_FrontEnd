@@ -25,6 +25,9 @@ import { FileService } from '../../Services/file.service';
     DashboardTopNavComponent
   ]
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for SideBarComponentComponent.
+ */
 export class SideBarComponentComponent implements OnInit, OnDestroy {
 
   menu: Module[] = [];
@@ -63,6 +66,9 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
     private fileService: FileService
   ) {}
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     const schoolId = sessionStorage.getItem('SchoolID');
 
@@ -131,6 +137,11 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
     this.loadMenu(this.roleId);
   }
 
+  /**
+   * Executes the operation: ngOnDestroy
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   ngOnDestroy(): void {
     this.sidebarSub?.unsubscribe();
     this.mobileSidebarSub?.unsubscribe();
@@ -140,6 +151,11 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Executes the operation: toggleSidebar
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   toggleSidebar(): void {
     if (this.isMobileViewport()) {
       this.sidebarService.toggleMobileMenu();
@@ -149,6 +165,11 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
     this.sidebarService.toggleSidebar();
   }
 
+  /**
+   * Executes the operation: openMobileSection
+   * Parameters: menuName: string
+   * Rationale: Standard operational controller for the active view.
+   */
   openMobileSection(menuName: string): void {
     this.activeMobileSection = menuName;
     this.openedSubmenu = menuName;
@@ -159,6 +180,11 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Executes the operation: goToDashboard
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   goToDashboard(): void {
     this.activeMobileSection = 'dashboard';
     this.openedSubmenu = null;
@@ -198,6 +224,11 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Executes the operation: toggleSubmenu
+   * Parameters: moduleId: number | string
+   * Rationale: Standard operational controller for the active view.
+   */
   toggleSubmenu(moduleId: number | string) {
     const id = moduleId.toString();
     if (!this.isExpanded) {
@@ -206,6 +237,11 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
     this.openedSubmenu = this.openedSubmenu === id ? null : id;
   }
 
+  /**
+   * Executes the operation: formatRoute
+   * Parameters: name: string
+   * Rationale: Standard operational controller for the active view.
+   */
   formatRoute(name: string): string {
     const compact = (name ?? '').replace(/\s+/g, '');
     const normalized = compact.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -234,15 +270,30 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
     return alias[normalized] ?? compact;
   }
 
+  /**
+   * Executes the operation: getVisibleModules
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getVisibleModules(): Module[] {
     const visibleModules = (this.menu || []).filter(module => this.getVisiblePages(module).length > 0);
     return this.dedupeModulesByName(visibleModules);
   }
 
+  /**
+   * Executes the operation: getVisiblePages
+   * Parameters: module: Module
+   * Rationale: Standard operational controller for the active view.
+   */
   getVisiblePages(module: Module): Page[] {
     return (module.pages || []).filter(page => page.canView === '1');
   }
 
+  /**
+   * Executes the operation: hasVisibleModule
+   * Parameters: moduleName: string
+   * Rationale: Standard operational controller for the active view.
+   */
   hasVisibleModule(moduleName: string): boolean {
     return !!this.findVisibleModule(moduleName);
   }
@@ -263,11 +314,21 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Executes the operation: isPageActive
+   * Parameters: page: Page
+   * Rationale: Standard operational controller for the active view.
+   */
   isPageActive(page: Page): boolean {
     const expectedPath = `/${this.roleRoot}/${this.formatRoute(page.pageName)}`.toLowerCase();
     return this.currentPath.toLowerCase() === expectedPath;
   }
 
+  /**
+   * Executes the operation: isModuleActive
+   * Parameters: module: Module
+   * Rationale: Standard operational controller for the active view.
+   */
   isModuleActive(module: Module): boolean {
     return this.getVisiblePages(module).some(page => this.isPageActive(page));
   }
@@ -286,6 +347,11 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Executes the operation: getPageIcon
+   * Parameters: pageName: string
+   * Rationale: Standard operational controller for the active view.
+   */
   getPageIcon(pageName: string): string {
     const key = (pageName || '').trim().toLowerCase();
     const map: Record<string, string> = {
@@ -384,6 +450,11 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
     return 'menu';
   }
 
+  /**
+   * Executes the operation: getModuleIcon
+   * Parameters: moduleName: string
+   * Rationale: Standard operational controller for the active view.
+   */
   getModuleIcon(moduleName: string): string {
     const rawKey = (moduleName || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
     const map: Record<string, string> = {
@@ -420,6 +491,11 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
     return 'folder';
   }
 
+  /**
+   * Executes the operation: dedupeModulesByName
+   * Parameters: modules: Module[]
+   * Rationale: Standard operational controller for the active view.
+   */
   private dedupeModulesByName(modules: Module[]): Module[] {
     const seen = new Set<string>();
     const deduped: Module[] = [];
@@ -448,6 +524,11 @@ export class SideBarComponentComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Executes the operation: isMobileViewport
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private isMobileViewport(): boolean {
     return typeof window !== 'undefined' && window.innerWidth <= 768;
   }

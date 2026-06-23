@@ -18,6 +18,9 @@ import { RoomMaster } from './room-master.model';
   templateUrl: './room-master.component.html',
   styleUrls: ['./room-master.component.css']
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for RoomMasterComponent.
+ */
 export class RoomMasterComponent extends BasePermissionComponent implements OnInit {
   pageName = 'Room Master';
 
@@ -88,6 +91,9 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
     super(menuService, router);
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.checkViewPermission();
     this.SchoolSelectionChange = false;
@@ -103,6 +109,11 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
     return role === '1';
   }
 
+  /**
+   * Executes the operation: FetchSchoolsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSchoolsList() {
     const requestData = { Flag: '2' };
     this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', requestData).subscribe({
@@ -122,6 +133,11 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
     });
   }
 
+  /**
+   * Executes the operation: FetchAcademicYearsList
+   * Parameters: schoolId: string
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchAcademicYearsList(schoolId: string) {
     const requestData = { SchoolID: schoolId || '', Flag: '2' };
     this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData).subscribe({
@@ -141,6 +157,11 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
     });
   }
 
+  /**
+   * Executes the operation: FetchHostelsList
+   * Parameters: schoolId: string, academicYearId?: string
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchHostelsList(schoolId: string, academicYearId?: string) {
     const requestData: any = { SchoolID: schoolId || '', Flag: '3' };
     if (academicYearId && academicYearId !== '0') {
@@ -165,6 +186,11 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
     });
   }
 
+  /**
+   * Executes the operation: FetchRoomCount
+   * Parameters: isSearch: boolean
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchRoomCount(isSearch: boolean) {
     let SchoolIdSelected = '';
     if (this.SchoolSelectionChange || this.selectedSchoolID) {
@@ -187,6 +213,11 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
     return this.roomService.crudOperations(payload);
   }
 
+  /**
+   * Executes the operation: FetchInitialData
+   * Parameters: extra: any = {}
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchInitialData(extra: any = {}) {
     const isSearch = !!this.searchQuery?.trim();
     const flag = isSearch ? '7' : '2';
@@ -252,6 +283,11 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
     });
   }
 
+  /**
+   * Executes the operation: mapRooms
+   * Parameters: response: any
+   * Rationale: Standard operational controller for the active view.
+   */
   mapRooms(response: any) {
     const data = response?.data || [];
     this.ActiveRoomsCount = 0;
@@ -290,6 +326,11 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
     });
   }
 
+  /**
+   * Executes the operation: AddNewClicked
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   AddNewClicked() {
     if (this.isAdmin) {
       this.RoomForm.get('School')?.setValidators([Validators.required, Validators.min(1)]);
@@ -318,6 +359,11 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
     this.RoomForm.get('BedCapacity')?.enable(); // Ensure it's enabled for fresh start if needed, but will be disabled on hostel select
   }
 
+  /**
+   * Executes the operation: SubmitRoom
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   SubmitRoom() {
     if (this.RoomForm.invalid) {
       this.RoomForm.markAllAsTouched();
@@ -390,6 +436,11 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
     });
   }
 
+  /**
+   * Executes the operation: FetchRoomDetByID
+   * Parameters: RoomID: string, mode: 'view' | 'edit'
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchRoomDetByID(RoomID: string, mode: 'view' | 'edit') {
     const payload: any = {
       ID: RoomID,
@@ -471,6 +522,11 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
     });
   }
 
+  /**
+   * Executes the operation: UpdateRoom
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   UpdateRoom() {
     if (this.RoomForm.invalid) {
       this.RoomForm.markAllAsTouched();
@@ -520,6 +576,11 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
     });
   }
 
+  /**
+   * Executes the operation: editreview
+   * Parameters: RoomID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   editreview(RoomID: string) {
     if (this.isAdmin) {
       this.RoomForm.get('School')?.setValidators([Validators.required, Validators.min(1)]);
@@ -530,14 +591,29 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
     this.FetchRoomDetByID(RoomID, 'edit');
   }
 
+  /**
+   * Executes the operation: viewReview
+   * Parameters: RoomID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   viewReview(RoomID: string) {
     this.FetchRoomDetByID(RoomID, 'view');
   }
 
+  /**
+   * Executes the operation: toggleChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   toggleChange() {
     this.IsActiveStatus = !this.IsActiveStatus;
   }
 
+  /**
+   * Executes the operation: onAdminSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminSchoolChange(event: Event) {
     this.academicYearList = [];
     this.hostelList = [];
@@ -553,6 +629,11 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
     }
   }
 
+  /**
+   * Executes the operation: onAcademicYearChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAcademicYearChange(event: Event) {
     this.hostelList = [];
     this.RoomForm.get('HostelID')?.patchValue('0');
@@ -565,6 +646,11 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
     }
   }
 
+  /**
+   * Executes the operation: onHostelChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onHostelChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     const hostelID = target.value;
@@ -577,6 +663,11 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
     }
   }
 
+  /**
+   * Executes the operation: onSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onSchoolChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     const schoolID = target.value;
@@ -591,6 +682,11 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: onSearchChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onSearchChange() {
     clearTimeout(this.searchTimer);
     this.searchTimer = setTimeout(() => {
@@ -612,6 +708,11 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
     }, this.SEARCH_DEBOUNCE);
   }
 
+  /**
+   * Executes the operation: sort
+   * Parameters: column: string
+   * Rationale: Standard operational controller for the active view.
+   */
   sort(column: string) {
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -624,18 +725,33 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: previousPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   previousPage() {
     if (this.currentPage > 1) {
       this.goToPage(this.currentPage - 1);
     }
   }
 
+  /**
+   * Executes the operation: nextPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   nextPage() {
     if (this.currentPage < this.totalPages()) {
       this.goToPage(this.currentPage + 1);
     }
   }
 
+  /**
+   * Executes the operation: goToPage
+   * Parameters: pageNumber: number
+   * Rationale: Standard operational controller for the active view.
+   */
   goToPage(pageNumber: number) {
     const total = this.totalPages();
     if (pageNumber < 1) pageNumber = 1;
@@ -652,10 +768,20 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
     }
   }
 
+  /**
+   * Executes the operation: totalPages
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   totalPages() {
     return Math.ceil(this.RoomCount / this.pageSize);
   }
 
+  /**
+   * Executes the operation: getVisiblePageNumbers
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getVisiblePageNumbers() {
     const totalPages = this.totalPages();
     const pages = [];
@@ -668,6 +794,11 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
     return pages;
   }
 
+  /**
+   * Executes the operation: closeModal
+   * Parameters: type: 'view' | 'status'
+   * Rationale: Standard operational controller for the active view.
+   */
   closeModal(type: 'view' | 'status') {
     if (type === 'view') {
       this.isViewModalOpen = false;
@@ -678,19 +809,39 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
     }
   }
 
+  /**
+   * Executes the operation: handleOk
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   handleOk() {
     this.isModalOpen = false;
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: pageStartIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageStartIndex(): number {
     return this.RoomCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
   }
 
+  /**
+   * Executes the operation: pageEndIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageEndIndex(): number {
     return Math.min(this.currentPage * this.pageSize, this.RoomCount);
   }
 
+  /**
+   * Executes the operation: onRowsCountChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onRowsCountChange() {
     this.currentPage = 1;
     this.pageCursors = [];

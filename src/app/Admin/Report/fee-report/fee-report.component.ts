@@ -119,6 +119,9 @@ interface TrendMeta {
   templateUrl: './fee-report.component.html',
   styleUrl: './fee-report.component.css',
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for FeeReportComponent.
+ */
 export class FeeReportComponent extends BasePermissionComponent {
   pageName = 'Fee Reports';
   hasSubmitted = false;
@@ -267,6 +270,9 @@ export class FeeReportComponent extends BasePermissionComponent {
     super(menuService, router);
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.checkViewPermission();
     this.fetchSchools();
@@ -328,6 +334,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     }
   }
 
+  /**
+   * Executes the operation: fetchSchools
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchSchools(): void {
     this.mastersLoadError = '';
     this.loader.show();
@@ -348,6 +359,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Executes the operation: fetchAcademicYears
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchAcademicYears(): void {
     if (!this.selectedSchool) {
       this.academicYearList = [];
@@ -374,6 +390,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Executes the operation: fetchClasses
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchClasses(): void {
     if (!this.selectedSchool) {
       this.classList = [];
@@ -421,6 +442,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Executes the operation: fetchDivisions
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchDivisions(): void {
     if (!this.selectedClass) {
       this.divisionList = [];
@@ -449,6 +475,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Executes the operation: fetchStudents
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchStudents(): void {
     if (!this.selectedSchool || !this.selectedAcademicYear || !this.selectedClass || !this.selectedDivision) {
       this.studentList = [];
@@ -487,6 +518,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Executes the operation: fetchFeeCategories
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchFeeCategories(): void {
     if (!this.selectedSchool || !this.selectedAcademicYear) {
       this.feeCategoryList = [];
@@ -514,6 +550,9 @@ export class FeeReportComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Handles form submission: Validates input fields and transmits data payloads.
+   */
   onSubmit(): void {
     this.schoolError = !this.selectedSchool;
     this.academicYearError = !this.selectedAcademicYear;
@@ -535,6 +574,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     this.fetchReports();
   }
 
+  /**
+   * Executes the operation: fetchReports
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchReports(): void {
     const requestId = ++this.requestSeq;
     this.loading = true;
@@ -580,6 +624,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Executes the operation: fetchFeeCollectionRows
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchFeeCollectionRows(): Observable<any[]> {
     const payload: any = {
       Flag: '2',
@@ -609,6 +658,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     );
   }
 
+  /**
+   * Executes the operation: fetchFeeDuesRows
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchFeeDuesRows(): Observable<any[]> {
     const payload: any = {
       SchoolID: this.selectedSchool || '',
@@ -638,6 +692,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     );
   }
 
+  /**
+   * Executes the operation: normalizeFeeCollectionRows
+   * Parameters: items: any[]
+   * Rationale: Standard operational controller for the active view.
+   */
   private normalizeFeeCollectionRows(items: any[]): FeeCollectionRow[] {
     return items
       .map((item: any) => {
@@ -673,6 +732,11 @@ export class FeeReportComponent extends BasePermissionComponent {
       .filter((row) => !!row.id || !!row.receiptNo || !!row.admissionNo);
   }
 
+  /**
+   * Executes the operation: normalizeFeeDuesRows
+   * Parameters: items: any[]
+   * Rationale: Standard operational controller for the active view.
+   */
   private normalizeFeeDuesRows(items: any[]): FeeDuesRow[] {
     const mappedItems = items.map((item: any) => {
         const name =
@@ -737,6 +801,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     return filteredItems;
   }
 
+  /**
+   * Executes the operation: onSchoolChange
+   * Parameters: value: string
+   * Rationale: Standard operational controller for the active view.
+   */
   onSchoolChange(value: string): void {
     this.selectedSchool = value;
     this.resetFiltersAfter('school');
@@ -745,6 +814,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     }
   }
 
+  /**
+   * Executes the operation: onAcademicYearChange
+   * Parameters: value: string
+   * Rationale: Standard operational controller for the active view.
+   */
   onAcademicYearChange(value: string): void {
     this.selectedAcademicYear = value;
     this.resetFiltersAfter('academicYear');
@@ -754,6 +828,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     }
   }
 
+  /**
+   * Executes the operation: onClassChange
+   * Parameters: value: string
+   * Rationale: Standard operational controller for the active view.
+   */
   onClassChange(value: string): void {
     this.selectedClass = value;
     this.resetFiltersAfter('class');
@@ -762,6 +841,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     }
   }
 
+  /**
+   * Executes the operation: onDivisionChange
+   * Parameters: value: string
+   * Rationale: Standard operational controller for the active view.
+   */
   onDivisionChange(value: string): void {
     this.selectedDivision = value;
     this.resetFiltersAfter('division');
@@ -770,24 +854,44 @@ export class FeeReportComponent extends BasePermissionComponent {
     }
   }
 
+  /**
+   * Executes the operation: onStudentChange
+   * Parameters: value: string
+   * Rationale: Standard operational controller for the active view.
+   */
   onStudentChange(value: string): void {
     this.selectedStudent = value;
     this.hasSubmitted = false;
     this.studentError = false;
   }
 
+  /**
+   * Executes the operation: onFeeCategoryChange
+   * Parameters: value: string
+   * Rationale: Standard operational controller for the active view.
+   */
   onFeeCategoryChange(value: string): void {
     this.selectedFeeCategory = value;
     this.hasSubmitted = false;
     this.feeCategoryError = false;
   }
 
+  /**
+   * Executes the operation: onSearchChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onSearchChange(): void {
     this.currentCollectionPage = 1;
     this.currentDuesPage = 1;
     this.applyAllFiltersAndSearch();
   }
 
+  /**
+   * Executes the operation: sortCollectionBy
+   * Parameters: column: keyof FeeCollectionRow
+   * Rationale: Standard operational controller for the active view.
+   */
   sortCollectionBy(column: keyof FeeCollectionRow): void {
     if (this.collectionSortColumn === column) {
       this.collectionSortDirection = this.collectionSortDirection === 'asc' ? 'desc' : 'asc';
@@ -798,6 +902,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     this.applyAllFiltersAndSearch();
   }
 
+  /**
+   * Executes the operation: sortDuesBy
+   * Parameters: column: keyof FeeDuesRow
+   * Rationale: Standard operational controller for the active view.
+   */
   sortDuesBy(column: keyof FeeDuesRow): void {
     if (this.duesSortColumn === column) {
       this.duesSortDirection = this.duesSortDirection === 'asc' ? 'desc' : 'asc';
@@ -808,6 +917,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     this.applyAllFiltersAndSearch();
   }
 
+  /**
+   * Executes the operation: sortFeeCategorySummaryBy
+   * Parameters: column: keyof SummaryRow
+   * Rationale: Standard operational controller for the active view.
+   */
   sortFeeCategorySummaryBy(column: keyof SummaryRow): void {
     if (this.feeCategorySummarySortColumn === column) {
       this.feeCategorySummarySortDirection = this.feeCategorySummarySortDirection === 'asc' ? 'desc' : 'asc';
@@ -818,6 +932,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     this.refreshSummaryTables();
   }
 
+  /**
+   * Executes the operation: sortClassSummaryBy
+   * Parameters: column: keyof SummaryRow
+   * Rationale: Standard operational controller for the active view.
+   */
   sortClassSummaryBy(column: keyof SummaryRow): void {
     if (this.classSummarySortColumn === column) {
       this.classSummarySortDirection = this.classSummarySortDirection === 'asc' ? 'desc' : 'asc';
@@ -828,6 +947,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     this.refreshSummaryTables();
   }
 
+  /**
+   * Executes the operation: sortDivisionSummaryBy
+   * Parameters: column: keyof SummaryRow
+   * Rationale: Standard operational controller for the active view.
+   */
   sortDivisionSummaryBy(column: keyof SummaryRow): void {
     if (this.divisionSummarySortColumn === column) {
       this.divisionSummarySortDirection = this.divisionSummarySortDirection === 'asc' ? 'desc' : 'asc';
@@ -838,6 +962,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     this.refreshSummaryTables();
   }
 
+  /**
+   * Executes the operation: onClassPerformanceChartClick
+   * Parameters: event: any
+   * Rationale: Standard operational controller for the active view.
+   */
   onClassPerformanceChartClick(event: any): void {
     const label = this.toText(event?.name).trim();
     if (!label) {
@@ -859,12 +988,22 @@ export class FeeReportComponent extends BasePermissionComponent {
     this.buildDashboardAnalytics();
   }
 
+  /**
+   * Executes the operation: clearClassDrill
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   clearClassDrill(): void {
     this.activeClassDrillId = '';
     this.activeClassDrillName = '';
     this.buildDashboardAnalytics();
   }
 
+  /**
+   * Executes the operation: applyAllFiltersAndSearch
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private applyAllFiltersAndSearch(): void {
     const normalizedSearch = this.normalizeText(this.searchQuery);
 
@@ -889,6 +1028,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     this.buildDashboardAnalytics();
   }
 
+  /**
+   * Executes the operation: buildDashboardAnalytics
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private buildDashboardAnalytics(): void {
     if (!this.hasSubmitted) {
       this.resetDashboardAnalytics();
@@ -953,6 +1097,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     this.buildCharts();
   }
 
+  /**
+   * Executes the operation: buildExecutiveKpis
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private buildExecutiveKpis(): KpiCard[] {
     const prefix = this.kpiPrefix;
     
@@ -990,6 +1139,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     ];
   }
 
+  /**
+   * Executes the operation: buildCharts
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private buildCharts(): void {
     this.collectionVsDueChartOptions = this.buildCollectionVsDueChart();
     this.feeCategoryDistributionChartOptions = this.buildFeeCategoryDistributionChart();
@@ -999,6 +1153,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     this.collectionVsDueAreaChartOptions = this.buildCollectionVsDueAreaChart();
   }
 
+  /**
+   * Executes the operation: buildCollectionVsDueChart
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private buildCollectionVsDueChart(): any {
     if (!this.totalCollectionAmount && !this.totalDueAmount) {
       return null;
@@ -1041,6 +1200,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     };
   }
 
+  /**
+   * Executes the operation: buildFeeCategoryDistributionChart
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private buildFeeCategoryDistributionChart(): any {
     const rows = this.limitPieRows(this.feeCategorySummaryData, 6);
     if (!rows.length) {
@@ -1083,6 +1247,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     };
   }
 
+  /**
+   * Executes the operation: buildClassWisePerformanceChart
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private buildClassWisePerformanceChart(): any {
     const rows = [...this.classSummaryData].sort((left, right) => right.totalAmount - left.totalAmount).slice(0, 8);
     if (!rows.length) {
@@ -1155,6 +1324,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     };
   }
 
+  /**
+   * Executes the operation: buildDivisionWisePerformanceChart
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private buildDivisionWisePerformanceChart(): any {
     const rows = [...this.divisionPerformanceData]
       .sort((left, right) => right.totalAmount - left.totalAmount)
@@ -1234,6 +1408,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     };
   }
 
+  /**
+   * Executes the operation: buildMonthlyCollectionTrendChart
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private buildMonthlyCollectionTrendChart(): any {
     if (!this.trendSeries.length) {
       return null;
@@ -1296,6 +1475,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     };
   }
 
+  /**
+   * Executes the operation: buildCollectionVsDueAreaChart
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private buildCollectionVsDueAreaChart(): any {
     if (!this.trendSeries.length) {
       return null;
@@ -1358,6 +1542,11 @@ export class FeeReportComponent extends BasePermissionComponent {
   }
 
   
+  /**
+   * Executes the operation: buildTrendSeries
+   * Parameters: collectionRows: FeeCollectionRow[], dueRows: FeeDuesRow[]
+   * Rationale: Standard operational controller for the active view.
+   */
   private buildTrendSeries(collectionRows: FeeCollectionRow[], dueRows: FeeDuesRow[]): TrendPoint[] {
     const mapByKey = new Map<
       string,
@@ -1513,6 +1702,11 @@ export class FeeReportComponent extends BasePermissionComponent {
   }
 
   
+  /**
+   * Executes the operation: refreshSummaryTables
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private refreshSummaryTables(): void {
     this.displayFeeCategorySummaryData = this.sortRows(
       this.feeCategorySummaryData,
@@ -1527,6 +1721,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     );
   }
 
+  /**
+   * Executes the operation: resetDashboardAnalytics
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private resetDashboardAnalytics(): void {
     this.executiveKpis = [];
     this.trendSeries = [];
@@ -1551,6 +1750,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     this.collectionVsDueAreaChartOptions = null;
   }
 
+  /**
+   * Executes the operation: getDrilledCollectionRows
+   * Parameters: rows: FeeCollectionRow[]
+   * Rationale: Standard operational controller for the active view.
+   */
   private getDrilledCollectionRows(rows: FeeCollectionRow[]): FeeCollectionRow[] {
     if (!this.activeClassDrillId) {
       return rows;
@@ -1559,6 +1763,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     return rows.filter((row) => this.normalizeText(row.classId || row.className) === this.normalizeText(this.activeClassDrillId));
   }
 
+  /**
+   * Executes the operation: getDrilledDuesRows
+   * Parameters: rows: FeeDuesRow[]
+   * Rationale: Standard operational controller for the active view.
+   */
   private getDrilledDuesRows(rows: FeeDuesRow[]): FeeDuesRow[] {
     if (!this.activeClassDrillId) {
       return rows;
@@ -1577,6 +1786,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     return series.length > 1 ? selector(series[series.length - 2]) : 0;
   }
 
+  /**
+   * Executes the operation: getComparableTrendSeries
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private getComparableTrendSeries(): TrendPoint[] {
     const realTimeline = this.trendSeries.filter(
       (point) => !point.key.startsWith('undated-collection') && !point.key.startsWith('outstanding'),
@@ -1587,6 +1801,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     return this.trendSeries;
   }
 
+  /**
+   * Executes the operation: getTrendMeta
+   * Parameters: current: number, previous: number, positiveWhenHigher: boolean, suffix: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private getTrendMeta(current: number, previous: number, positiveWhenHigher: boolean, suffix: string): TrendMeta {
     if (!current && !previous) {
       return { direction: 'flat', text: `No movement ${suffix}` };
@@ -1630,6 +1849,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     };
   }
 
+  /**
+   * Executes the operation: limitPieRows
+   * Parameters: rows: SummaryRow[], visibleCount: number
+   * Rationale: Standard operational controller for the active view.
+   */
   private limitPieRows(rows: SummaryRow[], visibleCount: number): SummaryRow[] {
     if (rows.length <= visibleCount) {
       return rows;
@@ -1665,6 +1889,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     return [...primaryRows, otherSummary];
   }
 
+  /**
+   * Executes the operation: getUniqueStudentCount
+   * Parameters: collectionRows: FeeCollectionRow[], dueRows: FeeDuesRow[]
+   * Rationale: Standard operational controller for the active view.
+   */
   private getUniqueStudentCount(collectionRows: FeeCollectionRow[], dueRows: FeeDuesRow[]): number {
     const studentKeys = new Set<string>();
 
@@ -1685,6 +1914,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     return studentKeys.size;
   }
 
+  /**
+   * Executes the operation: getStudentKey
+   * Parameters: admissionNo: any, studentId: any, studentName: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private getStudentKey(admissionNo: any, studentId: any, studentName: any): string {
     const normalizedAdmission = this.normalizeText(admissionNo);
     if (normalizedAdmission) {
@@ -1699,6 +1933,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     return this.normalizeText(studentName);
   }
 
+  /**
+   * Executes the operation: calculateEfficiency
+   * Parameters: collectionAmount: number, dueAmount: number
+   * Rationale: Standard operational controller for the active view.
+   */
   private calculateEfficiency(collectionAmount: number, dueAmount: number): number {
     const denominator = collectionAmount + dueAmount;
     if (!denominator) {
@@ -1707,6 +1946,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     return (collectionAmount / denominator) * 100;
   }
 
+  /**
+   * Executes the operation: matchesCollectionFilters
+   * Parameters: row: FeeCollectionRow
+   * Rationale: Standard operational controller for the active view.
+   */
   private matchesCollectionFilters(row: FeeCollectionRow): boolean {
     return (
       this.matchesSelectedOption(this.selectedSchool, row.schoolId, row.schoolName, this.schoolList) &&
@@ -1718,6 +1962,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     );
   }
 
+  /**
+   * Executes the operation: matchesDuesFilters
+   * Parameters: row: FeeDuesRow
+   * Rationale: Standard operational controller for the active view.
+   */
   private matchesDuesFilters(row: FeeDuesRow): boolean {
     return (
       this.matchesSelectedOption(this.selectedSchool, row.schoolId, row.schoolName, this.schoolList) &&
@@ -1729,6 +1978,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     );
   }
 
+  /**
+   * Executes the operation: matchesSelectedOption
+   * Parameters: selectedId: string, rowId: any, rowName: any, options: SimpleOption[]
+   * Rationale: Standard operational controller for the active view.
+   */
   private matchesSelectedOption(selectedId: string, rowId: any, rowName: any, options: SimpleOption[]): boolean {
     if (!selectedId) {
       return true;
@@ -1768,6 +2022,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     return false;
   }
 
+  /**
+   * Executes the operation: matchesSelectedStudent
+   * Parameters: admissionNo: any, studentId: any, studentName: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private matchesSelectedStudent(admissionNo: any, studentId: any, studentName: any): boolean {
     if (!this.selectedStudent) {
       return true;
@@ -1784,6 +2043,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     return this.normalizeText(selectedName) === this.normalizeText(studentName);
   }
 
+  /**
+   * Executes the operation: rowMatchesSearch
+   * Parameters: row: any, normalizedSearch: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private rowMatchesSearch(row: any, normalizedSearch: string): boolean {
     return Object.values(row).some((value) => this.normalizeText(value).includes(normalizedSearch));
   }
@@ -1873,14 +2137,29 @@ export class FeeReportComponent extends BasePermissionComponent {
     return this.filteredFeeDuesData.slice(start, start + this.pageSize);
   }
 
+  /**
+   * Executes the operation: feeCollectionTotalPages
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   feeCollectionTotalPages(): number {
     return Math.max(1, Math.ceil(this.filteredFeeCollectionData.length / this.pageSize) || 1);
   }
 
+  /**
+   * Executes the operation: feeDuesTotalPages
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   feeDuesTotalPages(): number {
     return Math.max(1, Math.ceil(this.filteredFeeDuesData.length / this.pageSize) || 1);
   }
 
+  /**
+   * Executes the operation: changeCollectionPage
+   * Parameters: page: number
+   * Rationale: Standard operational controller for the active view.
+   */
   changeCollectionPage(page: number): void {
     const totalPages = this.feeCollectionTotalPages();
     if (page < 1 || page > totalPages) {
@@ -1889,6 +2168,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     this.currentCollectionPage = page;
   }
 
+  /**
+   * Executes the operation: changeDuesPage
+   * Parameters: page: number
+   * Rationale: Standard operational controller for the active view.
+   */
   changeDuesPage(page: number): void {
     const totalPages = this.feeDuesTotalPages();
     if (page < 1 || page > totalPages) {
@@ -1925,6 +2209,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     return Math.min(this.currentDuesPage * this.pageSize, this.filteredFeeDuesData.length);
   }
 
+  /**
+   * Executes the operation: getVisiblePages
+   * Parameters: currentPage: number, totalPages: number
+   * Rationale: Standard operational controller for the active view.
+   */
   private getVisiblePages(currentPage: number, totalPages: number): number[] {
     const pages: number[] = [];
     const half = Math.floor(this.visiblePageCount / 2);
@@ -1942,6 +2231,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     return pages;
   }
 
+  /**
+   * Executes the operation: resetFiltersAfter
+   * Parameters: level: 'school' | 'academicYear' | 'class' | 'division'
+   * Rationale: Standard operational controller for the active view.
+   */
   private resetFiltersAfter(level: 'school' | 'academicYear' | 'class' | 'division'): void {
     this.hasSubmitted = false;
     this.searchQuery = '';
@@ -1990,10 +2284,20 @@ export class FeeReportComponent extends BasePermissionComponent {
     }
   }
 
+  /**
+   * Executes the operation: getSelectedFeeCategoryName
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private getSelectedFeeCategoryName(): string {
     return this.getSelectedOptionName(this.feeCategoryList, this.selectedFeeCategory);
   }
 
+  /**
+   * Executes the operation: getSelectedOptionName
+   * Parameters: options: SimpleOption[], selectedId: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private getSelectedOptionName(options: SimpleOption[], selectedId: string): string {
     if (!selectedId) {
       return '';
@@ -2003,6 +2307,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     return selected?.name ?? '';
   }
 
+  /**
+   * Executes the operation: getResponseData
+   * Parameters: response: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private getResponseData(response: any): any[] {
     if (Array.isArray(response?.data)) return response.data;
     if (Array.isArray(response?.Data)) return response.Data;
@@ -2010,6 +2319,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     return [];
   }
 
+  /**
+   * Executes the operation: formatDateDDMMYYYY
+   * Parameters: dateStr: string | null
+   * Rationale: Standard operational controller for the active view.
+   */
   private formatDateDDMMYYYY(dateStr: string | null): string {
     if (!dateStr) {
       return '';
@@ -2023,6 +2337,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     return `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}`;
   }
 
+  /**
+   * Executes the operation: getPaymentModeDisplayValue
+   * Parameters: rawMode: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private getPaymentModeDisplayValue(rawMode: any): string {
     const normalized = this.normalizeText(rawMode);
     if (!normalized) {
@@ -2037,6 +2356,11 @@ export class FeeReportComponent extends BasePermissionComponent {
     return this.toText(rawMode);
   }
 
+  /**
+   * Executes the operation: formatAmount
+   * Parameters: value: any
+   * Rationale: Standard operational controller for the active view.
+   */
   formatAmount(value: any): string {
     const numericValue = this.toNumber(value);
     return numericValue.toLocaleString('en-IN', {
@@ -2045,11 +2369,21 @@ export class FeeReportComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Executes the operation: formatSignedAmount
+   * Parameters: value: number
+   * Rationale: Standard operational controller for the active view.
+   */
   formatSignedAmount(value: number): string {
     const prefix = value > 0 ? '+' : value < 0 ? '-' : '';
     return `${prefix}${this.formatAmount(Math.abs(value))}`;
   }
 
+  /**
+   * Executes the operation: formatCompactAmount
+   * Parameters: value: number
+   * Rationale: Standard operational controller for the active view.
+   */
   formatCompactAmount(value: number): string {
     const numericValue = this.toNumber(value);
     if (Math.abs(numericValue) >= 10000000) {
@@ -2064,10 +2398,20 @@ export class FeeReportComponent extends BasePermissionComponent {
     return numericValue.toLocaleString('en-IN');
   }
 
+  /**
+   * Executes the operation: normalizeText
+   * Parameters: value: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private normalizeText(value: any): string {
     return (value ?? '').toString().trim().toLowerCase();
   }
 
+  /**
+   * Executes the operation: toText
+   * Parameters: value: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private toText(value: any): string {
     if (value === undefined || value === null) {
       return '';
@@ -2075,11 +2419,21 @@ export class FeeReportComponent extends BasePermissionComponent {
     return String(value);
   }
 
+  /**
+   * Executes the operation: toNumber
+   * Parameters: value: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private toNumber(value: any): number {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : 0;
   }
 
+  /**
+   * Executes the operation: pickFirst
+   * Parameters: source: any, keys: string[]
+   * Rationale: Standard operational controller for the active view.
+   */
   private pickFirst(source: any, keys: string[]): string {
     for (const key of keys) {
       const value = source?.[key];

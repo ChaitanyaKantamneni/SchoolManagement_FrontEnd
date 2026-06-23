@@ -11,6 +11,9 @@ import { PwaInstallPromptComponent } from './components/pwa-install-prompt/pwa-i
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for AppComponent.
+ */
 export class AppComponent {
 
   title = 'SchoolManagementApplication';
@@ -18,6 +21,9 @@ export class AppComponent {
 
   constructor(public loader: LoaderService) {}
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit() {
     this.loader.loading$.subscribe(val => {
       this.isLoading = val;

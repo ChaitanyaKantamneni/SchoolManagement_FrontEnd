@@ -18,6 +18,9 @@ import { HostelMaster } from './hostel-master.model';
   templateUrl: './hostel-master.component.html',
   styleUrls: ['./hostel-master.component.css']
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for HostelMasterComponent.
+ */
 export class HostelMasterComponent extends BasePermissionComponent implements OnInit {
   pageName = 'Hostel Master';
 
@@ -86,6 +89,9 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
     super(menuService, router);
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.checkViewPermission();
     this.SchoolSelectionChange = false;
@@ -101,6 +107,11 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
     return role === '1';
   }
 
+  /**
+   * Executes the operation: FetchSchoolsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSchoolsList() {
     const requestData = { Flag: '2' };
     this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', requestData).subscribe({
@@ -120,6 +131,11 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
     });
   }
 
+  /**
+   * Executes the operation: FetchAcademicYearsList
+   * Parameters: schoolId: string
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchAcademicYearsList(schoolId: string) {
     const requestData = { SchoolID: schoolId || '', Flag: '2' };
     this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', requestData).subscribe({
@@ -139,6 +155,11 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
     });
   }
 
+  /**
+   * Executes the operation: FetchHostelCount
+   * Parameters: isSearch: boolean
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchHostelCount(isSearch: boolean) {
     let SchoolIdSelected = '';
     if (this.SchoolSelectionChange || this.selectedSchoolID) {
@@ -161,6 +182,11 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
     return this.hostelService.crudOperations(payload);
   }
 
+  /**
+   * Executes the operation: FetchInitialData
+   * Parameters: extra: any = {}
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchInitialData(extra: any = {}) {
     const isSearch = !!this.searchQuery?.trim();
     const flag = isSearch ? '7' : '2';
@@ -226,6 +252,11 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
     });
   }
 
+  /**
+   * Executes the operation: mapHostels
+   * Parameters: response: any
+   * Rationale: Standard operational controller for the active view.
+   */
   mapHostels(response: any) {
     const data = response?.data || [];
     this.ActiveHostelsCount = 0;
@@ -257,6 +288,11 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
     });
   }
 
+  /**
+   * Executes the operation: AddNewClicked
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   AddNewClicked() {
     if (this.isAdmin) {
       this.HostelForm.get('School')?.setValidators([Validators.required, Validators.min(1)]);
@@ -281,6 +317,11 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
     this.ViewHostelClicked = false;
   }
 
+  /**
+   * Executes the operation: SubmitHostel
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   SubmitHostel() {
     if (this.HostelForm.invalid) {
       this.HostelForm.markAllAsTouched();
@@ -329,6 +370,11 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
     });
   }
 
+  /**
+   * Executes the operation: FetchHostelDetByID
+   * Parameters: HostelID: string, mode: 'view' | 'edit'
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchHostelDetByID(HostelID: string, mode: 'view' | 'edit') {
     const payload: any = {
       ID: HostelID,
@@ -401,6 +447,11 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
     });
   }
 
+  /**
+   * Executes the operation: UpdateHostel
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   UpdateHostel() {
     if (this.HostelForm.invalid) {
       this.HostelForm.markAllAsTouched();
@@ -450,6 +501,11 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
     });
   }
 
+  /**
+   * Executes the operation: editreview
+   * Parameters: HostelID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   editreview(HostelID: string) {
     if (this.isAdmin) {
       this.HostelForm.get('School')?.setValidators([Validators.required, Validators.min(1)]);
@@ -460,14 +516,29 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
     this.FetchHostelDetByID(HostelID, 'edit');
   }
 
+  /**
+   * Executes the operation: viewReview
+   * Parameters: HostelID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   viewReview(HostelID: string) {
     this.FetchHostelDetByID(HostelID, 'view');
   }
 
+  /**
+   * Executes the operation: toggleChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   toggleChange() {
     this.IsActiveStatus = !this.IsActiveStatus;
   }
 
+  /**
+   * Executes the operation: onAdminSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminSchoolChange(event: Event) {
     this.academicYearList = [];
     this.HostelForm.get('AcademicYear')?.patchValue(sessionStorage.getItem('ActiveAcademicYearID') || '0');
@@ -481,6 +552,11 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
     }
   }
 
+  /**
+   * Executes the operation: onSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onSchoolChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     const schoolID = target.value;
@@ -495,6 +571,11 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: onSearchChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onSearchChange() {
     clearTimeout(this.searchTimer);
     this.searchTimer = setTimeout(() => {
@@ -516,6 +597,11 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
     }, this.SEARCH_DEBOUNCE);
   }
 
+  /**
+   * Executes the operation: sort
+   * Parameters: column: string
+   * Rationale: Standard operational controller for the active view.
+   */
   sort(column: string) {
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -528,18 +614,33 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: previousPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   previousPage() {
     if (this.currentPage > 1) {
       this.goToPage(this.currentPage - 1);
     }
   }
 
+  /**
+   * Executes the operation: nextPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   nextPage() {
     if (this.currentPage < this.totalPages()) {
       this.goToPage(this.currentPage + 1);
     }
   }
 
+  /**
+   * Executes the operation: goToPage
+   * Parameters: pageNumber: number
+   * Rationale: Standard operational controller for the active view.
+   */
   goToPage(pageNumber: number) {
     const total = this.totalPages();
     if (pageNumber < 1) pageNumber = 1;
@@ -556,10 +657,20 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
     }
   }
 
+  /**
+   * Executes the operation: totalPages
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   totalPages() {
     return Math.ceil(this.HostelCount / this.pageSize);
   }
 
+  /**
+   * Executes the operation: getVisiblePageNumbers
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getVisiblePageNumbers() {
     const totalPages = this.totalPages();
     const pages = [];
@@ -572,6 +683,11 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
     return pages;
   }
 
+  /**
+   * Executes the operation: closeModal
+   * Parameters: type: 'view' | 'status'
+   * Rationale: Standard operational controller for the active view.
+   */
   closeModal(type: 'view' | 'status') {
     if (type === 'view') {
       this.isViewModalOpen = false;
@@ -582,19 +698,39 @@ export class HostelMasterComponent extends BasePermissionComponent implements On
     }
   }
 
+  /**
+   * Executes the operation: handleOk
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   handleOk() {
     this.isModalOpen = false;
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: pageStartIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageStartIndex(): number {
     return this.HostelCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
   }
 
+  /**
+   * Executes the operation: pageEndIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageEndIndex(): number {
     return Math.min(this.currentPage * this.pageSize, this.HostelCount);
   }
 
+  /**
+   * Executes the operation: onRowsCountChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onRowsCountChange() {
     this.currentPage = 1;
     this.pageCursors = [];

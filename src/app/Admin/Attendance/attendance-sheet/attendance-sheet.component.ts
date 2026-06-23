@@ -15,6 +15,9 @@ import { HttpClient } from '@angular/common/http';
   templateUrl: './attendance-sheet.component.html',
   styleUrl: './attendance-sheet.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for AttendanceSheetComponent.
+ */
 export class AttendanceSheetComponent extends BasePermissionComponent{
   pageName = 'AttendanceSheet';
 
@@ -28,6 +31,9 @@ export class AttendanceSheetComponent extends BasePermissionComponent{
     super(menuService, router);
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
      const today = new Date();
 
@@ -74,6 +80,11 @@ export class AttendanceSheetComponent extends BasePermissionComponent{
     this.FetchSessionsList();
   };
 
+  /**
+   * Executes the operation: allowOnlyNumbers
+   * Parameters: event: KeyboardEvent
+   * Rationale: Standard operational controller for the active view.
+   */
   allowOnlyNumbers(event: KeyboardEvent) {
     if (
       event.key === 'Backspace' ||
@@ -89,6 +100,11 @@ export class AttendanceSheetComponent extends BasePermissionComponent{
     }
   }
 
+  /**
+   * Executes the operation: onLateMinutesInput
+   * Parameters: row: any
+   * Rationale: Standard operational controller for the active view.
+   */
   onLateMinutesInput(row: any) {
     if (!row?.IsPresent) {
       row.LateInMinutes = '';
@@ -175,6 +191,11 @@ export class AttendanceSheetComponent extends BasePermissionComponent{
     EndTime: new FormControl(''),
   });
 
+  /**
+   * Executes the operation: FetchSchoolsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSchoolsList() {
     const requestData = { Flag: '2' };
     this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', requestData)
@@ -235,6 +256,11 @@ export class AttendanceSheetComponent extends BasePermissionComponent{
     return this.AdminselectedSchoolID || '';
   }
 
+  /**
+   * Executes the operation: ss
+   * Parameters: key: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private ss(key: string): string {
     return sessionStorage.getItem(key) || localStorage.getItem(key) || '';
   }
@@ -260,6 +286,11 @@ export class AttendanceSheetComponent extends BasePermissionComponent{
     return this.resolvedStaffId || this.sessionApplicantId || this.ss('StaffID') || this.ss('UserID');
   }
   
+  /**
+   * Executes the operation: FetchAcademicYearsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchAcademicYearsList() {
     const schoolId =
     this.SchoolSelectionChange
@@ -293,6 +324,11 @@ export class AttendanceSheetComponent extends BasePermissionComponent{
       );
   };
 
+  /**
+   * Executes the operation: resolveStaffIdentity
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private resolveStaffIdentity(): void {
     const schoolId = this.resolvedSchoolId;
     const email = (this.ss('email') || this.ss('Email') || '').toString().trim().toLowerCase();
@@ -392,6 +428,11 @@ export class AttendanceSheetComponent extends BasePermissionComponent{
     });
   }
   
+  /**
+   * Executes the operation: FetchClassList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
 FetchClassList() {
    const AcademicYearIdSelected =
     this.isAdmin
@@ -429,6 +470,11 @@ FetchClassList() {
       }
     );
 }
+  /**
+   * Executes the operation: FetchSessionsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
  FetchSessionsList() {
    const AcademicYearIdSelected =
     this.isAdmin
@@ -465,6 +511,11 @@ FetchClassList() {
         );
     };
 
+  /**
+   * Executes the operation: FetchDivisionsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
 FetchDivisionsList() {
    const AcademicYearIdSelected =
     this.isAdmin
@@ -513,6 +564,11 @@ FetchDivisionsList() {
     );
 }
 
+  /**
+   * Executes the operation: FetchExamsbyclassanddivisionList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
 FetchExamsbyclassanddivisionList() {
   const AcademicYearIdSelected =
     this.isAdmin
@@ -600,6 +656,11 @@ FetchExamsbyclassanddivisionList() {
       }
     );
 }
+  /**
+   * Executes the operation: checkAttendanceStatusForExams
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
 checkAttendanceStatusForExams() {
    const AcademicYearIdSelected =
     this.isAdmin
@@ -629,6 +690,11 @@ checkAttendanceStatusForExams() {
 
     });
 }
+  /**
+   * Executes the operation: FetchClassStudentsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchClassStudentsList() {
      const AcademicYearIdSelected =
     this.isAdmin
@@ -682,6 +748,11 @@ checkAttendanceStatusForExams() {
       );
   };
 
+  /**
+   * Executes the operation: FetchClassStudentsListAfterAttendance
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchClassStudentsListAfterAttendance(){
      const AcademicYearIdSelected =
     this.isAdmin
@@ -735,6 +806,11 @@ checkAttendanceStatusForExams() {
       );
   }
 
+  /**
+   * Executes the operation: FetchAcademicYearCount
+   * Parameters: isSearch: boolean
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchAcademicYearCount(isSearch: boolean) {
      const AcademicYearIdSelected =
     this.isAdmin
@@ -756,11 +832,21 @@ checkAttendanceStatusForExams() {
       AdmissionNo: isSearch ? this.searchQuery.trim() : null
     });
 }
+  /**
+   * Executes the operation: resetPaginationAndFetch
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
 private resetPaginationAndFetch() {
   this.SyllabusList = [];       // Clear old table immediately
   this.FetchInitialData();
 }
 
+  /**
+   * Executes the operation: FetchInitialData
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchInitialData() {
     const isSearch = !!this.searchQuery?.trim();
     let flag = isSearch ? '7' : '3';
@@ -827,6 +913,11 @@ private resetPaginationAndFetch() {
   });
 }
 
+  /**
+   * Executes the operation: mapAcademicYears
+   * Parameters: response: any
+   * Rationale: Standard operational controller for the active view.
+   */
   mapAcademicYears(response: any) {
   this.SyllabusList = (response.data || []).map((item: any) => {
       
@@ -861,18 +952,31 @@ private resetPaginationAndFetch() {
   this.applySelectedSessionTimes();
 }
 
+  /**
+   * Executes the operation: formatDateYYYYMMDD
+   * Parameters: dateStr: string | null
+   * Rationale: Standard operational controller for the active view.
+   */
 formatDateYYYYMMDD(dateStr: string | null) {
     if (!dateStr) return '';
     const d = new Date(dateStr);
     return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
   }
 
+  /**
+   * Executes the operation: formatDateDDMMYYYY
+   * Parameters: dateStr: string | null
+   * Rationale: Standard operational controller for the active view.
+   */
   formatDateDDMMYYYY(dateStr: string | null) {
     if (!dateStr) return '';
     const d = new Date(dateStr);
     return `${d.getDate().toString().padStart(2,'0')}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getFullYear()}`;
   }
 
+  /**
+   * Handles form submission: Validates input fields and transmits data payloads.
+   */
   onSubmit() {
     const selectedSessionId = this.SyllabusForm.get('Session')?.value;
     this.AdminSelectedSessionID =
@@ -880,10 +984,20 @@ formatDateYYYYMMDD(dateStr: string | null) {
     this.loadAttendanceTableIfReady();
   }
 
+  /**
+   * Executes the operation: cancelAttendanceTable
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   cancelAttendanceTable() {
     this.resetAttendanceTableState();
   }
 
+  /**
+   * Executes the operation: onAttendanceToggleChange
+   * Parameters: student: any
+   * Rationale: Standard operational controller for the active view.
+   */
   onAttendanceToggleChange(student: any) {
     const studentName = student.Name || student.FirstName || student.AdmissionNo;
     const status = student.IsPresent ? 'Present' : 'Absent';
@@ -897,10 +1011,20 @@ formatDateYYYYMMDD(dateStr: string | null) {
     this.isModalOpen = true;
   }
 
+  /**
+   * Executes the operation: getMissingAbsentRemarkStudent
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private getMissingAbsentRemarkStudent() {
     return this.SyllabusList.find(s => !s.IsPresent && !s.Remarks?.trim()) || null;
   }
 
+  /**
+   * Executes the operation: isAttendanceFilterReady
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private isAttendanceFilterReady(): boolean {
     const hasSchool = !this.isAdmin || !!this.AdminselectedSchoolID;
     const hasDate = !!this.SyllabusForm.get('AttendanceDateTime')?.value;
@@ -917,12 +1041,22 @@ formatDateYYYYMMDD(dateStr: string | null) {
       hasSession;
   }
 
+  /**
+   * Executes the operation: resetAttendanceTableState
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private resetAttendanceTableState() {
     this.isTableModalOpen = false;
     this.SyllabusList = [];
     this.SyllabusCount = 0;
   }
 
+  /**
+   * Executes the operation: loadAttendanceTableIfReady
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private loadAttendanceTableIfReady() {
     if (!this.isAttendanceFilterReady()) {
       // Show specific message about what's missing
@@ -950,6 +1084,11 @@ formatDateYYYYMMDD(dateStr: string | null) {
 
 
   selectedExam: any;
+  /**
+   * Executes the operation: openAttendance
+   * Parameters: examRow: any
+   * Rationale: Standard operational controller for the active view.
+   */
   openAttendance(examRow: any) {
       this.attendanceMode = 'add';   
 
@@ -965,6 +1104,11 @@ formatDateYYYYMMDD(dateStr: string | null) {
     this.IsAddNewClicked = true;
   }
 
+  /**
+   * Executes the operation: openViewAttendance
+   * Parameters: examRow: any
+   * Rationale: Standard operational controller for the active view.
+   */
   openViewAttendance(examRow: any) {
     this.attendanceMode = 'view';   // ✅ UPDATE MODE
 
@@ -978,6 +1122,11 @@ formatDateYYYYMMDD(dateStr: string | null) {
     this.FetchClassStudentsListAfterAttendance();
     this.IsAddNewClicked = true;
   }
+  /**
+   * Executes the operation: validateMarks
+   * Parameters: student: any
+   * Rationale: Standard operational controller for the active view.
+   */
  validateMarks(student: any) {
 
   if (student.Marks && Number(student.Marks) > this.maxMarks) {
@@ -994,6 +1143,11 @@ formatDateYYYYMMDD(dateStr: string | null) {
 }
 
 
+  /**
+   * Executes the operation: FetchSyllabusDetByID
+   * Parameters: SyllabusID: string, mode: 'view' | 'edit'
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSyllabusDetByID(SyllabusID: string, mode: 'view' | 'edit') {
     const data = {
       ID: SyllabusID,
@@ -1078,6 +1232,11 @@ formatDateYYYYMMDD(dateStr: string | null) {
 
 
 
+  /**
+   * Executes the operation: submitAttendance
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
 submitAttendance() {
   const session = this.SyllabusForm.get('Session')?.value;
   if (!session || session === 0 || session === '0') {
@@ -1174,6 +1333,11 @@ submitAttendance() {
   });
 }
 
+  /**
+   * Executes the operation: UpdateAttendance
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   UpdateAttendance() {
    const invalidStudent = this.studentsList.find(student =>
   student.AttendanceMarked === '1' && (
@@ -1229,6 +1393,11 @@ submitAttendance() {
 
   }
 
+  /**
+   * Executes the operation: AddNewClicked
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   AddNewClicked() {
      
     this.IsAddNewClicked = !this.IsAddNewClicked;
@@ -1236,6 +1405,11 @@ submitAttendance() {
     this.ViewSyllabusClicked = false;
   };
 
+  /**
+   * Executes the operation: onSearchChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onSearchChange() {
     clearTimeout(this.searchTimer);
 
@@ -1256,6 +1430,11 @@ submitAttendance() {
     }, this.SEARCH_DEBOUNCE);
   };
 
+  /**
+   * Executes the operation: closeModal
+   * Parameters: type: 'view' | 'status'
+   * Rationale: Standard operational controller for the active view.
+   */
   closeModal(type: 'view' | 'status') {
     if (type === 'view') {
       this.isViewModalOpen = false;
@@ -1268,21 +1447,41 @@ submitAttendance() {
     }
   };
 
+  /**
+   * Executes the operation: handleOk
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   handleOk() {
     this.isModalOpen = false;
     this.statusModalTitle = 'Application Status';
   };
 
+  /**
+   * Executes the operation: editreview
+   * Parameters: SyllabusID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   editreview(SyllabusID: string): void {
     this.editclicked = true;
     this.FetchSyllabusDetByID(SyllabusID, 'edit');
     this.ViewSyllabusClicked = true;
   };
 
+  /**
+   * Executes the operation: toggleChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   toggleChange() {
     this.IsActiveStatus = !this.IsActiveStatus;
   };
 
+  /**
+   * Executes the operation: sort
+   * Parameters: column: string
+   * Rationale: Standard operational controller for the active view.
+   */
   sort(column: string) {
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -1293,11 +1492,21 @@ submitAttendance() {
     this.FetchInitialData();
   };
 
+  /**
+   * Executes the operation: viewReview
+   * Parameters: SyllabusID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   viewReview(SyllabusID: string): void {
     this.FetchSyllabusDetByID(SyllabusID, 'view');
     this.isViewModalOpen = true;
   };
  
+  /**
+   * Executes the operation: onSessionChange
+   * Parameters: event: any
+   * Rationale: Standard operational controller for the active view.
+   */
 onSessionChange(event: any) {
   const selectedSessionId = event.target.value;
    if (selectedSessionId.length === 0) {
@@ -1308,6 +1517,11 @@ onSessionChange(event: any) {
 
   this.applySelectedSessionTimes();
 }
+  /**
+   * Executes the operation: onAdminSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
  onAdminSchoolChange(event: Event) {
   const schoolID = (event.target as HTMLSelectElement).value;
   this.AdminselectedSchoolID = schoolID === "0" ? "" : schoolID;
@@ -1315,6 +1529,11 @@ onSessionChange(event: any) {
   this.FetchAcademicYearsList();
  }
 
+  /**
+   * Executes the operation: onAdminAcademicYearchange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
  onAdminAcademicYearchange(event: Event) {
   const academicyearId = (event.target as HTMLSelectElement).value;
   this.AdminselectedAcademivYearID = academicyearId === "0" ? "" : academicyearId;
@@ -1330,6 +1549,11 @@ onSessionChange(event: any) {
   this.FetchSessionsList();
  }
   
+  /**
+   * Executes the operation: onAdminClasschange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminClasschange(event: Event) {
    const classId = (event.target as HTMLSelectElement).value;
    this.AdminselectedClassID = classId === "0" ? "" : classId;
@@ -1337,6 +1561,11 @@ onSessionChange(event: any) {
    this.FetchDivisionsList();
  }
 
+  /**
+   * Executes the operation: onAdminDivisionsChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminDivisionsChange(event: Event) {
     const divisionId = (event.target as HTMLSelectElement).value;
     this.AdminselectedDiviosnID = divisionId === "0" ? "" : divisionId;
@@ -1346,6 +1575,11 @@ onSessionChange(event: any) {
   }
 
 
+  /**
+   * Executes the operation: resetFilters
+   * Parameters: level: 'school' | 'academic' | 'class'|'submit'
+   * Rationale: Standard operational controller for the active view.
+   */
   resetFilters(level: 'school' | 'academic' | 'class'|'submit') {
 
   if (level === 'school') {
@@ -1420,6 +1654,11 @@ onSessionChange(event: any) {
   }
   this.resetTable();
 }
+  /**
+   * Executes the operation: resetTable
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   resetTable() {
     this.SyllabusList = [];
     this.SyllabusCount = 0;
@@ -1437,6 +1676,11 @@ private getSelectedSessionTimes(): { start: string; end: string } {
   };
 }
 
+  /**
+   * Executes the operation: applySelectedSessionTimes
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
 private applySelectedSessionTimes() {
   const { start, end } = this.getSelectedSessionTimes();
 
