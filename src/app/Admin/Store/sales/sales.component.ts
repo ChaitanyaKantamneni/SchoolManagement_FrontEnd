@@ -70,6 +70,9 @@ interface SaleRow {
   templateUrl: './sales.component.html',
   styleUrl: './sales.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for SalesComponent.
+ */
 export class SalesComponent extends BasePermissionComponent implements OnInit {
   pageName = 'Sales';
   Math = Math;
@@ -84,6 +87,9 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     super(mService, rtr);
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.checkViewPermission();
     this.FetchSchoolsList();
@@ -195,10 +201,20 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     });
   }
 
+  /**
+   * Executes the operation: removeItemRow
+   * Parameters: index: number
+   * Rationale: Standard operational controller for the active view.
+   */
   removeItemRow(index: number): void {
     if (this.saleItems.length > 1) this.saleItems.splice(index, 1);
   }
 
+  /**
+   * Executes the operation: onCategorySelect
+   * Parameters: index: number, event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onCategorySelect(index: number, event: Event): void {
     const categoryId = (event.target as HTMLSelectElement).value;
     const row = this.saleItems[index];
@@ -212,6 +228,11 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
       : [];
   }
 
+  /**
+   * Executes the operation: onItemSelect
+   * Parameters: index: number, event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onItemSelect(index: number, event: Event): void {
     const itemId = (event.target as HTMLSelectElement).value;
     const row = this.saleItems[index];
@@ -225,8 +246,18 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     this.recalculateRow(index);
   }
 
+  /**
+   * Executes the operation: onPriceChange
+   * Parameters: index: number
+   * Rationale: Standard operational controller for the active view.
+   */
   onPriceChange(index: number): void { this.recalculateRow(index); }
 
+  /**
+   * Executes the operation: recalculateRow
+   * Parameters: index: number
+   * Rationale: Standard operational controller for the active view.
+   */
   recalculateRow(index: number): void {
     const row = this.saleItems[index];
     const found = this.itemsList.find(i => i.ID === row.itemId);
@@ -280,9 +311,24 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     this.IsAddNewClicked = true;
   }
 
+  /**
+   * Executes the operation: editreview
+   * Parameters: SaleID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   editreview(SaleID: string): void { this.FetchSaleByID(SaleID, 'edit'); }
+  /**
+   * Executes the operation: viewReview
+   * Parameters: SaleID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   viewReview(SaleID: string): void { this.FetchSaleByID(SaleID, 'view'); }
 
+  /**
+   * Executes the operation: FetchSaleByID
+   * Parameters: SaleID: string, mode: 'view' | 'edit'
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSaleByID(SaleID: string, mode: 'view' | 'edit'): void {
     this.loader.show();
     this.apiurl.post<any>('Tbl_Sales_CRUD_Operations', { ID: SaleID, Flag: '4' }).subscribe({
@@ -361,6 +407,11 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     });
   }
 
+  /**
+   * Executes the operation: FetchItemsListForEdit
+   * Parameters: sale: SaleRow
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchItemsListForEdit(sale: SaleRow): void {
     const schoolId = this.selectedAdminSchoolID || this.currentSchoolId;
     this.apiurl.post<any>('Tbl_Items_CRUD_Operations', {
@@ -385,6 +436,11 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     });
   }
 
+  /**
+   * Executes the operation: rebuildItemRows
+   * Parameters: sale: SaleRow
+   * Rationale: Standard operational controller for the active view.
+   */
   rebuildItemRows(sale: SaleRow): void {
     const ids = (sale.itemIDs || '').split(',').map(s => s.trim()).filter(Boolean);
     const catIds = (sale.categoryIDs || '').split(',').map(s => s.trim());
@@ -414,9 +470,24 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     if (this.saleItems.length === 0) this.addItemRow();
   }
 
+  /**
+   * Executes the operation: SubmitSale
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   SubmitSale(): void { this.saveSale('1'); }
+  /**
+   * Executes the operation: UpdateSale
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   UpdateSale(): void { this.saveSale('5'); }
 
+  /**
+   * Executes the operation: saveSale
+   * Parameters: flag: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private saveSale(flag: string): void {
     if (this.salesForm.invalid) {
       this.salesForm.markAllAsTouched();
@@ -543,12 +614,22 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     });
   }
 
+  /**
+   * Executes the operation: loadSales
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   loadSales(): void {
     this.currentPage = 1;
     this.pageCursors = [];
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: mapSales
+   * Parameters: response: any
+   * Rationale: Standard operational controller for the active view.
+   */
   mapSales(response: any): void {
     this.SalesList = (response.data || []).map((item: any) => ({
       id: String(item.id ?? item.ID ?? ''),
@@ -580,6 +661,11 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     }));
   }
 
+  /**
+   * Executes the operation: FetchSalesCount
+   * Parameters: isSearch: boolean
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSalesCount(isSearch: boolean) {
     const schoolIdForQuery = this.isAdmin
       ? (this.selectedSchoolID && this.selectedSchoolID !== '0' ? this.selectedSchoolID : '')
@@ -611,6 +697,11 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     });
   }
 
+  /**
+   * Executes the operation: FetchAcademicYearsList
+   * Parameters: schoolId: string
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchAcademicYearsList(schoolId: string): void {
     this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', {
       SchoolID: schoolId, Flag: '2'
@@ -623,6 +714,11 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     });
   }
 
+  /**
+   * Executes the operation: FetchClassList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchClassList(): void {
     this.apiurl.post<any>('Tbl_ClassDivision_CRUD_Operations', {
       SchoolID: this.selectedAdminSchoolID || '',
@@ -644,6 +740,11 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     );
   }
 
+  /**
+   * Executes the operation: FetchDivisionsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchDivisionsList(): void {
     this.apiurl.post<any>('Tbl_ClassDivision_CRUD_Operations', {
       SchoolID: this.selectedAdminSchoolID || '',
@@ -664,6 +765,11 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     );
   }
 
+  /**
+   * Executes the operation: FetchClassStudentsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchClassStudentsList(): void {
     this.apiurl.post<any>('Tbl_StudentDetails_CRUD_Operations', {
       SchoolID: this.selectedAdminSchoolID || this.currentSchoolId,
@@ -689,6 +795,11 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     );
   }
 
+  /**
+   * Executes the operation: FetchCategoriesList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchCategoriesList(): void {
     const schoolId = this.selectedAdminSchoolID || this.currentSchoolId;
     this.apiurl.post<any>('Tbl_Categories_CRUD_Operations', {
@@ -707,6 +818,11 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     });
   }
 
+  /**
+   * Executes the operation: FetchItemsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchItemsList(): void {
     const schoolId = this.selectedAdminSchoolID || this.currentSchoolId;
     this.apiurl.post<any>('Tbl_Items_CRUD_Operations', {
@@ -737,6 +853,11 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     this.loadSales();
   }
 
+  /**
+   * Executes the operation: onAdminSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminSchoolChange(event: Event): void {
     const schoolId = (event.target as HTMLSelectElement).value;
     this.academicYearList = [];
@@ -755,6 +876,11 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     }
   }
 
+  /**
+   * Executes the operation: onAdminAcademicYearChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminAcademicYearChange(event: Event): void {
     const yearId = (event.target as HTMLSelectElement).value;
     this.selectedAdminAcademicYearID = yearId === '0' ? '' : yearId;
@@ -780,6 +906,11 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     }
   }
 
+  /**
+   * Executes the operation: onAcademicYearChangeNonAdmin
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAcademicYearChangeNonAdmin(event: Event): void {
     const yearId = (event.target as HTMLSelectElement).value;
     this.selectedAdminAcademicYearID = yearId === '0' ? '' : yearId;
@@ -805,6 +936,11 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     }
   }
 
+  /**
+   * Executes the operation: onClassChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onClassChange(event: Event): void {
     const classId = (event.target as HTMLSelectElement).value;
     this.AdminselectedClassID = classId === '0' ? '' : classId;
@@ -816,6 +952,11 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     if (this.AdminselectedClassID) this.FetchDivisionsList();
   }
 
+  /**
+   * Executes the operation: onDivisionChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onDivisionChange(event: Event): void {
     const divisionId = (event.target as HTMLSelectElement).value;
     this.AdminselectedDivisionID = divisionId === '0' ? '' : divisionId;
@@ -824,6 +965,11 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     if (this.AdminselectedDivisionID) this.FetchClassStudentsList();
   }
 
+  /**
+   * Executes the operation: onSearchChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onSearchChange(): void {
     clearTimeout(this.searchTimer);
     this.searchTimer = setTimeout(() => {
@@ -840,8 +986,18 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     }, this.SEARCH_DEBOUNCE);
   }
 
+  /**
+   * Executes the operation: handleOk
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   handleOk(): void { this.isModalOpen = false; }
 
+  /**
+   * Executes the operation: closeModal
+   * Parameters: type: 'view' | 'status'
+   * Rationale: Standard operational controller for the active view.
+   */
   closeModal(type: 'view' | 'status'): void {
     if (type === 'view') { this.isViewModalOpen = false; this.viewSale = null; }
     if (type === 'status') this.isModalOpen = false;
@@ -865,13 +1021,43 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     });
   }
 
+  /**
+   * Executes the operation: toggleChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   toggleChange(): void { this.IsActiveStatus = !this.IsActiveStatus; }
 
+  /**
+   * Executes the operation: previousPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   previousPage(): void { if (this.currentPage > 1) this.goToPage(this.currentPage - 1); }
+  /**
+   * Executes the operation: nextPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   nextPage(): void { if (this.currentPage < this.totalPages()) this.goToPage(this.currentPage + 1); }
+  /**
+   * Executes the operation: firstPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   firstPage(): void { this.goToPage(1); }
+  /**
+   * Executes the operation: lastPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   lastPage(): void { this.goToPage(this.totalPages()); }
 
+  /**
+   * Executes the operation: goToPage
+   * Parameters: pageNumber: number
+   * Rationale: Standard operational controller for the active view.
+   */
   goToPage(pageNumber: number): void {
     const total = this.totalPages();
     if (pageNumber < 1) pageNumber = 1;
@@ -885,22 +1071,47 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     }
   }
 
+  /**
+   * Executes the operation: totalPages
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   totalPages(): number { return Math.ceil(this.SalesCount / this.pageSize); }
 
+  /**
+   * Executes the operation: pageStartIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageStartIndex(): number {
     return this.SalesCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
   }
 
+  /**
+   * Executes the operation: pageEndIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageEndIndex(): number {
     return Math.min(this.currentPage * this.pageSize, this.SalesCount);
   }
 
+  /**
+   * Executes the operation: onRowsCountChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onRowsCountChange() {
     this.currentPage = 1;
     this.pageCursors = [];
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: getVisiblePageNumbers
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getVisiblePageNumbers(): number[] {
     const totalPages = this.totalPages();
     const pages: number[] = [];
@@ -911,6 +1122,11 @@ export class SalesComponent extends BasePermissionComponent implements OnInit {
     return pages;
   }
 
+  /**
+   * Executes the operation: getBooleanValue
+   * Parameters: val: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private getBooleanValue(val: any): boolean {
     return val === true || val === 1 || val === '1' || val === 'True' || val === 'active';
   }

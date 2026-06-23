@@ -27,6 +27,9 @@ interface LeavePolicyRow {
   templateUrl: './leavedetails.component.html',
   styleUrl: './leavedetails.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for LeavedetailsComponent.
+ */
 export class LeavedetailsComponent extends BasePermissionComponent implements OnInit {
   pageName = 'Leave Policy';
 
@@ -39,6 +42,9 @@ export class LeavedetailsComponent extends BasePermissionComponent implements On
     super(mService, rtr);
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.checkViewPermission();
     this.FetchSchoolsList();
@@ -104,6 +110,11 @@ export class LeavedetailsComponent extends BasePermissionComponent implements On
     this.IsActiveStatus = !this.IsActiveStatus;
   }
 
+  /**
+   * Executes the operation: AddNewClicked
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   AddNewClicked(): void {
     this.editingId = null;
     this.selectedAdminSchoolID = '';
@@ -125,14 +136,29 @@ export class LeavedetailsComponent extends BasePermissionComponent implements On
   }
 
 
+  /**
+   * Executes the operation: editreview
+   * Parameters: PolicyID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   editreview(PolicyID: string): void {
     this.FetchPolicyDetByID(PolicyID, 'edit');
   }
 
+  /**
+   * Executes the operation: viewReview
+   * Parameters: PolicyID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   viewReview(PolicyID: string): void {
     this.FetchPolicyDetByID(PolicyID, 'view');
   }
 
+  /**
+   * Executes the operation: FetchPolicyDetByID
+   * Parameters: PolicyID: string, mode: 'view' | 'edit'
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchPolicyDetByID(PolicyID: string, mode: 'view' | 'edit') {
     const policy = this.PolicyList.find(p => p.id === PolicyID);
     if (!policy) return;
@@ -160,14 +186,29 @@ export class LeavedetailsComponent extends BasePermissionComponent implements On
     }
   }
 
+  /**
+   * Executes the operation: SubmitSyllabus
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   SubmitSyllabus(): void {
     this.savePolicy('1');
   }
 
+  /**
+   * Executes the operation: UpdateSyllabus
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   UpdateSyllabus(): void {
     this.savePolicy('5');
   }
 
+  /**
+   * Executes the operation: savePolicy
+   * Parameters: flag: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private savePolicy(flag: string): void {
     if (this.policyForm.invalid) {
       this.policyForm.markAllAsTouched();
@@ -213,6 +254,11 @@ export class LeavedetailsComponent extends BasePermissionComponent implements On
     });
   }
 
+  /**
+   * Executes the operation: FetchInitialData
+   * Parameters: extra: any = {}
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchInitialData(extra: any = {}) {
     const isSearch = !!this.searchQuery?.trim();
     const flag = isSearch ? '7' : '2';
@@ -278,12 +324,22 @@ export class LeavedetailsComponent extends BasePermissionComponent implements On
     });
   }
   
+  /**
+   * Executes the operation: loadPolicies
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   loadPolicies(): void {
     this.currentPage = 1;
     this.pageCursors = [];
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: mapPolicies
+   * Parameters: response: any
+   * Rationale: Standard operational controller for the active view.
+   */
   mapPolicies(response: any) {
     this.PolicyList = (response.data || []).map((item: any) => ({
       id: String(item.id ?? item.ID ?? ''),
@@ -298,6 +354,11 @@ export class LeavedetailsComponent extends BasePermissionComponent implements On
     }));
   }
   
+  /**
+   * Executes the operation: FetchPolicyCount
+   * Parameters: isSearch: boolean
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchPolicyCount(isSearch: boolean) {
     let SchoolIdSelected = '';
     if (this.selectedSchoolID && this.selectedSchoolID !== '0') {
@@ -318,6 +379,11 @@ export class LeavedetailsComponent extends BasePermissionComponent implements On
     return this.apiurl.post<any>('Tbl_leavePolicy_CRUD_Operations', payload);
   }
   
+  /**
+   * Executes the operation: onSearchChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onSearchChange() {
     clearTimeout(this.searchTimer);
     
@@ -346,6 +412,11 @@ export class LeavedetailsComponent extends BasePermissionComponent implements On
     }, 300);
   }
   
+  /**
+   * Executes the operation: onSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onSchoolChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     const schoolID = target.value;
@@ -357,10 +428,20 @@ export class LeavedetailsComponent extends BasePermissionComponent implements On
     this.loadPolicies();
   }
 
+  /**
+   * Executes the operation: handleOk
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   handleOk() {
     this.isModalOpen = false;
   }
 
+  /**
+   * Executes the operation: closeModal
+   * Parameters: type: 'view' | 'status'
+   * Rationale: Standard operational controller for the active view.
+   */
   closeModal(type: 'view' | 'status') {
     if (type === 'view') this.isViewModalOpen = false;
     if (type === 'status') this.isModalOpen = false;
@@ -376,6 +457,11 @@ export class LeavedetailsComponent extends BasePermissionComponent implements On
     }
   }
 
+  /**
+   * Executes the operation: FetchSchoolsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private FetchSchoolsList(): void {
     this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', { Flag: '2' }).subscribe({
       next: (res: any) => {
@@ -388,6 +474,11 @@ export class LeavedetailsComponent extends BasePermissionComponent implements On
     });
   }
 
+  /**
+   * Executes the operation: FetchAcademicYearsList
+   * Parameters: schoolId: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private FetchAcademicYearsList(schoolId: string): void {
     this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', { SchoolID: schoolId, Flag: '2' }).subscribe({
       next: (res: any) => {
@@ -396,6 +487,11 @@ export class LeavedetailsComponent extends BasePermissionComponent implements On
     });
   }
 
+  /**
+   * Executes the operation: getBooleanValue
+   * Parameters: val: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private getBooleanValue(val: any): boolean {
     if (val === true || val === 1 || val === '1' || val === 'active') return true;
     return false;
@@ -408,20 +504,40 @@ export class LeavedetailsComponent extends BasePermissionComponent implements On
     }
   }
   
+  /**
+   * Executes the operation: nextPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   nextPage() {
     if (this.currentPage < this.totalPages()) {
       this.goToPage(this.currentPage + 1);
     }
   }
   
+  /**
+   * Executes the operation: firstPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   firstPage() {
     this.goToPage(1);
   }
   
+  /**
+   * Executes the operation: lastPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   lastPage() {
     this.goToPage(this.totalPages());
   }
   
+  /**
+   * Executes the operation: goToPage
+   * Parameters: pageNumber: number
+   * Rationale: Standard operational controller for the active view.
+   */
   goToPage(pageNumber: number) {
     const total = this.totalPages();
     
@@ -443,24 +559,49 @@ export class LeavedetailsComponent extends BasePermissionComponent implements On
     }
   }
   
+  /**
+   * Executes the operation: pageStartIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     pageStartIndex(): number {
       return this.PolicyCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
     }
 
+  /**
+   * Executes the operation: pageEndIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     pageEndIndex(): number {
       return Math.min(this.currentPage * this.pageSize, this.PolicyCount);
     }
 
+  /**
+   * Executes the operation: onRowsCountChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     onRowsCountChange() {
       this.currentPage = 1;
       this.pageCursors = [];
       this.loadPolicies();
     }
 
+  /**
+   * Executes the operation: totalPages
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     totalPages() {
       return Math.ceil(this.PolicyCount / this.pageSize);
     }
 
+  /**
+   * Executes the operation: getVisiblePageNumbers
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     getVisiblePageNumbers() {
       const totalPages = this.totalPages();
       const pages = [];

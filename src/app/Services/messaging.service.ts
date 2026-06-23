@@ -34,6 +34,9 @@ export interface GatewayConfig {
 @Injectable({
   providedIn: 'root'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for MessagingService.
+ */
 export class MessagingService {
   private defaultTemplates: MessageTemplate[] = [
     {

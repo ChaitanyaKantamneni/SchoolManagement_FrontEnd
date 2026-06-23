@@ -39,6 +39,9 @@ interface LeaveRequest {
   templateUrl: './leaveapproval.component.html',
   styleUrl: './leaveapproval.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for LeaveapprovalComponent.
+ */
 export class LeaveapprovalComponent extends BasePermissionComponent implements OnInit {
   pageName = 'Leave Approval';
 
@@ -154,6 +157,9 @@ export class LeaveapprovalComponent extends BasePermissionComponent implements O
     super(menu, router);
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     console.log('[LEAVE APPROVAL] ngOnInit - Role detection:', {
       currentRoleName: this.currentRoleName,
@@ -208,15 +214,30 @@ export class LeaveapprovalComponent extends BasePermissionComponent implements O
     }
   }
 
+  /**
+   * Executes the operation: onYearChange
+   * Parameters: e: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onYearChange(e: Event): void {
     this.selectedAcademicYearId = (e.target as HTMLSelectElement).value;
     this.fetchLeaveRequests();
   }
 
+  /**
+   * Executes the operation: onUserTypeChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onUserTypeChange(): void {
     this.fetchLeaveRequests();
   }
 
+  /**
+   * Executes the operation: onSearchChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onSearchChange(): void {
     this.applyFilters();
   }
@@ -339,12 +360,22 @@ console.log('[LEAVE APPROVAL] Teacher payload - currentUserId:', this.currentUse
     this.updatePaginatedList();
   }
 
+  /**
+   * Executes the operation: updatePaginatedList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   updatePaginatedList(): void {
     const start = (this.currentPage - 1) * this.pageSize;
     const end = start + this.pageSize;
     this.paginatedList = this.filteredList.slice(start, end);
   }
 
+  /**
+   * Executes the operation: getStatusClass
+   * Parameters: s: string
+   * Rationale: Standard operational controller for the active view.
+   */
   getStatusClass(s: string) { return s?.toLowerCase() || 'pending'; }
 
   // ── pagination (Aligned with Exam-Type) ─────────────────────────────────────
@@ -352,6 +383,11 @@ console.log('[LEAVE APPROVAL] Teacher payload - currentUserId:', this.currentUse
     return Math.ceil(this.filteredList.length / this.pageSize);
   }
 
+  /**
+   * Executes the operation: getVisiblePageNumbers
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getVisiblePageNumbers(): number[] {
     const total = this.totalPages();
     const pages: number[] = [];
@@ -362,18 +398,33 @@ console.log('[LEAVE APPROVAL] Teacher payload - currentUserId:', this.currentUse
     return pages;
   }
 
+  /**
+   * Executes the operation: previousPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   previousPage(): void {
     if (this.currentPage > 1) {
       this.goToPage(this.currentPage - 1);
     }
   }
 
+  /**
+   * Executes the operation: nextPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   nextPage(): void {
     if (this.currentPage < this.totalPages()) {
       this.goToPage(this.currentPage + 1);
     }
   }
 
+  /**
+   * Executes the operation: goToPage
+   * Parameters: page: number
+   * Rationale: Standard operational controller for the active view.
+   */
   goToPage(page: number): void {
     const total = this.totalPages();
     if (page < 1) page = 1;
@@ -389,6 +440,11 @@ console.log('[LEAVE APPROVAL] Teacher payload - currentUserId:', this.currentUse
     this.isViewModalOpen = true;
   }
 
+  /**
+   * Executes the operation: closeModal
+   * Parameters: type: 'view' | 'status'
+   * Rationale: Standard operational controller for the active view.
+   */
   closeModal(type: 'view' | 'status'): void {
     if (type === 'view') {
       this.isViewModalOpen = false;
@@ -400,6 +456,11 @@ console.log('[LEAVE APPROVAL] Teacher payload - currentUserId:', this.currentUse
     }
   }
 
+  /**
+   * Executes the operation: handleOk
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   handleOk() {
     this.isModalOpen = false;
     this.fetchLeaveRequests();
@@ -483,6 +544,11 @@ console.log('[LEAVE APPROVAL] Teacher payload - currentUserId:', this.currentUse
     });
   }
 
+  /**
+   * Executes the operation: fetchAcademicYears
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchAcademicYears(): void {
     if (!this.selectedSchoolId) return;
     this.api.post<any>('Tbl_AcademicYear_CRUD_Operations', { SchoolID: this.selectedSchoolId, Flag: '2' }).subscribe({
@@ -502,6 +568,11 @@ console.log('[LEAVE APPROVAL] Teacher payload - currentUserId:', this.currentUse
     });
   }
 
+  /**
+   * Executes the operation: resolveStaffIdentity
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private resolveStaffIdentity(): void {
     const schoolId = this.resolvedSchoolId;
     const email = (this.ss('email') || this.ss('Email') || '').toString().trim().toLowerCase();
@@ -527,6 +598,11 @@ console.log('[LEAVE APPROVAL] Teacher payload - currentUserId:', this.currentUse
     });
   }
 
+  /**
+   * Executes the operation: fetchStaffRoles
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchStaffRoles(): void {
     if (!this.selectedSchoolId || this.selectedSchoolId === '0') return;
     
@@ -555,6 +631,11 @@ console.log('[LEAVE APPROVAL] Teacher payload - currentUserId:', this.currentUse
     });
   }
 
+  /**
+   * Executes the operation: reprocessRequestsWithRoles
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private reprocessRequestsWithRoles(): void {
     this.RequestList = this.rawData.map((item: any) => {
       const f = item.fromDate || item.FromDate || '';
@@ -585,6 +666,11 @@ console.log('[LEAVE APPROVAL] Teacher payload - currentUserId:', this.currentUse
     this.applyFilters();
   }
 
+  /**
+   * Executes the operation: fetchRoleList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchRoleList(): void {
     // Don't pass SchoolID - API expects empty or no SchoolID
     this.api.post<any>('Tbl_Roles_CRUD_Operations', {
@@ -609,6 +695,11 @@ console.log('[LEAVE APPROVAL] Teacher payload - currentUserId:', this.currentUse
     );
   }
 
+  /**
+   * Executes the operation: normalizeRoleIds
+   * Parameters: roleValue: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private normalizeRoleIds(roleValue: any): string[] {
     if (Array.isArray(roleValue)) {
       return roleValue.map((value: any) => String(value).trim()).filter(Boolean);
@@ -624,6 +715,11 @@ console.log('[LEAVE APPROVAL] Teacher payload - currentUserId:', this.currentUse
       .filter(Boolean);
   }
 
+  /**
+   * Executes the operation: getRoleDisplay
+   * Parameters: roleValue: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private getRoleDisplay(roleValue: any): string {
     const roleTokens = this.normalizeRoleIds(roleValue);
 
@@ -639,6 +735,11 @@ console.log('[LEAVE APPROVAL] Teacher payload - currentUserId:', this.currentUse
       .join(', ');
   }
 
+  /**
+   * Executes the operation: getRoleFromStaffLookup
+   * Parameters: staffId: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private getRoleFromStaffLookup(staffId: any): string {
     const key = String(staffId ?? '').trim();
     const rawValue = this.staffRoleLookup.get(key);
@@ -647,6 +748,11 @@ console.log('[LEAVE APPROVAL] Teacher payload - currentUserId:', this.currentUse
     return (resolved && resolved !== '-') ? resolved : rawValue;
   }
 
+  /**
+   * Executes the operation: getResolvedRole
+   * Parameters: row: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private getResolvedRole(row: any): string {
     console.log('[LEAVE APPROVAL] getResolvedRole row:', JSON.stringify({ role: row.role, roleName: row.roleName, staffType: row.staffType, applicantID: row.applicantID, applicantId: row.applicantId, staffID: row.staffID }));
     console.log('[LEAVE APPROVAL] roleList:', this.roleList);
@@ -703,18 +809,33 @@ console.log('[LEAVE APPROVAL] Teacher payload - currentUserId:', this.currentUse
     return url.split('/').pop() || '';
   }
 
+  /**
+   * Executes the operation: viewAttachment
+   * Parameters: url?: string
+   * Rationale: Standard operational controller for the active view.
+   */
   viewAttachment(url?: string): void {
     if (!url) return;
     const fullUrl = this.fileService.getFullFileUrl(url);
     window.open(fullUrl, '_blank');
   }
 
+  /**
+   * Executes the operation: downloadAttachment
+   * Parameters: url?: string
+   * Rationale: Standard operational controller for the active view.
+   */
   downloadAttachment(url?: string): void {
     if (!url) return;
     const filename = this.getFileName(url);
     this.fileService.downloadFile(url, filename);
   }
 
+  /**
+   * Executes the operation: getStaffRoleName
+   * Parameters: req: LeaveRequest
+   * Rationale: Standard operational controller for the active view.
+   */
   getStaffRoleName(req: LeaveRequest): string {
     // First try to use already resolved role from request data
     if (req.role && req.role !== '-' && !/^\d+$/.test(String(req.role).trim())) {
@@ -742,6 +863,11 @@ console.log('[LEAVE APPROVAL] Teacher payload - currentUserId:', this.currentUse
   teacherClass: string = '';
 teacherDivision: string = '';
 
+  /**
+   * Executes the operation: fetchTeacherClassDivision
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
 fetchTeacherClassDivision(): void {
 
   const payload = {

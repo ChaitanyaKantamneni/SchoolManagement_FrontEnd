@@ -23,6 +23,9 @@ type SalaryHeadLine = {
   templateUrl: './salary-settings.component.html',
   styleUrl: './salary-settings.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for SalarySettingsComponent.
+ */
 export class SalarySettingsComponent extends BasePermissionComponent implements OnInit {
   pageName = 'Salary Settings';
 
@@ -101,6 +104,11 @@ export class SalarySettingsComponent extends BasePermissionComponent implements 
   //   }
   // }
 
+  /**
+   * Executes the operation: AddNewClicked
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
 AddNewClicked(): void {
   this.IsAddNewClicked = !this.IsAddNewClicked;
   this.formSubmitAttempted = false;
@@ -132,6 +140,9 @@ AddNewClicked(): void {
     return role === '1';
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.checkViewPermission();
     this.selectedAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
@@ -150,6 +161,11 @@ AddNewClicked(): void {
     this.fetchSalarySettings();
   }
 
+  /**
+   * Executes the operation: FetchSchoolsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSchoolsList() {
     this.loader.show();
     this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', { Flag: '2' }).subscribe({
@@ -166,6 +182,11 @@ AddNewClicked(): void {
     });
   }
 
+  /**
+   * Executes the operation: FetchAcademicYearsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchAcademicYearsList() {
     this.loader.show();
     this.apiurl
@@ -187,6 +208,11 @@ AddNewClicked(): void {
       });
   }
 
+  /**
+   * Executes the operation: FetchStaffList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchStaffList() {
     const AcademicYearIdSelected =
     this.isAdmin
@@ -220,6 +246,11 @@ AddNewClicked(): void {
     });
   }
 
+  /**
+   * Executes the operation: FetchPayrollHeadsForSelection
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchPayrollHeadsForSelection() {
     this.salaryHeads = [];
     const AcademicYearIdSelected =
@@ -268,6 +299,11 @@ AddNewClicked(): void {
     });
   }
 
+  /**
+   * Executes the operation: onAdminSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminSchoolChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     this.selectedSchoolID = target.value === '0' ? '' : target.value;
@@ -278,6 +314,11 @@ AddNewClicked(): void {
     this.fetchSalarySettings();
   }
 
+  /**
+   * Executes the operation: onAcademicYearChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onAcademicYearChange() {
     this.selectedStaffID = '';
     this.salaryHeads = [];
@@ -290,6 +331,11 @@ AddNewClicked(): void {
     this.fetchSalarySettings();
   }
 
+  /**
+   * Executes the operation: onSearchChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onSearchChange(): void {
     clearTimeout(this.searchTimer);
     this.searchTimer = setTimeout(() => {
@@ -297,12 +343,22 @@ AddNewClicked(): void {
     }, this.SEARCH_DEBOUNCE);
   }
 
+  /**
+   * Executes the operation: onSchoolFilterChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onSchoolFilterChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
     this.selectedListSchoolID = target.value || '';
     this.fetchSalarySettings();
   }
 
+  /**
+   * Executes the operation: saveSettings
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   saveSettings(): void {
     this.formSubmitAttempted = true;
     if (this.isSubmitting) {
@@ -399,6 +455,11 @@ AddNewClicked(): void {
     });
   }
 
+  /**
+   * Executes the operation: onLineEnabledChange
+   * Parameters: line: SalaryHeadLine
+   * Rationale: Standard operational controller for the active view.
+   */
   onLineEnabledChange(line: SalaryHeadLine): void {
     if (!line.enabled) {
       line.amount = 0;
@@ -407,6 +468,11 @@ AddNewClicked(): void {
     }
   }
 
+  /**
+   * Executes the operation: editReview
+   * Parameters: row: any
+   * Rationale: Standard operational controller for the active view.
+   */
   editReview(row: any): void {
     this.editModeId = this.toNumber(row.id);
     this.selectedSchoolID = row.schoolID || this.selectedSchoolID;
@@ -419,6 +485,11 @@ AddNewClicked(): void {
     this.IsAddNewClicked = true;
   }
 
+  /**
+   * Executes the operation: viewReview
+   * Parameters: row: any
+   * Rationale: Standard operational controller for the active view.
+   */
   viewReview(row: any): void {
     this.viewRow = row;
     const parsed = this.parsePayHeads(row?.payHeadJson || '[]');
@@ -430,12 +501,22 @@ AddNewClicked(): void {
     this.isViewModalOpen = true;
   }
 
+  /**
+   * Executes the operation: closeViewModal
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeViewModal(): void {
     this.isViewModalOpen = false;
     this.viewRow = null;
     this.viewPayHeads = [];
   }
 
+  /**
+   * Executes the operation: closeModal
+   * Parameters: type: 'view' | 'status'
+   * Rationale: Standard operational controller for the active view.
+   */
   closeModal(type: 'view' | 'status') {
     if (type === 'view') {
       this.closeViewModal();
@@ -445,11 +526,21 @@ AddNewClicked(): void {
     }
   }
 
+  /**
+   * Executes the operation: handleOk
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   handleOk() {
     this.isModalOpen = false;
     this.fetchSalarySettings();
   }
 
+  /**
+   * Executes the operation: isFormValid
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private isFormValid(): boolean {
     const schoolValid = !this.isAdmin || !!this.selectedSchoolID;
     const yearValid = !!this.selectedAcademicYearID;
@@ -458,6 +549,11 @@ AddNewClicked(): void {
     return schoolValid && yearValid && staffValid && hasLines;
   }
 
+  /**
+   * Executes the operation: fetchSalarySettings
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchSalarySettings() {
     const isSearch = !!this.searchQuery?.trim();
     const schoolFilter = this.isAdmin ? this.selectedListSchoolID : this.selectedSchoolID;
@@ -513,6 +609,11 @@ AddNewClicked(): void {
     });
   }
 
+  /**
+   * Executes the operation: mapSalarySetting
+   * Parameters: row: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private mapSalarySetting(row: any) {
     const schoolId = this.pick(row, ['SchoolID', 'schoolID', 'schoolId']);
     const yearId = this.pick(row, ['AcademicYear', 'academicYear']);
@@ -536,6 +637,11 @@ AddNewClicked(): void {
     };
   }
 
+  /**
+   * Executes the operation: parsePayHeads
+   * Parameters: raw: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private parsePayHeads(raw: any): any[] {
     try {
       const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
@@ -545,6 +651,11 @@ AddNewClicked(): void {
     }
   }
 
+  /**
+   * Executes the operation: applyPayHeadValues
+   * Parameters: payHeadJson: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private applyPayHeadValues(payHeadJson: string): void {
     const parsed = this.parsePayHeads(payHeadJson);
     if (!parsed.length) {
@@ -564,6 +675,11 @@ AddNewClicked(): void {
     });
   }
 
+  /**
+   * Executes the operation: pick
+   * Parameters: obj: any, keys: string[]
+   * Rationale: Standard operational controller for the active view.
+   */
   private pick(obj: any, keys: string[]): any {
     for (const key of keys) {
       if (obj && obj[key] !== undefined && obj[key] !== null) {
@@ -573,6 +689,11 @@ AddNewClicked(): void {
     return null;
   }
 
+  /**
+   * Executes the operation: getStaffDisplayName
+   * Parameters: item: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private getStaffDisplayName(item: any): string {
     const directName = `${this.pick(item, ['Name', 'name', 'StaffName', 'staffName']) || ''}`.trim();
     if (directName) {
@@ -589,35 +710,70 @@ AddNewClicked(): void {
     return Number.isFinite(n) && n > 0 ? n : null;
   }
 
+  /**
+   * Executes the operation: pageStartIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageStartIndex(): number {
     return this.settingsCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
   }
 
+  /**
+   * Executes the operation: pageEndIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageEndIndex(): number {
     return Math.min(this.currentPage * this.pageSize, this.settingsCount);
   }
 
+  /**
+   * Executes the operation: onRowsCountChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onRowsCountChange() {
     this.currentPage = 1;
     this.fetchSalarySettings();
   }
 
+  /**
+   * Executes the operation: totalPages
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   totalPages(): number {
     return Math.ceil(this.settingsCount / this.pageSize);
   }
 
+  /**
+   * Executes the operation: previousPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   previousPage(): void {
     if (this.currentPage > 1) {
       this.goToPage(this.currentPage - 1);
     }
   }
 
+  /**
+   * Executes the operation: nextPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   nextPage(): void {
     if (this.currentPage < this.totalPages()) {
       this.goToPage(this.currentPage + 1);
     }
   }
 
+  /**
+   * Executes the operation: goToPage
+   * Parameters: pageNumber: number
+   * Rationale: Standard operational controller for the active view.
+   */
   goToPage(pageNumber: number): void {
     const total = this.totalPages();
     if (total <= 0) {
@@ -628,6 +784,11 @@ AddNewClicked(): void {
     this.fetchSalarySettings();
   }
 
+  /**
+   * Executes the operation: getVisiblePageNumbers
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getVisiblePageNumbers(): number[] {
     const totalPages = this.totalPages();
     const pages: number[] = [];
@@ -640,6 +801,11 @@ AddNewClicked(): void {
     return pages;
   }
 
+  /**
+   * Executes the operation: extractApiMessage
+   * Parameters: response: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private extractApiMessage(response: any): string {
     const rootMessage = response?.Message || response?.message;
     if (rootMessage) {

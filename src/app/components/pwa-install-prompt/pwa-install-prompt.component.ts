@@ -20,6 +20,9 @@ const FALLBACK_DELAY_MS = 4000;
   templateUrl: './pwa-install-prompt.component.html',
   styleUrls: ['./pwa-install-prompt.component.css'],
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for PwaInstallPromptComponent.
+ */
 export class PwaInstallPromptComponent implements OnInit, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
 
@@ -46,6 +49,9 @@ export class PwaInstallPromptComponent implements OnInit, OnDestroy {
     this.visible = true;
   };
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) {
       return;
@@ -60,6 +66,11 @@ export class PwaInstallPromptComponent implements OnInit, OnDestroy {
     }, FALLBACK_DELAY_MS);
   }
 
+  /**
+   * Executes the operation: ngOnDestroy
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   ngOnDestroy(): void {
     if (!isPlatformBrowser(this.platformId)) {
       return;
@@ -72,12 +83,22 @@ export class PwaInstallPromptComponent implements OnInit, OnDestroy {
 
   /** Re-check after storage changes in another tab. */
   @HostListener('window:storage', ['$event'])
+  /**
+   * Executes the operation: onStorage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onStorage(): void {
     if (this.isDismissedWithinCooldown()) {
       this.visible = false;
     }
   }
 
+  /**
+   * Executes the operation: onInstallClick
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   async onInstallClick(): Promise<void> {
     if (!this.deferredPrompt) {
       return;
@@ -92,15 +113,30 @@ export class PwaInstallPromptComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Executes the operation: onDismissClick
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onDismissClick(): void {
     localStorage.setItem(STORAGE_KEY, String(Date.now()));
     this.visible = false;
   }
 
+  /**
+   * Executes the operation: shouldSuppressBanner
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private shouldSuppressBanner(): boolean {
     return this.isInstalledPwa() || this.isDismissedWithinCooldown();
   }
 
+  /**
+   * Executes the operation: tryShowFallbackInstructions
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private tryShowFallbackInstructions(): void {
     if (this.visible || this.shouldSuppressBanner()) {
       return;
@@ -109,6 +145,11 @@ export class PwaInstallPromptComponent implements OnInit, OnDestroy {
     this.visible = true;
   }
 
+  /**
+   * Executes the operation: isInstalledPwa
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private isInstalledPwa(): boolean {
     const mq = window.matchMedia?.('(display-mode: standalone)');
     if (mq?.matches) {
@@ -118,6 +159,11 @@ export class PwaInstallPromptComponent implements OnInit, OnDestroy {
     return (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
   }
 
+  /**
+   * Executes the operation: isDismissedWithinCooldown
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private isDismissedWithinCooldown(): boolean {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {

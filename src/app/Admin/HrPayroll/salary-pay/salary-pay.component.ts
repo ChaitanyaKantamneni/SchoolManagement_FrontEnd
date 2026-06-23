@@ -14,6 +14,9 @@ import { LoaderService } from '../../../Services/loader.service';
   templateUrl: './salary-pay.component.html',
   styleUrl: './salary-pay.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for SalaryPayComponent.
+ */
 export class SalaryPayComponent implements OnInit {
   constructor(private apiurl: ApiServiceService, public loader: LoaderService) {}
 
@@ -68,6 +71,9 @@ export class SalaryPayComponent implements OnInit {
     return role === '1';
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.setTodayDate();
     this.selectedAcademicYearID = this.AdminSelectedActiveAcademicYearID;
@@ -85,11 +91,21 @@ export class SalaryPayComponent implements OnInit {
     }
   }
 
+  /**
+   * Executes the operation: setTodayDate
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   setTodayDate() {
   const today = new Date();
   this.todayDate = today.toISOString().split('T')[0];
 }
 
+  /**
+   * Executes the operation: FetchSchoolsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSchoolsList() {
     this.startLoading();
     this.apiurl
@@ -107,6 +123,11 @@ export class SalaryPayComponent implements OnInit {
       });
   }
 
+  /**
+   * Executes the operation: FetchAcademicYearsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchAcademicYearsList() {
     if (!this.selectedSchoolID) {
       this.academicYearList = [];
@@ -139,6 +160,11 @@ export class SalaryPayComponent implements OnInit {
       });
   }
 
+  /**
+   * Executes the operation: onAdminSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminSchoolChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     this.selectedSchoolID = target.value === '0' ? '' : target.value;
@@ -156,6 +182,11 @@ export class SalaryPayComponent implements OnInit {
     this.FetchPaymentModes();
   }
 
+  /**
+   * Executes the operation: onAcademicYearChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onAcademicYearChange(): void {
     this.selectedStaffID = '';
     this.form.paymentMode = '';
@@ -174,6 +205,11 @@ export class SalaryPayComponent implements OnInit {
     this.FetchPayrollHeadTypes();
   }
 
+  /**
+   * Executes the operation: onStaffChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onStaffChange(): void {
     this.form.paymentMode = '';
     this.form.startDate = '';
@@ -184,6 +220,11 @@ export class SalaryPayComponent implements OnInit {
     this.statusMessage = '';
   }
 
+  /**
+   * Executes the operation: onPaymentModeChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onPaymentModeChange(): void {
     this.form.startDate = '';
     this.form.endDate = '';
@@ -195,6 +236,11 @@ export class SalaryPayComponent implements OnInit {
     }
   }
 
+  /**
+   * Executes the operation: onStartDateChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onStartDateChange(): void {
     this.form.endDate = '';
     this.form.referenceNo = '';
@@ -203,12 +249,22 @@ export class SalaryPayComponent implements OnInit {
     this.statusMessage = '';
   }
 
+  /**
+   * Executes the operation: onEndDateChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onEndDateChange(): void {
     this.form.referenceNo = '';
     this.salaryDetails = null;
     this.statusMessage = '';
   }
 
+  /**
+   * Executes the operation: FetchStaffList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchStaffList() {
     if (!this.selectedSchoolID || !this.selectedAcademicYearID) {
       this.staffList = [];
@@ -241,6 +297,11 @@ export class SalaryPayComponent implements OnInit {
       });
   }
 
+  /**
+   * Executes the operation: FetchPaymentModes
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchPaymentModes(): void {
     if (!this.selectedSchoolID) {
       this.paymentModes = [];
@@ -274,6 +335,11 @@ export class SalaryPayComponent implements OnInit {
       });
   }
 
+  /**
+   * Executes the operation: FetchPayrollHeadTypes
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchPayrollHeadTypes(): void {
     if (!this.selectedSchoolID || !this.selectedAcademicYearID) {
       this.payrollHeadTypeById.clear();
@@ -319,6 +385,11 @@ export class SalaryPayComponent implements OnInit {
       });
   }
 
+  /**
+   * Executes the operation: getSalaryDetails
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getSalaryDetails(): void {
     this.formSubmitAttempted = true;
     if (!this.validateMandatoryFields()) {
@@ -391,6 +462,11 @@ export class SalaryPayComponent implements OnInit {
       });
   }
 
+  /**
+   * Executes the operation: paySalary
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   paySalary(): void {
     this.formSubmitAttempted = true;
     if (!this.validateMandatoryFields()) {
@@ -474,6 +550,11 @@ export class SalaryPayComponent implements OnInit {
       });
   }
 
+  /**
+   * Executes the operation: closeModal
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeModal(): void {
     this.isModalOpen = false;
   }
@@ -484,6 +565,11 @@ export class SalaryPayComponent implements OnInit {
     'Proc_Tbl_AdvanceSalary'
   ];
 
+  /**
+   * Executes the operation: fetchAdvanceSalaryForStaff
+   * Parameters: baseLines: Array<{ payHead: string; type: string; amount: number }>
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchAdvanceSalaryForStaff(baseLines: Array<{ payHead: string; type: string; amount: number }>): void {
     const payMonth = this.normalizeToMonthStart(this.form.startDate);
     if (!payMonth || !this.selectedStaffID || !this.selectedSchoolID) {
@@ -571,6 +657,11 @@ export class SalaryPayComponent implements OnInit {
     this.statusMessage = lines.length ? '' : 'No enabled pay heads found in salary settings.';
   }
 
+  /**
+   * Executes the operation: parsePayHeads
+   * Parameters: raw: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private parsePayHeads(raw: any): any[] {
     try {
       const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
@@ -580,6 +671,11 @@ export class SalaryPayComponent implements OnInit {
     }
   }
 
+  /**
+   * Executes the operation: pick
+   * Parameters: obj: any, keys: string[]
+   * Rationale: Standard operational controller for the active view.
+   */
   private pick(obj: any, keys: string[]): any {
     for (const key of keys) {
       if (obj && obj[key] !== undefined && obj[key] !== null) {
@@ -629,6 +725,11 @@ export class SalaryPayComponent implements OnInit {
     }
   }
 
+  /**
+   * Executes the operation: resolveNonAdminSchoolId
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private resolveNonAdminSchoolId(): string {
     return this.readStoredSchoolIdFromBrowserStorage() || this.tryReadSchoolIdFromAccessToken();
   }
@@ -638,6 +739,11 @@ export class SalaryPayComponent implements OnInit {
     return Number.isFinite(n) && n > 0 ? n : null;
   }
 
+  /**
+   * Executes the operation: getStaffDisplayName
+   * Parameters: item: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private getStaffDisplayName(item: any): string {
     const directName = `${this.pick(item, ['Name', 'name', 'StaffName', 'staffName']) || ''}`.trim();
     if (directName) {
@@ -649,6 +755,11 @@ export class SalaryPayComponent implements OnInit {
     return [first, middle, last].filter(Boolean).join(' ').trim();
   }
 
+  /**
+   * Executes the operation: extractApiMessage
+   * Parameters: response: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private extractApiMessage(response: any): string {
     const rootMessage = response?.Message || response?.message;
     if (rootMessage) {
@@ -664,11 +775,21 @@ export class SalaryPayComponent implements OnInit {
     return '';
   }
 
+  /**
+   * Executes the operation: isReferenceNoRequired
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   isReferenceNoRequired(): boolean {
     const mode = (this.form.paymentMode || '').trim().toLowerCase();
     return !!mode && mode !== 'cash';
   }
 
+  /**
+   * Executes the operation: validateMandatoryFields
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private validateMandatoryFields(): boolean {
     const schoolValid = !this.isAdmin || !!this.selectedSchoolID;
     const yearValid = !!this.selectedAcademicYearID;
@@ -693,6 +814,11 @@ export class SalaryPayComponent implements OnInit {
     return `${year}-${month}-01`;
   }
 
+  /**
+   * Executes the operation: resolveHeadType
+   * Parameters: payHeadRow: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private resolveHeadType(payHeadRow: any): string {
     const directType = `${payHeadRow?.HeadType || payHeadRow?.Type || ''}`.toLowerCase().trim();
     if (directType) {
@@ -709,6 +835,11 @@ export class SalaryPayComponent implements OnInit {
     return 'Addition';
   }
 
+  /**
+   * Executes the operation: startLoading
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private startLoading(): void {
     this.pendingRequests += 1;
     if (this.pendingRequests === 1) {
@@ -717,6 +848,11 @@ export class SalaryPayComponent implements OnInit {
     }
   }
 
+  /**
+   * Executes the operation: stopLoading
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private stopLoading(): void {
     if (this.pendingRequests > 0) {
       this.pendingRequests -= 1;

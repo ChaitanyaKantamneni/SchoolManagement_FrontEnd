@@ -6,6 +6,9 @@ import { HostelMaster, HostelMasterResponse } from './hostel-master.model';
 @Injectable({
   providedIn: 'root'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for HostelMasterService.
+ */
 export class HostelMasterService {
   private readonly endpoint = 'Tbl_HostelMaster_CRUD_Operations';
 

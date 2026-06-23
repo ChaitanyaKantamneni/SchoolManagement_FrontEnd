@@ -18,6 +18,9 @@ export interface UserRole {
 @Injectable({
   providedIn: 'root'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for RoleDetectionService.
+ */
 export class RoleDetectionService {
   private currentRoleSubject = new BehaviorSubject<UserRole | null>(null);
   public currentRole$ = this.currentRoleSubject.asObservable();

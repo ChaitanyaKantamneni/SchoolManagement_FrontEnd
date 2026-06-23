@@ -16,6 +16,9 @@ import { DashboardTopNavComponent } from '../../../SignInAndSignUp/dashboard-top
   templateUrl: './holiday-calender.component.html',
   styleUrl: './holiday-calender.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for HolidayCalenderComponent.
+ */
 export class HolidayCalenderComponent extends BasePermissionComponent implements OnInit {
   pageName = 'Holiday Calendar';
 
@@ -28,6 +31,9 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
     super(menuService, router);
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.checkViewPermission();
     this.fetchSchoolsList();
@@ -112,6 +118,11 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
     });
   }
 
+  /**
+   * Executes the operation: fetchAcademicYearsList
+   * Parameters: schoolID?: string
+   * Rationale: Standard operational controller for the active view.
+   */
   fetchAcademicYearsList(schoolID?: string) {
     const sid = schoolID || this.filterSchoolID || '';
     this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', { SchoolID: sid || null, Flag: '2' }).subscribe({
@@ -184,6 +195,11 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
     });
   }
 
+  /**
+   * Executes the operation: mapHolidays
+   * Parameters: res: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private mapHolidays(res: any) {
     this.holidayList = (res?.data || []).map((item: any) => ({
       ID:               item.id,
@@ -217,6 +233,11 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
     this.isFormOpen = true;
   }
 
+  /**
+   * Executes the operation: closeForm
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeForm() {
     this.isFormOpen = false;
     this.holidayForm.reset();
@@ -369,6 +390,11 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
   // ── Pagination ─────────────────────────────────────────────────────────────
   totalPages() { return Math.ceil(this.holidayCount / this.pageSize); }
 
+  /**
+   * Executes the operation: goToPage
+   * Parameters: page: number
+   * Rationale: Standard operational controller for the active view.
+   */
   goToPage(page: number) {
     const total = this.totalPages();
     if (page < 1) page = 1;
@@ -382,9 +408,24 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
     }
   }
 
+  /**
+   * Executes the operation: previousPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   previousPage() { if (this.currentPage > 1) this.goToPage(this.currentPage - 1); }
+  /**
+   * Executes the operation: nextPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   nextPage() { if (this.currentPage < this.totalPages()) this.goToPage(this.currentPage + 1); }
 
+  /**
+   * Executes the operation: getVisiblePageNumbers
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getVisiblePageNumbers() {
     const total = this.totalPages();
     let start = Math.max(this.currentPage - Math.floor(this.visiblePageCount / 2), 1);
@@ -395,14 +436,29 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
     return pages;
   }
 
+  /**
+   * Executes the operation: pageStartIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageStartIndex(): number {
     return this.holidayCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
   }
 
+  /**
+   * Executes the operation: pageEndIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageEndIndex(): number {
     return Math.min(this.currentPage * this.pageSize, this.holidayCount);
   }
 
+  /**
+   * Executes the operation: onRowsCountChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onRowsCountChange() {
     this.currentPage = 1;
     this.pageCursors = [];
@@ -442,6 +498,11 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
     this.fetchData();
   }
 
+  /**
+   * Executes the operation: onAcademicYearFilterChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAcademicYearFilterChange(event: Event) {
     const val = (event.target as HTMLSelectElement).value;
     this.filterAcademicYear = val === '0' ? '' : val;
@@ -450,6 +511,11 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
     this.fetchData();
   }
 
+  /**
+   * Executes the operation: onAdminSchoolFormChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminSchoolFormChange(event: Event) {
     const val = (event.target as HTMLSelectElement).value;
     this.holidayForm.get('AcademicYear')?.patchValue(sessionStorage.getItem('ActiveAcademicYearID') || '0');
@@ -462,6 +528,11 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
     else this.calendarMonth--;
   }
 
+  /**
+   * Executes the operation: nextMonth
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   nextMonth() {
     if (this.calendarMonth === 11) { this.calendarMonth = 0; this.calendarYear++; }
     else this.calendarMonth++;
@@ -476,6 +547,11 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
     return cells;
   }
 
+  /**
+   * Executes the operation: getHolidaysForDay
+   * Parameters: date: Date
+   * Rationale: Standard operational controller for the active view.
+   */
   getHolidaysForDay(date: Date): any[] {
     return this.holidayList.filter(h => {
       if (!h.FromDate || !h.ToDate) return false;
@@ -487,6 +563,11 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
     });
   }
 
+  /**
+   * Executes the operation: isToday
+   * Parameters: date: Date
+   * Rationale: Standard operational controller for the active view.
+   */
   isToday(date: Date): boolean {
     const t = new Date();
     return date.getDate() === t.getDate() &&
@@ -496,9 +577,24 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
 
   // ── Modals ─────────────────────────────────────────────────────────────────
   closeViewModal()   { this.isViewModalOpen = false; this.viewItem = null; }
+  /**
+   * Executes the operation: handleStatusOk
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   handleStatusOk()   { this.isStatusModalOpen = false; this.fetchData(); }
+  /**
+   * Executes the operation: closeStatusModal
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeStatusModal() { this.isStatusModalOpen = false; }
 
+  /**
+   * Executes the operation: toggleActive
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   toggleActive() { this.IsActiveStatus = !this.IsActiveStatus; }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
@@ -508,6 +604,11 @@ export class HolidayCalenderComponent extends BasePermissionComponent implements
     return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
   }
 
+  /**
+   * Executes the operation: formatDate
+   * Parameters: val: any
+   * Rationale: Standard operational controller for the active view.
+   */
   formatDate(val: any): string {
     if (!val) return '';
     const d = new Date(val);

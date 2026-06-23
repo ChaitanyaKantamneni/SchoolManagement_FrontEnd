@@ -4,6 +4,9 @@ import { BehaviorSubject } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for SideBarServiceService.
+ */
 export class SideBarServiceService {
   private _isExpanded = new BehaviorSubject<boolean>(
     sessionStorage.getItem('isExpanded') !== 'false'

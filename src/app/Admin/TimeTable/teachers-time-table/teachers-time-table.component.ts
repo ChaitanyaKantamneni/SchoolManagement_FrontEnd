@@ -20,6 +20,9 @@ import { HttpClient } from '@angular/common/http';
   templateUrl: './teachers-time-table.component.html',
   styleUrl: './teachers-time-table.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for TeachersTimeTableComponent.
+ */
 export class TeachersTimeTableComponent extends BasePermissionComponent {
   pageName = 'Teachers Time Table';
 
@@ -55,6 +58,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
     return this.resolvedStaffId || this.sessionApplicantId || this.ss('StaffID') || this.ss('UserID');
   }
 
+  /**
+   * Executes the operation: getCurrentSchoolId
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private getCurrentSchoolId(): string {
     return (
       this.AdminselectedSchoolID ||
@@ -99,6 +107,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Executes the operation: autoLoadTeacherTimetable
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   autoLoadTeacherTimetable() {
     this.AdminselectedSchoolID = this.getCurrentSchoolId();
     this.AdminselectedAcademivYearID = this.AdminSelectedActiveAcademicYearID || '';
@@ -115,6 +128,9 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       super(menuService, router);
     }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
     ngOnInit(): void {
       this.checkViewPermission();
       this.SchoolSelectionChange=false;
@@ -221,6 +237,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       Timetable: new FormArray([])
     });
   
+  /**
+   * Executes the operation: allowOnlyNumbers
+   * Parameters: event: KeyboardEvent
+   * Rationale: Standard operational controller for the active view.
+   */
     allowOnlyNumbers(event: KeyboardEvent) {
       if (
         event.key === 'Backspace' ||
@@ -237,6 +258,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       }
     }
   
+  /**
+   * Executes the operation: FetchSchoolsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     FetchSchoolsList() {
       const requestData = { Flag: '2' };
   
@@ -262,6 +288,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
         );
     };
   
+  /**
+   * Executes the operation: FetchAcademicYearsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     FetchAcademicYearsList() {
       const schoolId =
     this.SchoolSelectionChange
@@ -297,6 +328,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       return role === '1';
     } 
 
+  /**
+   * Executes the operation: FetchWorkingdaysList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     FetchWorkingdaysList() {
       const AcademicYearIdSelected =
     this.isAdmin
@@ -335,6 +371,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
         );
     };
 
+  /**
+   * Executes the operation: FetchSessionsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     FetchSessionsList() {
       const AcademicYearIdSelected =
     this.isAdmin
@@ -367,18 +408,33 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
         );
     };
   
+  /**
+   * Executes the operation: formatDateYYYYMMDD
+   * Parameters: dateStr: string | null
+   * Rationale: Standard operational controller for the active view.
+   */
     formatDateYYYYMMDD(dateStr: string | null) {
       if (!dateStr) return '';
       const d = new Date(dateStr);
       return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
     };
   
+  /**
+   * Executes the operation: formatDateDDMMYYYY
+   * Parameters: dateStr: string | null
+   * Rationale: Standard operational controller for the active view.
+   */
     formatDateDDMMYYYY(dateStr: string | null) {
       if (!dateStr) return '';
       const d = new Date(dateStr);
       return `${d.getDate().toString().padStart(2,'0')}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getFullYear()}`;
     };
   
+  /**
+   * Executes the operation: closeModal
+   * Parameters: type: 'view' | 'status'
+   * Rationale: Standard operational controller for the active view.
+   */
     closeModal(type: 'view' | 'status') {
       console.log('type',type);
       if (type === 'view') {
@@ -391,6 +447,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       }
     };
 
+  /**
+   * Executes the operation: handleOk
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     handleOk() {
       if(this.AminityInsStatus=="TimeTable already exists for this Class & Division" || this.AminityInsStatus=="Staff already allocated for this time slot"){
         this.isModalOpen = false;
@@ -427,10 +488,20 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       }            
     };
   
+  /**
+   * Executes the operation: toggleChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     toggleChange(){
       this.IsActiveStatus = !this.IsActiveStatus;
     };
   
+  /**
+   * Executes the operation: sort
+   * Parameters: column: string
+   * Rationale: Standard operational controller for the active view.
+   */
     sort(column: string) {
       if (this.sortColumn === column) {
         this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -443,6 +514,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       this.FetchInitialData();
     };
   
+  /**
+   * Executes the operation: onSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
     onSchoolChange(event: Event) {
       const target = event.target as HTMLSelectElement;
       const schoolID = target.value;
@@ -455,6 +531,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       this.FetchInitialData();
     };
 
+  /**
+   * Executes the operation: onAdminSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
     onAdminSchoolChange(event: Event) {
       this.academicYearList=[];
       this.SyllabusList = [];
@@ -471,6 +552,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       this.FetchAcademicYearsList();
     };
   
+  /**
+   * Executes the operation: onAdminAcademicYearChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
     onAdminAcademicYearChange(event: Event) {
       this.StaffList=[];     
       this.Workingdays=[];  
@@ -487,6 +573,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       this.FetchWorkingdaysList();     
     };
 
+  /**
+   * Executes the operation: onAdminWorkingDayChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
     onAdminWorkingDayChange(event: Event) { 
       this.TimeSlotList=[];
       this.ClassDivisionForm.get('TimeSlot').patchValue('0');
@@ -500,6 +591,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       this.FetchTimeSlotsBySchoolAcademicYearList();  
     };
 
+  /**
+   * Executes the operation: FetchStaffBySchoolAcademicYearList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     FetchStaffBySchoolAcademicYearList() {
       const AcademicYearIdSelected =
     this.isAdmin
@@ -536,6 +632,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
         );
     }
 
+  /**
+   * Executes the operation: FetchTimeSlotsBySchoolAcademicYearList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     FetchTimeSlotsBySchoolAcademicYearList() {
       const AcademicYearIdSelected =
     this.isAdmin
@@ -571,6 +672,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
         );
     }    
   
+  /**
+   * Executes the operation: onAdminClassChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
     onAdminClassChange(event: Event) { 
       const target = event.target as HTMLSelectElement;
       const schoolID = target.value;
@@ -581,6 +687,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       }      
     };
 
+  /**
+   * Executes the operation: onAdminTimeSlotChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
     onAdminTimeSlotChange(event: Event) { 
       const target = event.target as HTMLSelectElement;
       const value = target.value;
@@ -597,6 +708,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       this.selectedEndTime = parts[1];
     };
 
+  /**
+   * Executes the operation: FetchFreeStaff
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     FetchFreeStaff() {
       const AcademicYearIdSelected =
     this.isAdmin
@@ -638,6 +754,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       [dayID: string]: any[]
     } = {};
 
+  /**
+   * Executes the operation: generateTimetable
+   * Parameters: periodCount: number
+   * Rationale: Standard operational controller for the active view.
+   */
     generateTimetable(periodCount: number) {
 
       const timetableArray = this.ClassDivisionForm.get('Timetable') as FormArray;
@@ -675,10 +796,20 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       return this.ClassDivisionForm.get('Timetable') as FormArray;
     }
 
+  /**
+   * Executes the operation: getPeriods
+   * Parameters: index: number
+   * Rationale: Standard operational controller for the active view.
+   */
     getPeriods(index: number): FormArray {
       return this.timetableArray.at(index).get('Periods') as FormArray;
     }
 
+  /**
+   * Executes the operation: SubmitFilterList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     SubmitFilterList(){
       this.IsFliterClicked=false;
       if(this.AdminselectedClassID && this.AdminselectedClassID!="1" && !this.selectedStartTime && !this.selectedEndTime){
@@ -763,10 +894,20 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       }
     }
 
+  /**
+   * Executes the operation: viewReview
+   * Parameters: ID: string
+   * Rationale: Standard operational controller for the active view.
+   */
     viewReview(ID: string): void {
       this.FetchInitialData({ ID });
     }
 
+  /**
+   * Executes the operation: FetchAcademicYearCount
+   * Parameters: isSearch: boolean
+   * Rationale: Standard operational controller for the active view.
+   */
     FetchAcademicYearCount(isSearch: boolean) {
       let SchoolIdSelected = '';
   
@@ -781,6 +922,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       });
     }
   
+  /**
+   * Executes the operation: FetchInitialData
+   * Parameters: extra: any = {}
+   * Rationale: Standard operational controller for the active view.
+   */
     FetchInitialData(extra: any = {}) {
       const isSearch = !!this.searchQuery?.trim();
       const flag = isSearch ? '7' : '9';
@@ -849,6 +995,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       });
     };
   
+  /**
+   * Executes the operation: mapAcademicYears
+   * Parameters: response: any
+   * Rationale: Standard operational controller for the active view.
+   */
     mapAcademicYears(response: any) {
       const data = response?.data || [];
 
@@ -865,6 +1016,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       console.log('this.StudentsList',this.StudentsList);
     };
 
+  /**
+   * Executes the operation: FetchStaffInitialData
+   * Parameters: extra: any = {}
+   * Rationale: Standard operational controller for the active view.
+   */
     FetchStaffInitialData(extra: any = {}) {
       const isSearch = !!this.searchQuery?.trim();
       const flag = isSearch ? '7' : '12';
@@ -936,6 +1092,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       });
     };
   
+  /**
+   * Executes the operation: mapStaffAcademicYears
+   * Parameters: response: any
+   * Rationale: Standard operational controller for the active view.
+   */
     mapStaffAcademicYears(response: any) {
       const data = response?.data || [];
 
@@ -952,6 +1113,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       console.log('this.StudentsList',this.StudentsList);
     };
 
+  /**
+   * Executes the operation: generatePeriodHeaders
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     generatePeriodHeaders() {
       const timetableArray = this.timetableArray;
 
@@ -993,6 +1159,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       }
     };
 
+  /**
+   * Executes the operation: buildStaffTimetable
+   * Parameters: details: any[]
+   * Rationale: Standard operational controller for the active view.
+   */
     buildStaffTimetable(details: any[]) {
       const timetableArray = this.timetableArray;
       timetableArray.clear();
@@ -1053,6 +1224,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       });
     }
   
+  /**
+   * Executes the operation: FetchTimeTableByID
+   * Parameters: id: string, mode: 'view' | 'edit'
+   * Rationale: Standard operational controller for the active view.
+   */
     FetchTimeTableByID(id: string, mode: 'view' | 'edit') {
       const payload = {
         ID: id,
@@ -1109,6 +1285,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
         });
     }
 
+  /**
+   * Executes the operation: loadAllDropdowns
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     loadAllDropdowns(): Promise<void> {
       return new Promise((resolve) => {
 
@@ -1135,6 +1316,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       });
     }
 
+  /**
+   * Executes the operation: buildTimetableFromDetails
+   * Parameters: details: any[]
+   * Rationale: Standard operational controller for the active view.
+   */
     buildTimetableFromDetails(details: any[]) {
       const timetableArray = this.timetableArray;
       timetableArray.clear();
@@ -1232,6 +1418,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       });
     }
 
+  /**
+   * Executes the operation: getDayNameFromID
+   * Parameters: dayID: string
+   * Rationale: Standard operational controller for the active view.
+   */
     getDayNameFromID(dayID: string): string {
       const map: any = {
         "1": "Monday",
@@ -1245,6 +1436,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       return map[dayID] || dayID;
     }
 
+  /**
+   * Executes the operation: FetchStaffList
+   * Parameters: subjectID: string, classID: string
+   * Rationale: Standard operational controller for the active view.
+   */
     FetchStaffList(subjectID: string, classID: string) {
 
       const requestData = { 
@@ -1262,6 +1458,11 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
 
     
 
+  /**
+   * Executes the operation: getPeriodsControls
+   * Parameters: dayGroup: any
+   * Rationale: Standard operational controller for the active view.
+   */
     getPeriodsControls(dayGroup: any): FormGroup[] {
       const periods = dayGroup.get('Periods') as FormArray;
       return periods ? periods.controls as FormGroup[] : [];
@@ -1323,16 +1524,31 @@ export class TeachersTimeTableComponent extends BasePermissionComponent {
       return staff ? staff.name : null;
     }
 
+  /**
+   * Executes the operation: getClassName
+   * Parameters: classID: string
+   * Rationale: Standard operational controller for the active view.
+   */
     getClassName(classID: string): string {
       const cls = this.SyllabusList?.find(x => x.ID == classID);
       return cls ? cls.Name : '';
     }
 
+  /**
+   * Executes the operation: getDivisionName
+   * Parameters: divisionID: string
+   * Rationale: Standard operational controller for the active view.
+   */
     getDivisionName(divisionID: string): string {
       const div = this.DivisionsList?.find(x => x.ID == divisionID);
       return div ? div.Name : '';
     }
 
+  /**
+   * Executes the operation: printTimetable
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     printTimetable() {
       const printContents = document.getElementById('printTimetable')?.innerHTML;
 

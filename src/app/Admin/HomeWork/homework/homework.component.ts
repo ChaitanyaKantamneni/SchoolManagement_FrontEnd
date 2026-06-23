@@ -19,6 +19,9 @@ import { FileService } from '../../../Services/file.service';
   templateUrl: './homework.component.html',
   styleUrl: './homework.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for HomeworkComponent.
+ */
 export class HomeworkComponent extends BasePermissionComponent {
   pageName = 'HomeWork';
 
@@ -185,6 +188,9 @@ export class HomeworkComponent extends BasePermissionComponent {
   selectedSchoolAdminStudentId: string = '';
 
   // ── Lifecycle Methods ───────────────────────────────────────────────────────
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     console.log('[HOMEWORK] ngOnInit - Initializing role-based UI');
     this.AdminselectedAcademivYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
@@ -411,6 +417,11 @@ export class HomeworkComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Executes the operation: FetchHomeworkCount
+   * Parameters: isSearch: boolean
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchHomeworkCount(isSearch: boolean) {
     let SchoolIdSelected = '';
 
@@ -433,6 +444,11 @@ export class HomeworkComponent extends BasePermissionComponent {
     return this.apiurl.post<any>('Tbl_Homework_CRUD_Operations', countPayload);
   }
 
+  /**
+   * Executes the operation: mapHomeworkData
+   * Parameters: response: any
+   * Rationale: Standard operational controller for the active view.
+   */
   mapHomeworkData(response: any) {
     this.homeworkList = (response.data || []).map((item: any) => ({
       id: parseInt(item.id), // Convert to number for consistent matching with submissions
@@ -455,6 +471,11 @@ export class HomeworkComponent extends BasePermissionComponent {
     }));
   }
 
+  /**
+   * Executes the operation: FetchSchoolsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSchoolsList() {
     const requestData = { Flag: '2' };
 
@@ -480,6 +501,11 @@ export class HomeworkComponent extends BasePermissionComponent {
       );
   }
 
+  /**
+   * Executes the operation: FetchAcademicYearsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchAcademicYearsList() {
     const requestData = { SchoolID: this.AdminselectedSchoolID || '', Flag: '2' };
 
@@ -528,6 +554,11 @@ if (this.currentRoleUI !== 'admin') {
       );
   }
 
+  /**
+   * Executes the operation: FetchClassList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchClassList() {
     const AcademicYearIdSelected =
       this.isAdmin
@@ -562,6 +593,11 @@ if (this.currentRoleUI !== 'admin') {
       );
   }
 
+  /**
+   * Executes the operation: FetchSubjectsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSubjectsList() {
     const AcademicYearIdSelected =
       this.isAdmin
@@ -597,6 +633,11 @@ if (this.currentRoleUI !== 'admin') {
       );
   }
 
+  /**
+   * Executes the operation: FetchHomeworkList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchHomeworkList(): void {
     this.isLoading = true;
     this.loader.show();
@@ -775,6 +816,11 @@ if (this.currentRoleUI === 'admin') {
     return this.totalPagesCount;
   }
 
+  /**
+   * Executes the operation: getVisiblePageNumbers
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getVisiblePageNumbers(): number[] {
     const total = this.totalPages();
     const pages: number[] = [];
@@ -785,18 +831,33 @@ if (this.currentRoleUI === 'admin') {
     return pages;
   }
 
+  /**
+   * Executes the operation: previousPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   previousPage(): void {
     if (this.currentPage > 1) {
       this.goToPage(this.currentPage - 1);
     }
   }
 
+  /**
+   * Executes the operation: nextPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   nextPage(): void {
     if (this.currentPage < this.totalPages()) {
       this.goToPage(this.currentPage + 1);
     }
   }
 
+  /**
+   * Executes the operation: goToPage
+   * Parameters: page: number
+   * Rationale: Standard operational controller for the active view.
+   */
   goToPage(page: number): void {
     const total = this.totalPages();
     if (page < 1) page = 1;
@@ -823,6 +884,11 @@ if (this.currentRoleUI === 'admin') {
     }
   }
 
+  /**
+   * Executes the operation: handleOk
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   handleOk(): void {
     this.isModalOpen = false;
   }
@@ -1026,11 +1092,21 @@ if (this.currentRoleUI === 'admin') {
     }
   }
 
+  /**
+   * Executes the operation: closeSubmissionModal
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeSubmissionModal(): void {
     this.isSubmissionModalOpen = false;
     this.submissionForm.reset();
   }
 
+  /**
+   * Executes the operation: openSubmissionModal
+   * Parameters: homeworkId?: number
+   * Rationale: Standard operational controller for the active view.
+   */
   openSubmissionModal(homeworkId?: number): void {
     if (homeworkId) {
       this.submissionForm.patchValue({ HomeworkID: homeworkId });
@@ -1038,6 +1114,11 @@ if (this.currentRoleUI === 'admin') {
     this.isSubmissionModalOpen = true;
   }
 
+  /**
+   * Executes the operation: submitHomework
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   submitHomework(): void {
     if (this.submissionForm.invalid) {
       this.submissionForm.markAllAsTouched();
@@ -1078,6 +1159,11 @@ if (this.currentRoleUI === 'admin') {
     });
   }
 
+  /**
+   * Executes the operation: fetchHomeworkSubmissions
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   fetchHomeworkSubmissions(): void {
     const AcademicYearIdSelected =
       this.isAdmin
@@ -1195,6 +1281,11 @@ if (this.currentRoleUI === 'admin') {
 
   // ── Event Handlers ───────────────────────────────────────────────────────────────
 
+  /**
+   * Executes the operation: onSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onSchoolChange(event: Event) {
     this.selectedSchoolID = (event.target as HTMLSelectElement).value;
     this.SchoolSelectionChange = true;
@@ -1203,6 +1294,11 @@ if (this.currentRoleUI === 'admin') {
   }
 
 
+  /**
+   * Executes the operation: onSubjectChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onSubjectChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
     const subjectID = target.value;
@@ -1296,6 +1392,11 @@ if (this.currentRoleUI === 'admin') {
     });
   }
 
+  /**
+   * Executes the operation: selectChild
+   * Parameters: index: number
+   * Rationale: Standard operational controller for the active view.
+   */
   selectChild(index: number): void {
     this.selectedChildIndex = index;
     const child = this.parentChildren[index];
@@ -1328,6 +1429,11 @@ if (this.currentRoleUI === 'admin') {
     // Hide loader when all calls complete (handled by individual methods)
   }
 
+  /**
+   * Executes the operation: onChildChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onChildChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
     const childId = target.value;
@@ -1354,6 +1460,11 @@ if (this.currentRoleUI === 'admin') {
   }
 
   
+  /**
+   * Executes the operation: FetchDivisionsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchDivisionsList() {
     const AcademicYearIdSelected =
       this.isAdmin
@@ -1402,6 +1513,11 @@ if (this.currentRoleUI === 'admin') {
     return this.getIntValue(value);
   }
 
+  /**
+   * Executes the operation: resolveStaffIdentity
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private resolveStaffIdentity(): void {
     const schoolId = this.resolvedSchoolId;
     const email = (this.ss('email') || this.ss('Email') || '').toString().trim().toLowerCase();
@@ -2290,6 +2406,11 @@ if (this.currentRoleUI === 'admin') {
       }
     });
   }
+  /**
+   * Executes the operation: onAcademicYearChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
     onAcademicYearChange(event: Event): void {
   const value = (event.target as HTMLSelectElement).value;
 
@@ -2332,6 +2453,11 @@ if (this.currentRoleUI === 'admin') {
   }
 }
 
+  /**
+   * Executes the operation: fetchTeacherStudents
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   fetchTeacherStudents(): void {
     if (this.currentRoleUI !== 'teacher' || !this.AdminselectedAcademivYearID) return;
     
@@ -2378,6 +2504,11 @@ if (this.currentRoleUI === 'admin') {
     });
   }
 
+  /**
+   * Executes the operation: onTeacherStudentChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onTeacherStudentChange(event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
     this.selectedChildId = value;
@@ -2401,6 +2532,11 @@ if (this.currentRoleUI === 'admin') {
 
   // ── School Admin Specific Methods ────────────────────────────────────────────────────
 
+  /**
+   * Executes the operation: fetchSchoolAdminStudents
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   fetchSchoolAdminStudents(): void {
     // Allow both school_admin and admin (superadmin) roles
     if (!(this.currentRoleUI === 'school_admin' || this.currentRoleUI === 'admin') || !this.AdminselectedAcademivYearID) return;
@@ -2441,6 +2577,11 @@ if (this.currentRoleUI === 'admin') {
     });
   }
 
+  /**
+   * Executes the operation: onSchoolAdminStudentChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onSchoolAdminStudentChange(event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
     this.selectedSchoolAdminStudentId = value;

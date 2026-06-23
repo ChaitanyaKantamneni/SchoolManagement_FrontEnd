@@ -16,6 +16,9 @@ import { HttpClient } from '@angular/common/http';
   templateUrl: './setexam.component.html',
   styleUrl: './setexam.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for SetexamComponent.
+ */
 export class SetexamComponent extends BasePermissionComponent{
    pageName = 'Set Exam';
 
@@ -29,6 +32,9 @@ export class SetexamComponent extends BasePermissionComponent{
     super(menuService, router);
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     const now = new Date();
     now.setSeconds(0, 0); // remove seconds & milliseconds
@@ -48,10 +54,20 @@ export class SetexamComponent extends BasePermissionComponent{
     
   };
 
+  /**
+   * Executes the operation: testClick
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   public testClick(): void {
     console.log("Test button clicked");
   }
 
+  /**
+   * Executes the operation: allowOnlyNumbers
+   * Parameters: event: KeyboardEvent
+   * Rationale: Standard operational controller for the active view.
+   */
   allowOnlyNumbers(event: KeyboardEvent) {
     if (
       event.key === 'Backspace' ||
@@ -137,6 +153,11 @@ export class SetexamComponent extends BasePermissionComponent{
     AcademicYear: new FormControl(0,[Validators.required,Validators.min(1)])
   });
 
+  /**
+   * Executes the operation: noPastDateTimeValidator
+   * Parameters: control: any
+   * Rationale: Standard operational controller for the active view.
+   */
   noPastDateTimeValidator(control: any) {
     if (!control.value) return null;
 
@@ -156,6 +177,11 @@ export class SetexamComponent extends BasePermissionComponent{
   subjectDropdownOpen = false;
   selectedSubjects: string[] = [];
 
+  /**
+   * Executes the operation: toggleSubjectSelection
+   * Parameters: value: string
+   * Rationale: Standard operational controller for the active view.
+   */
   toggleSubjectSelection(value: string) {
     const index = this.selectedSubjects.indexOf(value);
 
@@ -169,6 +195,11 @@ export class SetexamComponent extends BasePermissionComponent{
     //  this.onAdminClasschange();
   }
   
+  /**
+   * Executes the operation: FetchSchoolsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSchoolsList() {
     const requestData = { Flag: '2' };
 
@@ -194,6 +225,11 @@ export class SetexamComponent extends BasePermissionComponent{
       );
   };
 
+  /**
+   * Executes the operation: FetchAcademicYearsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchAcademicYearsList() {
     const schoolId =
     this.SchoolSelectionChange
@@ -232,6 +268,11 @@ export class SetexamComponent extends BasePermissionComponent{
     return role === '1';
   }
 
+  /**
+   * Executes the operation: FetchAcademicYearCount
+   * Parameters: isSearch: boolean
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchAcademicYearCount(isSearch: boolean) {
     let SchoolIdSelected = '';
     let AcademicYearIdSelected='';
@@ -266,6 +307,11 @@ export class SetexamComponent extends BasePermissionComponent{
     return this.apiurl.post<any>('Tbl_SetExam_CRUD_Operations', payload);
   }
 
+  /**
+   * Executes the operation: FetchInitialData
+   * Parameters: extra: any = {}
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchInitialData(extra: any = {}) {
     const isSearch = !!this.searchQuery?.trim();
     const flag = isSearch ? '7' : '2';
@@ -348,6 +394,11 @@ export class SetexamComponent extends BasePermissionComponent{
     });
   };
 
+  /**
+   * Executes the operation: mapAcademicYears
+   * Parameters: response: any
+   * Rationale: Standard operational controller for the active view.
+   */
   mapAcademicYears(response: any) {
     this.SyllabusList = (response.data || []).map((item: any) => {
       
@@ -391,6 +442,9 @@ export class SetexamComponent extends BasePermissionComponent{
     });
   }
 
+  /**
+   * Handles form submission: Validates input fields and transmits data payloads.
+   */
   onSubmit() {
     if (this.SyllabusForm.invalid) {
       this.SyllabusForm.markAllAsTouched();
@@ -399,6 +453,11 @@ export class SetexamComponent extends BasePermissionComponent{
     this.GenerateModalTable();
   }
 
+  /**
+   * Executes the operation: AddNewClicked
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   AddNewClicked() {
     this.classLists=[];
     this.examLists=[];
@@ -427,6 +486,11 @@ export class SetexamComponent extends BasePermissionComponent{
     this.isTableModalOpen = false;
   };
 
+  /**
+   * Executes the operation: FetchExamsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchExamsList() {
     const AcademicYearIdSelected =
     this.isAdmin
@@ -487,6 +551,11 @@ export class SetexamComponent extends BasePermissionComponent{
       );
   }
 
+  /**
+   * Executes the operation: listenExamTypeChanges
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   listenExamTypeChanges() {
     this.SyllabusForm.get('ExamType')?.valueChanges.subscribe((value: any) => {
 
@@ -517,6 +586,11 @@ export class SetexamComponent extends BasePermissionComponent{
 
   }
 
+  /**
+   * Executes the operation: FetchClassList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchClassList() {
     const AcademicYearIdSelected =
     this.isAdmin
@@ -569,6 +643,11 @@ export class SetexamComponent extends BasePermissionComponent{
       );
   }
 
+  /**
+   * Executes the operation: FetchSubjectsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSubjectsList() {
     const AcademicYearIdSelected =
     this.isAdmin
@@ -621,6 +700,11 @@ export class SetexamComponent extends BasePermissionComponent{
       );
   }
 
+  /**
+   * Executes the operation: FetchDivisionsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchDivisionsList() {
     const AcademicYearIdSelected =
     this.isAdmin
@@ -673,6 +757,11 @@ export class SetexamComponent extends BasePermissionComponent{
       );
   }
 
+  /**
+   * Executes the operation: SubmitSyllabus
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   SubmitSyllabus() {
     if (this.SyllabusForm.invalid) {
       this.SyllabusForm.markAllAsTouched();
@@ -726,6 +815,11 @@ export class SetexamComponent extends BasePermissionComponent{
     });
   };
 
+  /**
+   * Executes the operation: FetchSyllabusDetByID
+   * Parameters: SyllabusID: string, mode: 'view' | 'edit'
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSyllabusDetByID(SyllabusID: string, mode: 'view' | 'edit') {
     const data = {
       ID: SyllabusID,
@@ -912,6 +1006,11 @@ export class SetexamComponent extends BasePermissionComponent{
     );
   };
 
+  /**
+   * Executes the operation: getClassNames
+   * Parameters: classIds: string
+   * Rationale: Standard operational controller for the active view.
+   */
   getClassNames(classIds: string): string {
     if (!classIds || classIds.trim() === '') return 'N/A';
     
@@ -929,6 +1028,11 @@ export class SetexamComponent extends BasePermissionComponent{
   };
 
 isInsertMode = true;
+  /**
+   * Executes the operation: UpdateSyllabus
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
 UpdateSyllabus() {
 this.isInsertMode = false;
     if (this.SyllabusForm.invalid) {
@@ -1048,26 +1152,51 @@ this.isInsertMode = false;
     }
   };
 
+  /**
+   * Executes the operation: previousPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   previousPage() {
     if (this.currentPage > 1) {
       this.goToPage(this.currentPage - 1);
     }
   };
 
+  /**
+   * Executes the operation: nextPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   nextPage() {
     if (this.currentPage < this.totalPages()) {
       this.goToPage(this.currentPage + 1);
     }
   };
 
+  /**
+   * Executes the operation: firstPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   firstPage() {
     this.goToPage(1);
   };
 
+  /**
+   * Executes the operation: lastPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   lastPage() {
     this.goToPage(this.totalPages());
   };
 
+  /**
+   * Executes the operation: goToPage
+   * Parameters: pageNumber: number
+   * Rationale: Standard operational controller for the active view.
+   */
   goToPage(pageNumber: number) {
     const total = this.totalPages();
 
@@ -1089,10 +1218,20 @@ this.isInsertMode = false;
     }
   };
 
+  /**
+   * Executes the operation: totalPages
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   totalPages() {
     return Math.ceil(this.SyllabusCount / this.pageSize);
   };
 
+  /**
+   * Executes the operation: getVisiblePageNumbers
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getVisiblePageNumbers() {
     const totalPages = this.totalPages();
     const pages = [];
@@ -1103,6 +1242,11 @@ this.isInsertMode = false;
     return pages;
   };
 
+  /**
+   * Executes the operation: onSearchChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onSearchChange() {
     clearTimeout(this.searchTimer);
 
@@ -1129,6 +1273,11 @@ this.isInsertMode = false;
     }, this.SEARCH_DEBOUNCE);
   };
 
+  /**
+   * Executes the operation: closeModal
+   * Parameters: type: 'view' | 'status'| 'table'
+   * Rationale: Standard operational controller for the active view.
+   */
   closeModal(type: 'view' | 'status'| 'table') {
     if (type === 'view') {
     this.isViewModalOpen = false;
@@ -1143,6 +1292,11 @@ this.isInsertMode = false;
   }
   }
 
+  /**
+   * Executes the operation: handleOk
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   handleOk() {
     this.isStatusModalOpen = false;
     // Refresh list only when NOT in Add mode
@@ -1151,16 +1305,31 @@ this.isInsertMode = false;
   }
   };
 
+  /**
+   * Executes the operation: editreview
+   * Parameters: SyllabusID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   editreview(SyllabusID: string): void {
     this.editclicked = true;
     this.FetchSyllabusDetByID(SyllabusID, 'edit');
     this.ViewSyllabusClicked = true;
   };
 
+  /**
+   * Executes the operation: toggleChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   toggleChange() {
     this.IsActiveStatus = !this.IsActiveStatus;
   };
 
+  /**
+   * Executes the operation: sort
+   * Parameters: column: string
+   * Rationale: Standard operational controller for the active view.
+   */
   sort(column: string) {
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -1173,6 +1342,11 @@ this.isInsertMode = false;
     this.FetchInitialData();
   };
 
+  /**
+   * Executes the operation: onSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onSchoolChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     const schoolID = target.value;
@@ -1186,6 +1360,11 @@ this.isInsertMode = false;
     this.FetchInitialData();
   };
 
+  /**
+   * Executes the operation: onAcademicYearChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAcademicYearChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     const schoolID = target.value;
@@ -1198,6 +1377,11 @@ this.isInsertMode = false;
     this.FetchInitialData();
   };
 
+  /**
+   * Executes the operation: parseDurationToMinutes
+   * Parameters: duration: string
+   * Rationale: Standard operational controller for the active view.
+   */
   parseDurationToMinutes(duration: string): number {
     if (!duration) return 0;
     
@@ -1279,6 +1463,11 @@ this.isInsertMode = false;
     return { hasConflict: false, message: '' };
   }
 
+  /**
+   * Executes the operation: getConflictType
+   * Parameters: schedule1: any, schedule2: any, durationInMinutes: number, bufferTime: number
+   * Rationale: Standard operational controller for the active view.
+   */
   getConflictType(schedule1: any, schedule2: any, durationInMinutes: number, bufferTime: number): string {
     const divisionName = this.getDivisionNameById(schedule1.divisionId);
     const subject1Time = this.formatExamDateTimeForMessage(schedule1.examStart);
@@ -1287,6 +1476,11 @@ this.isInsertMode = false;
     return `Time conflict for Division ${divisionName}: "${schedule1.subjectName}" at ${subject1Time} conflicts with "${schedule2.subjectName}" at ${subject2Time}. Required gap is ${durationInMinutes} minutes.`;
   }
 
+  /**
+   * Executes the operation: exportSyllabus
+   * Parameters: type: 'pdf' | 'excel' | 'print'
+   * Rationale: Standard operational controller for the active view.
+   */
   exportSyllabus(type: 'pdf' | 'excel' | 'print') {
     const isSearch = !!this.searchQuery?.trim();
     const flag = isSearch ? '7' : '2';
@@ -1337,11 +1531,21 @@ this.isInsertMode = false;
     });
   };
 
+  /**
+   * Executes the operation: viewReview
+   * Parameters: SyllabusID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   viewReview(SyllabusID: string): void {
     this.FetchSyllabusDetByID(SyllabusID, 'view');
     this.isViewModalOpen = true;
   };
 
+  /**
+   * Executes the operation: onAdminSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminSchoolChange(event: Event) {
     this.academicYearList=[];
     this.examLists =[];
@@ -1363,6 +1567,11 @@ this.isInsertMode = false;
     this.FetchAcademicYearsList();
   };
 
+  /**
+   * Executes the operation: onAdminAcademicYearchange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminAcademicYearchange(event: Event){
     this.examLists =[];
     
@@ -1385,6 +1594,11 @@ this.isInsertMode = false;
     this.FetchClassList();
   };
 
+  /**
+   * Executes the operation: onAdminClasschange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminClasschange(event: Event){
     this.subjectsLists =[];
     this.divisionsList =[];
@@ -1412,6 +1626,11 @@ this.isInsertMode = false;
   tableRows: any[] = []; // Each object = 1 subject row
   timeConflictWarning: string = ''; // Real-time conflict warning message
 
+  /**
+   * Executes the operation: getDivisionNameById
+   * Parameters: divisionId: string
+   * Rationale: Standard operational controller for the active view.
+   */
   getDivisionNameById(divisionId: string): string {
     const division = this.divisionsList.find(
       item => String(item.ID) === String(divisionId)
@@ -1420,6 +1639,11 @@ this.isInsertMode = false;
     return division?.Name || `Division ${divisionId}`;
   }
 
+  /**
+   * Executes the operation: formatExamDateTimeForMessage
+   * Parameters: dateValue: string
+   * Rationale: Standard operational controller for the active view.
+   */
   formatExamDateTimeForMessage(dateValue: string): string {
     if (!dateValue) {
       return '';
@@ -1435,6 +1659,11 @@ this.isInsertMode = false;
     });
   }
 
+  /**
+   * Executes the operation: updateTimeConflictWarning
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   updateTimeConflictWarning() {
     this.timeConflictWarning = '';
 
@@ -1451,6 +1680,11 @@ this.isInsertMode = false;
     }
   }
 
+  /**
+   * Executes the operation: GenerateModalTable
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   GenerateModalTable() {
     if (this.SyllabusForm.invalid) {
       this.SyllabusForm.markAllAsTouched();
@@ -1481,6 +1715,11 @@ this.isInsertMode = false;
     this.updateTimeConflictWarning();
   }
 
+  /**
+   * Executes the operation: onSubjectToggle
+   * Parameters: index: number
+   * Rationale: Standard operational controller for the active view.
+   */
   onSubjectToggle(index: number) {
     const row = this.tableRows[index];
     if (!row.isActive) {
@@ -1495,6 +1734,11 @@ this.isInsertMode = false;
   //   });
   // }
 
+  /**
+   * Executes the operation: toggleDivisionSelection
+   * Parameters: rowIndex: number, divisionID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   toggleDivisionSelection(rowIndex: number, divisionID: string) {
     const row = this.tableRows[rowIndex];
     const index = row.selectedDivisions.indexOf(divisionID);
@@ -1508,6 +1752,11 @@ this.isInsertMode = false;
     this.updateTimeConflictWarning();
   }
 
+  /**
+   * Executes the operation: getDurationDisplay
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getDurationDisplay(): string {
     const durationValue = this.SyllabusForm.get('Duration')?.value || '';
     const durationInMinutes = this.parseDurationToMinutes(durationValue);
@@ -1523,6 +1772,11 @@ this.isInsertMode = false;
     }
   }
 
+  /**
+   * Executes the operation: getTotalTimeDisplay
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getTotalTimeDisplay(): string {
     const durationValue = this.SyllabusForm.get('Duration')?.value || '';
     const durationInMinutes = this.parseDurationToMinutes(durationValue);
@@ -1539,10 +1793,20 @@ this.isInsertMode = false;
     }
   }
 
+  /**
+   * Executes the operation: onExamDateTimeChange
+   * Parameters: rowIndex: number
+   * Rationale: Standard operational controller for the active view.
+   */
   onExamDateTimeChange(rowIndex: number) {
     this.updateTimeConflictWarning();
   }
 
+  /**
+   * Executes the operation: saveExam
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   saveExam() {
     if (!this.tableRows || this.tableRows.length === 0) {
       this.AminityInsStatus = "No data to save.";
@@ -1688,14 +1952,29 @@ this.isInsertMode = false;
     });
   }
 
+  /**
+   * Executes the operation: pageStartIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageStartIndex(): number {
     return this.SyllabusCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
   }
 
+  /**
+   * Executes the operation: pageEndIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageEndIndex(): number {
     return Math.min(this.currentPage * this.pageSize, this.SyllabusCount);
   }
 
+  /**
+   * Executes the operation: CancelSyllabus
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   CancelSyllabus(){
     this.IsAddNewClicked=false;
     this.AdminselectedSchoolID = '';
@@ -1704,11 +1983,21 @@ this.isInsertMode = false;
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: onRowsCountChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onRowsCountChange() {
     this.currentPage = 1;
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: toggleDivisionDropdown
+   * Parameters: index: number
+   * Rationale: Standard operational controller for the active view.
+   */
 toggleDivisionDropdown(index: number): void {
 
   // Close all other dropdowns
@@ -1722,6 +2011,11 @@ toggleDivisionDropdown(index: number): void {
     !this.tableRows[index].divisionDropdownOpen;
 }
 
+  /**
+   * Executes the operation: isAllDivisionsSelected
+   * Parameters: index: number
+   * Rationale: Standard operational controller for the active view.
+   */
 isAllDivisionsSelected(index: number): boolean {
 
   const row = this.tableRows[index];
@@ -1733,6 +2027,11 @@ isAllDivisionsSelected(index: number): boolean {
   );
 }
 
+  /**
+   * Executes the operation: toggleAllDivisions
+   * Parameters: index: number, event: any
+   * Rationale: Standard operational controller for the active view.
+   */
 toggleAllDivisions(index: number, event: any): void {
 
   const row = this.tableRows[index];
@@ -1745,6 +2044,11 @@ toggleAllDivisions(index: number, event: any): void {
 }
 
 @HostListener('document:click')
+  /**
+   * Executes the operation: closeDivisionDropdowns
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
 closeDivisionDropdowns(): void {
   this.tableRows.forEach((row: any) => {
     row.divisionDropdownOpen = false;

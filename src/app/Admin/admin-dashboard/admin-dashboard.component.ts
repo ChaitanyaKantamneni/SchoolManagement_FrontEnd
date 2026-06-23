@@ -17,6 +17,9 @@ import { NavigationEnd } from '@angular/router';
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for AdminDashboardComponent.
+ */
 export class AdminDashboardComponent implements OnInit, OnDestroy {
   menu: Module[] = [];
   isExpanded: boolean = false;
@@ -39,6 +42,9 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
   private readonly fullAdminMenu: Module[] = FULL_ADMIN_MENU;
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.roleId = sessionStorage.getItem('RollID') || '';
     const email = sessionStorage.getItem('email') || '';
@@ -74,6 +80,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     this.currentPath = this.router.url;
   }
 
+  /**
+   * Executes the operation: ngOnDestroy
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   ngOnDestroy(): void {
     this.sidebarSub?.unsubscribe();
     this.mobileSidebarSub?.unsubscribe();
@@ -88,6 +99,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   //   this.isExpanded = !this.isExpanded;
   // }
 
+  /**
+   * Executes the operation: toggleSidebar
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   toggleSidebar(): void {
     if (typeof window !== 'undefined' && window.innerWidth <= 768) {
       this.sidebarService.toggleMobileMenu();
@@ -97,6 +113,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     this.sidebarService.toggleSidebar();
   }
 
+  /**
+   * Executes the operation: goToDashboard
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   goToDashboard(): void {
     this.activeMobileSection = 'dashboard';
     this.openedSubmenu = null;
@@ -107,11 +128,21 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Executes the operation: logout
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   logout() {
     this.router.navigate(['/signin'])
     sessionStorage.clear();
   }
 
+  /**
+   * Executes the operation: toggleSubmenu
+   * Parameters: moduleId: string
+   * Rationale: Standard operational controller for the active view.
+   */
   toggleSubmenu(moduleId: string) {
     if (!this.isExpanded) {
       this.sidebarService.setSidebarExpanded(true);
@@ -124,6 +155,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Executes the operation: closeAllSubmenus
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeAllSubmenus() {
     this.openedSubmenu = null;
   }
@@ -132,11 +168,21 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     return this.roleId === '1';
   }
 
+  /**
+   * Executes the operation: getVisibleModules
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getVisibleModules(): Module[] {
     const sourceMenu = this.isSuperAdmin ? this.fullAdminMenu : (this.menu || []);
     return sourceMenu.filter(module => this.getVisiblePages(module).length > 0);
   }
 
+  /**
+   * Executes the operation: getVisiblePages
+   * Parameters: module: Module
+   * Rationale: Standard operational controller for the active view.
+   */
   getVisiblePages(module: Module): Page[] {
     if (this.isSuperAdmin) {
       return module.pages || [];
@@ -144,6 +190,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     return (module.pages || []).filter(page => page.canView === '1');
   }
 
+  /**
+   * Executes the operation: hasVisibleModule
+   * Parameters: moduleName: string
+   * Rationale: Standard operational controller for the active view.
+   */
   hasVisibleModule(moduleName: string): boolean {
     return !!this.findVisibleModule(moduleName);
   }
@@ -164,6 +215,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Executes the operation: openMobileSection
+   * Parameters: moduleId: string
+   * Rationale: Standard operational controller for the active view.
+   */
   openMobileSection(moduleId: string): void {
     this.activeMobileSection = moduleId;
     this.openedSubmenu = moduleId;
@@ -174,6 +230,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Executes the operation: navigate
+   * Parameters: page: Page, event?: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   navigate(page: Page, event?: Event): void {
     event?.stopPropagation();
     const path = `/Admin/${this.formatRoute(page.pageName)}`;
@@ -185,11 +246,21 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Executes the operation: isPageActive
+   * Parameters: page: Page
+   * Rationale: Standard operational controller for the active view.
+   */
   isPageActive(page: Page): boolean {
     const expectedPath = `/Admin/${this.formatRoute(page.pageName)}`.toLowerCase();
     return this.currentPath.toLowerCase() === expectedPath;
   }
 
+  /**
+   * Executes the operation: getModuleIcon
+   * Parameters: moduleName: string
+   * Rationale: Standard operational controller for the active view.
+   */
   getModuleIcon(moduleName: string): string {
     const rawKey = (moduleName || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
     const map: Record<string, string> = {
@@ -226,6 +297,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     return 'folder';
   }
 
+  /**
+   * Executes the operation: getPageIcon
+   * Parameters: pageName: string
+   * Rationale: Standard operational controller for the active view.
+   */
   getPageIcon(pageName: string): string {
     const key = (pageName || '').trim().toLowerCase();
     const map: Record<string, string> = {
@@ -324,6 +400,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     return 'menu';
   }
 
+  /**
+   * Executes the operation: formatRoute
+   * Parameters: name: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private formatRoute(name: string): string {
     const compact = (name ?? '').replace(/\s+/g, '');
     const normalized = compact.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -370,6 +451,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     return alias[normalized] ?? compact;
   }
 
+  /**
+   * Executes the operation: loadMenu
+   * Parameters: roleId: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private loadMenu(roleId: string): void {
     this.menuService.loadMenu(roleId).subscribe(menu => {
       this.menu = menu || [];

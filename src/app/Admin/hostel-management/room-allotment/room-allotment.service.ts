@@ -6,6 +6,9 @@ import { RoomAllotment, RoomAllotmentResponse } from './room-allotment.model';
 @Injectable({
   providedIn: 'root'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for RoomAllotmentService.
+ */
 export class RoomAllotmentService {
   private readonly endpoint = 'Tbl_RoomAllotment_CRUD_Operations';
 

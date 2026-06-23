@@ -6,6 +6,9 @@ import { Component } from '@angular/core';
   templateUrl: './sign-up.component.html',
   styleUrl: './sign-up.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for SignUpComponent.
+ */
 export class SignUpComponent {
 
 }

@@ -18,6 +18,9 @@ import { RoomAllotment } from './room-allotment.model';
   templateUrl: './room-allotment.component.html',
   styleUrls: ['./room-allotment.component.css']
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for RoomAllotmentComponent.
+ */
 export class RoomAllotmentComponent extends BasePermissionComponent implements OnInit {
   pageName = 'Room Allotment';
 
@@ -93,6 +96,9 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
     super(menuService, router);
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.checkViewPermission();
     this.FetchSchoolsList();
@@ -118,6 +124,11 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
   //  DATA FETCH HELPERS
   // ══════════════════════════════════════════════════════════
 
+  /**
+   * Executes the operation: FetchSchoolsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSchoolsList() {
     this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', { Flag: '2' }).subscribe({
       next: (res: any) => {
@@ -129,6 +140,11 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
     });
   }
 
+  /**
+   * Executes the operation: FetchAcademicYearsList
+   * Parameters: schoolId: string
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchAcademicYearsList(schoolId: string) {
     this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', { SchoolID: schoolId, Flag: '2' }).subscribe({
       next: (res: any) => {
@@ -140,6 +156,11 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
     });
   }
 
+  /**
+   * Executes the operation: FetchHostelsList
+   * Parameters: schoolId: string, academicYearId?: string
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchHostelsList(schoolId: string, academicYearId?: string) {
     this.hostelList = [];
     this.roomList = [];
@@ -161,6 +182,11 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
     });
   }
 
+  /**
+   * Executes the operation: FetchRoomsList
+   * Parameters: hostelId: string, isEdit: boolean = false
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchRoomsList(hostelId: string, isEdit: boolean = false) {
     this.roomList = [];
     if (!isEdit) this.AllotmentForm.get('RoomID')?.patchValue('0');
@@ -182,6 +208,11 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
     });
   }
 
+  /**
+   * Executes the operation: FetchStudentList
+   * Parameters: schoolId: string, academicYearId?: string
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchStudentList(schoolId: string, academicYearId?: string) {
     this.studentList = [];
     if (!schoolId) return;
@@ -219,6 +250,11 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
     });
   }
 
+  /**
+   * Executes the operation: FetchAllotments
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchAllotments() {
     this.loader.show();
     const payload: any = {
@@ -245,6 +281,11 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
     });
   }
 
+  /**
+   * Executes the operation: mapAllotments
+   * Parameters: data: any[]
+   * Rationale: Standard operational controller for the active view.
+   */
   mapAllotments(data: any[]) {
     this.ActiveAllotments = 0;
     this.AllotmentList = data.map((item: any) => {
@@ -283,6 +324,11 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
     this.TotalAllotments = this.AllotmentCount;
   }
 
+  /**
+   * Executes the operation: AddNewClicked
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   AddNewClicked() {
     this.AllotmentForm.reset();
     this.AllotmentForm.patchValue({
@@ -315,6 +361,11 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
     this.ViewRoomClicked = false;
   }
 
+  /**
+   * Executes the operation: editRecord
+   * Parameters: record: any
+   * Rationale: Standard operational controller for the active view.
+   */
   editRecord(record: any) {
     this.AllotmentForm.reset();
     const schoolId = record.SchoolID || record.schoolID;
@@ -348,6 +399,11 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
     this.ViewRoomClicked = true;
   }
 
+  /**
+   * Executes the operation: onAdminSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminSchoolChange(event: Event) {
     const schoolId = (event.target as HTMLSelectElement).value;
     this.studentList = [];
@@ -364,6 +420,11 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
     }
   }
 
+  /**
+   * Executes the operation: onAcademicYearChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAcademicYearChange(event: Event) {
     const yearId = (event.target as HTMLSelectElement).value;
     const schoolId = this.isAdmin
@@ -381,11 +442,21 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
     }
   }
 
+  /**
+   * Executes the operation: onHostelChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onHostelChange(event: Event) {
     const hostelId = (event.target as HTMLSelectElement).value;
     this.FetchRoomsList(hostelId);
   }
 
+  /**
+   * Executes the operation: SubmitAllotment
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   SubmitAllotment() {
     const fv = this.AllotmentForm.getRawValue();
     const isInvalid = this.AllotmentForm.invalid ||
@@ -449,6 +520,11 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
     });
   }
 
+  /**
+   * Executes the operation: toggleStatus
+   * Parameters: item: any
+   * Rationale: Standard operational controller for the active view.
+   */
   toggleStatus(item: any) {
     const isCurrentlyActive = ['Active', '1', 1, true].includes(item.IsActive);
     const payload: any = {
@@ -474,11 +550,21 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
     });
   }
 
+  /**
+   * Executes the operation: viewRecord_
+   * Parameters: record: any
+   * Rationale: Standard operational controller for the active view.
+   */
   viewRecord_(record: any) {
     this.viewRecord = record;
     this.isViewModalOpen = true;
   }
 
+  /**
+   * Executes the operation: onFilterSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onFilterSchoolChange(event: Event) {
     const val = (event.target as HTMLSelectElement).value;
     this.filterSchoolID = val === '0' ? '' : val;
@@ -496,6 +582,11 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
     this.FetchAllotments();
   }
 
+  /**
+   * Executes the operation: onFilterYearChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onFilterYearChange(event: Event) {
     const val = (event.target as HTMLSelectElement).value;
     this.filterAcademicYear = val === '0' ? '' : val;
@@ -503,6 +594,11 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
     this.FetchAllotments();
   }
 
+  /**
+   * Executes the operation: onSearchChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onSearchChange() {
     clearTimeout(this.searchTimer);
     this.searchTimer = setTimeout(() => {
@@ -518,10 +614,20 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
     }, this.SEARCH_DEBOUNCE);
   }
 
+  /**
+   * Executes the operation: totalPages
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   totalPages(): number {
     return Math.max(1, Math.ceil(this.AllotmentCount / this.pageSize));
   }
 
+  /**
+   * Executes the operation: goToPage
+   * Parameters: page: number
+   * Rationale: Standard operational controller for the active view.
+   */
   goToPage(page: number) {
     const total = this.totalPages();
     if (page < 1) page = 1;
@@ -530,9 +636,24 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
     this.FetchAllotments();
   }
 
+  /**
+   * Executes the operation: previousPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   previousPage() { if (this.currentPage > 1) this.goToPage(this.currentPage - 1); }
+  /**
+   * Executes the operation: nextPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   nextPage() { if (this.currentPage < this.totalPages()) this.goToPage(this.currentPage + 1); }
 
+  /**
+   * Executes the operation: getVisiblePageNumbers
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getVisiblePageNumbers(): number[] {
     const total = this.totalPages();
     const pages: number[] = [];
@@ -545,19 +666,59 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
     return pages;
   }
 
+  /**
+   * Executes the operation: pageStartIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageStartIndex(): number { return this.AllotmentCount === 0 ? 0 : (this.currentPage - 1) * this.pageSize + 1; }
+  /**
+   * Executes the operation: pageEndIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageEndIndex(): number { return Math.min(this.currentPage * this.pageSize, this.AllotmentCount); }
 
+  /**
+   * Executes the operation: onRowsCountChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onRowsCountChange() {
     this.currentPage = 1;
     this.FetchAllotments();
   }
 
+  /**
+   * Executes the operation: closeFormModal
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeFormModal() { this.IsAddNewClicked = false; }
+  /**
+   * Executes the operation: closeViewModal
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeViewModal() { this.isViewModalOpen = false; this.viewRecord = null; }
+  /**
+   * Executes the operation: closeStatusModal
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeStatusModal() { this.isStatusModalOpen = false; }
+  /**
+   * Executes the operation: handleOk
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   handleOk() { this.isStatusModalOpen = false; this.FetchAllotments(); }
 
+  /**
+   * Executes the operation: formatDate
+   * Parameters: dateStr: string | null | undefined
+   * Rationale: Standard operational controller for the active view.
+   */
   formatDate(dateStr: string | null | undefined): string {
     if (!dateStr) return '-';
     const raw = this.getRawDate(dateStr);
@@ -569,6 +730,11 @@ export class RoomAllotmentComponent extends BasePermissionComponent implements O
     } catch { return dateStr; }
   }
 
+  /**
+   * Executes the operation: getRawDate
+   * Parameters: dateStr: any
+   * Rationale: Standard operational controller for the active view.
+   */
   getRawDate(dateStr: any): string {
     if (!dateStr) return '';
     try {

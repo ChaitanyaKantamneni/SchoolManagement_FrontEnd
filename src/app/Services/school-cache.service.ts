@@ -2,6 +2,9 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
+/**
+ * Class Responsibility: Handles view logic and user interactions for SchoolCacheService.
+ */
 export class SchoolCacheService {
 
   private schoolMap$ = new BehaviorSubject<{ [key: string]: string }>({});

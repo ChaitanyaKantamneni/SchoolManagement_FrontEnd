@@ -20,6 +20,9 @@ import { HttpClient } from '@angular/common/http';
   templateUrl: './transfer-students.component.html',
   styleUrl: './transfer-students.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for TransferStudentsComponent.
+ */
 export class TransferStudentsComponent extends BasePermissionComponent {
   pageName = 'Transfer';
 
@@ -33,6 +36,9 @@ export class TransferStudentsComponent extends BasePermissionComponent {
       super(menuService, router);
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.checkViewPermission();
     this.SchoolSelectionChange=false;
@@ -118,6 +124,11 @@ export class TransferStudentsComponent extends BasePermissionComponent {
       Remarks: new FormControl()
     });
   
+  /**
+   * Executes the operation: FetchSchoolsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSchoolsList() {
       const requestData = { Flag: '2' };
   
@@ -143,6 +154,11 @@ export class TransferStudentsComponent extends BasePermissionComponent {
         );
     };
   
+  /**
+   * Executes the operation: FetchAcademicYearsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     FetchAcademicYearsList() {
       const requestData = { SchoolID:this.AdminselectedSchoolID||'',Flag: '3' };
   
@@ -168,6 +184,11 @@ export class TransferStudentsComponent extends BasePermissionComponent {
         );
     };
 
+  /**
+   * Executes the operation: FetchTransitionAcademicYearsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     FetchTransitionAcademicYearsList() {
       const requestData = { SchoolID:this.AdminselectedSchoolID||'',Flag: '2' };
   
@@ -198,6 +219,11 @@ export class TransferStudentsComponent extends BasePermissionComponent {
       return role === '1';
     }
   
+  /**
+   * Executes the operation: FetchAcademicYearCount
+   * Parameters: isSearch: boolean
+   * Rationale: Standard operational controller for the active view.
+   */
     FetchAcademicYearCount(isSearch: boolean) {
       let SchoolIdSelected = '';
   
@@ -212,6 +238,11 @@ export class TransferStudentsComponent extends BasePermissionComponent {
       });
     }
   
+  /**
+   * Executes the operation: FetchInitialData
+   * Parameters: extra: any = {}
+   * Rationale: Standard operational controller for the active view.
+   */
     FetchInitialData(extra: any = {}) {
       const isSearch = !!this.searchQuery?.trim();
       const flag = isSearch ? '7' : '3';
@@ -278,6 +309,11 @@ export class TransferStudentsComponent extends BasePermissionComponent {
       });
     };
   
+  /**
+   * Executes the operation: mapAcademicYears
+   * Parameters: response: any
+   * Rationale: Standard operational controller for the active view.
+   */
     mapAcademicYears(response: any) {
       this.StudentsList = (response.data || []).map((item: any) => ({
         ID: item.id,
@@ -310,6 +346,11 @@ export class TransferStudentsComponent extends BasePermissionComponent {
       this.isViewModalOpen = true;
     };
   
+  /**
+   * Executes the operation: FetchClassList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     FetchClassList() {
       const requestData = { 
         SchoolID:this.AdminselectedSchoolID,
@@ -337,6 +378,11 @@ export class TransferStudentsComponent extends BasePermissionComponent {
         );
     };
 
+  /**
+   * Executes the operation: FetchTransitionClassList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     FetchTransitionClassList() {
       const requestData = { 
         SchoolID:this.AdminselectedSchoolID,
@@ -365,6 +411,11 @@ export class TransferStudentsComponent extends BasePermissionComponent {
     };
 
 
+  /**
+   * Executes the operation: FetchDivisionsList
+   * Parameters: type: 'main' | 'transition'
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchDivisionsList(type: 'main' | 'transition') {
       const requestData = {
         SchoolID: this.AdminselectedSchoolID,
@@ -410,6 +461,11 @@ export class TransferStudentsComponent extends BasePermissionComponent {
       );
     }
 
+  /**
+   * Executes the operation: SubmitClassDivision
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   SubmitClassDivision(){
       const formValues = this.ClassDivisionForm.value;
       if(this.ClassDivisionForm.invalid){
@@ -474,6 +530,11 @@ export class TransferStudentsComponent extends BasePermissionComponent {
       }
     };
 
+  /**
+   * Executes the operation: UpdateClassDivision
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   UpdateClassDivision(){
       if(this.ClassDivisionForm.invalid){
         this.ClassDivisionForm.markAllAsTouched();
@@ -518,6 +579,11 @@ export class TransferStudentsComponent extends BasePermissionComponent {
       }
     };
 
+  /**
+   * Executes the operation: sort
+   * Parameters: column: string
+   * Rationale: Standard operational controller for the active view.
+   */
     sort(column: string) {
       if (this.sortColumn === column) {
         this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -530,18 +596,33 @@ export class TransferStudentsComponent extends BasePermissionComponent {
       this.FetchInitialData();
     };
 
+  /**
+   * Executes the operation: formatDateYYYYMMDD
+   * Parameters: dateStr: string | null
+   * Rationale: Standard operational controller for the active view.
+   */
   formatDateYYYYMMDD(dateStr: string | null) {
       if (!dateStr) return '';
       const d = new Date(dateStr);
       return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
     };
   
+  /**
+   * Executes the operation: formatDateDDMMYYYY
+   * Parameters: dateStr: string | null
+   * Rationale: Standard operational controller for the active view.
+   */
     formatDateDDMMYYYY(dateStr: string | null) {
       if (!dateStr) return '';
       const d = new Date(dateStr);
       return `${d.getDate().toString().padStart(2,'0')}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getFullYear()}`;
     };
   
+  /**
+   * Executes the operation: closeModal
+   * Parameters: type: 'view' | 'status'
+   * Rationale: Standard operational controller for the active view.
+   */
     closeModal(type: 'view' | 'status') {
       console.log('type',type);
       if (type === 'view') {
@@ -554,6 +635,11 @@ export class TransferStudentsComponent extends BasePermissionComponent {
       }
     };
   
+  /**
+   * Executes the operation: handleOk
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     handleOk() {
       this.isModalOpen = false;
       this.ClassDivisionForm.get('TransitionType')?.patchValue(1);
@@ -565,6 +651,11 @@ export class TransferStudentsComponent extends BasePermissionComponent {
       this.isViewModalOpen=false;
     };
 
+  /**
+   * Executes the operation: onAdminSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminSchoolChange(event: Event) {
       this.academicYearList=[];
       this.SyllabusList = [];
@@ -585,6 +676,11 @@ export class TransferStudentsComponent extends BasePermissionComponent {
       this.FetchTransitionAcademicYearsList();
     };
   
+  /**
+   * Executes the operation: onAdminAcademicYearChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
     onAdminAcademicYearChange(event: Event) {
       this.SyllabusList = [];    
       this.ClassDivisionForm.get('Class').patchValue('0');
@@ -598,6 +694,11 @@ export class TransferStudentsComponent extends BasePermissionComponent {
       this.FetchClassList();
     };
 
+  /**
+   * Executes the operation: onAdminTransitionAcademicYearChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
     onAdminTransitionAcademicYearChange(event: Event) {
       this.TransitionClassList = [];    
       this.ClassDivisionForm.get('TransitionClass').patchValue('0');
@@ -611,6 +712,11 @@ export class TransferStudentsComponent extends BasePermissionComponent {
       this.FetchTransitionClassList();
     };
   
+  /**
+   * Executes the operation: onAdminClassChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
     onAdminClassChange(event: Event) {          
       if (this.ClassDivisionForm.get('TransitionType')?.value === 1 ||
           this.ClassDivisionForm.get('TransitionType')?.value === 2) {
@@ -630,6 +736,11 @@ export class TransferStudentsComponent extends BasePermissionComponent {
       this.FetchDivisionsList('main');
     };
 
+  /**
+   * Executes the operation: onTransitionClassChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
     onTransitionClassChange(event: Event) {
       this.TransitionDivisionsList = [];
       this.ClassDivisionForm.get('TransitionDivision')?.patchValue('0');
@@ -644,6 +755,11 @@ export class TransferStudentsComponent extends BasePermissionComponent {
       this.FetchDivisionsList('transition');
     }
 
+  /**
+   * Executes the operation: onAdminDivisionChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
     onAdminDivisionChange(event: Event) {
       this.StudentsList = [];  
       this.selectedStudents = [];
@@ -657,6 +773,11 @@ export class TransferStudentsComponent extends BasePermissionComponent {
       this.FetchInitialData();
     };
 
+  /**
+   * Executes the operation: onTransitionChange
+   * Parameters: value: number
+   * Rationale: Standard operational controller for the active view.
+   */
     onTransitionChange(value: number): void {
       // Reset dependent fields
       this.ClassDivisionForm.get('TransitionAcademicYear')?.patchValue('0');
@@ -681,16 +802,31 @@ export class TransferStudentsComponent extends BasePermissionComponent {
       this.ClassDivisionForm.get('Remarks')?.updateValueAndValidity();
     }
 
+  /**
+   * Executes the operation: submitSelection
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     submitSelection() {
       this.selectedStudents = this.StudentsList
         .filter(student => student.isSelected);
       this.isViewModalOpen=false;
     }
 
+  /**
+   * Executes the operation: editSelection
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     editSelection(){
       this.isViewModalOpen=true;
     }
 
+  /**
+   * Executes the operation: cancelSelectedlist
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     cancelSelectedlist(){
       if(this.isViewModalOpen){
         this.isViewModalOpen=false;
@@ -706,15 +842,30 @@ export class TransferStudentsComponent extends BasePermissionComponent {
       }      
     }
 
+  /**
+   * Executes the operation: getSelectedCount
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     getSelectedCount(): number {
       return this.StudentsList.filter(s => s.isSelected).length;
     }
 
+  /**
+   * Executes the operation: isAllSelected
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
     isAllSelected(): boolean {
       return this.StudentsList.length > 0 &&
             this.StudentsList.every(s => s.isSelected);
     }
 
+  /**
+   * Executes the operation: toggleSelectAll
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
     toggleSelectAll(event: Event): void {
       const checked = (event.target as HTMLInputElement).checked;
       this.StudentsList.forEach(s => s.isSelected = checked);

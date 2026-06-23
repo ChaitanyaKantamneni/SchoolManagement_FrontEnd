@@ -69,6 +69,9 @@ import {
   styleUrls: ['./leave-application.component.css'],
   providers: [DatePipe]
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for LeaveApplicationComponent.
+ */
 export class LeaveApplicationComponent implements OnInit {
   leaveForm: FormGroup;
   selectedFile: File | null = null;
@@ -117,6 +120,9 @@ export class LeaveApplicationComponent implements OnInit {
     }, { validators: this.dateRangeValidator });
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.isComponentLoaded = true;
     this.initializeSessionData();
@@ -124,12 +130,22 @@ export class LeaveApplicationComponent implements OnInit {
     this.loadChildren();
   }
 
+  /**
+   * Executes the operation: initializeDefaultData
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private initializeDefaultData(): void {
     this.existingLeaves = [];
     this.leaveBalances = {};
     this.childrenList = [];
   }
 academicYearId: string = '';
+  /**
+   * Executes the operation: initializeSessionData
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private initializeSessionData(): void {
     this.schoolName = sessionStorage.getItem('SchoolName') || '';
     this.schoolId = sessionStorage.getItem('SchoolID') || '';
@@ -140,6 +156,11 @@ academicYearId: string = '';
   sessionStorage.getItem('AcademicYearID') || '';
   }
 
+  /**
+   * Executes the operation: loadChildren
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private loadChildren(): void {
     this.loaderService.show();
     this.parentService.getChildrenList(this.parentEmail, this.schoolId, this.academicYearId).subscribe({
@@ -174,6 +195,11 @@ academicYearId: string = '';
     });
   }
 
+  /**
+   * Executes the operation: selectChild
+   * Parameters: childId: string
+   * Rationale: Standard operational controller for the active view.
+   */
   selectChild(childId: string): void {
     this.selectedChildId = childId;
     this.selectedChild = this.childrenList.find(c => c.id === childId) || null;
@@ -183,6 +209,11 @@ academicYearId: string = '';
     }
   }
 
+  /**
+   * Executes the operation: loadLeaveBalance
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private loadLeaveBalance(): void {
     if (!this.selectedChildId) return;
 
@@ -221,6 +252,11 @@ academicYearId: string = '';
     });
   }
 
+  /**
+   * Executes the operation: loadExistingLeaves
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private loadExistingLeaves(): void {
     if (!this.selectedChildId) return;
 
@@ -277,6 +313,11 @@ academicYearId: string = '';
     return null;
   }
 
+  /**
+   * Executes the operation: onFromDateChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onFromDateChange(): void {
     const fromDate = this.leaveForm.get('fromDate')?.value;
     if (fromDate) {
@@ -311,6 +352,11 @@ academicYearId: string = '';
     }
   }
 
+  /**
+   * Executes the operation: removeFile
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   removeFile(): void {
     this.selectedFile = null;
     const fileInput = document.getElementById('fileInput') as HTMLInputElement;
@@ -319,6 +365,9 @@ academicYearId: string = '';
     }
   }
 
+  /**
+   * Handles form submission: Validates input fields and transmits data payloads.
+   */
   async onSubmit(): Promise<void> {
   if (this.isSubmitting) return;
 
@@ -443,6 +492,11 @@ academicYearId: string = '';
   }
 }
 
+  /**
+   * Executes the operation: resetForm
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   resetForm(): void {
     this.leaveForm.reset();
     this.selectedFile = null;
@@ -450,6 +504,11 @@ academicYearId: string = '';
     if (fileInput) fileInput.value = '';
   }
 
+  /**
+   * Executes the operation: markFormGroupTouched
+   * Parameters: formGroup: FormGroup
+   * Rationale: Standard operational controller for the active view.
+   */
   private markFormGroupTouched(formGroup: FormGroup): void {
     Object.values(formGroup.controls).forEach(control => {
       control.markAsTouched();
@@ -459,6 +518,11 @@ academicYearId: string = '';
     });
   }
 
+  /**
+   * Executes the operation: showSnackBar
+   * Parameters: message: string, type: 'success' | 'error' | 'warning'
+   * Rationale: Standard operational controller for the active view.
+   */
   private showSnackBar(message: string, type: 'success' | 'error' | 'warning'): void {
     this.snackBar.open(message, 'Close', {
       duration: 3000,
@@ -486,11 +550,21 @@ academicYearId: string = '';
     }
   }
 
+  /**
+   * Executes the operation: formatDate
+   * Parameters: date: string
+   * Rationale: Standard operational controller for the active view.
+   */
   formatDate(date: string): string {
     return this.datePipe.transform(date, 'dd MMM yyyy') || '';
   }
 
 
+  /**
+   * Executes the operation: getFormErrors
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private getFormErrors(): any {
     const errors: any = {};
     Object.keys(this.leaveForm.controls).forEach(key => {
@@ -499,6 +573,11 @@ academicYearId: string = '';
     });
     return errors;
   }
+  /**
+   * Executes the operation: getRemainingDaysColor
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getRemainingDaysColor(): string {
     if (!this.leaveBalances[this.selectedChildId]) return '#6b7280';
     const percentage = (this.leaveBalances[this.selectedChildId].remainingLeaves / this.leaveBalances[this.selectedChildId].totalLeaves) * 100;

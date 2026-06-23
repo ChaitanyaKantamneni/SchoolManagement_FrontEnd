@@ -18,6 +18,9 @@ import { DashboardTopNavComponent } from '../../../SignInAndSignUp/dashboard-top
   styleUrl: './messaging-dashboard.component.css',
   providers: [DatePipe]
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for MessagingDashboardComponent.
+ */
 export class MessagingDashboardComponent extends BasePermissionComponent implements OnInit {
   pageName = 'Messaging';
 
@@ -120,6 +123,9 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
     super(menuService, router);
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.checkViewPermission();
     
@@ -137,10 +143,20 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
     this.loadConfigs();
   }
 
+  /**
+   * Executes the operation: getFormattedTime
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getFormattedTime(): string {
     return this.datePipe.transform(new Date(), 'hh:mm a') || '';
   }
 
+  /**
+   * Executes the operation: loadConfigs
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   loadConfigs() {
     const config = this.messagingService.getGatewayConfig(this.AdminselectedSchoolID);
     this.smsSenderId = config.smsSenderId;
@@ -149,6 +165,11 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
     this.whatsappAuthKey = config.waApiKey;
   }
 
+  /**
+   * Executes the operation: saveConfigs
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   saveConfigs() {
     this.loader.show();
     const config = {
@@ -179,6 +200,11 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
       });
   }
 
+  /**
+   * Executes the operation: FetchAcademicYearsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchAcademicYearsList() {
     const schoolId = this.AdminselectedSchoolID;
     if (!schoolId) return;
@@ -193,6 +219,11 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
       });
   }
 
+  /**
+   * Executes the operation: onSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onSchoolChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     this.AdminselectedSchoolID = target.value;
@@ -206,6 +237,11 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
     this.selectedRecipientIds.clear();
   }
 
+  /**
+   * Executes the operation: onAcademicYearChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAcademicYearChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     this.AdminselectedAcademivYearID = target.value;
@@ -215,11 +251,21 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
     this.selectedRecipientIds.clear();
   }
 
+  /**
+   * Executes the operation: loadDependentDropdowns
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   loadDependentDropdowns() {
     this.FetchClassList();
     this.FetchRolesList();
   }
 
+  /**
+   * Executes the operation: FetchClassList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchClassList() {
     if (!this.AdminselectedSchoolID) return;
     const req = {
@@ -239,6 +285,11 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
     });
   }
 
+  /**
+   * Executes the operation: FetchDivisionList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchDivisionList() {
     if (!this.AdminselectedSchoolID || !this.selectedClassID) return;
     const req = {
@@ -259,6 +310,11 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
     });
   }
 
+  /**
+   * Executes the operation: FetchRolesList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchRolesList() {
     this.apiurl.post<any>('Tbl_Roles_CRUD_Operations', { Flag: '2' }).subscribe(res => {
       if (res && Array.isArray(res.data)) {
@@ -276,6 +332,11 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
     });
   }
 
+  /**
+   * Executes the operation: onClassChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onClassChange() {
     this.selectedDivisionID = '';
     this.divisionList = [];
@@ -284,11 +345,21 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
     this.FetchDivisionList();
   }
 
+  /**
+   * Executes the operation: onDivisionChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onDivisionChange() {
     this.recipientsList = [];
     this.selectedRecipientIds.clear();
   }
 
+  /**
+   * Executes the operation: onRoleChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onRoleChange() {
     this.recipientsList = [];
     this.selectedRecipientIds.clear();
@@ -392,6 +463,11 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
     }
   }
 
+  /**
+   * Executes the operation: toggleAllRecipients
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   toggleAllRecipients(event: Event) {
     const checked = (event.target as HTMLInputElement).checked;
     if (checked) {
@@ -401,10 +477,20 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
     }
   }
 
+  /**
+   * Executes the operation: isRecipientSelected
+   * Parameters: id: string
+   * Rationale: Standard operational controller for the active view.
+   */
   isRecipientSelected(id: string): boolean {
     return this.selectedRecipientIds.has(id);
   }
 
+  /**
+   * Executes the operation: areAllRecipientsSelected
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   areAllRecipientsSelected(): boolean {
     return this.recipientsList.length > 0 && this.selectedRecipientIds.size === this.recipientsList.length;
   }
@@ -421,6 +507,11 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
     }
   }
 
+  /**
+   * Executes the operation: insertPlaceholder
+   * Parameters: placeholder: string
+   * Rationale: Standard operational controller for the active view.
+   */
   insertPlaceholder(placeholder: string) {
     const current = this.messageForm.get('messageBody')?.value || '';
     this.messageForm.patchValue({
@@ -428,6 +519,11 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
     });
   }
 
+  /**
+   * Executes the operation: formatDateString
+   * Parameters: val: string
+   * Rationale: Standard operational controller for the active view.
+   */
   formatDateString(val: string): string {
     if (!val) return '';
     const parts = val.split('-');
@@ -437,6 +533,11 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
     return val;
   }
 
+  /**
+   * Executes the operation: formatTime12Hr
+   * Parameters: timeStr: string
+   * Rationale: Standard operational controller for the active view.
+   */
   formatTime12Hr(timeStr: string): string {
     if (!timeStr) return '';
     const parts = timeStr.split(':');
@@ -451,11 +552,21 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
     return timeStr;
   }
 
+  /**
+   * Executes the operation: messageBodyContains
+   * Parameters: str: string
+   * Rationale: Standard operational controller for the active view.
+   */
   messageBodyContains(str: string): boolean {
     const currentText = this.messageForm.get('messageBody')?.value || '';
     return currentText.toLowerCase().includes(str.toLowerCase());
   }
 
+  /**
+   * Executes the operation: hasPlaceholders
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   hasPlaceholders(): boolean {
     return this.messageBodyContains('{Date}') || 
            this.messageBodyContains('{Time}') || 
@@ -463,6 +574,11 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
            this.messageBodyContains('{DueDate}');
   }
 
+  /**
+   * Executes the operation: checkSchoolAndPlaceholderValidation
+   * Parameters: rawBody: string
+   * Rationale: Standard operational controller for the active view.
+   */
   checkSchoolAndPlaceholderValidation(rawBody: string): boolean {
     if (!this.AdminselectedSchoolID || this.AdminselectedSchoolID === '0') {
       this.showStatusModal('Please select a School from the top toolbar first.');
@@ -475,6 +591,11 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
     return true;
   }
 
+  /**
+   * Executes the operation: resolvePlaceholders
+   * Parameters: body: string, data: any
+   * Rationale: Standard operational controller for the active view.
+   */
   resolvePlaceholders(body: string, data: any): string {
     let resolved = body;
     
@@ -572,12 +693,22 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
     this.templatesList = this.messagingService.getTemplates(this.AdminselectedSchoolID);
   }
 
+  /**
+   * Executes the operation: openNewTemplate
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   openNewTemplate() {
     this.templateForm.reset({ id: '', category: 'Custom', channel: 'Both' });
     this.isEditingTemplate = false;
     this.showTemplateModal = true;
   }
 
+  /**
+   * Executes the operation: openEditTemplate
+   * Parameters: t: MessageTemplate
+   * Rationale: Standard operational controller for the active view.
+   */
   openEditTemplate(t: MessageTemplate) {
     this.templateForm.patchValue({
       id: t.id,
@@ -590,6 +721,11 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
     this.showTemplateModal = true;
   }
 
+  /**
+   * Executes the operation: saveTemplate
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   saveTemplate() {
     if (this.templateForm.invalid) {
       this.templateForm.markAllAsTouched();
@@ -609,6 +745,11 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
     this.showStatusModal('Template saved successfully!');
   }
 
+  /**
+   * Executes the operation: deleteTemplate
+   * Parameters: tId: string
+   * Rationale: Standard operational controller for the active view.
+   */
   deleteTemplate(tId: string) {
     if (confirm('Are you sure you want to delete this custom template?')) {
       this.messagingService.deleteCustomTemplate(this.AdminselectedSchoolID, tId);
@@ -623,6 +764,11 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
     this.applyHistoryFilters();
   }
 
+  /**
+   * Executes the operation: applyHistoryFilters
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   applyHistoryFilters() {
     this.filteredLogs = this.historyLogs.filter(log => {
       const matchSearch = log.messageSnippet.toLowerCase().includes(this.historySearchQuery.toLowerCase()) || 
@@ -641,6 +787,11 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
     }, 1000);
   }
 
+  /**
+   * Executes the operation: syncTemplatesFromMsg91
+   * Parameters: type: 'sms' | 'whatsapp'
+   * Rationale: Standard operational controller for the active view.
+   */
   syncTemplatesFromMsg91(type: 'sms' | 'whatsapp') {
     this.loader.show();
     setTimeout(() => {
@@ -658,6 +809,11 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
     }, 1200);
   }
 
+  /**
+   * Executes the operation: sendTestMessage
+   * Parameters: type: 'sms' | 'whatsapp'
+   * Rationale: Standard operational controller for the active view.
+   */
   sendTestMessage(type: 'sms' | 'whatsapp') {
     const phone = type === 'whatsapp' ? this.whatsappTestPhone : this.smsTestPhone;
     const body = type === 'whatsapp' ? this.whatsappTestBody : this.smsTestBody;
@@ -684,6 +840,11 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
     this.statusModalOpen = true;
   }
 
+  /**
+   * Executes the operation: closeStatusModal
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeStatusModal() {
     this.statusModalOpen = false;
   }

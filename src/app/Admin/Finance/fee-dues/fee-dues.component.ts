@@ -50,6 +50,9 @@ interface TableColumn {
   templateUrl: './fee-dues.component.html',
   styleUrl: './fee-dues.component.css',
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for FeeDuesComponent.
+ */
 export class FeeDuesComponent extends BasePermissionComponent {
   pageName = 'Fee Dues';
   hasSubmitted = false;
@@ -149,6 +152,9 @@ export class FeeDuesComponent extends BasePermissionComponent {
     super(menuService, router);
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.checkViewPermission();
     if (this.isAdmin) {
@@ -163,6 +169,11 @@ export class FeeDuesComponent extends BasePermissionComponent {
     }
   }
 
+  /**
+   * Executes the operation: fetchSchools
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchSchools(): void {
     this.mastersLoadError = '';
     this.loader.show();
@@ -184,6 +195,11 @@ export class FeeDuesComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Executes the operation: fetchAcademicYears
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchAcademicYears(): void {
     if (!this.selectedSchool) {
       this.academicYearList = [];
@@ -212,6 +228,11 @@ export class FeeDuesComponent extends BasePermissionComponent {
       });
   }
 
+  /**
+   * Executes the operation: fetchClasses
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchClasses(): void {
     if (!this.selectedSchool) {
       this.classList = [];
@@ -267,6 +288,11 @@ export class FeeDuesComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Executes the operation: fetchDivisions
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchDivisions(): void {
     if (!this.selectedClass) {
       this.divisionList = [];
@@ -299,6 +325,11 @@ export class FeeDuesComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Executes the operation: fetchFeeCategories
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchFeeCategories(): void {
     if (!this.selectedSchool || !this.selectedAcademicYear) {
       this.feeCategoryList = [];
@@ -333,6 +364,11 @@ export class FeeDuesComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Executes the operation: fetchFeeDues
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchFeeDues(): void {
     this.feeDuesLoadError = '';
     const requestId = ++this.feeDuesRequestSeq;
@@ -439,6 +475,11 @@ export class FeeDuesComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Executes the operation: fetchFeeDuesViaStoredProc
+   * Parameters: requestId: number, previousStatus?: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchFeeDuesViaStoredProc(requestId: number, previousStatus?: any): void {
     const selectedFeeCategoryName = this.getSelectedFeeCategoryName();
     const payload: any = {
@@ -480,6 +521,11 @@ export class FeeDuesComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Executes the operation: normalizeFeeDuesRows
+   * Parameters: items: any[]
+   * Rationale: Standard operational controller for the active view.
+   */
   private normalizeFeeDuesRows(items: any[]): FeeDuesRow[] {
     return items.map((item: any) => {
       const name =
@@ -546,6 +592,9 @@ export class FeeDuesComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Handles form submission: Validates input fields and transmits data payloads.
+   */
   onSubmit(): void {
     // reset previous errors
     this.schoolError = !this.selectedSchool;
@@ -595,6 +644,11 @@ export class FeeDuesComponent extends BasePermissionComponent {
     }
   }
 
+  /**
+   * Executes the operation: onAcademicYearChange
+   * Parameters: value: string
+   * Rationale: Standard operational controller for the active view.
+   */
   onAcademicYearChange(value: string): void {
     this.selectedAcademicYear = value;
     this.hasSubmitted = false;
@@ -614,6 +668,11 @@ export class FeeDuesComponent extends BasePermissionComponent {
     }
   }
 
+  /**
+   * Executes the operation: onClassChange
+   * Parameters: value: string
+   * Rationale: Standard operational controller for the active view.
+   */
   onClassChange(value: string): void {
     this.selectedClass = value;
     this.hasSubmitted = false;
@@ -628,6 +687,11 @@ export class FeeDuesComponent extends BasePermissionComponent {
     }
   }
 
+  /**
+   * Executes the operation: onDivisionChange
+   * Parameters: value: string
+   * Rationale: Standard operational controller for the active view.
+   */
   onDivisionChange(value: string): void {
     this.selectedDivision = value;
     this.hasSubmitted = false;
@@ -640,12 +704,22 @@ export class FeeDuesComponent extends BasePermissionComponent {
     }
   }
 
+  /**
+   * Executes the operation: onStudentChange
+   * Parameters: value: string
+   * Rationale: Standard operational controller for the active view.
+   */
   onStudentChange(value: string): void {
     this.selectedStudent = value;
     this.hasSubmitted = false;
     this.studentError = false;
   }
 
+  /**
+   * Executes the operation: onFeeCategoryChange
+   * Parameters: value: string
+   * Rationale: Standard operational controller for the active view.
+   */
   onFeeCategoryChange(value: string): void {
     this.selectedFeeCategory = value;
     this.hasSubmitted = false;
@@ -658,6 +732,11 @@ export class FeeDuesComponent extends BasePermissionComponent {
     this.applySearchAndSort();
   }
 
+  /**
+   * Executes the operation: sortBy
+   * Parameters: column: keyof FeeDuesRow
+   * Rationale: Standard operational controller for the active view.
+   */
   sortBy(column: keyof FeeDuesRow): void {
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -668,6 +747,11 @@ export class FeeDuesComponent extends BasePermissionComponent {
     this.applySearchAndSort();
   }
 
+  /**
+   * Executes the operation: applySearchAndSort
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private applySearchAndSort(): void {
     const query = this.searchQuery.trim().toLowerCase();
 
@@ -787,6 +871,11 @@ export class FeeDuesComponent extends BasePermissionComponent {
     });
   }
 
+  /**
+   * Executes the operation: getSelectedFeeCategoryName
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private getSelectedFeeCategoryName(): string {
     if (!this.selectedFeeCategory) {
       return '';
@@ -795,6 +884,11 @@ export class FeeDuesComponent extends BasePermissionComponent {
     return selected?.name ?? '';
   }
 
+  /**
+   * Executes the operation: applySelectedFeeCategoryFilter
+   * Parameters: rows: FeeDuesRow[]
+   * Rationale: Standard operational controller for the active view.
+   */
   private applySelectedFeeCategoryFilter(rows: FeeDuesRow[]): FeeDuesRow[] {
     if (!this.selectedFeeCategory) {
       return rows;
@@ -835,6 +929,11 @@ export class FeeDuesComponent extends BasePermissionComponent {
     return val as string | number;
   }
 
+  /**
+   * Executes the operation: fetchStudents
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchStudents(): void {
     if (!this.selectedSchool || !this.selectedAcademicYear || !this.selectedClass || !this.selectedDivision) {
       this.studentList = [];
@@ -884,10 +983,20 @@ export class FeeDuesComponent extends BasePermissionComponent {
     return this.filteredData.slice(start, start + this.pageSize);
   }
 
+  /**
+   * Executes the operation: totalPages
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   totalPages(): number {
     return Math.max(1, Math.ceil(this.filteredData.length / this.pageSize) || 1);
   }
 
+  /**
+   * Executes the operation: changePage
+   * Parameters: page: number
+   * Rationale: Standard operational controller for the active view.
+   */
   changePage(page: number): void {
     const total = this.totalPages();
     if (page < 1 || page > total) {

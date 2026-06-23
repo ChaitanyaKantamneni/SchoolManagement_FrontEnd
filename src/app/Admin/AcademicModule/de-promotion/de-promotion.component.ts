@@ -12,6 +12,9 @@ import { ApiServiceService } from '../../../Services/api-service.service';
   templateUrl: './de-promotion.component.html',
   styleUrl: './de-promotion.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for DePromotionComponent.
+ */
 export class DePromotionComponent {
   IsAddNewClicked:boolean=false;
   IsActiveStatus:boolean=false;
@@ -29,6 +32,9 @@ export class DePromotionComponent {
 
   constructor(private router: Router,private apiurl:ApiServiceService) {}
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.SyllabusList=[];
     this.FetchSyllabusList();
@@ -42,6 +48,11 @@ export class DePromotionComponent {
     Description: new FormControl()
   });
 
+  /**
+   * Executes the operation: getPaginatedClassLists
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getPaginatedClassLists() {
     const start = (this.currentPage - 1) * this.pageSize;
     return this.ListedClassList.slice(start, start + this.pageSize);
@@ -53,6 +64,11 @@ export class DePromotionComponent {
     );
   };
 
+  /**
+   * Executes the operation: AddNewClicked
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   AddNewClicked(){
     this.ClassForm.get('Syllabus')?.patchValue('0');
     this.FetchSyllabusList();
@@ -61,6 +77,11 @@ export class DePromotionComponent {
     this.ViewClassClicked=false;
   };
 
+  /**
+   * Executes the operation: SubmitClass
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   SubmitClass(){
     if(this.ClassForm.invalid){
       return;
@@ -96,6 +117,11 @@ export class DePromotionComponent {
     }
   };
 
+  /**
+   * Executes the operation: FetchClassList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchClassList() {
     const requestData = { Flag: '3' };
 
@@ -126,6 +152,11 @@ export class DePromotionComponent {
       );
   };
 
+  /**
+   * Executes the operation: FetchClassDetByID
+   * Parameters: ClassID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchClassDetByID(ClassID: string) {
     const data = {
       ID: ClassID,
@@ -155,6 +186,11 @@ export class DePromotionComponent {
     );
   };
 
+  /**
+   * Executes the operation: UpdateClass
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   UpdateClass(){
     if(this.ClassForm.invalid){
       return;
@@ -192,6 +228,11 @@ export class DePromotionComponent {
     }
   };
 
+  /**
+   * Executes the operation: FetchSyllabusList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSyllabusList() {
     const requestData = { Flag: '3' };
 
@@ -216,6 +257,11 @@ export class DePromotionComponent {
       );
   };
 
+  /**
+   * Executes the operation: formatDateYYYYMMDD
+   * Parameters: dateStr: string | null
+   * Rationale: Standard operational controller for the active view.
+   */
   formatDateYYYYMMDD(dateStr: string | null): string {
     const convertToYYYYMMDD = (dateStr: string | null): string => {
       if (!dateStr) return '';
@@ -229,6 +275,11 @@ export class DePromotionComponent {
     return convertToYYYYMMDD(dateStr);
   };
 
+  /**
+   * Executes the operation: formatDateDDMMYYYY
+   * Parameters: dateStr: string | null
+   * Rationale: Standard operational controller for the active view.
+   */
   formatDateDDMMYYYY(dateStr: string | null): string {
     const convertToDDMMYYYY = (dateStr: string | null): string => {
             if (!dateStr) return '';
@@ -242,6 +293,11 @@ export class DePromotionComponent {
     return convertToDDMMYYYY(dateStr);
   };
 
+  /**
+   * Executes the operation: editreview
+   * Parameters: ClassID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   editreview(ClassID: string): void {
     this.SyllabusList=[];
     this.FetchSyllabusList();
@@ -249,11 +305,21 @@ export class DePromotionComponent {
     this.ViewClassClicked=true;
   };
 
+  /**
+   * Executes the operation: getSyllabusName
+   * Parameters: syllabusId: any
+   * Rationale: Standard operational controller for the active view.
+   */
   getSyllabusName(syllabusId: any): string {
     const syllabus = this.SyllabusList.find(s => s.ID === syllabusId);
     return syllabus ? syllabus.Name : 'N/A';
   };
 
+  /**
+   * Executes the operation: toggleChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   toggleChange(){
     if(this.IsActiveStatus){
       this.IsActiveStatus=false
@@ -263,11 +329,21 @@ export class DePromotionComponent {
     }
   };
 
+  /**
+   * Executes the operation: onSearchChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onSearchChange(): void {
     this.currentPage = 1;
     this.getPaginatedClassLists();
   };
 
+  /**
+   * Executes the operation: copyTable
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   copyTable() {
     const headers = ['SI.No', 'Name', 'Syllabus', 'Status'];
 
@@ -305,6 +381,11 @@ export class DePromotionComponent {
     alert('Table copied! Works in Notepad, Word, and Excel.');
   };
 
+  /**
+   * Executes the operation: exportToExcel
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   exportToExcel() {
     import('xlsx').then((xlsx) => {
       const worksheet = xlsx.utils.json_to_sheet(
@@ -325,6 +406,11 @@ export class DePromotionComponent {
     });
   };
 
+  /**
+   * Executes the operation: printTable
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   printTable() {
     const tableElement = document.getElementById('classTable');
     if (!tableElement) return;
@@ -364,21 +450,41 @@ export class DePromotionComponent {
     popupWin?.print();
   };
 
+  /**
+   * Executes the operation: closeModal
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeModal() {
     this.isModalOpen = false;
   };
 
+  /**
+   * Executes the operation: handleOk
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   handleOk() {
     this.isModalOpen = false;
     this.FetchClassList();
   };
 
+  /**
+   * Executes the operation: previousPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   previousPage() {
     if (this.currentPage > 1) {
       this.currentPage--;  // Decrease the current page number
     }
   };
 
+  /**
+   * Executes the operation: nextPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   nextPage() {
     if (this.currentPage < this.totalPages()) {
       this.currentPage++;  // Increase the current page number
@@ -386,6 +492,11 @@ export class DePromotionComponent {
   };
 
 
+  /**
+   * Executes the operation: goToPage
+   * Parameters: pageNumber: number
+   * Rationale: Standard operational controller for the active view.
+   */
   goToPage(pageNumber: number) {
     if (pageNumber >= 1 && pageNumber <= this.totalPages()) {
       this.currentPage = pageNumber;  // Set currentPage to the selected page number
@@ -393,6 +504,11 @@ export class DePromotionComponent {
   };
 
 
+  /**
+   * Executes the operation: getVisiblePageNumbers
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getVisiblePageNumbers() {
     const totalPages = this.totalPages();
     const visiblePages = [];
@@ -413,6 +529,11 @@ export class DePromotionComponent {
   };
 
 
+  /**
+   * Executes the operation: totalPages
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   totalPages() {
     return Math.ceil(this.ClassCount / this.pageSize);  // Calculate total pages based on page size
   };

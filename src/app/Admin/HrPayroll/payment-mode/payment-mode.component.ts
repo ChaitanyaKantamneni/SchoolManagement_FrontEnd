@@ -16,6 +16,9 @@ import { LoaderService } from '../../../Services/loader.service';
   templateUrl: './payment-mode.component.html',
   styleUrl: './payment-mode.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for PaymentModeComponent.
+ */
 export class PaymentModeComponent extends BasePermissionComponent implements OnInit {
   pageName = 'Payment Mode';
 
@@ -84,6 +87,9 @@ export class PaymentModeComponent extends BasePermissionComponent implements OnI
     return role === '1';
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.checkViewPermission();
     this.selectedAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
@@ -102,6 +108,11 @@ export class PaymentModeComponent extends BasePermissionComponent implements OnI
     this.fetchPaymentModes();
   }
 
+  /**
+   * Executes the operation: FetchSchoolsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSchoolsList() {
     this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', { Flag: '2' }).subscribe({
       next: (response: any) => {
@@ -115,6 +126,11 @@ export class PaymentModeComponent extends BasePermissionComponent implements OnI
     });
   }
 
+  /**
+   * Executes the operation: FetchAcademicYearsList
+   * Parameters: schoolID?: string
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchAcademicYearsList(schoolID?: string) {
     const targetSchoolID = schoolID ?? this.selectedSchoolID;
     this.apiurl
@@ -131,6 +147,11 @@ export class PaymentModeComponent extends BasePermissionComponent implements OnI
       });
   }
 
+  /**
+   * Executes the operation: onAdminSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminSchoolChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     const selectedFormSchoolID = target.value === '0' ? '' : target.value;
@@ -139,6 +160,11 @@ export class PaymentModeComponent extends BasePermissionComponent implements OnI
     this.FetchAcademicYearsList(this.form.schoolID);
   }
 
+  /**
+   * Executes the operation: onSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onSchoolChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     this.selectedSchoolID = target.value || '';
@@ -146,6 +172,11 @@ export class PaymentModeComponent extends BasePermissionComponent implements OnI
     this.fetchPaymentModes();
   }
 
+  /**
+   * Executes the operation: onSearchChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onSearchChange(): void {
     clearTimeout(this.searchTimer);
     this.searchTimer = setTimeout(() => {
@@ -154,6 +185,11 @@ export class PaymentModeComponent extends BasePermissionComponent implements OnI
     }, this.SEARCH_DEBOUNCE);
   }
 
+  /**
+   * Executes the operation: AddNewClicked
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   AddNewClicked(): void {
   this.IsAddNewClicked = !this.IsAddNewClicked;
   this.formSubmitAttempted = false;
@@ -174,10 +210,20 @@ export class PaymentModeComponent extends BasePermissionComponent implements OnI
     };
   }
 }
+  /**
+   * Executes the operation: toggleEnable
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   toggleEnable(): void {
     this.form.isEnabled = !this.form.isEnabled;
   }
 
+  /**
+   * Executes the operation: addPaymentMode
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   addPaymentMode(): void {
     this.formSubmitAttempted = true;
     if (this.isSubmitting) {
@@ -258,6 +304,11 @@ export class PaymentModeComponent extends BasePermissionComponent implements OnI
     });
   }
 
+  /**
+   * Executes the operation: isFormValid
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private isFormValid(): boolean {
     const schoolValid = !this.isAdmin || (!!this.form.schoolID && this.form.schoolID !== '0');
     const yearValid = !!this.form.academicYearID && this.form.academicYearID !== '0';
@@ -266,6 +317,11 @@ export class PaymentModeComponent extends BasePermissionComponent implements OnI
     return schoolValid && yearValid && modeValid && accountValid;
   }
 
+  /**
+   * Executes the operation: editReview
+   * Parameters: item: any, index?: number
+   * Rationale: Standard operational controller for the active view.
+   */
   editReview(item: any, index?: number): void {
     this.editModeId = this.toNumber(item.id);
     this.editIndex = index ?? null;
@@ -283,16 +339,31 @@ export class PaymentModeComponent extends BasePermissionComponent implements OnI
     this.IsAddNewClicked = true;
   }
 
+  /**
+   * Executes the operation: viewReview
+   * Parameters: item: any
+   * Rationale: Standard operational controller for the active view.
+   */
   viewReview(item: any): void {
     this.viewModeItem = item;
     this.isViewModalOpen = true;
   }
 
+  /**
+   * Executes the operation: closeViewModal
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeViewModal(): void {
     this.isViewModalOpen = false;
     this.viewModeItem = null;
   }
 
+  /**
+   * Executes the operation: closeModal
+   * Parameters: type: 'view' | 'status'
+   * Rationale: Standard operational controller for the active view.
+   */
   closeModal(type: 'view' | 'status') {
     if (type === 'view') {
       this.closeViewModal();
@@ -302,11 +373,21 @@ export class PaymentModeComponent extends BasePermissionComponent implements OnI
     }
   }
 
+  /**
+   * Executes the operation: handleOk
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   handleOk() {
     this.isModalOpen = false;
     this.fetchPaymentModes();
   }
 
+  /**
+   * Executes the operation: fetchPaymentModes
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchPaymentModes(): void {
     const isSearch = !!this.searchQuery?.trim();
     const countFlag = isSearch ? '8' : '6';
@@ -362,6 +443,11 @@ export class PaymentModeComponent extends BasePermissionComponent implements OnI
     });
   }
 
+  /**
+   * Executes the operation: mapPaymentMode
+   * Parameters: row: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private mapPaymentMode(row: any) {
     const schoolId = this.pick(row, ['SchoolID', 'schoolID', 'schoolId', 'SchoolId']);
     const yearId = this.pick(row, ['AcademicYear', 'academicYear', 'AcademicYearID', 'academicYearID']);
@@ -383,6 +469,11 @@ export class PaymentModeComponent extends BasePermissionComponent implements OnI
     };
   }
 
+  /**
+   * Executes the operation: pick
+   * Parameters: obj: any, keys: string[]
+   * Rationale: Standard operational controller for the active view.
+   */
   private pick(obj: any, keys: string[]): any {
     for (const key of keys) {
       if (obj && obj[key] !== undefined && obj[key] !== null) {
@@ -397,22 +488,42 @@ export class PaymentModeComponent extends BasePermissionComponent implements OnI
     return Number.isFinite(n) && n > 0 ? n : null;
   }
 
+  /**
+   * Executes the operation: totalPages
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   totalPages(): number {
     return Math.ceil(this.modeCount / this.pageSize);
   }
 
+  /**
+   * Executes the operation: previousPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   previousPage(): void {
     if (this.currentPage > 1) {
       this.goToPage(this.currentPage - 1);
     }
   }
 
+  /**
+   * Executes the operation: nextPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   nextPage(): void {
     if (this.currentPage < this.totalPages()) {
       this.goToPage(this.currentPage + 1);
     }
   }
 
+  /**
+   * Executes the operation: goToPage
+   * Parameters: pageNumber: number
+   * Rationale: Standard operational controller for the active view.
+   */
   goToPage(pageNumber: number): void {
     const total = this.totalPages();
     if (total <= 0) {
@@ -423,6 +534,11 @@ export class PaymentModeComponent extends BasePermissionComponent implements OnI
     this.fetchPaymentModes();
   }
 
+  /**
+   * Executes the operation: getVisiblePageNumbers
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getVisiblePageNumbers(): number[] {
     const totalPages = this.totalPages();
     const pages: number[] = [];
@@ -435,19 +551,39 @@ export class PaymentModeComponent extends BasePermissionComponent implements OnI
     return pages;
   }
 
+  /**
+   * Executes the operation: pageStartIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageStartIndex(): number {
     return this.modeCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
   }
 
+  /**
+   * Executes the operation: pageEndIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageEndIndex(): number {
     return Math.min(this.currentPage * this.pageSize, this.modeCount);
   }
 
+  /**
+   * Executes the operation: onRowsCountChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onRowsCountChange() {
     this.currentPage = 1;
     this.fetchPaymentModes();
   }
 
+  /**
+   * Executes the operation: extractApiMessage
+   * Parameters: response: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private extractApiMessage(response: any): string {
     const rootMessage = response?.Message || response?.message;
     if (rootMessage) {

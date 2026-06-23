@@ -46,6 +46,9 @@ type TransportDetailView = {
   templateUrl: './students-report.component.html',
   styleUrl: './students-report.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for StudentsReportComponent.
+ */
 export class StudentsReportComponent extends BasePermissionComponent implements OnInit {
   pageName = 'Student Report';
 
@@ -254,6 +257,9 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     super(menuService, router);
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.checkViewPermission();
 
@@ -317,6 +323,11 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     }
   }
 
+  /**
+   * Executes the operation: getCurrentSchoolId
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private getCurrentSchoolId(): string {
     if (this.isAdmin) {
       return this.selectedSchoolID || '';
@@ -330,6 +341,11 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     );
   }
 
+  /**
+   * Executes the operation: fetchSchoolsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   fetchSchoolsList() {
     this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', { Flag: '2' }).subscribe({
       next: (res: any) => {
@@ -338,6 +354,11 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     });
   }
 
+  /**
+   * Executes the operation: onSchoolChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onSchoolChange() {
     this.selectedAcademicYear = '';
     this.selectedClass = '';
@@ -350,6 +371,11 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     this.fetchStudents();
   }
 
+  /**
+   * Executes the operation: fetchAcademicYearsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   fetchAcademicYearsList() {
     this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', { SchoolID: this.selectedSchoolID || '', Flag: '2' }).subscribe({
       next: (res: any) => {
@@ -358,6 +384,11 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     });
   }
 
+  /**
+   * Executes the operation: onAcademicYearChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onAcademicYearChange() {
     this.selectedClass = '';
     this.selectedDivision = '';
@@ -378,6 +409,11 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     }
   }
 
+  /**
+   * Executes the operation: fetchClassList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   fetchClassList() {
     this.apiurl.post<any>('Tbl_ClassDivision_CRUD_Operations', { Flag: '9' }).subscribe({
       next: (res: any) => {
@@ -389,6 +425,11 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     });
   }
 
+  /**
+   * Executes the operation: onClassChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onClassChange() {
     this.selectedDivision = '';
     this.DivisionList = [];
@@ -403,11 +444,21 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     this.fetchStudents();
   }
 
+  /**
+   * Executes the operation: onDivisionChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onDivisionChange() {
     this.resetPagination();
     this.fetchStudents();
   }
 
+  /**
+   * Executes the operation: onSearchChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onSearchChange() {
     clearTimeout(this.searchTimer);
     this.searchTimer = setTimeout(() => {
@@ -418,10 +469,20 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
 
   allStudentsList: any[] = [];
 
+  /**
+   * Executes the operation: resetPagination
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private resetPagination() {
     this.currentPage = 1;
   }
 
+  /**
+   * Executes the operation: fetchStudents
+   * Parameters: extra: any = {}
+   * Rationale: Standard operational controller for the active view.
+   */
   fetchStudents(extra: any = {}) {
     // For parents, wait for parentChildren to be loaded before fetching students
     if (this.isParent && this.parentChildren.length === 0) {
@@ -483,6 +544,11 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     });
   }
 
+  /**
+   * Executes the operation: processStudentData
+   * Parameters: data: any[]
+   * Rationale: Standard operational controller for the active view.
+   */
   private processStudentData(data: any[]) {
     let filtered = data;
     if (this.isTeacher) {
@@ -519,6 +585,11 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     this.sortData(); // Apply initial sorting
   }
 
+  /**
+   * Executes the operation: handleFetchError
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private handleFetchError() {
     this.allStudentsList = [];
     this.studentsList = [];
@@ -526,6 +597,11 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     this.loader.hide();
   }
 
+  /**
+   * Executes the operation: updatePaginatedStudents
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private updatePaginatedStudents() {
     this.totalCount = this.allStudentsList.length;
     const startIndex = (this.currentPage - 1) * this.pageSize;
@@ -536,6 +612,11 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
   // Pagination
   totalPages() { return Math.ceil(this.totalCount / this.pageSize); }
 
+  /**
+   * Executes the operation: getVisiblePageNumbers
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getVisiblePageNumbers() {
     const total = this.totalPages();
     let start = Math.max(this.currentPage - Math.floor(this.visiblePageCount / 2), 1);
@@ -546,6 +627,11 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     return pages;
   }
 
+  /**
+   * Executes the operation: goToPage
+   * Parameters: page: number
+   * Rationale: Standard operational controller for the active view.
+   */
   goToPage(page: number) {
     const total = this.totalPages();
     if (page < 1) page = 1;
@@ -554,16 +640,46 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     this.updatePaginatedStudents();
   }
 
+  /**
+   * Executes the operation: previousPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   previousPage() { if (this.currentPage > 1) this.goToPage(this.currentPage - 1); }
+  /**
+   * Executes the operation: nextPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   nextPage() { if (this.currentPage < this.totalPages()) this.goToPage(this.currentPage + 1); }
+  /**
+   * Executes the operation: firstPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   firstPage() { this.goToPage(1); }
+  /**
+   * Executes the operation: lastPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   lastPage() { this.goToPage(this.totalPages()); }
 
+  /**
+   * Executes the operation: onPageSizeChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onPageSizeChange() {
     this.currentPage = 1;
     this.updatePaginatedStudents();
   }
 
+  /**
+   * Executes the operation: sort
+   * Parameters: column: string
+   * Rationale: Standard operational controller for the active view.
+   */
   sort(column: string) {
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -574,6 +690,11 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     this.sortData();
   }
 
+  /**
+   * Executes the operation: sortData
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private sortData() {
     if (this.sortColumn) {
       this.allStudentsList.sort((a, b) => {
@@ -712,11 +833,21 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     });
   }
 
+  /**
+   * Executes the operation: backToList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   backToList() {
     this.isDetailView = false;
     this.resetDetailView();
   }
 
+  /**
+   * Executes the operation: formatDate
+   * Parameters: dateStr: string | null
+   * Rationale: Standard operational controller for the active view.
+   */
   formatDate(dateStr: string | null): string {
     if (!dateStr) return '';
     const d = new Date(dateStr);
@@ -724,6 +855,11 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     return `${d.getDate().toString().padStart(2, '0')}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getFullYear()}`;
   }
 
+  /**
+   * Executes the operation: resetDetailView
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private resetDetailView() {
     this.selectedStudent = null;
     this.parentDetails = null;
@@ -775,6 +911,11 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     });
   }
 
+  /**
+   * Executes the operation: normalizeFeeDetails
+   * Parameters: items: any[]
+   * Rationale: Standard operational controller for the active view.
+   */
   private normalizeFeeDetails(items: any[]): FeeDetailRow[] {
     const mapped = items.map((item: any) => ({
       feeCategoryName: (item.feeCategoryName ?? item.FeeCategoryName ?? item.feeCategory ?? '').toString(),
@@ -821,6 +962,11 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     };
   }
 
+  /**
+   * Executes the operation: buildAttendanceReport
+   * Parameters: rows: any[], admissionNo: string, sessionList: Array<{ ID: string; Name: string }>
+   * Rationale: Standard operational controller for the active view.
+   */
   private buildAttendanceReport(rows: any[], admissionNo: string, sessionList: Array<{ ID: string; Name: string }>) {
     const sessionMap = new Map(sessionList.map((session) => [session.ID, session.Name]));
     const normalizedRows = rows
@@ -906,6 +1052,11 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
       : null;
   }
 
+  /**
+   * Executes the operation: matchesAdmission
+   * Parameters: row: any, admissionNo: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private matchesAdmission(row: any, admissionNo: string): boolean {
     const rowAdmission = this.pickFirst(row, [
       'admissionID',
@@ -928,6 +1079,11 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     return raw === '1' || raw === 'true' || raw === 'present' ? 'Present' : 'Absent';
   }
 
+  /**
+   * Executes the operation: pickFirst
+   * Parameters: source: any, keys: string[]
+   * Rationale: Standard operational controller for the active view.
+   */
   private pickFirst(source: any, keys: string[]): string {
     for (const key of keys) {
       const value = source?.[key];
@@ -939,11 +1095,21 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     return '';
   }
 
+  /**
+   * Executes the operation: toNumber
+   * Parameters: value: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private toNumber(value: any): number {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : 0;
   }
 
+  /**
+   * Executes the operation: fetchParentChildren
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private fetchParentChildren(): void {
     const parentEmail = (this.ss('email') || '').toString().trim();
     if (!parentEmail) return;
@@ -987,6 +1153,11 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     });
   }
 
+  /**
+   * Executes the operation: formatAmount
+   * Parameters: value: any
+   * Rationale: Standard operational controller for the active view.
+   */
   formatAmount(value: any): string {
     if (value === null || value === undefined || value === '') {
       return '--';
@@ -1003,6 +1174,11 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     });
   }
 
+  /**
+   * Executes the operation: getStudentInitials
+   * Parameters: name: string | null | undefined
+   * Rationale: Standard operational controller for the active view.
+   */
   getStudentInitials(name: string | null | undefined): string {
     const parts = (name || '')
       .split(' ')
@@ -1066,6 +1242,11 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     this.downloadFile([headers.join(','), ...rows].join('\n'), 'students-report.csv', 'text/csv');
   }
 
+  /**
+   * Executes the operation: exportExcel
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   exportExcel() {
     const headers = ['#', 'School', 'Academic Year', 'Admission No', 'Name', 'Class', 'Division', 'Phone', 'Email', 'Gender'];
     const rows = this.studentsList.map((s, i) =>
@@ -1075,6 +1256,11 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     this.downloadFile(html, 'students-report.xls', 'application/vnd.ms-excel');
   }
 
+  /**
+   * Executes the operation: copyToClipboard
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   copyToClipboard() {
     const text = this.studentsList.map((s, i) =>
       `${i + 1}\t${s.SchoolName || ''}\t${s.AcademicYearName || ''}\t${s.AdmissionNo}\t${s.Name}\t${s.ClassName}\t${s.Division}\t${s.MobileNo || ''}\t${s.Email || ''}\t${s.Gender}`
@@ -1082,6 +1268,11 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     navigator.clipboard?.writeText(text);
   }
 
+  /**
+   * Executes the operation: printPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   printPage() {
     if (!this.isDetailView || !this.selectedStudent) {
       window.print();
@@ -1406,6 +1597,11 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     };
   }
 
+  /**
+   * Executes the operation: buildPrintDetailRow
+   * Parameters: label: string, value: string, fullWidth = false
+   * Rationale: Standard operational controller for the active view.
+   */
   private buildPrintDetailRow(label: string, value: string, fullWidth = false): string {
     return `
       <div class="detail-row${fullWidth ? ' full' : ''}">
@@ -1415,6 +1611,11 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
     `;
   }
 
+  /**
+   * Executes the operation: escapeHtml
+   * Parameters: value: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private escapeHtml(value: string): string {
     return String(value ?? '')
       .replace(/&/g, '&amp;')
@@ -1424,6 +1625,11 @@ export class StudentsReportComponent extends BasePermissionComponent implements 
       .replace(/'/g, '&#39;');
   }
 
+  /**
+   * Executes the operation: downloadFile
+   * Parameters: content: string, filename: string, mimeType: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private downloadFile(content: string, filename: string, mimeType: string) {
     const blob = new Blob([content], { type: mimeType });
     const a = document.createElement('a');

@@ -6,6 +6,9 @@ import { RoomMaster, RoomMasterResponse } from './room-master.model';
 @Injectable({
   providedIn: 'root'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for RoomMasterService.
+ */
 export class RoomMasterService {
   private readonly endpoint = 'Tbl_RoomMaster_CRUD_Operations';
 

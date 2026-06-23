@@ -15,6 +15,9 @@ import { Subscription, filter } from 'rxjs';
   templateUrl: './dashboard-top-nav.component.html',
   styleUrl: './dashboard-top-nav.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for DashboardTopNavComponent.
+ */
 export class DashboardTopNavComponent implements OnInit, OnDestroy {
   @Input() shellMode = false;
 
@@ -97,6 +100,9 @@ export class DashboardTopNavComponent implements OnInit, OnDestroy {
     protected menuService: MenuServiceService
   ) { }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     const email = sessionStorage.getItem('email') || '';
     const schoolName = sessionStorage.getItem('schoolName') || '';
@@ -129,12 +135,22 @@ export class DashboardTopNavComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Executes the operation: ngOnDestroy
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   ngOnDestroy(): void {
     this.routeSub?.unsubscribe();
     this.menuLoadSub?.unsubscribe();
     this.sidebarSub?.unsubscribe();
   }
 
+  /**
+   * Executes the operation: toggleSidebar
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   toggleSidebar() {
     if (this.isMobileViewport()) {
       this.sidebarService.toggleMobileMenu();
@@ -144,6 +160,11 @@ export class DashboardTopNavComponent implements OnInit, OnDestroy {
     this.sidebarService.toggleSidebar();
   }
 
+  /**
+   * Executes the operation: onSearchChange
+   * Parameters: value: string
+   * Rationale: Standard operational controller for the active view.
+   */
   onSearchChange(value: string) {
     this.searchTerm = value;
     const hasQuery = this.searchTerm.trim().length >= 1;
@@ -166,6 +187,11 @@ export class DashboardTopNavComponent implements OnInit, OnDestroy {
     }, 150);
   }
 
+  /**
+   * Executes the operation: openSearchResults
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   openSearchResults() {
     if (this.closeTimer) {
       clearTimeout(this.closeTimer);
@@ -177,6 +203,11 @@ export class DashboardTopNavComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Executes the operation: closeSearchResults
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeSearchResults() {
     if (this.closeTimer) {
       clearTimeout(this.closeTimer);
@@ -187,24 +218,44 @@ export class DashboardTopNavComponent implements OnInit, OnDestroy {
     }, 150);
   }
 
+  /**
+   * Executes the operation: clearSearch
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   clearSearch() {
     this.searchTerm = '';
     this.searchResults = [];
     this.showSearchResults = false;
   }
 
+  /**
+   * Executes the operation: selectSearchResult
+   * Parameters: route: string
+   * Rationale: Standard operational controller for the active view.
+   */
   selectSearchResult(route: string) {
     this.showSearchResults = false;
     this.searchTerm = '';
     this.router.navigateByUrl(route);
   }
 
+  /**
+   * Executes the operation: logout
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   logout() {
     this.menuService.clearMenu();
     sessionStorage.clear();
     this.router.navigate(['/signin']);
   }
 
+  /**
+   * Executes the operation: refreshSearchResults
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private refreshSearchResults() {
     const query = this.searchTerm.trim().toLowerCase();
     const normalizedQuery = this.normalizeForSearch(query);
@@ -263,6 +314,11 @@ export class DashboardTopNavComponent implements OnInit, OnDestroy {
     this.searchResults = results.slice(0, 8);
   }
 
+  /**
+   * Executes the operation: updateVisibility
+   * Parameters: url: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private updateVisibility(url: string) {
     if (this.shellMode) {
       this.shouldRenderHeader = true;
@@ -281,6 +337,11 @@ export class DashboardTopNavComponent implements OnInit, OnDestroy {
     );
   }
 
+  /**
+   * Executes the operation: syncShellWidth
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private syncShellWidth() {
     const width = this.isSidebarExpanded ? '270px' : '84px';
     if (typeof document !== 'undefined') {
@@ -288,15 +349,30 @@ export class DashboardTopNavComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Executes the operation: isMobileViewport
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private isMobileViewport(): boolean {
     return typeof window !== 'undefined' && window.innerWidth <= 768;
   }
 
+  /**
+   * Executes the operation: getCurrentRoot
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private getCurrentRoot(): string {
     const segments = (this.router.url || '').split('?')[0].split('#')[0].split('/').filter(Boolean);
     return segments[0] || 'Admin';
   }
 
+  /**
+   * Executes the operation: formatRoute
+   * Parameters: name: string, root: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private formatRoute(name: string, root: string): string {
     const compact = (name ?? '').replace(/\s+/g, '');
     const normalized = compact.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -331,6 +407,11 @@ export class DashboardTopNavComponent implements OnInit, OnDestroy {
     return alias[normalized] ?? compact;
   }
 
+  /**
+   * Executes the operation: updatePageContext
+   * Parameters: url: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private updatePageContext(url: string) {
     const cleanUrl = (url || '').split('?')[0].split('#')[0];
     const segments = cleanUrl.split('/').filter(Boolean);
@@ -349,6 +430,11 @@ export class DashboardTopNavComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Executes the operation: formatTitle
+   * Parameters: value: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private formatTitle(value: string): string {
     return (value || '')
       .replace(/([a-z])([A-Z])/g, '$1 $2')
@@ -360,12 +446,22 @@ export class DashboardTopNavComponent implements OnInit, OnDestroy {
       .join(' ');
   }
 
+  /**
+   * Executes the operation: normalizeForSearch
+   * Parameters: value: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private normalizeForSearch(value: string): string {
     return (value || '')
       .toLowerCase()
       .replace(/[^a-z0-9]/g, '');
   }
 
+  /**
+   * Executes the operation: isSuperAdminRole
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private isSuperAdminRole(): boolean {
     const id = `${sessionStorage.getItem('RollID') ?? ''}`.trim();
     return id === '1';

@@ -29,6 +29,9 @@ type SalaryIssuedRow = {
   templateUrl: './salary-issued.component.html',
   styleUrl: './salary-issued.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for SalaryIssuedComponent.
+ */
 export class SalaryIssuedComponent implements OnInit {
   constructor(private apiurl: ApiServiceService, public loader: LoaderService) {}
 
@@ -97,6 +100,9 @@ export class SalaryIssuedComponent implements OnInit {
     return role === '1';
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     if (this.isAdmin) {
       this.FetchSchoolsList();
@@ -112,6 +118,11 @@ export class SalaryIssuedComponent implements OnInit {
     }
   }
 
+  /**
+   * Executes the operation: FetchSchoolsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSchoolsList() {
     this.loader.show();
     this.apiurl.post<any>('Tbl_SchoolDetails_CRUD', { Flag: '2' }).subscribe({
@@ -128,6 +139,11 @@ export class SalaryIssuedComponent implements OnInit {
     });
   }
 
+  /**
+   * Executes the operation: FetchAcademicYearsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchAcademicYearsList() {
     if (!this.selectedSchoolID) {
       this.academicYearList = [];
@@ -150,6 +166,11 @@ export class SalaryIssuedComponent implements OnInit {
       });
   }
 
+  /**
+   * Executes the operation: onAdminSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminSchoolChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     this.selectedSchoolID = target.value === '0' ? '' : target.value;
@@ -162,10 +183,20 @@ export class SalaryIssuedComponent implements OnInit {
     this.FetchSalaryIssued();
   }
 
+  /**
+   * Executes the operation: onAcademicYearChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onAcademicYearChange(): void {
     this.FetchSalaryIssued();
   }
 
+  /**
+   * Executes the operation: FetchSalaryIssued
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSalaryIssued(): void {
     const payload: any = {
       Flag: '2',
@@ -192,6 +223,11 @@ export class SalaryIssuedComponent implements OnInit {
     });
   }
 
+  /**
+   * Executes the operation: mapSalaryIssuedRow
+   * Parameters: row: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private mapSalaryIssuedRow(row: any): SalaryIssuedRow {
     const startDateRaw = row.payMonth || row.PayMonth ||
       this.extractStartDateFromDescription(row.description || row.Description);
@@ -217,6 +253,11 @@ export class SalaryIssuedComponent implements OnInit {
     };
   }
 
+  /**
+   * Executes the operation: parsePayHeadJson
+   * Parameters: raw: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private parsePayHeadJson(raw: any): Array<{ payHead: string; type: 'Addition' | 'Deduction'; amount: number }> {
     let parsed: any[] = [];
     try {
@@ -237,18 +278,33 @@ export class SalaryIssuedComponent implements OnInit {
       .filter((x) => x.amount !== 0 || x.payHead !== '-');
   }
 
+  /**
+   * Executes the operation: extractStartDateFromDescription
+   * Parameters: description: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private extractStartDateFromDescription(description: any): string {
     const text = `${description || ''}`;
     const match = text.match(/salary period:\s*([0-9]{4}-[0-9]{2}-[0-9]{2})/i);
     return match?.[1] || '';
   }
 
+  /**
+   * Executes the operation: extractEndDateFromDescription
+   * Parameters: description: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private extractEndDateFromDescription(description: any): string {
     const text = `${description || ''}`;
     const match = text.match(/to\s*([0-9]{4}-[0-9]{2}-[0-9]{2})/i);
     return match?.[1] || '';
   }
 
+  /**
+   * Executes the operation: formatDate
+   * Parameters: value: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private formatDate(value: any): string {
     if (!value) return '';
     const raw = `${value}`.trim();
@@ -263,6 +319,11 @@ export class SalaryIssuedComponent implements OnInit {
     return `${dd}-${mm}-${yyyy}`;
   }
 
+  /**
+   * Executes the operation: pick
+   * Parameters: obj: any, keys: string[]
+   * Rationale: Standard operational controller for the active view.
+   */
   private pick(obj: any, keys: string[]): any {
     for (const key of keys) {
       if (obj && obj[key] !== undefined && obj[key] !== null) {
@@ -277,26 +338,51 @@ export class SalaryIssuedComponent implements OnInit {
     return Number.isFinite(n) && n > 0 ? n : null;
   }
 
+  /**
+   * Executes the operation: getSelectedSchoolName
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private getSelectedSchoolName(): string {
     const selected = this.schoolList.find((x: any) => `${x?.ID}` === `${this.selectedSchoolID}`);
     return `${selected?.Name || ''}`.trim();
   }
 
+  /**
+   * Executes the operation: getSelectedAcademicYearName
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private getSelectedAcademicYearName(): string {
     const selected = this.academicYearList.find((x: any) => `${x?.ID}` === `${this.selectedAcademicYearID}`);
     return `${selected?.Name || ''}`.trim();
   }
 
+  /**
+   * Executes the operation: openPayslip
+   * Parameters: row: SalaryIssuedRow
+   * Rationale: Standard operational controller for the active view.
+   */
   openPayslip(row: SalaryIssuedRow): void {
     this.selectedPayslip = row;
     this.isPayslipOpen = true;
   }
 
+  /**
+   * Executes the operation: closePayslip
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closePayslip(): void {
     this.isPayslipOpen = false;
     this.selectedPayslip = null;
   }
 
+  /**
+   * Executes the operation: printPayslip
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   printPayslip(): void {
   const content = document.getElementById('payslipSection')?.innerHTML;
   if (!content) return;
@@ -522,6 +608,11 @@ export class SalaryIssuedComponent implements OnInit {
     return this.selectedPayslip?.deductionAmount ?? +this.deductionLines.reduce((sum, x) => sum + x.amount, 0).toFixed(2);
   }
 
+  /**
+   * Executes the operation: exportPlaceholder
+   * Parameters: kind: string
+   * Rationale: Standard operational controller for the active view.
+   */
   exportPlaceholder(kind: string): void {
     console.log('Export:', kind);
   }

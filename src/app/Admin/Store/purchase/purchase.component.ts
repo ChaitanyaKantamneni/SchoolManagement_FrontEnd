@@ -71,6 +71,9 @@ interface PurchaseRow {
   templateUrl: './purchase.component.html',
   styleUrl: './purchase.component.css'
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for PurchaseComponent.
+ */
 export class PurchaseComponent extends BasePermissionComponent implements OnInit {
   pageName = 'Purchase';
   Math = Math;
@@ -85,6 +88,9 @@ export class PurchaseComponent extends BasePermissionComponent implements OnInit
     super(mService, rtr);
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.checkViewPermission();
     this.FetchSchoolsList();
@@ -193,10 +199,20 @@ export class PurchaseComponent extends BasePermissionComponent implements OnInit
     });
   }
 
+  /**
+   * Executes the operation: removeItemRow
+   * Parameters: index: number
+   * Rationale: Standard operational controller for the active view.
+   */
   removeItemRow(index: number): void {
     if (this.purchaseItems.length > 1) this.purchaseItems.splice(index, 1);
   }
 
+  /**
+   * Executes the operation: onCategorySelect
+   * Parameters: index: number, event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onCategorySelect(index: number, event: Event): void {
     const categoryId = (event.target as HTMLSelectElement).value;
     const row = this.purchaseItems[index];
@@ -210,6 +226,11 @@ export class PurchaseComponent extends BasePermissionComponent implements OnInit
       : [];
   }
 
+  /**
+   * Executes the operation: onItemSelect
+   * Parameters: index: number, event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
 onItemSelect(index: number, event: Event): void {
 
   const itemId = (event.target as HTMLSelectElement).value;
@@ -232,11 +253,36 @@ this.FetchUnitsList(selected.UnitID, index);
   this.recalculateRow(index);
 }
 
+  /**
+   * Executes the operation: onQuantityChange
+   * Parameters: index: number
+   * Rationale: Standard operational controller for the active view.
+   */
   onQuantityChange(index: number): void { this.recalculateRow(index); }
+  /**
+   * Executes the operation: onPriceChange
+   * Parameters: index: number
+   * Rationale: Standard operational controller for the active view.
+   */
   onPriceChange(index: number): void { this.recalculateRow(index); }
+  /**
+   * Executes the operation: onCgstChange
+   * Parameters: index: number
+   * Rationale: Standard operational controller for the active view.
+   */
   onCgstChange(index: number): void { this.recalculateRow(index); }
+  /**
+   * Executes the operation: onSgstChange
+   * Parameters: index: number
+   * Rationale: Standard operational controller for the active view.
+   */
   onSgstChange(index: number): void { this.recalculateRow(index); }
 
+  /**
+   * Executes the operation: recalculateRow
+   * Parameters: index: number
+   * Rationale: Standard operational controller for the active view.
+   */
   recalculateRow(index: number): void {
     const row = this.purchaseItems[index];
     const qty = Number(row.quantity) || 0;
@@ -283,9 +329,24 @@ this.FetchUnitsList(selected.UnitID, index);
     this.IsAddNewClicked = true;
   }
 
+  /**
+   * Executes the operation: editreview
+   * Parameters: PurchaseID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   editreview(PurchaseID: string): void { this.FetchPurchaseByID(PurchaseID, 'edit'); }
+  /**
+   * Executes the operation: viewReview
+   * Parameters: PurchaseID: string
+   * Rationale: Standard operational controller for the active view.
+   */
   viewReview(PurchaseID: string): void { this.FetchPurchaseByID(PurchaseID, 'view'); }
 
+  /**
+   * Executes the operation: FetchPurchaseByID
+   * Parameters: PurchaseID: string, mode: 'view' | 'edit'
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchPurchaseByID(PurchaseID: string, mode: 'view' | 'edit'): void {
     this.loader.show();
     this.apiurl.post<any>('Tbl_Purchase_CRUD_Operations', { ID: PurchaseID, Flag: '4' }).subscribe({
@@ -355,6 +416,11 @@ this.FetchUnitsList(selected.UnitID, index);
     });
   }
 
+  /**
+   * Executes the operation: FetchItemsListForEdit
+   * Parameters: purchase: PurchaseRow
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchItemsListForEdit(purchase: PurchaseRow): void {
     const schoolId = this.selectedAdminSchoolID || this.currentSchoolId;
     this.apiurl.post<any>('Tbl_Items_CRUD_Operations', {
@@ -380,6 +446,11 @@ this.FetchUnitsList(selected.UnitID, index);
     });
   }
 
+  /**
+   * Executes the operation: rebuildItemRows
+   * Parameters: purchase: PurchaseRow
+   * Rationale: Standard operational controller for the active view.
+   */
 rebuildItemRows(purchase: PurchaseRow): void {
   const ids = (purchase.itemIDs || '').split(',').map(s => s.trim()).filter(Boolean);
   const qtys = (purchase.quantities || '').split(',').map(s => Number(s.trim()));
@@ -421,6 +492,11 @@ rebuildItemRows(purchase: PurchaseRow): void {
     }
   });
 }
+  /**
+   * Executes the operation: FetchUnitsListForValidationOnly
+   * Parameters: unitId: string, rowIndex: number
+   * Rationale: Standard operational controller for the active view.
+   */
 FetchUnitsListForValidationOnly(unitId: string, rowIndex: number) {
   const requestData = { ID: unitId, Flag: '4' };
 
@@ -437,9 +513,24 @@ FetchUnitsListForValidationOnly(unitId: string, rowIndex: number) {
     }
   );
 }
+  /**
+   * Executes the operation: SubmitPurchase
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   SubmitPurchase(): void { this.savePurchase('1'); }
+  /**
+   * Executes the operation: UpdatePurchase
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   UpdatePurchase(): void { this.savePurchase('5'); }
 
+  /**
+   * Executes the operation: savePurchase
+   * Parameters: flag: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private savePurchase(flag: string): void {
      if (this.purchaseForm.invalid) {
     this.purchaseForm.markAllAsTouched();
@@ -575,12 +666,22 @@ FetchUnitsListForValidationOnly(unitId: string, rowIndex: number) {
     });
   }
 
+  /**
+   * Executes the operation: loadPurchases
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   loadPurchases(): void {
     this.currentPage = 1;
     this.pageCursors = [];
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: mapPurchases
+   * Parameters: response: any
+   * Rationale: Standard operational controller for the active view.
+   */
   mapPurchases(response: any): void {
     this.PurchaseList = (response.data || []).map((item: any) => ({
       id: String(item.id ?? item.ID ?? ''),
@@ -608,6 +709,11 @@ FetchUnitsListForValidationOnly(unitId: string, rowIndex: number) {
     }));
   }
 
+  /**
+   * Executes the operation: FetchPurchaseCount
+   * Parameters: isSearch: boolean
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchPurchaseCount(isSearch: boolean) {
     const schoolIdForQuery = this.isAdmin
       ? (this.selectedSchoolID && this.selectedSchoolID !== '0' ? this.selectedSchoolID : '')
@@ -641,6 +747,11 @@ FetchUnitsListForValidationOnly(unitId: string, rowIndex: number) {
     });
   }
 
+  /**
+   * Executes the operation: FetchAcademicYearsList
+   * Parameters: schoolId: string
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchAcademicYearsList(schoolId: string): void {
     this.apiurl.post<any>('Tbl_AcademicYear_CRUD_Operations', {
       SchoolID: schoolId, Flag: '2'
@@ -653,6 +764,11 @@ FetchUnitsListForValidationOnly(unitId: string, rowIndex: number) {
     });
   }
 
+  /**
+   * Executes the operation: FetchSuppliersList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchSuppliersList(): void {
     const schoolId = this.selectedAdminSchoolID || this.currentSchoolId;
     this.apiurl.post<any>('Tbl_Suppliers_CRUD_Operations', {
@@ -671,6 +787,11 @@ FetchUnitsListForValidationOnly(unitId: string, rowIndex: number) {
     });
   }
 
+  /**
+   * Executes the operation: FetchCategoriesList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchCategoriesList(): void {
     const schoolId = this.selectedAdminSchoolID || this.currentSchoolId;
     this.apiurl.post<any>('Tbl_Categories_CRUD_Operations', {
@@ -689,6 +810,11 @@ FetchUnitsListForValidationOnly(unitId: string, rowIndex: number) {
     });
   }
 
+  /**
+   * Executes the operation: FetchItemsList
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   FetchItemsList(): void {
     const schoolId = this.selectedAdminSchoolID || this.currentSchoolId;
     this.apiurl.post<any>('Tbl_Items_CRUD_Operations', {
@@ -713,6 +839,11 @@ FetchUnitsListForValidationOnly(unitId: string, rowIndex: number) {
       }
     });
   }
+  /**
+   * Executes the operation: FetchUnitsList
+   * Parameters: unitId: string, rowIndex: number
+   * Rationale: Standard operational controller for the active view.
+   */
 FetchUnitsList(unitId: string, rowIndex: number) {
   const requestData = {
     ID: unitId,
@@ -738,6 +869,11 @@ FetchUnitsList(unitId: string, rowIndex: number) {
     }
   );
 }
+  /**
+   * Executes the operation: onSearchChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onSearchChange(): void {
     clearTimeout(this.searchTimer);
     this.searchTimer = setTimeout(() => {
@@ -754,12 +890,22 @@ FetchUnitsList(unitId: string, rowIndex: number) {
     }, this.SEARCH_DEBOUNCE);
   }
 
+  /**
+   * Executes the operation: onSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onSchoolChange(event: Event): void {
     const schoolID = (event.target as HTMLSelectElement).value;
     this.selectedSchoolID = schoolID === '0' ? '' : schoolID;
     this.loadPurchases();
   }
 
+  /**
+   * Executes the operation: onAdminSchoolChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminSchoolChange(event: Event): void {
     const schoolId = (event.target as HTMLSelectElement).value;
     this.academicYearList = [];
@@ -775,6 +921,11 @@ FetchUnitsList(unitId: string, rowIndex: number) {
     }
   }
 
+  /**
+   * Executes the operation: onAdminAcademicYearChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAdminAcademicYearChange(event: Event): void {
     const yearId = (event.target as HTMLSelectElement).value;
     this.selectedAdminAcademicYearID = yearId === '0' ? '' : yearId;
@@ -795,6 +946,11 @@ FetchUnitsList(unitId: string, rowIndex: number) {
     }
   }
 
+  /**
+   * Executes the operation: onAcademicYearChangeNonAdmin
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAcademicYearChangeNonAdmin(event: Event): void {
     const yearId = (event.target as HTMLSelectElement).value;
     this.selectedAdminAcademicYearID = yearId === '0' ? '' : yearId;
@@ -815,8 +971,18 @@ FetchUnitsList(unitId: string, rowIndex: number) {
     }
   }
 
+  /**
+   * Executes the operation: handleOk
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   handleOk(): void { this.isModalOpen = false; }
 
+  /**
+   * Executes the operation: closeModal
+   * Parameters: type: 'view' | 'status'
+   * Rationale: Standard operational controller for the active view.
+   */
   closeModal(type: 'view' | 'status'): void {
     if (type === 'view') { this.isViewModalOpen = false; this.viewPurchase = null; }
     if (type === 'status') this.isModalOpen = false;
@@ -844,11 +1010,36 @@ FetchUnitsList(unitId: string, rowIndex: number) {
     });
   }
 
+  /**
+   * Executes the operation: previousPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   previousPage(): void { if (this.currentPage > 1) this.goToPage(this.currentPage - 1); }
+  /**
+   * Executes the operation: nextPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   nextPage(): void { if (this.currentPage < this.totalPages()) this.goToPage(this.currentPage + 1); }
+  /**
+   * Executes the operation: firstPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   firstPage(): void { this.goToPage(1); }
+  /**
+   * Executes the operation: lastPage
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   lastPage(): void { this.goToPage(this.totalPages()); }
 
+  /**
+   * Executes the operation: goToPage
+   * Parameters: pageNumber: number
+   * Rationale: Standard operational controller for the active view.
+   */
   goToPage(pageNumber: number): void {
     const total = this.totalPages();
     if (pageNumber < 1) pageNumber = 1;
@@ -862,22 +1053,47 @@ FetchUnitsList(unitId: string, rowIndex: number) {
     }
   }
 
+  /**
+   * Executes the operation: totalPages
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   totalPages(): number { return Math.ceil(this.PurchaseCount / this.pageSize); }
 
+  /**
+   * Executes the operation: pageStartIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageStartIndex(): number {
     return this.PurchaseCount === 0 ? 0 : ((this.currentPage - 1) * this.pageSize) + 1;
   }
 
+  /**
+   * Executes the operation: pageEndIndex
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   pageEndIndex(): number {
     return Math.min(this.currentPage * this.pageSize, this.PurchaseCount);
   }
 
+  /**
+   * Executes the operation: onRowsCountChange
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   onRowsCountChange() {
     this.currentPage = 1;
     this.pageCursors = [];
     this.FetchInitialData();
   }
 
+  /**
+   * Executes the operation: getVisiblePageNumbers
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getVisiblePageNumbers(): number[] {
     const totalPages = this.totalPages();
     const pages: number[] = [];
@@ -888,10 +1104,20 @@ FetchUnitsList(unitId: string, rowIndex: number) {
     return pages;
   }
 
+  /**
+   * Executes the operation: getBooleanValue
+   * Parameters: val: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private getBooleanValue(val: any): boolean {
     return val === true || val === 1 || val === '1' || val === 'True' || val === 'active';
   }
 
+  /**
+   * Executes the operation: exportPurchases
+   * Parameters: type: 'pdf' | 'excel' | 'print'
+   * Rationale: Standard operational controller for the active view.
+   */
   exportPurchases(type: 'pdf' | 'excel' | 'print'): void {
     const payload: any = { Flag: '2', SchoolID: this.selectedSchoolID || null, AcademicYear: this.isAdmin ? null : (sessionStorage.getItem('ActiveAcademicYearID') || '') };
     this.loader.show();
@@ -914,6 +1140,11 @@ FetchUnitsList(unitId: string, rowIndex: number) {
       error: () => { alert(`${type.toUpperCase()} export failed.`); this.loader.hide(); }
     });
   }
+  /**
+   * Executes the operation: quantityValidator
+   * Parameters: index: number
+   * Rationale: Standard operational controller for the active view.
+   */
  quantityValidator(index: number): any {
 
   const row = this.purchaseItems[index];
@@ -935,6 +1166,11 @@ FetchUnitsList(unitId: string, rowIndex: number) {
   return null;
 }
 
+  /**
+   * Executes the operation: increaseQuantity
+   * Parameters: index: number
+   * Rationale: Standard operational controller for the active view.
+   */
 increaseQuantity(index: number): void {
 
   const unit = this.selectedUnitByRow[index];
@@ -955,6 +1191,11 @@ increaseQuantity(index: number): void {
   }
 }
 
+  /**
+   * Executes the operation: decreaseQuantity
+   * Parameters: index: number
+   * Rationale: Standard operational controller for the active view.
+   */
 decreaseQuantity(index: number): void {
 
   const unit = this.selectedUnitByRow[index];

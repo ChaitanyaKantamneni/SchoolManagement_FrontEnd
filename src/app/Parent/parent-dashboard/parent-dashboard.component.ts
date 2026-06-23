@@ -28,6 +28,9 @@ import { FileService } from '../../Services/file.service';
   templateUrl: './parent-dashboard.component.html',
   styleUrls: ['./parent-dashboard.component.css']
 })
+/**
+ * Class Responsibility: Handles view logic and user interactions for ParentDashboardComponent.
+ */
 export class ParentDashboardComponent implements OnInit {
 
   // ─── View / Tab Management ────────────────────────────────────────────────
@@ -50,6 +53,11 @@ export class ParentDashboardComponent implements OnInit {
 
   get visibleTabs() { return this.tabs.filter(t => this.permissions[t.id]); }
 
+  /**
+   * Executes the operation: switchView
+   * Parameters: view: string
+   * Rationale: Standard operational controller for the active view.
+   */
   switchView(view: string): void {
     if (this.permissions[view]) {
       this.currentView = view;
@@ -67,11 +75,26 @@ export class ParentDashboardComponent implements OnInit {
   academicYears: Array<{ ID: string; Name: string }> = [];
   selectedAcademicYearId = '';
 
+  /**
+   * Executes the operation: getUserName
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getUserName(): string { return sessionStorage.getItem('UserName') || sessionStorage.getItem('email') || 'Parent'; }
+  /**
+   * Executes the operation: getUserInitials
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getUserInitials(): string {
     const n = this.getUserName().trim().split(/[\s@]+/);
     return n.length >= 2 ? (n[0][0] + n[1][0]).toUpperCase() : this.getUserName().substring(0, 2).toUpperCase();
   }
+  /**
+   * Executes the operation: logout
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   logout(): void { sessionStorage.clear(); this.router.navigate(['/signin']); }
 
   // ─── Children ─────────────────────────────────────────────────────────────
@@ -79,6 +102,11 @@ export class ParentDashboardComponent implements OnInit {
   selectedChildId = '';
   selectedChild: any = null;
 
+  /**
+   * Executes the operation: selectChild
+   * Parameters: childId: string
+   * Rationale: Standard operational controller for the active view.
+   */
   selectChild(childId: string): void {
     this.selectedChildId = childId;
     this.selectedChild = this.childrenList.find(c => c.id === childId) || null;
@@ -130,6 +158,11 @@ export class ParentDashboardComponent implements OnInit {
       : '⚠️ Warning! Attendance is below the 75% minimum.';
   }
 
+  /**
+   * Executes the operation: getStatusClass
+   * Parameters: status: string
+   * Rationale: Standard operational controller for the active view.
+   */
   getStatusClass(status: string): string {
     const m: Record<string, string> = {
       present: 'badge-present', absent: 'badge-absent',
@@ -149,10 +182,20 @@ export class ParentDashboardComponent implements OnInit {
     { id: 'history', label: 'Payment History', icon: 'history' }
   ];
 
+  /**
+   * Executes the operation: switchFeeTab
+   * Parameters: tab: string
+   * Rationale: Standard operational controller for the active view.
+   */
   switchFeeTab(tab: string): void {
     this.currentFeeTab = tab;
   }
 
+  /**
+   * Executes the operation: downloadReceipt
+   * Parameters: receiptNo: string
+   * Rationale: Standard operational controller for the active view.
+   */
   downloadReceipt(receiptNo: string): void {
     // Find the payment record with this receipt number
     const payment = this.feeRecords.find(f => f.receiptNo === receiptNo);
@@ -390,6 +433,11 @@ export class ParentDashboardComponent implements OnInit {
     }
   }
 
+  /**
+   * Executes the operation: getFeeStatusClass
+   * Parameters: status: string
+   * Rationale: Standard operational controller for the active view.
+   */
   getFeeStatusClass(status: string): string {
     const m: Record<string, string> = {
       paid: 'badge-paid', 'partially paid': 'badge-partial',
@@ -398,6 +446,11 @@ export class ParentDashboardComponent implements OnInit {
     return m[status.toLowerCase()] || '';
   }
 
+  /**
+   * Executes the operation: getFeeStatus
+   * Parameters: fee: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private getFeeStatus(fee: any): string {
     const paid = parseFloat(fee.amountPaid) || parseFloat(fee.feePaid) || 0;
     const total = parseFloat(fee.totalFee) || parseFloat(fee.amount) || 0;
@@ -411,6 +464,11 @@ export class ParentDashboardComponent implements OnInit {
   examRecords: any[] = [];
   examSummary: any = {};
 
+  /**
+   * Executes the operation: getGradeClass
+   * Parameters: grade: string
+   * Rationale: Standard operational controller for the active view.
+   */
   getGradeClass(grade: string): string {
     if (!grade || grade === '—') return 'grade-pending';
     if (grade.startsWith('A')) return 'grade-a';
@@ -418,21 +476,41 @@ export class ParentDashboardComponent implements OnInit {
     if (grade.startsWith('C')) return 'grade-c';
     return 'grade-d';
   }
+  /**
+   * Executes the operation: getExamStatusClass
+   * Parameters: status: string
+   * Rationale: Standard operational controller for the active view.
+   */
   getExamStatusClass(status: string): string {
     const m: Record<string, string> = { completed: 'badge-present', upcoming: 'badge-holiday' };
     return m[status.toLowerCase()] || '';
   }
+  /**
+   * Executes the operation: calcGrade
+   * Parameters: marks: any, total: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private calcGrade(marks: any, total: any): string {
     const pct = (parseFloat(marks) || 0) / (parseFloat(total) || 100) * 100;
     if (pct >= 90) return 'A+'; if (pct >= 80) return 'A';
     if (pct >= 70) return 'B+'; if (pct >= 60) return 'B';
     if (pct >= 50) return 'C'; if (pct >= 40) return 'D'; return 'F';
   }
+  /**
+   * Executes the operation: getExamStatus
+   * Parameters: exam: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private getExamStatus(exam: any): string {
     if (parseFloat(exam.marks) > 0) return 'Completed';
     return new Date(exam.examDate || exam.date) > new Date() ? 'Upcoming' : 'Not Available';
   }
 
+  /**
+   * Executes the operation: viewExamDetails
+   * Parameters: exam: any
+   * Rationale: Standard operational controller for the active view.
+   */
   viewExamDetails(exam: any): void {
     console.log('View exam details:', exam);
     this.selectedExamForView = exam;
@@ -444,6 +522,11 @@ export class ParentDashboardComponent implements OnInit {
     this.fetchFeeDetailsByID(SyllabusID, 'view');
   };
 
+  /**
+   * Executes the operation: printFeeReceiptFromList
+   * Parameters: receiptId: string
+   * Rationale: Standard operational controller for the active view.
+   */
   printFeeReceiptFromList(receiptId: string): void {
     this.fetchFeeDetailsByID(receiptId, 'view');
     setTimeout(() => {
@@ -451,6 +534,11 @@ export class ParentDashboardComponent implements OnInit {
     }, 500);
   }
 
+  /**
+   * Executes the operation: fetchExamDetailReport
+   * Parameters: exam: any
+   * Rationale: Standard operational controller for the active view.
+   */
   fetchExamDetailReport(exam: any): void {
     console.log('Fetching exam details for exam:', exam);
 
@@ -541,6 +629,11 @@ export class ParentDashboardComponent implements OnInit {
     this.fetchFeeDetailsByID(receiptId, 'view');
   }
 
+  /**
+   * Executes the operation: fetchFeeDetailsByID
+   * Parameters: receiptId: string, mode: 'view' | 'edit'
+   * Rationale: Standard operational controller for the active view.
+   */
   fetchFeeDetailsByID(receiptId: string, mode: 'view' | 'edit'): void {
     console.log('Fetching fee details for receipt:', receiptId);
 
@@ -598,6 +691,11 @@ export class ParentDashboardComponent implements OnInit {
     );
   }
 
+  /**
+   * Executes the operation: mapFeeDetails
+   * Parameters: item: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private mapFeeDetails(item: any): void {
     this.viewSyllabus = {
       ID: item.id,
@@ -634,6 +732,11 @@ export class ParentDashboardComponent implements OnInit {
     return this.getPaymentModeDisplayValue(rawMode);
   }
 
+  /**
+   * Executes the operation: getPaymentModeDisplayValue
+   * Parameters: rawMode: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private getPaymentModeDisplayValue(rawMode: any): string {
     const mode = (rawMode ?? '').toString().trim().toLowerCase();
     if (mode === '1' || mode === 'cash') return 'Cash';
@@ -643,20 +746,40 @@ export class ParentDashboardComponent implements OnInit {
     return rawMode || '-';
   }
 
+  /**
+   * Executes the operation: isReceiptUpiOrCardMode
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   isReceiptUpiOrCardMode(): boolean {
     const mode = this.getReceiptPaymentModeLabel().toLowerCase();
     return mode === 'upi' || mode === 'card';
   }
 
+  /**
+   * Executes the operation: isReceiptChequeMode
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   isReceiptChequeMode(): boolean {
     return this.getReceiptPaymentModeLabel().toLowerCase() === 'cheque';
   }
 
+  /**
+   * Executes the operation: getReceiptPaymentReferenceValue
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getReceiptPaymentReferenceValue(): string {
     const value = this.viewSyllabus?.TransactionID;
     return value && value.toString().trim() ? value : '-';
   }
 
+  /**
+   * Executes the operation: closeModal
+   * Parameters: type: 'view' | 'status'
+   * Rationale: Standard operational controller for the active view.
+   */
   closeModal(type: 'view' | 'status') {
     if (type === 'view') {
       this.isViewModalOpen = false;
@@ -664,6 +787,11 @@ export class ParentDashboardComponent implements OnInit {
     }
   }
 
+  /**
+   * Executes the operation: formatDateDDMMYYYY
+   * Parameters: date: string
+   * Rationale: Standard operational controller for the active view.
+   */
   formatDateDDMMYYYY(date: string): string {
     if (!date) return '';
     const d = new Date(date);
@@ -673,6 +801,11 @@ export class ParentDashboardComponent implements OnInit {
     return `${day}/${month}/${year}`;
   }
 
+  /**
+   * Executes the operation: printFeeReceipt
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   printFeeReceipt(): void {
     const content = document.getElementById('receiptSection')?.innerHTML;
 
@@ -926,10 +1059,20 @@ export class ParentDashboardComponent implements OnInit {
   homeworkRecords: any[] = [];
   homeworkSummary: any = {};
 
+  /**
+   * Executes the operation: getHomeworkStatusClass
+   * Parameters: status: string
+   * Rationale: Standard operational controller for the active view.
+   */
   getHomeworkStatusClass(status: string): string {
     const m: Record<string, string> = { submitted: 'badge-present', pending: 'badge-due', overdue: 'badge-absent' };
     return m[status.toLowerCase()] || '';
   }
+  /**
+   * Executes the operation: getHomeworkStatus
+   * Parameters: hw: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private getHomeworkStatus(hw: any): string {
     if (hw.submittedDate || hw.submissionDate) return 'Submitted';
     const due = new Date(hw.dueDate || hw.endDate);
@@ -947,8 +1090,18 @@ export class ParentDashboardComponent implements OnInit {
   staffList: any[] = [];    // For mapping staff IDs to names
   workingDays: any[] = [];  // For mapping dayID to day names
 
+  /**
+   * Executes the operation: getTimetableCell
+   * Parameters: row: any, day: string
+   * Rationale: Standard operational controller for the active view.
+   */
   getTimetableCell(row: any, day: string): string { return row[day] || '—'; }
 
+  /**
+   * Executes the operation: getTimetableSubject
+   * Parameters: day: string, period: number
+   * Rationale: Standard operational controller for the active view.
+   */
   getTimetableSubject(day: string, period: number): string {
     const entry = this.timetableRaw.find(t =>
       t.day === day && t.period === period
@@ -956,6 +1109,11 @@ export class ParentDashboardComponent implements OnInit {
     return entry?.subject || '';
   }
 
+  /**
+   * Executes the operation: getTimetableTime
+   * Parameters: day: string, period: number
+   * Rationale: Standard operational controller for the active view.
+   */
   getTimetableTime(day: string, period: number): string {
     const entry = this.timetableRaw.find(t =>
       t.day === day && t.period === period
@@ -963,6 +1121,11 @@ export class ParentDashboardComponent implements OnInit {
     return entry?.time || '';
   }
 
+  /**
+   * Executes the operation: getTimetableStaff
+   * Parameters: day: string, period: number
+   * Rationale: Standard operational controller for the active view.
+   */
   getTimetableStaff(day: string, period: number): string {
     const entry = this.timetableRaw.find(t =>
       t.day === day && t.period === period
@@ -970,6 +1133,11 @@ export class ParentDashboardComponent implements OnInit {
     return entry?.teacher || '';
   }
 
+  /**
+   * Executes the operation: getDayName
+   * Parameters: val: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private getDayName(val: any): string {
     const map: Record<string, string> = {
       '1': 'Monday', '2': 'Tuesday', '3': 'Wednesday', '4': 'Thursday', '5': 'Friday', '6': 'Saturday', '7': 'Sunday'
@@ -978,6 +1146,11 @@ export class ParentDashboardComponent implements OnInit {
     return map[String(val)] || 'Monday';
   }
 
+  /**
+   * Executes the operation: buildTimetableGrid
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private buildTimetableGrid(): void {
     // Get unique days from timetable data (like Admin view)
     const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -1051,6 +1224,9 @@ export class ParentDashboardComponent implements OnInit {
     this.initializeLeaveForm();
   }
 
+  /**
+   * Lifecycle hook: Initializes component parameters and loads default page datasets.
+   */
   ngOnInit(): void {
     this.schoolName = sessionStorage.getItem('schoolName') || '';
     this.academicYear = sessionStorage.getItem('AcademicYear') || '';
@@ -1118,6 +1294,11 @@ export class ParentDashboardComponent implements OnInit {
     tryFetch('2');
   }
 
+  /**
+   * Executes the operation: onAcademicYearChange
+   * Parameters: event: Event
+   * Rationale: Standard operational controller for the active view.
+   */
   onAcademicYearChange(event: Event): void {
     const selectedId = (event.target as HTMLSelectElement).value;
     this.selectedAcademicYearId = selectedId;
@@ -1132,6 +1313,11 @@ export class ParentDashboardComponent implements OnInit {
     this.reloadAllData();
   }
 
+  /**
+   * Executes the operation: reloadAllData
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private reloadAllData(): void {
     // Reset all data arrays
     this.childrenList = [];
@@ -1232,6 +1418,11 @@ export class ParentDashboardComponent implements OnInit {
   }
 
 
+  /**
+   * Executes the operation: buildProfile
+   * Parameters: child: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private buildProfile(child: any): any {
     return {
       fullName: child.name,
@@ -1253,6 +1444,11 @@ export class ParentDashboardComponent implements OnInit {
     this.loadDashboardHomeworkSummary();
   }
 
+  /**
+   * Executes the operation: loadDashboardAttendanceSummary
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private loadDashboardAttendanceSummary(): void {
     this.parentService.getChildAttendance(this.selectedChildId, this.schoolId, this.selectedAcademicYearId)
       .pipe(catchError(() => of(null))).subscribe((res: any) => {
@@ -1270,6 +1466,11 @@ export class ParentDashboardComponent implements OnInit {
       });
   }
 
+  /**
+   * Executes the operation: loadDashboardFeeSummary
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private loadDashboardFeeSummary(): void {
     // Load fee dues for balance info
     this.parentService.getChildFeeDues(this.selectedChildId, this.schoolId, this.selectedAcademicYearId, this.selectedChild?.classId, this.selectedChild?.divisionId)
@@ -1288,6 +1489,11 @@ export class ParentDashboardComponent implements OnInit {
       });
   }
 
+  /**
+   * Executes the operation: loadDashboardExamSummary
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private loadDashboardExamSummary(): void {
     this.parentService.getExamTypes(this.schoolId, this.selectedAcademicYearId)
       .pipe(catchError((err) => {
@@ -1307,6 +1513,11 @@ export class ParentDashboardComponent implements OnInit {
       });
   }
 
+  /**
+   * Executes the operation: loadDashboardHomeworkSummary
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private loadDashboardHomeworkSummary(): void {
     this.parentService.getChildHomework(this.selectedChildId, this.schoolId, this.selectedAcademicYearId, this.selectedChild?.classId, this.selectedChild?.divisionId)
       .pipe(catchError(() => of(null))).subscribe((res: any) => {
@@ -1353,6 +1564,11 @@ export class ParentDashboardComponent implements OnInit {
     }
   }
 
+  /**
+   * Executes the operation: loadFullAttendance
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private loadFullAttendance(): void {
     if (!this.selectedChildId || this.attendanceRecords.length) return;
     this.loadingAttendance = true;
@@ -1377,6 +1593,11 @@ export class ParentDashboardComponent implements OnInit {
       });
   }
 
+  /**
+   * Executes the operation: loadFullFees
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private loadFullFees(): void {
     if (!this.selectedChildId || this.feeRecords.length) return;
     this.loadingFees = true;
@@ -1451,6 +1672,11 @@ export class ParentDashboardComponent implements OnInit {
     });
   }
 
+  /**
+   * Executes the operation: loadFullExams
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private loadFullExams(): void {
     if (!this.selectedChild) return;
     this.loadingExams = true;
@@ -1660,6 +1886,11 @@ this.examRecords = Array.from(groupedExams.values()).map((subjects: any[]) => {
       });
   }
 
+  /**
+   * Executes the operation: calculateFinalResult
+   * Parameters: records: any[]
+   * Rationale: Standard operational controller for the active view.
+   */
   calculateFinalResult(records: any[]): string {
     return records?.every(
       (item: any) => {
@@ -1670,6 +1901,11 @@ this.examRecords = Array.from(groupedExams.values()).map((subjects: any[]) => {
     ) ? 'PASS' : 'FAIL';
   }
 
+  /**
+   * Executes the operation: loadFullHomework
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private loadFullHomework(): void {
     if (!this.selectedChildId) return;
     this.loadingHomework = true;
@@ -1700,6 +1936,11 @@ this.examRecords = Array.from(groupedExams.values()).map((subjects: any[]) => {
       });
   }
 
+  /**
+   * Executes the operation: loadFullTimetable
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private loadFullTimetable(): void {
     if (!this.selectedChild) return;
     this.loadingTimetable = true;
@@ -1812,6 +2053,11 @@ this.examRecords = Array.from(groupedExams.values()).map((subjects: any[]) => {
     });
   }
 
+  /**
+   * Executes the operation: switchLeaveTab
+   * Parameters: tab: string
+   * Rationale: Standard operational controller for the active view.
+   */
   switchLeaveTab(tab: string): void {
     this.currentLeaveTab = tab;
     if (tab === 'apply') {
@@ -1822,15 +2068,30 @@ this.examRecords = Array.from(groupedExams.values()).map((subjects: any[]) => {
     }
   }
 
+  /**
+   * Executes the operation: resetLeaveForm
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   resetLeaveForm(): void {
     this.leaveForm.reset();
     this.selectedLeaveForView = null;
   }
 
+  /**
+   * Executes the operation: getPendingLeavesCount
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   getPendingLeavesCount(): number {
     return this.leaveApplications.filter(leave => leave.status === 'Pending').length;
   }
 
+  /**
+   * Executes the operation: loadLeaveData
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   loadLeaveData(): void {
     if (!this.selectedChild) return;
     this.leaveApplications = [];
@@ -1838,6 +2099,11 @@ this.examRecords = Array.from(groupedExams.values()).map((subjects: any[]) => {
     this.loadLeaveHistory();
   }
 
+  /**
+   * Executes the operation: loadDynamicLeaveTypes
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   loadDynamicLeaveTypes(): void {
     const schoolId = sessionStorage.getItem('SchoolID');
     console.log('loadDynamicLeaveTypes - SchoolID:', schoolId);
@@ -1890,6 +2156,11 @@ this.examRecords = Array.from(groupedExams.values()).map((subjects: any[]) => {
     });
   }
 
+  /**
+   * Executes the operation: loadLeaveHistory
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   private loadLeaveHistory(): void {
     if (!this.selectedChild) return;
     this.loadingLeaveHistory = true;
@@ -1918,6 +2189,11 @@ this.examRecords = Array.from(groupedExams.values()).map((subjects: any[]) => {
   }
 
 
+  /**
+   * Executes the operation: normalizeStatus
+   * Parameters: raw: any
+   * Rationale: Standard operational controller for the active view.
+   */
   private normalizeStatus(raw: any): LeaveStatus {
     const s = (raw || '').toString().trim().toLowerCase();
     if (s === 'approved' || s === 'approve' || s === '2') return LeaveStatus.APPROVED;
@@ -1926,6 +2202,11 @@ this.examRecords = Array.from(groupedExams.values()).map((subjects: any[]) => {
     return LeaveStatus.PENDING;
   }
 
+  /**
+   * Executes the operation: mapLeaveData
+   * Parameters: data: any[]
+   * Rationale: Standard operational controller for the active view.
+   */
   private mapLeaveData(data: any[]): LeaveApplication[] {
     return data.map((item: any) => {
       // Scan ALL possible status field names the API might return
@@ -1969,6 +2250,11 @@ this.examRecords = Array.from(groupedExams.values()).map((subjects: any[]) => {
     });
   }
 
+  /**
+   * Executes the operation: submitLeaveApplication
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   submitLeaveApplication(): void {
     if (!this.selectedChild) {
       this.showErrorMessage('Please select a child first.');
@@ -2008,6 +2294,11 @@ this.examRecords = Array.from(groupedExams.values()).map((subjects: any[]) => {
     this.showLeaveConfirmModal = true;
   }
 
+  /**
+   * Executes the operation: confirmLeaveSubmit
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   confirmLeaveSubmit(): void {
     if (!this.pendingLeaveApplication) return;
     this.showLeaveConfirmModal = false;
@@ -2030,6 +2321,11 @@ this.examRecords = Array.from(groupedExams.values()).map((subjects: any[]) => {
     });
   }
 
+  /**
+   * Executes the operation: cancelLeaveConfirm
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   cancelLeaveConfirm(): void {
     this.showLeaveConfirmModal = false;
     this.pendingLeaveApplication = null;
@@ -2039,18 +2335,33 @@ this.examRecords = Array.from(groupedExams.values()).map((subjects: any[]) => {
   cancelLeaveTarget: LeaveApplication | null = null;
   cancelReason = '';
 
+  /**
+   * Executes the operation: openCancelModal
+   * Parameters: leave: LeaveApplication
+   * Rationale: Standard operational controller for the active view.
+   */
   openCancelModal(leave: LeaveApplication): void {
     this.cancelLeaveTarget = leave;
     this.cancelReason = '';
     this.showCancelModal = true;
   }
 
+  /**
+   * Executes the operation: closeCancelModal
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeCancelModal(): void {
     this.showCancelModal = false;
     this.cancelLeaveTarget = null;
     this.cancelReason = '';
   }
 
+  /**
+   * Executes the operation: confirmCancelLeave
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   confirmCancelLeave(): void {
     if (!this.cancelReason.trim()) return;
     const leave = this.cancelLeaveTarget!;
@@ -2068,10 +2379,20 @@ this.examRecords = Array.from(groupedExams.values()).map((subjects: any[]) => {
     });
   }
 
+  /**
+   * Executes the operation: viewLeaveDetails
+   * Parameters: leave: LeaveApplication
+   * Rationale: Standard operational controller for the active view.
+   */
   viewLeaveDetails(leave: LeaveApplication): void {
     this.selectedLeaveForView = leave;
   }
 
+  /**
+   * Executes the operation: closeLeaveDetails
+   * Parameters: none
+   * Rationale: Standard operational controller for the active view.
+   */
   closeLeaveDetails(): void {
     this.selectedLeaveForView = null;
   }
@@ -2086,19 +2407,39 @@ this.examRecords = Array.from(groupedExams.values()).map((subjects: any[]) => {
     });
   }
 
+  /**
+   * Executes the operation: showSuccessMessage
+   * Parameters: message: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private showSuccessMessage(message: string): void {
     console.log('Success:', message);
   }
 
+  /**
+   * Executes the operation: showErrorMessage
+   * Parameters: message: string
+   * Rationale: Standard operational controller for the active view.
+   */
   private showErrorMessage(message: string): void {
     console.error('Error:', message);
     alert(message);
   }
 
+  /**
+   * Executes the operation: formatDate
+   * Parameters: date: string
+   * Rationale: Standard operational controller for the active view.
+   */
   formatDate(date: string): string {
     return this.datePipe.transform(date, 'dd MMM yyyy') || '';
   }
 
+  /**
+   * Executes the operation: getLeaveStatusClass
+   * Parameters: status: any
+   * Rationale: Standard operational controller for the active view.
+   */
   getLeaveStatusClass(status: any): string {
     const s = (status || '').toString().trim();
     // Handle both PascalCase (API) and any casing
@@ -2110,10 +2451,20 @@ this.examRecords = Array.from(groupedExams.values()).map((subjects: any[]) => {
     return 'badge-pending';
   }
 
+  /**
+   * Executes the operation: getLeaveStatusColor
+   * Parameters: status: LeaveStatus
+   * Rationale: Standard operational controller for the active view.
+   */
   getLeaveStatusColor(status: LeaveStatus): string {
     return this.leaveService.getLeaveStatusColor(status);
   }
 
+  /**
+   * Executes the operation: getLeaveTypeColor
+   * Parameters: leaveType: LeaveType
+   * Rationale: Standard operational controller for the active view.
+   */
   getLeaveTypeColor(leaveType: LeaveType): string {
     switch (leaveType) {
       case LeaveType.SICK_LEAVE:
