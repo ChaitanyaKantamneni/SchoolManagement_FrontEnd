@@ -20,6 +20,7 @@ import { AdmissionComponent } from './Admin/AcademicModule/admission/admission.c
 import { AllotClassTeacherComponent } from './Admin/AcademicModule/allot-class-teacher/allot-class-teacher.component';
 import { PromotionComponent } from './Admin/AcademicModule/promotion/promotion.component';
 import { TransferStudentsComponent } from './Admin/AcademicModule/transfer-students/transfer-students.component';
+import { AcademicYearTransitionComponent } from './Admin/AcademicModule/academic-year-transition/academic-year-transition.component';
 import { BusesComponent } from './Admin/Transporation/buses/buses.component';
 import { RoutesComponent } from './Admin/Transporation/routes/routes.component';
 import { StopsComponent } from './Admin/Transporation/stops/stops.component';
@@ -109,6 +110,7 @@ export const routes: Routes = [
       { path: 'AllotClassTeacher', component: AllotClassTeacherComponent },
       { path: 'ClassTransition', component: PromotionComponent },
       { path: 'TransferStudents', component: TransferStudentsComponent },
+      { path: 'AcademicYearTransition', component: AcademicYearTransitionComponent },
       { path: 'Bus', component: BusesComponent },
       { path: 'Routes', component: RoutesComponent },
       { path: 'Stops', component: StopsComponent },
@@ -192,6 +194,7 @@ export const routes: Routes = [
       { path: 'AllotClassTeacher', component: AllotClassTeacherComponent },
       { path: 'ClassTransition', component: PromotionComponent },
       { path: 'Transfer', component: TransferStudentsComponent },
+      { path: 'AcademicYearTransition', component: AcademicYearTransitionComponent },
       { path: 'Bus', component: BusesComponent },
       { path: 'Routes', component: RoutesComponent },
       { path: 'Stops', component: StopsComponent },
@@ -279,6 +282,7 @@ export const routes: Routes = [
       { path: 'AllotClassTeacher', component: AllotClassTeacherComponent },
       { path: 'ClassTransition', component: PromotionComponent },
       { path: 'Transfer', component: TransferStudentsComponent },
+      { path: 'AcademicYearTransition', component: AcademicYearTransitionComponent },
       { path: 'Bus', component: BusesComponent },
       { path: 'Routes', component: RoutesComponent },
       { path: 'Stops', component: StopsComponent },

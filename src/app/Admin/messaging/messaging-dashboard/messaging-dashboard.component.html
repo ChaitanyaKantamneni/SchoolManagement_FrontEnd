@@ -24,10 +24,10 @@
           </select>
         </div>
 
-        <!-- Academic Year Selection (Locked/Blocked as per standard ExamType) -->
+        <!-- Academic Year Selection -->
         <div class="InputFieldsContainer" style="flex: 1; min-width: 240px;">
           <label class="inputLabel">Academic Year <span class="required">*</span></label>
-          <select class="inputField" [value]="AdminselectedAcademivYearID" [disabled]="!isAdmin" (change)="onAcademicYearChange($event)">
+          <select class="inputField" [value]="AdminselectedAcademivYearID" (change)="onAcademicYearChange($event)">
             <option value="">-- Academic Year --</option>
             <option *ngFor="let ay of academicYearList" [value]="ay.ID">{{ ay.Name }}</option>
           </select>
