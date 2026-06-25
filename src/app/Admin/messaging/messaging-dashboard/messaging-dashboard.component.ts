@@ -129,9 +129,9 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
   ngOnInit(): void {
     this.checkViewPermission();
     
-    // Resolve session identities
-    this.AdminSelectedActiveAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
-    const schoolFromSession = sessionStorage.getItem('SchoolID') || localStorage.getItem('SchoolID') || '';
+    // Resolve session identities safely with case-insignificant fallbacks
+    this.AdminSelectedActiveAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || sessionStorage.getItem('activeAcademicYearId') || '';
+    const schoolFromSession = sessionStorage.getItem('SchoolID') || sessionStorage.getItem('schoolId') || localStorage.getItem('SchoolID') || localStorage.getItem('schoolId') || '';
     this.AdminselectedSchoolID = schoolFromSession;
     this.AdminselectedAcademivYearID = this.AdminSelectedActiveAcademicYearID;
 
@@ -158,11 +158,15 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
    * Rationale: Standard operational controller for the active view.
    */
   loadConfigs() {
-    const config = this.messagingService.getGatewayConfig(this.AdminselectedSchoolID);
-    this.smsSenderId = config.smsSenderId;
-    this.smsAuthKey = config.smsApiKey;
-    this.whatsappNumber = config.waFromNumber;
-    this.whatsappAuthKey = config.waApiKey;
+    this.messagingService.getGatewayConfig(this.AdminselectedSchoolID).subscribe((res: any) => {
+      if (res && res.data) {
+        const config = res.data;
+        this.smsSenderId = config.smsSenderId || 'SCHERP';
+        this.smsAuthKey = config.smsApiKey || 'key_sms_demo_67890';
+        this.whatsappNumber = config.whatsAppNumber || 'India2026@gmail.com';
+        this.whatsappAuthKey = config.whatsAppApiKey || 'key_wa_demo_12345';
+      }
+    });
   }
 
   /**
@@ -173,18 +177,26 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
   saveConfigs() {
     this.loader.show();
     const config = {
+      schoolId: this.AdminselectedSchoolID,
+      smsActive: this.smsActive,
       smsProvider: 'Msg91 API',
       smsApiKey: this.smsAuthKey,
       smsSenderId: this.smsSenderId,
-      waProvider: 'Msg91 API',
-      waApiKey: this.whatsappAuthKey,
-      waFromNumber: this.whatsappNumber
+      whatsAppActive: this.whatsappActive,
+      whatsAppProvider: 'Msg91 API',
+      whatsAppApiKey: this.whatsappAuthKey,
+      whatsAppNumber: this.whatsappNumber
     };
-    this.messagingService.saveGatewayConfig(this.AdminselectedSchoolID, config);
-    setTimeout(() => {
-      this.loader.hide();
-      this.showStatusModal('Configuration saved successfully for this tenant!');
-    }, 800);
+    this.messagingService.saveGatewayConfig(config).subscribe({
+      next: () => {
+        this.loader.hide();
+        this.showStatusModal('Configuration saved successfully for this tenant!');
+      },
+      error: () => {
+        this.loader.hide();
+        this.showStatusModal('Failed to save configuration.');
+      }
+    });
   }
 
   // Multi-Tenant Fetch Helpers
@@ -212,8 +224,8 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
       .subscribe(res => {
         if (res && Array.isArray(res.data)) {
           this.academicYearList = res.data.map((item: any) => ({
-            ID: item.id,
-            Name: item.name
+            ID: item.id || item.ID,
+            Name: item.name || item.Name
           }));
         }
       });
@@ -664,16 +676,26 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
     }
 
     const selectedRecipients = this.recipientsList.filter(r => this.selectedRecipientIds.has(r.id));
-
     this.loader.show();
-    this.messagingService.sendSimulatedMessages(
-      this.AdminselectedSchoolID,
-      this.AdminselectedAcademivYearID,
-      this.channelType,
-      this.recipientGroup === 'Parents' ? 'Parent' : 'Staff',
-      selectedRecipients,
-      rawBody
-    ).subscribe({
+    
+    const payloadRecipients = selectedRecipients.map(r => ({
+      id: r.id.toString(),
+      name: r.name,
+      contactName: r.contactName,
+      mobile: r.mobile,
+      email: r.email
+    }));
+
+    const payload = {
+      schoolId: this.AdminselectedSchoolID,
+      academicYearId: this.AdminselectedAcademivYearID,
+      channel: this.channelType,
+      recipientType: this.recipientGroup === 'Parents' ? 'Parent' : 'Staff',
+      messageBody: rawBody,
+      recipients: payloadRecipients
+    };
+
+    this.messagingService.sendMessages(payload).subscribe({
       next: () => {
         this.loader.hide();
         this.showStatusModal(`Successfully sent ${this.channelType} messages to ${selectedRecipients.length} recipients!`);
@@ -690,7 +712,11 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
 
   // Template CRUD Operations
   loadTemplates() {
-    this.templatesList = this.messagingService.getTemplates(this.AdminselectedSchoolID);
+    this.messagingService.getTemplates(this.AdminselectedSchoolID).subscribe((res: any) => {
+      if (res && res.data) {
+        this.templatesList = res.data;
+      }
+    });
   }
 
   /**
@@ -734,15 +760,22 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
     const val = this.templateForm.value;
     const payload = {
       id: val.id || '',
+      schoolId: this.AdminselectedSchoolID,
       title: val.title!,
       category: val.category! as any,
       channel: val.channel! as any,
       body: val.body!
     };
-    this.messagingService.saveCustomTemplate(this.AdminselectedSchoolID, payload);
-    this.showTemplateModal = false;
-    this.loadTemplates();
-    this.showStatusModal('Template saved successfully!');
+    this.messagingService.saveCustomTemplate(payload).subscribe({
+      next: () => {
+        this.showTemplateModal = false;
+        this.loadTemplates();
+        this.showStatusModal('Template saved successfully!');
+      },
+      error: () => {
+        this.showStatusModal('Failed to save template.');
+      }
+    });
   }
 
   /**
@@ -752,16 +785,26 @@ export class MessagingDashboardComponent extends BasePermissionComponent impleme
    */
   deleteTemplate(tId: string) {
     if (confirm('Are you sure you want to delete this custom template?')) {
-      this.messagingService.deleteCustomTemplate(this.AdminselectedSchoolID, tId);
-      this.loadTemplates();
-      this.showStatusModal('Template deleted successfully!');
+      this.messagingService.deleteCustomTemplate(this.AdminselectedSchoolID, tId).subscribe({
+        next: () => {
+          this.loadTemplates();
+          this.showStatusModal('Template deleted successfully!');
+        },
+        error: () => {
+          this.showStatusModal('Failed to delete template.');
+        }
+      });
     }
   }
 
   // Log Filtering
   loadHistory() {
-    this.historyLogs = this.messagingService.getDeliveryLogs(this.AdminselectedSchoolID);
-    this.applyHistoryFilters();
+    this.messagingService.getDeliveryLogs(this.AdminselectedSchoolID).subscribe((res: any) => {
+      if (res && res.data) {
+        this.historyLogs = res.data;
+        this.applyHistoryFilters();
+      }
+    });
   }
 
   /**

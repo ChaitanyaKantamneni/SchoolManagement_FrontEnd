@@ -30,7 +30,8 @@ export const FULL_ADMIN_MENU: Module[] = [
       { id: 'admission', pageName: 'Admission', moduleID: 'academic', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
       { id: 'allotclassteacher', pageName: 'Allot Class Teacher', moduleID: 'academic', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
       { id: 'classtransition', pageName: 'Class Transition', moduleID: 'academic', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
-      { id: 'transferstudents', pageName: 'Transfer Student', moduleID: 'academic', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
+      { id: 'transferstudents', pageName: 'Transfer Student', moduleID: 'academic', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' },
+      { id: 'academicyeartransition', pageName: 'Academic Year Transition', moduleID: 'academic', canView: '1', canAdd: '1', canEdit: '1', canDelete: '1' }
     ]
   },
   {

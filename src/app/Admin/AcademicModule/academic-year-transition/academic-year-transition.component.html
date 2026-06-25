@@ -1,0 +1,156 @@
+<app-dashboard-top-nav></app-dashboard-top-nav>
+
+<div class="MainContentDiv">
+  
+  <!-- Breadcrumb and Page Header -->
+  <div class="ComponentTop admission-hero" style="padding: 1rem 1.5rem;">
+    <div class="ComponentTopHeader">
+      <div class="admission-breadcrumb" style="font-size: 0.85rem; margin-bottom: 0.25rem;">
+        <span>Academic Module</span>
+        <mat-icon style="font-size: 1rem; width: 1rem; height: 1rem;">chevron_right</mat-icon>
+        <strong>Academic Year Transition</strong>
+      </div>
+      <h5 style="font-size: 1.25rem; margin-bottom: 0.25rem;">Academic Year Data Transition</h5>
+      <p style="font-size: 0.85rem; margin: 0;">Clone master configurations and transportation data safely from a source year to a target year</p>
+    </div>
+  </div>
+
+  <!-- Form Content Card -->
+  <div class="ComponentRecords admission-record-card" style="padding: 1.5rem; margin-top: 1.25rem; border-radius: 8px; border: 1px solid #e2e8f0; background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+    
+    <!-- Informational Alert -->
+    <div class="alert-info" style="background-color: #f0f9ff; border-left: 3px solid #0284c7; padding: 0.85rem 1.25rem; border-radius: 4px; margin-bottom: 1.5rem; color: #0369a1; font-size: 0.85rem; line-height: 1.5; display: flex; align-items: start; gap: 0.5rem;">
+      <mat-icon style="color: #0284c7; font-size: 1.15rem; width: 1.15rem; height: 1.15rem; margin-top: 0.05rem;">info</mat-icon>
+      <div>
+        <strong style="color: #0369a1; font-size: 0.9rem; display: block; margin-bottom: 0.15rem;">Important Security Notice:</strong>
+        To protect historical records, all migrations are processed as <strong>cloned configurations</strong>. Modifying records in the target academic year will never alter or corrupt past years' data logs.
+      </div>
+    </div>
+
+    <form [formGroup]="transitionForm" (ngSubmit)="onSubmit()">
+      
+      <!-- Sizing Flex Row: Combines School (if Admin), Source Year, and Target Year in the same line -->
+      <div style="display: flex; gap: 1.25rem; margin-bottom: 1.75rem; align-items: flex-start; width: 100%;">
+        
+        <!-- School Dropdown (Visible for Super Admin only) -->
+        <div *ngIf="isAdmin" style="flex: 1; min-width: 0;">
+          <label style="display: block; font-weight: 600; margin-bottom: 0.35rem; color: #334155; font-size: 0.85rem;">Select School *</label>
+          <select formControlName="schoolId" (change)="onSchoolChange($event)" class="admission-select" style="width: 100%; padding: 0.5rem 0.75rem; border-radius: 4px; border: 1px solid #cbd5e1; outline: none; font-size: 0.9rem; color: #1f2937; background-color: #f8fafc; transition: all 0.2s; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); height: auto;">
+            <option value="">-- Select School --</option>
+            <option *ngFor="let sch of schools" [value]="sch.id">{{ sch.name }}</option>
+          </select>
+        </div>
+
+        <div style="flex: 1; min-width: 0;">
+          <label style="display: block; font-weight: 600; margin-bottom: 0.35rem; color: #334155; font-size: 0.85rem;">Source Academic Year *</label>
+          <select formControlName="sourceYearId" class="admission-select" style="width: 100%; padding: 0.5rem 0.75rem; border-radius: 4px; border: 1px solid #cbd5e1; outline: none; font-size: 0.9rem; color: #1f2937; background-color: #f8fafc; transition: all 0.2s; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); height: auto;">
+            <option value="">-- Select Source Year --</option>
+            <option *ngFor="let yr of academicYears" [value]="yr.ID">{{ yr.Name }}</option>
+          </select>
+        </div>
+
+        <div style="flex: 1; min-width: 0;">
+          <label style="display: block; font-weight: 600; margin-bottom: 0.35rem; color: #334155; font-size: 0.85rem;">Target Academic Year *</label>
+          <select formControlName="targetYearId" class="admission-select" style="width: 100%; padding: 0.5rem 0.75rem; border-radius: 4px; border: 1px solid #cbd5e1; outline: none; font-size: 0.9rem; color: #1f2937; background-color: #f8fafc; transition: all 0.2s; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); height: auto;">
+            <option value="">-- Select Target Year --</option>
+            <option *ngFor="let yr of academicYears" [value]="yr.ID">{{ yr.Name }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Migration Options Checkbox List -->
+      <div style="margin-bottom: 2rem; border-top: 1px solid #f1f5f9; padding-top: 1.25rem;">
+        <h3 style="color: #0f172a; font-size: 1.05rem; margin-bottom: 1rem; font-weight: 600; margin-top: 0;">Select Components to Transition:</h3>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+          
+          <!-- Masters Module Components Group -->
+          <div style="background-color: #f8fafc; padding: 1rem 1.25rem; border-radius: 6px; border: 1px solid #e2e8f0;">
+            <h4 style="color: #0284c7; font-size: 0.9rem; margin-bottom: 0.75rem; font-weight: 600; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.35rem; display: flex; align-items: center; gap: 0.35rem; margin-top: 0;">
+              <mat-icon style="font-size: 1.1rem; width: 1.1rem; height: 1.1rem; color: #0284c7;">settings</mat-icon> Masters Module Components
+            </h4>
+            <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+              <label style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; color: #475569; cursor: pointer; user-select: none;">
+                <input type="checkbox" formControlName="transferSyllabus" style="width: 1rem; height: 1rem; accent-color: #0284c7; margin: 0;">
+                Syllabus
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; color: #475569; cursor: pointer; user-select: none;">
+                <input type="checkbox" formControlName="transferClass" style="width: 1rem; height: 1rem; accent-color: #0284c7; margin: 0;">
+                Class
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; color: #475569; cursor: pointer; user-select: none;">
+                <input type="checkbox" formControlName="transferDivision" style="width: 1rem; height: 1rem; accent-color: #0284c7; margin: 0;">
+                Division
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; color: #475569; cursor: pointer; user-select: none;">
+                <input type="checkbox" formControlName="transferSubject" style="width: 1rem; height: 1rem; accent-color: #0284c7; margin: 0;">
+                Subject
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; color: #475569; cursor: pointer; user-select: none;">
+                <input type="checkbox" formControlName="transferSubjectStaff" style="width: 1rem; height: 1rem; accent-color: #0284c7; margin: 0;">
+                Subject Staff
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; color: #475569; cursor: pointer; user-select: none;">
+                <input type="checkbox" formControlName="transferModules" style="width: 1rem; height: 1rem; accent-color: #0284c7; margin: 0;">
+                Modules
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; color: #475569; cursor: pointer; user-select: none;">
+                <input type="checkbox" formControlName="transferPages" style="width: 1rem; height: 1rem; accent-color: #0284c7; margin: 0;">
+                Pages
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; color: #475569; cursor: pointer; user-select: none;">
+                <input type="checkbox" formControlName="transferRoles" style="width: 1rem; height: 1rem; accent-color: #0284c7; margin: 0;">
+                Roles
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; color: #475569; cursor: pointer; user-select: none;">
+                <input type="checkbox" formControlName="transferStaff" style="width: 1rem; height: 1rem; accent-color: #0284c7; margin: 0;">
+                Staff
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; color: #475569; cursor: pointer; user-select: none;">
+                <input type="checkbox" formControlName="transferGroupAdmin" style="width: 1rem; height: 1rem; accent-color: #0284c7; margin: 0;">
+                Group Admin
+              </label>
+            </div>
+          </div>
+
+          <!-- Transportation Module Components Group -->
+          <div style="background-color: #f8fafc; padding: 1rem 1.25rem; border-radius: 6px; border: 1px solid #e2e8f0; height: fit-content;">
+            <h4 style="color: #0284c7; font-size: 0.9rem; margin-bottom: 0.75rem; font-weight: 600; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.35rem; display: flex; align-items: center; gap: 0.35rem; margin-top: 0;">
+              <mat-icon style="font-size: 1.1rem; width: 1.1rem; height: 1.1rem; color: #0284c7;">directions_bus</mat-icon> Transportation Components
+            </h4>
+            <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+              <label style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; color: #475569; cursor: pointer; user-select: none;">
+                <input type="checkbox" formControlName="transferBus" style="width: 1rem; height: 1rem; accent-color: #0284c7; margin: 0;">
+                Bus
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; color: #475569; cursor: pointer; user-select: none;">
+                <input type="checkbox" formControlName="transferRoutes" style="width: 1rem; height: 1rem; accent-color: #0284c7; margin: 0;">
+                Routes
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; color: #475569; cursor: pointer; user-select: none;">
+                <input type="checkbox" formControlName="transferStops" style="width: 1rem; height: 1rem; accent-color: #0284c7; margin: 0;">
+                Stops
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; color: #475569; cursor: pointer; user-select: none;">
+                <input type="checkbox" formControlName="transferFares" style="width: 1rem; height: 1rem; accent-color: #0284c7; margin: 0;">
+                Fares
+              </label>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Action Footer Buttons -->
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
+        <button type="button" (click)="resetForm()" class="admission-btn" style="background: transparent; color: #64748b; border: 1px solid #cbd5e1; padding: 0.5rem 1.25rem; border-radius: 4px; font-weight: 600; cursor: pointer; transition: background 0.2s; height: auto; font-size: 0.85rem;">
+          Reset Setup
+        </button>
+        
+        <button type="submit" [disabled]="transitionForm.invalid" class="admission-btn admission-btn--primary" style="padding: 0.5rem 1.75rem; border-radius: 4px; font-weight: 600; cursor: pointer; transition: background 0.2s; height: auto; font-size: 0.85rem;" [style.opacity]="transitionForm.invalid ? '0.6' : '1'">
+          Begin Transition
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

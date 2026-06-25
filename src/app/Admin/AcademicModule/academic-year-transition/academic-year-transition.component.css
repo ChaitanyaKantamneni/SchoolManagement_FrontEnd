@@ -1,0 +1,14 @@
+/* CSS Styles for Academic Year Transition */
+.transition-container {
+  font-family: 'Inter', sans-serif;
+}
+.card {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+select:focus {
+  border-color: #1d4ed8 !important;
+  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.15);
+}
+button:hover {
+  filter: brightness(0.95);
+}
