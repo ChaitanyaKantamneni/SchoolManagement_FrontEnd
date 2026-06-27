@@ -21,7 +21,7 @@ import { LoaderService } from '../../../Services/loader.service';
  * Designed to let Super Admins and School Admins migrate individual configurations from a source academic year to a target year.
  */
 export class AcademicYearTransitionComponent extends BasePermissionComponent implements OnInit {
-  pageName = 'AcademicYearTransition';
+  pageName = 'Academic Year Transition';
   academicYears: any[] = [];
   schools: any[] = [];
   AdminselectedSchoolID: string = '';
