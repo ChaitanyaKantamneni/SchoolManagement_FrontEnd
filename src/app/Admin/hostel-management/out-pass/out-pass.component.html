@@ -297,7 +297,7 @@
         <span class="footer-hint">Fields marked <span class="required">*</span> are required</span>
         <div class="ActionButtons footer-actions">
           <button type="button" class="cancelbtn" (click)="closeModal()">Cancel</button>
-          <button type="submit" class="submitbtn" *ngIf="canAdd()">Submit</button>
+          <button type="submit" class="submitbtn" *ngIf="canAdd()" (click)="SubmitOutPass()">Submit</button>
         </div>
       </div>
     </div>

@@ -200,7 +200,7 @@
                 <div class="pd-notice__content">
                   <p class="pd-notice__title">{{ notice.title }}</p>
                   <p class="pd-notice__desc">{{ notice.description }}</p>
-                  <span class="pd-notice__date">{{ notice.date }}</span>
+                  <span class="pd-notice__date">{{ notice.date | date: 'dd-MMM-yyyy hh:mm a' }}</span>
                 </div>
               </div>
             </div>

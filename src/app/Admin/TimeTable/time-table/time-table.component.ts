@@ -211,6 +211,10 @@ export class TimeTableComponent extends BasePermissionComponent {
    * Lifecycle hook: Initializes component parameters and loads default page datasets.
    */
     ngOnInit(): void {
+      this.AdminSelectedActiveAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
+      if (!this.AdminselectedSchoolID) {
+        this.AdminselectedSchoolID = sessionStorage.getItem('SchoolID') || sessionStorage.getItem('schoolId') || '';
+      }
       this.checkViewPermission();
       this.SchoolSelectionChange=false;
       this.ClassDivisionForm.reset();
@@ -234,8 +238,19 @@ export class TimeTableComponent extends BasePermissionComponent {
             this.FetchWorkingdaysList();
             this.FetchSessionsList();
           }      
-        }  
-      this.AdminSelectedActiveAcademicYearID = sessionStorage.getItem('ActiveAcademicYearID') || '';
+        } else {
+          this.FetchAcademicYearsList();
+          if(!this.isAdmin){
+            this.ClassDivisionForm.get('AcademicYear').patchValue(this.AdminSelectedActiveAcademicYearID);
+            if (this.isTeacher) {
+              this.resolveStaffIdentity();
+            } else {
+              this.FetchClassList();
+            }
+            this.FetchWorkingdaysList();
+            this.FetchSessionsList();
+          }
+        }
       this.ClassDivisionForm.get('School').patchValue('0');
       this.ClassDivisionForm.get('Class').patchValue('0');
       this.ClassDivisionForm.get('Division').patchValue('0');
@@ -381,6 +396,16 @@ export class TimeTableComponent extends BasePermissionComponent {
                   IsActive: isActiveString
                 };
               });            
+
+              if (!this.AdminSelectedActiveAcademicYearID && this.academicYearList.length > 0) {
+                const activeYear = this.academicYearList.find(y => y.IsActive === "Active") || this.academicYearList[0];
+                this.AdminSelectedActiveAcademicYearID = activeYear.ID;
+                sessionStorage.setItem('ActiveAcademicYearID', activeYear.ID);
+              }
+
+              if (!this.isAdmin) {
+                this.ClassDivisionForm.get('AcademicYear').patchValue(this.AdminSelectedActiveAcademicYearID);
+              }
             } else {
               this.academicYearList = [];
             }

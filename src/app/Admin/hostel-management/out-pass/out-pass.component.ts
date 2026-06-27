@@ -59,6 +59,7 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
   academicYearList: any[] = [];
   studentList: any[] = [];
   studentMap: Record<string, any> = {};
+  studentNameMap: Record<string, string> = {};
 
   // -- Filters --
   filterSchoolID = '';
@@ -126,7 +127,7 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
             const firstName = i.firstName || i.FirstName || '';
             const lastName = i.lastName || i.LastName || '';
             const fullName = `${firstName} ${lastName}`.trim();
-            if (adminNo) this.studentMap[adminNo] = fullName;
+            if (adminNo) this.studentNameMap[adminNo] = fullName;
           });
           // Re-fetch allotments if they were already fetched to update names
           if (schoolId) this.FetchStudentList(schoolId, this.filterAcademicYear);
@@ -214,7 +215,7 @@ export class OutPassComponent extends BasePermissionComponent implements OnInit 
             const firstName = i.firstName || i.FirstName || '';
             const lastName = i.lastName || i.LastName || '';
             const joinedName = i.studentName || i.StudentName || '';
-            const studentName = joinedName || this.studentMap[studentID] || `${firstName} ${lastName}`.trim() || 'N/A';
+            const studentName = joinedName || this.studentNameMap[studentID] || `${firstName} ${lastName}`.trim() || 'N/A';
             
             const hostelName = i.hostelName || i.HostelName || '';
             const roomNo = i.roomNumber || i.RoomNumber || '';
