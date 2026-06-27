@@ -247,7 +247,8 @@
                     'bg-success': getSubmissionStatus(homework.id) === 'Evaluated',
                     'bg-primary': getSubmissionStatus(homework.id) === 'Submitted',
                     'bg-warning': getSubmissionStatus(homework.id) === 'Pending',
-                    'bg-danger': getSubmissionStatus(homework.id) === 'Not Submitted'
+                    'bg-danger': getSubmissionStatus(homework.id) === 'Not Submitted',
+                    'bg-secondary': getSubmissionStatus(homework.id) === 'Select Student'
                   }">{{getSubmissionStatus(homework.id)}}</span>
                 </td>
                 <td data-label="Actions">

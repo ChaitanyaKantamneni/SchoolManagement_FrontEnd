@@ -253,7 +253,7 @@
               <div class="InputFieldsContainer">
                 <label class="inputLabel" for="BedCapacity">Bed Capacity <span class="required">*</span></label>
                 <div class="input-with-error">
-                  <input class="inputField" type="number" formControlName="BedCapacity" placeholder="Enter Bed Capacity" min="0" [readonly]="RoomForm.get('BedCapacity')?.disabled" />
+                  <input class="inputField" type="number" formControlName="BedCapacity" placeholder="Enter Bed Capacity" min="0" />
                   <div *ngIf="RoomForm.get('BedCapacity')?.touched && RoomForm.get('RoomForm.get(\'BedCapacity\')?.invalid')" class="text-danger">
                     <small *ngIf="RoomForm.get('BedCapacity')?.errors?.['required']">Required.</small>
                     <small *ngIf="RoomForm.get('BedCapacity')?.errors?.['min']">Cannot be negative.</small>

@@ -37,10 +37,14 @@ export class NoticesComponent extends BasePermissionComponent implements OnInit 
   ngOnInit(): void {
     this.checkViewPermission();
     this.fetchSchoolsList();
-    this.fetchAcademicYearsList();
     if (!this.isAdmin) {
+      this.filterSchoolID = sessionStorage.getItem('SchoolID') || sessionStorage.getItem('schoolId') || '';
+      this.filterAcademicYear = sessionStorage.getItem('ActiveAcademicYearID') || sessionStorage.getItem('AcademicYearID') || sessionStorage.getItem('AcademicYear') || '';
+      this.noticesForm.get('School')?.patchValue(this.filterSchoolID);
+      this.noticesForm.get('AcademicYear')?.patchValue(this.filterAcademicYear);
       this.noticesForm.get('AcademicYear')?.disable({ emitEvent: false });
     }
+    this.fetchAcademicYearsList(this.filterSchoolID);
     this.fetchData();
   }
 
@@ -154,7 +158,7 @@ export class NoticesComponent extends BasePermissionComponent implements OnInit 
     if (isSearch) payload.Title = this.searchQuery.trim();
     if (this.filterNoticeType && this.filterNoticeType !== '0') payload.NoticeType = this.filterNoticeType;
     if (this.isTeacher) {
-      payload.Audience = 'Staff';
+      payload.Audience = null;
     } else {
       if (this.filterAudience && this.filterAudience !== '0') payload.Audience = this.filterAudience;
     }
@@ -189,7 +193,7 @@ export class NoticesComponent extends BasePermissionComponent implements OnInit 
         if (isSearch) payload.Title = this.searchQuery.trim();
         if (this.filterNoticeType && this.filterNoticeType !== '0') payload.NoticeType = this.filterNoticeType;
         if (this.isTeacher) {
-          payload.Audience = 'Staff';
+          payload.Audience = null;
         } else {
           if (this.filterAudience && this.filterAudience !== '0') payload.Audience = this.filterAudience;
         }
@@ -227,7 +231,10 @@ export class NoticesComponent extends BasePermissionComponent implements OnInit 
   private mapNotices(res: any) {
     let data = res?.data || [];
     if (this.isTeacher) {
-      data = data.filter((item: any) => (item.audience || '').trim().toLowerCase() === 'staff');
+      data = data.filter((item: any) => {
+        const aud = (item.audience || '').trim().toLowerCase();
+        return aud === 'staff' || aud === 'all';
+      });
     }
     this.noticesList = data.map((item: any) => ({
       NoticeId:         item.noticeId,

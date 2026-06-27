@@ -1313,11 +1313,6 @@ export class ParentDashboardComponent implements OnInit {
     this.reloadAllData();
   }
 
-  /**
-   * Executes the operation: reloadAllData
-   * Parameters: none
-   * Rationale: Standard operational controller for the active view.
-   */
   private reloadAllData(): void {
     // Reset all data arrays
     this.childrenList = [];
@@ -1444,6 +1439,25 @@ export class ParentDashboardComponent implements OnInit {
     this.loadDashboardHomeworkSummary();
   }
 
+  private loadDashboardExamSummary(): void {
+    this.parentService.getExamTypes(this.schoolId, this.selectedAcademicYearId)
+      .pipe(catchError((err) => {
+        console.error('Exam types API error:', err);
+        this.summaryCards[2].value = '0';
+        this.summaryCards[2].subtext = 'No exam results';
+        return of(null);
+      }))
+      .subscribe((res: any) => {
+        if (!res || !res.data) {
+          this.summaryCards[2].value = '0';
+          this.summaryCards[2].subtext = 'No exam results';
+          return;
+        }
+        this.summaryCards[2].value = String(res.data.length);
+        this.summaryCards[2].subtext = `${res.data.length} exam types`;
+      });
+  }
+
   /**
    * Executes the operation: loadDashboardAttendanceSummary
    * Parameters: none
@@ -1489,29 +1503,7 @@ export class ParentDashboardComponent implements OnInit {
       });
   }
 
-  /**
-   * Executes the operation: loadDashboardExamSummary
-   * Parameters: none
-   * Rationale: Standard operational controller for the active view.
-   */
-  private loadDashboardExamSummary(): void {
-    this.parentService.getExamTypes(this.schoolId, this.selectedAcademicYearId)
-      .pipe(catchError((err) => {
-        console.error('Exam types API error:', err);
-        this.summaryCards[2].value = '0';
-        this.summaryCards[2].subtext = 'No exam results';
-        return of(null);
-      }))
-      .subscribe((res: any) => {
-        if (!res || !res.data) {
-          this.summaryCards[2].value = '0';
-          this.summaryCards[2].subtext = 'No exam results';
-          return;
-        }
-        this.summaryCards[2].value = String(res.data.length);
-        this.summaryCards[2].subtext = `${res.data.length} exam types`;
-      });
-  }
+
 
   /**
    * Executes the operation: loadDashboardHomeworkSummary
@@ -1546,7 +1538,7 @@ export class ParentDashboardComponent implements OnInit {
         });
         this.noticesList = studentNotices.map((n: any) => ({
           title: n.title || n.noticeTitle || 'Notice',
-          date: n.date || n.noticeDate || '',
+          date: n.startDate || n.createdAt || n.date || n.noticeDate || '',
           description: n.description || n.content || ''
         })).slice(0, 5);
       });

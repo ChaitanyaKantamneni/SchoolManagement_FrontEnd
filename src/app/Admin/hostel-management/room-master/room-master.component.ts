@@ -371,22 +371,26 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
     }
 
     // Duplicate check before submit
-    const roomNo = this.RoomForm.get('RoomNumber')?.value?.trim();
+    const roomNo = (this.RoomForm.get('RoomNumber')?.value || '').trim();
     const hostelId = this.RoomForm.get('HostelID')?.value;
     const schoolId = this.isAdmin ? this.RoomForm.get('School')?.value : sessionStorage.getItem('SchoolID');
 
+    const academicYear = this.RoomForm.get('AcademicYear')?.value || sessionStorage.getItem('ActiveAcademicYearID') || '';
+
     const checkPayload = {
-      Flag: '8', // Search flag to check existence
+      Flag: '7', // Search flag to get matching room records
       RoomNumber: roomNo,
-      HostelID: hostelId,
-      SchoolID: schoolId
+      SchoolID: schoolId,
+      AcademicYear: academicYear
     };
 
     this.roomService.crudOperations(checkPayload).subscribe({
       next: (checkResp: any) => {
-        // If it's a new entry (no ID) and we found a match, it's a duplicate.
-        // If it's an edit, we should check if the found ID is different from current ID.
-        const existingRoom = checkResp?.data?.[0];
+        const rooms = checkResp?.data || [];
+        const existingRoom = rooms.find((r: any) => 
+          String(r.RoomNumber || r.roomNumber || '').trim().toLowerCase() === roomNo.toLowerCase() &&
+          String(r.HostelID || r.hostelID || '') === String(hostelId)
+        );
         const currentID = this.RoomForm.get('ID')?.value;
         
         if (existingRoom && (!currentID || String(existingRoom.ID || existingRoom.id) !== String(currentID))) {
@@ -513,7 +517,7 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
           this.IsActiveStatus = isActive;
           this.IsAddNewClicked = true;
           this.ViewRoomClicked = true;
-          this.RoomForm.get('BedCapacity')?.disable(); // Block field in edit mode
+          this.RoomForm.get('BedCapacity')?.enable();
         }
       },
       error: (err) => {
@@ -657,7 +661,7 @@ export class RoomMasterComponent extends BasePermissionComponent implements OnIn
     const selectedHostel = this.hostelList.find(h => String(h.ID) === String(hostelID));
     if (selectedHostel) {
       this.RoomForm.patchValue({ BedCapacity: selectedHostel.BedCapacity });
-      this.RoomForm.get('BedCapacity')?.disable(); // Block the field
+      this.RoomForm.get('BedCapacity')?.enable();
     } else {
       this.RoomForm.get('BedCapacity')?.enable();
     }

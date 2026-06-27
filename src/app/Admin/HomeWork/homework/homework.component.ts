@@ -1639,6 +1639,15 @@ if (this.currentRoleUI === 'admin') {
   // Get submission status for homework
   getSubmissionStatus(homeworkId: number | string): string {
     const hwId = parseInt(String(homeworkId));
+    
+    // Check if we are a role that requires selecting a student first, and no student is selected
+    const needsStudent = (this.currentRoleUI === 'teacher' || this.currentRoleUI === 'school_admin' || this.currentRoleUI === 'admin');
+    const studentSelected = (this.currentRoleUI === 'teacher' ? this.selectedChildId : this.selectedSchoolAdminStudentId);
+    
+    if (needsStudent && !studentSelected) {
+      return 'Select Student';
+    }
+
     const submission = this.submissionStatusMap.get(hwId);
     // Handle both camelCase (from API) and PascalCase
     const status = submission?.submissionStatus || submission?.SubmissionStatus;
@@ -1653,6 +1662,7 @@ if (this.currentRoleUI === 'admin') {
       case 'Reviewed': return 'bg-success';
       case 'Pending': return 'bg-warning';
       case 'Rejected': return 'bg-danger';
+      case 'Select Student': return 'bg-secondary';
       default: return 'bg-secondary';
     }
   }
